@@ -1,0 +1,92 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{80D0FA44-523B-4E68-BDC2-B12901D5855B}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>NetworkSocket</RootNamespace>
+    <AssemblyName>NetworkSocket</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Debug\NetworkSocket.xml</DocumentationFile>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\NetworkSocket.xml</DocumentationFile>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>_Sn.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ByteBuilder.cs" />
+    <Compile Include="ByteConverter.cs" />
+    <Compile Include="Endians.cs" />
+    <Compile Include="Interfaces\ISocketAsync.cs" />
+    <Compile Include="Interfaces\ITcpClient.cs" />
+    <Compile Include="Interfaces\ITcpServer.cs" />
+    <Compile Include="SocketAsyncEventArgBuffer.cs" />
+    <Compile Include="SocketAsyncEventArgPool.cs" />
+    <Compile Include="TcpTable.cs" />
+    <Compile Include="Policies\FlexPolicyServer.cs" />
+    <Compile Include="Policies\PolicyPacket.cs" />
+    <Compile Include="Policies\SilverlightPolicyServer.cs" />
+    <Compile Include="SocketAsyncCollection.cs" />
+    <Compile Include="PacketBase.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SocketAsyncPool.cs" />
+    <Compile Include="TagBag.cs" />
+    <Compile Include="TcpClientBase.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="TcpServerBase.cs" />
+    <Compile Include="SocketAsync.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="_Sn.snk" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>mkdir $(SolutionDir)\Release\Net40
+xcopy $(TargetDir)$(TargetName).dll $(SolutionDir)\Release\Net40 /y
+xcopy $(TargetDir)$(TargetName).xml $(SolutionDir)\Release\Net40 /y</PostBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
