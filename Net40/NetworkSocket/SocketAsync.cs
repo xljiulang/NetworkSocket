@@ -106,7 +106,6 @@ namespace NetworkSocket
         /// <param name="socket">客户端</param>
         private void SetKeepAlive(Socket socket)
         {
-#if !SILVERLIGHT
             var inOptionValue = new byte[12];
             var outOptionValue = new byte[12];
 
@@ -129,7 +128,6 @@ namespace NetworkSocket
             catch (Exception)
             {
             }
-#endif
         }
 
         /// <summary>
