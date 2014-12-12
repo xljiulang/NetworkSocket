@@ -259,11 +259,10 @@ namespace NetworkSocket
             {
                 try
                 {
-                    this.listenSocket.Shutdown(SocketShutdown.Both);
+                    this.listenSocket.Dispose();
                 }
                 finally
                 {
-                    this.listenSocket.Dispose();
                     this.listenSocket = null;
                 }
             }
