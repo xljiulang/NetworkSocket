@@ -159,10 +159,10 @@ namespace NetworkSocket
                 try
                 {
                     this.socket.Shutdown(SocketShutdown.Both);
+                    this.socket.Dispose();
                 }
                 finally
                 {
-                    this.socket.Dispose();
                     this.socket = null;
                 }
                 // 关闭socket前重置相关数据               
