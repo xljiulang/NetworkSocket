@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 
 
 namespace NetworkSocket
@@ -131,7 +132,7 @@ namespace NetworkSocket
                 // 绑定处理委托
                 client.SendHandler = (packet) => this.OnSend(client, packet);
                 client.ReceiveHandler = (builder) => this.OnReceive(client, builder);
-                client.RecvCompleteHandler = (packet) => this.OnRecvComplete(client, packet);
+                client.RecvCompleteHandler = (packet) => this.OnRecvCompleteHandleWithTask(client, packet);
                 client.DisconnectHandler = () => this.OnClientDisconnect(client);
 
                 // SocketAsync与socket绑定    
@@ -169,6 +170,17 @@ namespace NetworkSocket
         /// <param name="packet">数据包</param>
         protected virtual void OnSend(SocketAsync<T> client, T packet)
         {
+        }
+
+        /// <summary>
+        /// 使用Task来处理OnRecvComplete业务方法
+        /// 重写此方法，使用LimitedTask来代替系统默认的Task可以控制并发数
+        /// </summary>
+        /// <param name="client">客户端</param>
+        /// <param name="packet">封包</param>
+        protected virtual void OnRecvCompleteHandleWithTask(SocketAsync<T> client, T packet)
+        {
+            Task.Factory.StartNew(() => this.OnRecvComplete(client, packet));
         }
 
         /// <summary>

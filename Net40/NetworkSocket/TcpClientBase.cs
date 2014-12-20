@@ -20,7 +20,7 @@ namespace NetworkSocket
         {
             base.SendHandler = this.OnSend;
             base.ReceiveHandler = this.OnReceive;
-            base.RecvCompleteHandler = this.OnRecvComplete;
+            base.RecvCompleteHandler = this.OnRecvCompleteHandleWithTask;
             base.DisconnectHandler = this.OnDisconnect;
         }
 
@@ -102,6 +102,17 @@ namespace NetworkSocket
         /// <param name="packet">数据包</param>
         protected virtual void OnSend(T packet)
         {
+        }
+
+
+        /// <summary>
+        /// 使用Task来处理OnRecvComplete业务方法
+        /// 重写此方法，使用LimitedTask来代替系统默认的Task可以控制并发数
+        /// </summary>       
+        /// <param name="packet">封包</param>
+        protected virtual void OnRecvCompleteHandleWithTask(T packet)
+        {
+            Task.Factory.StartNew(() => this.OnRecvComplete(packet));
         }
 
         /// <summary>
