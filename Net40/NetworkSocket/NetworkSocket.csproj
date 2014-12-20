@@ -58,6 +58,10 @@
     <Compile Include="Interfaces\ITcpServer.cs" />
     <Compile Include="SocketAsyncEventArgBuffer.cs" />
     <Compile Include="SocketAsyncEventArgPool.cs" />
+    <Compile Include="Tasks\LimitTaskScheduler.cs" />
+    <Compile Include="Tasks\LimitTask.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="TcpTable.cs" />
     <Compile Include="Policies\FlexPolicyServer.cs" />
     <Compile Include="Policies\PolicyPacket.cs" />
