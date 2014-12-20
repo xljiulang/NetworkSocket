@@ -12,6 +12,11 @@ namespace NetworkSocket.Tasks
     public class LimitTask
     {
         /// <summary>
+        /// 获取或设置当前的限制并发任务实例
+        /// </summary>
+        public static LimitTask Current { get; set; }
+
+        /// <summary>
         /// 任务工厂
         /// </summary>
         private TaskFactory taskFactory;
