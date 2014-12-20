@@ -12,7 +12,7 @@ namespace NetworkSocket.Tasks
     /// </summary>
     /// <summary> 
     /// </summary>
-    internal class limitedTaskScheduler : TaskScheduler
+    internal class LimitedTaskScheduler : TaskScheduler
     {
         /// <summary>
         /// 当前线程是否处理任务
@@ -39,7 +39,7 @@ namespace NetworkSocket.Tasks
         /// 并发限制任务调度器
         /// </summary>
         /// <param name="maxDegreeOfParallelism">最大并发数</param>
-        public limitedTaskScheduler(int maxDegreeOfParallelism)
+        public LimitedTaskScheduler(int maxDegreeOfParallelism)
         {
             if (maxDegreeOfParallelism < 1)
             {

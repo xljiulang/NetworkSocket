@@ -10,7 +10,7 @@ namespace NetworkSocket.Tasks
     /// <summary>
     /// 表示限制并发数的任务
     /// </summary>
-    public class limitedTask
+    public class LimitedTask
     {
         /// <summary>
         /// 任务工厂
@@ -26,10 +26,10 @@ namespace NetworkSocket.Tasks
         /// 限制并发数的任务
         /// </summary>
         /// <param name="maxConcurrencyLevel">最大并发数</param>
-        public limitedTask(int maxConcurrencyLevel)
+        public LimitedTask(int maxConcurrencyLevel)
         {
             this.MaxConcurrencyLevel = maxConcurrencyLevel;
-            var scheduler = new limitedTaskScheduler(maxConcurrencyLevel);
+            var scheduler = new LimitedTaskScheduler(maxConcurrencyLevel);
             this.taskFactory = new TaskFactory(scheduler);
         }
 
