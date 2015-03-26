@@ -21,7 +21,7 @@ namespace NetworkSocket
             base.SendHandler = this.OnSend;
             base.ReceiveHandler = this.OnReceive;
             base.RecvCompleteHandler = this.OnRecvCompleteHandleWithTask;
-            base.DisconnectHandler = this.OnDisconnect;
+            base.DisconnectHandler = this.CloseAndRaiseDisconnect;
         }
 
         /// <summary>
@@ -113,6 +113,15 @@ namespace NetworkSocket
         protected virtual void OnRecvCompleteHandleWithTask(T packet)
         {
             Task.Factory.StartNew(() => this.OnRecvComplete(packet));
+        }
+
+        /// <summary>
+        /// 关闭连接并触发关闭事件
+        /// </summary>
+        private void CloseAndRaiseDisconnect()
+        {
+            this.Close();
+            this.OnDisconnect();
         }
 
         /// <summary>
