@@ -35,17 +35,12 @@ namespace Server
             Console.WriteLine("客户端{0}断开连接，当前连接数为：{1}", client, this.AliveClients.Count);
         }
 
-        /// <summary>
-        /// 异常时触发此方法
-        /// </summary>
-        /// <param name="client">客户端</param>
-        /// <param name="exception">异常</param>
-        /// <param name="FastPacket">封包</param>
-        /// <param name="needReturn">是否需要返回数据</param>
-        protected override void OnException(SocketAsync<FastPacket> client, Exception exception, FastPacket FastPacket)
+        protected override void OnException(SocketAsync<FastPacket> client, Exception exception)
         {
-            base.OnException(client, exception, FastPacket);
+            Console.WriteLine(exception);
+            base.OnException(client, exception);
         }
+
 
         /// <summary>
         /// 登录操作
@@ -89,7 +84,6 @@ namespace Server
             return x + y + z;
         }
 
-
         /// <summary>
         /// 警告客户端
         /// </summary>
@@ -113,6 +107,6 @@ namespace Server
         public Task<List<int>> SortByClient(SocketAsync<FastPacket> client, List<int> list)
         {
             return this.InvokeRemote<List<int>>(client, 103, list);
-        }
+        }        
     }
 }

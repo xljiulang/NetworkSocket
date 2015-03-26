@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NetworkSocket.Fast.Exceptions;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -23,6 +24,11 @@ namespace NetworkSocket.Fast
         public int HashCode { get; private set; }
 
         /// <summary>
+        /// 获取是否异常
+        /// </summary>
+        public bool IsException { get; private set; }
+
+        /// <summary>
         /// 获取数据体的数据
         /// </summary>
         public byte[] Body { get; private set; }
@@ -41,32 +47,26 @@ namespace NetworkSocket.Fast
         /// 通讯协议的封包
         /// </summary>
         /// <param name="cmd">命令值</param>
-        /// <param name="hashCode">哈希码</param>
+        /// <param name="hashCode">哈希码</param>     
+        /// <param name="isException">是否为异常包</param>
         /// <param name="body">数据体</param>
-        public FastPacket(int cmd, int hashCode, byte[] body)
+        public FastPacket(int cmd, int hashCode, bool isException, byte[] body)
         {
             this.Command = cmd;
             this.HashCode = hashCode;
+            this.IsException = isException;
             this.Body = body;
         }
 
         /// <summary>
-        /// 转换为二进制数据
+        /// 设置异常包
         /// </summary>
-        /// <returns></returns>
-        public override byte[] ToByteArray()
+        /// <param name="serializer">序列化工具</param>
+        /// <param name="exception">异常</param>
+        internal void SetException(ISerializer serializer, RemoteException exception)
         {
-            // 总长度(4) + command(4) + hashCode(4)
-            const int headLength = 12;
-            // 总长度
-            int totalLength = this.Body == null ? headLength : headLength + this.Body.Length;
-
-            var builder = new ByteBuilder(totalLength);
-            builder.Add(totalLength, Endians.Big);
-            builder.Add(this.Command, Endians.Big);
-            builder.Add(this.HashCode, Endians.Big);
-            builder.Add(this.Body);
-            return builder.Source;
+            this.IsException = true;
+            this.SetBodyBinary(serializer, exception);
         }
 
         /// <summary>
@@ -122,6 +122,28 @@ namespace NetworkSocket.Fast
             return parameterList;
         }
 
+
+        /// <summary>
+        /// 转换为二进制数据
+        /// </summary>
+        /// <returns></returns>
+        public override byte[] ToByteArray()
+        {
+            // 总长度(4) + command(4) + hashCode(4) + IsException(1)
+            const int headLength = 13;
+            // 总长度
+            int totalLength = this.Body == null ? headLength : headLength + this.Body.Length;
+
+            var builder = new ByteBuilder(totalLength);
+            builder.Add(totalLength, Endians.Big);
+            builder.Add(this.Command, Endians.Big);
+            builder.Add(this.HashCode, Endians.Big);
+            builder.Add(this.IsException);
+            builder.Add(this.Body);
+            return builder.Source;
+        }
+
+
         /// <summary>
         /// 解析一个数据包       
         /// 不足一个封包时返回null
@@ -131,15 +153,15 @@ namespace NetworkSocket.Fast
         public static FastPacket GetPacket(ByteBuilder builder)
         {
             // 包头长度
-            const int headLength = 12;
-            // 不会少于12
+            const int headLength = 13;
+            // 不会少于13
             if (builder.Length < headLength)
             {
                 return null;
             }
 
             // 包长
-            int totalLength = builder.ToInt32(0, Endians.Big);
+            var totalLength = builder.ToInt32(0, Endians.Big);
             // 包长要小于等于数据长度
             if (totalLength > builder.Length || totalLength < headLength)
             {
@@ -147,15 +169,17 @@ namespace NetworkSocket.Fast
             }
 
             // cmd
-            int cmd = builder.ToInt32(4, Endians.Big);
+            var cmd = builder.ToInt32(4, Endians.Big);
             // 哈希值
-            int hashCode = builder.ToInt32(8, Endians.Big);
+            var hashCode = builder.ToInt32(8, Endians.Big);
+            // 是否异常
+            var isException = builder.ToBoolean(12);
             // 实体数据
-            byte[] body = builder.ToArray(12, totalLength - headLength);
+            var body = builder.ToArray(13, totalLength - headLength);
 
             // 清空本条数据
             builder.Remove(totalLength);
-            return new FastPacket(cmd, hashCode, body);
+            return new FastPacket(cmd, hashCode, isException, body);
         }
     }
 }

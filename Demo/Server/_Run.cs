@@ -28,13 +28,12 @@ namespace Server
             while (demoPath.Contains("Server"))
             {
                 demoPath = Path.GetDirectoryName(demoPath);
-            }
-            fastServer.ToProxyCode().WriteToFile(Path.Combine(demoPath, "ClientApp\\FastServerProxyBase.cs"));
-                 
+            }                 
 
             while (true)
             {
                 Console.ReadLine();
+                fastServer.WarmingClient(fastServer.AliveClients.First(), "", "");              
             }
         }
     }

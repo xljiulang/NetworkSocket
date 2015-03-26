@@ -242,7 +242,7 @@ namespace NetworkSocket
         /// <returns></returns>
         public static byte[] ToBytes(ushort value, Endians endian)
         {
-            return ToBytes((short)value, endian);
+            return ToBytes((short)value, endian);             
         }
     }
 }

@@ -56,6 +56,15 @@ namespace NetworkSocket
         }
 
         /// <summary>
+        /// 添加一个bool类型
+        /// </summary>
+        /// <param name="value">值</param>
+        public void Add(bool value)
+        {
+            this.Add(BitConverter.GetBytes(value));
+        }
+
+        /// <summary>
         /// 添加一个字节
         /// </summary>
         /// <param name="value">字节</param>
@@ -207,6 +216,16 @@ namespace NetworkSocket
         {
             this.CopyTo(destArray, index, length);
             this.Remove(length);
+        }
+
+        /// <summary>
+        /// 返回指定位置的一个字节并转换为bool类型
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        public bool ToBoolean(int index)
+        {
+            return this.Source[index] != 0;
         }
 
         /// <summary>

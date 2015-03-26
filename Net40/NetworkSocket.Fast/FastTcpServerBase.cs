@@ -1,4 +1,5 @@
 ﻿using NetworkSocket.Fast.Attributes;
+using NetworkSocket.Fast.Exceptions;
 using NetworkSocket.Fast.Methods;
 using System;
 using System.Collections.Generic;
@@ -86,18 +87,41 @@ namespace NetworkSocket.Fast
         /// <param name="packet">数据包</param>
         protected override void OnRecvComplete(SocketAsync<FastPacket> client, FastPacket packet)
         {
+            if (packet.IsException == true)
+            {
+                var bytes = packet.GetBodyParameter().FirstOrDefault();
+                var exceptionCallBack = CallbackTable.Take(packet.HashCode);
+
+                if (exceptionCallBack != null)
+                {
+                    exceptionCallBack(packet.IsException, bytes);
+                }
+                else
+                {
+                    this.OnException(client, this.Serializer.Deserialize(bytes, typeof(RemoteException)) as RemoteException);
+                }
+                return;
+            }
+
             var method = this.serverMethods.Find(item => item.ServiceAttribute.Command == packet.Command);
             if (method == null)
             {
-                var exception = new Exception(string.Format("Command为{0}的数据包参数有误", packet.Command));
-                this.OnException(client, exception, packet);
+                var exception = new Exception("相关命令的服务方法不存在");
+                this.RaiseException(client, packet, exception);
                 return;
             }
 
             // 如果是Cmd值对应是Self类型方法 也就是客户端主动调用服务方法
             if (method.ServiceAttribute.Implement == Implements.Self)
             {
-                this.InvokeService(method, client, packet);
+                try
+                {
+                    this.InvokeService(method, client, packet);
+                }
+                catch (Exception ex)
+                {
+                    this.RaiseException(client, packet, ex);
+                }
                 return;
             }
 
@@ -105,7 +129,7 @@ namespace NetworkSocket.Fast
             var callBack = CallbackTable.Take(packet.HashCode);
             if (callBack != null)
             {
-                callBack.Invoke(packet.GetBodyParameter().FirstOrDefault());
+                callBack(packet.IsException, packet.GetBodyParameter().FirstOrDefault());
             }
         }
 
@@ -127,20 +151,13 @@ namespace NetworkSocket.Fast
                 }
             }
 
-            try
-            {
-                var parameters = this.GetParameters(method, client, packet);
-                var returnValue = method.Invoke(this, parameters);
+            var parameters = this.GetParameters(method, client, packet);
+            var returnValue = method.Invoke(this, parameters);
 
-                if (method.HasReturn && client.IsConnected)
-                {
-                    packet.SetBodyBinary(this.Serializer, returnValue);
-                    client.Send(packet);
-                }
-            }
-            catch (Exception ex)
+            if (method.HasReturn && client.IsConnected)
             {
-                this.OnException(client, ex, packet);
+                packet.SetBodyBinary(this.Serializer, returnValue);
+                client.Send(packet);
             }
         }
 
@@ -167,14 +184,27 @@ namespace NetworkSocket.Fast
 
         /// <summary>
         /// 当操作中遇到处理异常时，将触发此方法
+        /// 并将结果返回给客户端
+        /// </summary>
+        /// <param name="client">客户端</param>
+        /// <param name="packet">封包</param>
+        /// <param name="exception">异常</param>         
+        private void RaiseException(SocketAsync<FastPacket> client, FastPacket packet, Exception exception)
+        {
+            var remoteException = new RemoteException(packet.Command, exception.ToString());
+            packet.SetException(this.Serializer, remoteException);
+            client.Send(packet);
+            this.OnException(client, exception);
+        }
+
+        /// <summary>
+        /// 当操作中遇到处理异常时，将触发此方法
         /// </summary>
         /// <param name="client">客户端</param>
         /// <param name="exception">异常</param>
-        /// <param name="packet">相关数据事件</param>        
-        protected virtual void OnException(SocketAsync<FastPacket> client, Exception exception, FastPacket packet)
+        protected virtual void OnException(SocketAsync<FastPacket> client, Exception exception)
         {
         }
-
 
         /// <summary>
         /// 将数据发送到远程端        
@@ -182,6 +212,7 @@ namespace NetworkSocket.Fast
         /// <param name="client">客户端</param>
         /// <param name="cmd">数据包的Action值</param>
         /// <param name="parameters">参数列表</param>
+        /// <exception cref="RemoteException"></exception>
         protected void InvokeRemote(SocketAsync<FastPacket> client, int cmd, params object[] parameters)
         {
             var packet = new FastPacket(cmd);
@@ -205,11 +236,21 @@ namespace NetworkSocket.Fast
             packet.SetBodyBinary(this.Serializer, parameters);
 
             // 发送之前记录回参数
-            Action<byte[]> callBack = (bytes) =>
+            Action<bool, byte[]> callBack = (isException, bytes) =>
             {
-                // 收到数据后反序化
-                var result = (T)this.Serializer.Deserialize(bytes, typeof(T));
-                taskSource.SetResult(result);
+                if (isException == false)
+                {
+                    var result = (T)this.Serializer.Deserialize(bytes, typeof(T));
+                    taskSource.SetResult(result);
+                }
+                else
+                {
+                    var exception = (RemoteException)this.Serializer.Deserialize(bytes, typeof(RemoteException));
+                    if (exception != null)
+                    {
+                        taskSource.TrySetException(exception);
+                    }
+                }
             };
             CallbackTable.Add(packet.HashCode, callBack);
 

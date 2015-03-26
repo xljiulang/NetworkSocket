@@ -54,6 +54,7 @@
   <ItemGroup>
     <Compile Include="Attributes\ServiceAttribute.cs" />
     <Compile Include="Attributes\Implements.cs" />
+    <Compile Include="Exceptions\RemoteException.cs" />
     <Compile Include="FastTcpClientBase.cs">
       <SubType>Code</SubType>
     </Compile>

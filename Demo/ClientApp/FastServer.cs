@@ -34,5 +34,10 @@ namespace ClientApp
         {
             return list.OrderBy(item => item).ToList();
         }
+
+        protected override void OnException(Exception exception)
+        {
+            base.OnException(exception);
+        }
     }
 }

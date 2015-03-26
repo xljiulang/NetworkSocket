@@ -15,15 +15,15 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 回调信息字典
         /// </summary>
-        private static ConcurrentDictionary<int, Action<byte[]>> dic = new ConcurrentDictionary<int, Action<byte[]>>();
-
+        private static ConcurrentDictionary<int, Action<bool, byte[]>> dic = new ConcurrentDictionary<int, Action<bool, byte[]>>();
+     
         /// <summary>
         /// 添加回调信息记录       
         /// </summary>
         /// <param name="hashCode">哈希码</param>
         /// <param name="callBack">回调</param>       
         /// <returns></returns>
-        public static void Add(int hashCode, Action<byte[]> callBack)
+        public static void Add(int hashCode, Action<bool, byte[]> callBack)
         {
             dic.TryAdd(hashCode, callBack);
         }
@@ -35,9 +35,9 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="hashCode">匹配的哈希码</param>
         /// <returns></returns>
-        public static Action<byte[]> Take(int hashCode)
+        public static Action<bool, byte[]> Take(int hashCode)
         {
-            Action<byte[]> callBack;
+            Action<bool, byte[]> callBack;
             dic.TryRemove(hashCode, out callBack);
             return callBack;
         }
