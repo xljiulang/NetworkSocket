@@ -51,8 +51,11 @@ namespace NetworkSocket.Fast
                 var service = Attribute.GetCustomAttribute(m, typeof(ServiceAttribute)) as ServiceAttribute;
                 if (service.Implement == Implements.Self)
                 {
-                    var code = this.GetSelfMethodCode(m, service);
-                    this.MethodCodeList.Add(code);
+                    if (Enum.IsDefined(typeof(SpecialCommands), service.Command) == false)
+                    {
+                        var code = this.GetSelfMethodCode(m, service);
+                        this.MethodCodeList.Add(code);
+                    }
                 }
                 else
                 {

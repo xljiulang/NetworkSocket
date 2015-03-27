@@ -22,18 +22,9 @@ namespace Server
             fastServer.StartListen(4502);
             Console.WriteLine("FastServer服务启动：" + fastServer.LocalEndPoint);
 
-
-            // 生成fastServer的代理代码
-            var demoPath = Environment.CurrentDirectory;
-            while (demoPath.Contains("Server"))
-            {
-                demoPath = Path.GetDirectoryName(demoPath);
-            }                 
-
             while (true)
             {
                 Console.ReadLine();
-                fastServer.WarmingClient(fastServer.AliveClients.First(), "", "");              
             }
         }
     }

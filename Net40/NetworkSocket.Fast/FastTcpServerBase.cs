@@ -1,5 +1,4 @@
 ﻿using NetworkSocket.Fast.Attributes;
-using NetworkSocket.Fast.Exceptions;
 using NetworkSocket.Fast.Methods;
 using System;
 using System.Collections.Generic;
@@ -34,34 +33,53 @@ namespace NetworkSocket.Fast
         /// </summary>
         public FastTcpServerBase()
         {
-            var methods = this.GetType().GetMethods().Where(item => Attribute.IsDefined(item, typeof(ServiceAttribute)));
-            this.serverMethods = methods.Select(item => new ServiceMethod(item)).ToList();
             this.Serializer = new DefaultSerializer();
-            this.CheckServiceMethods(this.serverMethods);
+            this.serverMethods = FastTcpCommon.GetServiceMethodList(this.GetType());
+
+            this.CheckServiceMethodRepeatCommand(this.serverMethods);
+            foreach (var method in this.serverMethods)
+            {
+                this.CheckForServiceMethodContract(method);
+            }
+        }
+
+        /// <summary>
+        /// 检测服务方法是否有声明相同的Command
+        /// </summary>
+        /// <param name="methods"></param>
+        private void CheckServiceMethodRepeatCommand(IEnumerable<ServiceMethod> methods)
+        {
+            var group = methods.GroupBy(item => item.ServiceAttribute.Command).FirstOrDefault(g => g.Count() > 1);
+            if (group != null)
+            {
+                throw new Exception(string.Format("Command为{0}不允许被重复使用", group.Key));
+            }
         }
 
         /// <summary>
         /// 检测服务方法的声明和参数
         /// </summary>
-        /// <param name="methods">服务方法</param>
-        private void CheckServiceMethods(IEnumerable<ServiceMethod> methods)
+        /// <param name="method">服务方法</param>
+        private void CheckForServiceMethodContract(ServiceMethod method)
         {
-            foreach (var m in methods)
+            if (Enum.IsDefined(typeof(SpecialCommands), method.ServiceAttribute.Command) && method.Method.IsDefined(typeof(SpecialServiceAttribute), false) == false)
             {
-                if (m.ParameterTypes.Length == 0 || m.ParameterTypes[0].Equals(typeof(SocketAsync<FastPacket>)) == false)
-                {
-                    throw new Exception(string.Format("服务方法{0}的第一个参数必须是SocketAsync<FastPacket>类型", m.Method.Name));
-                }
+                throw new Exception(string.Format("服务方法{0}的Command是不允许使用的SpecialCommand命令", method.Method.Name));
+            }
 
-                if (m.ServiceAttribute.Implement == Implements.Remote)
+            if (method.ParameterTypes.Length == 0 || method.ParameterTypes.First().Equals(typeof(SocketAsync<FastPacket>)) == false)
+            {
+                throw new Exception(string.Format("服务方法{0}的第一个参数必须是SocketAsync<FastPacket>类型", method.Method.Name));
+            }
+
+            if (method.ServiceAttribute.Implement == Implements.Remote)
+            {
+                var returnType = method.Method.ReturnType;
+                var isTask = returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(Task<>);
+                var isVoid = method.HasReturn == false;
+                if ((isVoid || isTask) == false)
                 {
-                    var returnType = m.Method.ReturnType;
-                    var isTask = returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(Task<>);
-                    var isVoid = m.HasReturn == false;
-                    if ((isVoid || isTask) == false)
-                    {
-                        throw new Exception(string.Format("服务方法{0}的的返回类型必须是Task<T>类型", m.Method.Name));
-                    }
+                    throw new Exception(string.Format("服务方法{0}的的返回类型必须是Task<T>类型", method.Method.Name));
                 }
             }
         }
@@ -87,26 +105,31 @@ namespace NetworkSocket.Fast
         /// <param name="packet">数据包</param>
         protected override void OnRecvComplete(SocketAsync<FastPacket> client, FastPacket packet)
         {
-            if (packet.IsException == true)
+            if (packet.IsException == false)
             {
-                var bytes = packet.GetBodyParameter().FirstOrDefault();
-                var exceptionCallBack = CallbackTable.Take(packet.HashCode);
-
-                if (exceptionCallBack != null)
-                {
-                    exceptionCallBack(packet.IsException, bytes);
-                }
-                else
-                {
-                    this.OnException(client, this.Serializer.Deserialize(bytes, typeof(RemoteException)) as RemoteException);
-                }
+                this.ProcessNormalPacket(client, packet);
                 return;
             }
 
+            // 抛出远程异常
+            var exception = FastTcpCommon.ThrowRemoteException(packet, this.Serializer);
+            if (exception != null)
+            {
+                this.OnException(client, exception);
+            }
+        }
+
+        /// <summary>
+        /// 处理正常数据包
+        /// </summary>
+        /// <param name="client">客户端</param>
+        /// <param name="packet">数据包</param>
+        private void ProcessNormalPacket(SocketAsync<FastPacket> client, FastPacket packet)
+        {
             var method = this.serverMethods.Find(item => item.ServiceAttribute.Command == packet.Command);
             if (method == null)
             {
-                var exception = new Exception("相关命令的服务方法不存在");
+                var exception = new Exception(string.Format("命令为{0}的服务方法不存在", packet.Command));
                 this.RaiseException(client, packet, exception);
                 return;
             }
@@ -114,14 +137,7 @@ namespace NetworkSocket.Fast
             // 如果是Cmd值对应是Self类型方法 也就是客户端主动调用服务方法
             if (method.ServiceAttribute.Implement == Implements.Self)
             {
-                try
-                {
-                    this.InvokeService(method, client, packet);
-                }
-                catch (Exception ex)
-                {
-                    this.RaiseException(client, packet, ex);
-                }
+                this.TryInvoke(method, client, packet);
                 return;
             }
 
@@ -129,71 +145,58 @@ namespace NetworkSocket.Fast
             var callBack = CallbackTable.Take(packet.HashCode);
             if (callBack != null)
             {
-                callBack(packet.IsException, packet.GetBodyParameter().FirstOrDefault());
+                var returnBytes = packet.GetBodyParameter().FirstOrDefault();
+                callBack(packet.IsException, returnBytes);
             }
         }
 
 
         /// <summary>
-        /// 调用服务方法
+        /// 调用自身方法
+        /// 将返回值发送给客户端
+        /// 或将异常发送给客户端
         /// </summary>       
         /// <param name="method">方法</param>
         /// <param name="client">客户端对象</param>
         /// <param name="packet">数据</param>
-        private void InvokeService(ServiceMethod method, SocketAsync<FastPacket> client, FastPacket packet)
+        private void TryInvoke(ServiceMethod method, SocketAsync<FastPacket> client, FastPacket packet)
         {
-            // 执行Filter特性
-            foreach (var filter in method.Filters)
+            try
             {
-                if (filter.OnExecuting(client, packet) == false)
+                // 执行Filter特性
+                foreach (var filter in method.Filters)
                 {
-                    return;
+                    if (filter.OnExecuting(client, packet) == false)
+                    {
+                        return;
+                    }
+                }
+
+                var parameters = FastTcpCommon.GetServiceMethodParameters(method, packet, this.Serializer, client);
+                var returnValue = method.Invoke(this, parameters);
+
+                if (method.HasReturn && client.IsConnected)
+                {
+                    packet.SetBodyBinary(this.Serializer, returnValue);
+                    client.Send(packet);
                 }
             }
-
-            var parameters = this.GetParameters(method, client, packet);
-            var returnValue = method.Invoke(this, parameters);
-
-            if (method.HasReturn && client.IsConnected)
+            catch (Exception ex)
             {
-                packet.SetBodyBinary(this.Serializer, returnValue);
-                client.Send(packet);
+                this.RaiseException(client, packet, ex);
             }
-        }
-
-        /// <summary>
-        /// 生成服务方法的调用参数
-        /// </summary>       
-        /// <param name="method">方法</param>
-        /// <param name="client">客户端对象</param>
-        /// <param name="packet">数据</param>
-        private object[] GetParameters(ServiceMethod method, SocketAsync<FastPacket> client, FastPacket packet)
-        {
-            // 生成参数数组
-            var items = packet.GetBodyParameter();
-            var parameters = new object[items.Count + 1];
-            parameters[0] = client;
-            for (var i = 0; i < items.Count; i++)
-            {
-                var param = this.Serializer.Deserialize(items[i], method.ParameterTypes[i + 1]);
-                parameters[i + 1] = param;
-            }
-            return parameters;
         }
 
 
         /// <summary>
-        /// 当操作中遇到处理异常时，将触发此方法
-        /// 并将结果返回给客户端
+        /// 并将异常传给客户端并调用OnException
         /// </summary>
         /// <param name="client">客户端</param>
         /// <param name="packet">封包</param>
         /// <param name="exception">异常</param>         
         private void RaiseException(SocketAsync<FastPacket> client, FastPacket packet, Exception exception)
         {
-            var remoteException = new RemoteException(packet.Command, exception.ToString());
-            packet.SetException(this.Serializer, remoteException);
-            client.Send(packet);
+            FastTcpCommon.RaiseRemoteException(client, packet, exception, this.Serializer);
             this.OnException(client, exception);
         }
 
@@ -215,9 +218,7 @@ namespace NetworkSocket.Fast
         /// <exception cref="RemoteException"></exception>
         protected void InvokeRemote(SocketAsync<FastPacket> client, int cmd, params object[] parameters)
         {
-            var packet = new FastPacket(cmd);
-            packet.SetBodyBinary(this.Serializer, parameters);
-            client.Send(packet);
+            FastTcpCommon.InvokeRemote(client, this.Serializer, cmd, parameters);
         }
 
         /// <summary>
@@ -231,42 +232,19 @@ namespace NetworkSocket.Fast
         /// <returns>参数列表</returns>
         protected Task<T> InvokeRemote<T>(SocketAsync<FastPacket> client, int cmd, params object[] parameters)
         {
-            var taskSource = new TaskCompletionSource<T>();
-            var packet = new FastPacket(cmd);
-            packet.SetBodyBinary(this.Serializer, parameters);
-
-            // 发送之前记录回参数
-            Action<bool, byte[]> callBack = (isException, bytes) =>
-            {
-                if (isException == false)
-                {
-                    var result = (T)this.Serializer.Deserialize(bytes, typeof(T));
-                    taskSource.SetResult(result);
-                }
-                else
-                {
-                    var exception = (RemoteException)this.Serializer.Deserialize(bytes, typeof(RemoteException));
-                    if (exception != null)
-                    {
-                        taskSource.TrySetException(exception);
-                    }
-                }
-            };
-            CallbackTable.Add(packet.HashCode, callBack);
-
-            client.Send(packet);
-            return taskSource.Task;
+            return FastTcpCommon.InvokeRemote<T>(client, this.Serializer, cmd, parameters);
         }
-
 
         /// <summary>
         /// 生成客户端代理代码
         /// </summary>
+        /// <param name="client">客户端</param>
         /// <returns></returns>
-        public ProxyCode ToProxyCode()
+        [SpecialService]
+        [Service(Implements.Self, (int)SpecialCommands.ProxyCode)]
+        public string GetProxyCode(SocketAsync<FastPacket> client)
         {
-            var code = new ProxyMaker(this.GetType()).ToString();
-            return new ProxyCode(code);
+            return new ProxyMaker(this.GetType()).ToString();
         }
 
         /// <summary>

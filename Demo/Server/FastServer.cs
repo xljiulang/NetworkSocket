@@ -35,6 +35,11 @@ namespace Server
             Console.WriteLine("客户端{0}断开连接，当前连接数为：{1}", client, this.AliveClients.Count);
         }
 
+        /// <summary>
+        /// 异常
+        /// </summary>
+        /// <param name="client"></param>
+        /// <param name="exception"></param>
         protected override void OnException(SocketAsync<FastPacket> client, Exception exception)
         {
             Console.WriteLine(exception);
@@ -54,7 +59,7 @@ namespace Server
         {
             if (user == null)
             {
-                return false;
+                throw new ArgumentNullException("user");
             }
 
             Console.WriteLine("用户{0}登录操作...", user.Account);
@@ -107,6 +112,6 @@ namespace Server
         public Task<List<int>> SortByClient(SocketAsync<FastPacket> client, List<int> list)
         {
             return this.InvokeRemote<List<int>>(client, 103, list);
-        }        
+        }
     }
 }
