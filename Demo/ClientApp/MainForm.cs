@@ -33,9 +33,8 @@ namespace ClientApp
         private async void btn_Login_Click(object sender, EventArgs e)
         {
             var user = new Models.User { Account = this.textBox_Account.Text, Password = this.textBox_Password.Text };
-            user = null;
-
             var state = await this.myServer.Login(user, false);
+
             if (state == false)
             {
                 MessageBox.Show("登录" + (state ? "成功" : "失败"));
@@ -46,7 +45,6 @@ namespace ClientApp
                 new SumForm(this.myServer).ShowDialog();
                 this.Close();
             }
-
         }
 
     }

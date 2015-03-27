@@ -166,14 +166,16 @@ namespace NetworkSocket.Fast
                 // 执行Filter特性
                 foreach (var filter in method.Filters)
                 {
-                    if (filter.OnExecuting(client, packet) == false)
-                    {
-                        return;
-                    }
+                    filter.OnExecuting(client, packet);
                 }
 
                 var parameters = FastTcpCommon.GetServiceMethodParameters(method, packet, this.Serializer, client);
                 var returnValue = method.Invoke(this, parameters);
+
+                foreach (var filter in method.Filters)
+                {
+                    filter.OnExecuted(client, packet);
+                }
 
                 if (method.HasReturn && client.IsConnected)
                 {

@@ -18,12 +18,18 @@ namespace NetworkSocket.Fast.Attributes
         public int Order { get; set; }
 
         /// <summary>
-        /// 在执行服务方法前触发
-        /// 如果返回false，将不执行服务方法
+        /// 在执行服务方法前触发       
         /// </summary>
         /// <param name="client">客户端</param>
         /// <param name="packet">数据包</param>
         /// <returns></returns>
-        public abstract bool OnExecuting(SocketAsync<FastPacket> client, FastPacket packet);
+        public abstract void OnExecuting(SocketAsync<FastPacket> client, FastPacket packet);
+
+        /// <summary>
+        /// 在执行服务方法后触发
+        /// </summary>
+        /// <param name="client">客户端</param>
+        /// <param name="packet">数据包</param>
+        public abstract void OnExecuted(SocketAsync<FastPacket> client, FastPacket packet);
     }
 }

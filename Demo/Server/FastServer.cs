@@ -53,7 +53,7 @@ namespace Server
         /// <param name="client">客户端</param>
         /// <param name="user">用户数据</param>
         /// <param name="ifAdmin"></param>
-        /// <returns></returns>
+        /// <returns></returns>    
         [Service(Implements.Self, 100)]
         public bool Login(SocketAsync<FastPacket> client, User user, bool ifAdmin)
         {

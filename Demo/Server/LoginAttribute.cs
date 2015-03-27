@@ -11,9 +11,17 @@ namespace Server
     /// </summary>
     public class LoginAttribute : FilterAttribute
     {
-        public override bool OnExecuting(NetworkSocket.SocketAsync<NetworkSocket.Fast.FastPacket> client, NetworkSocket.Fast.FastPacket packet)
+        public override void OnExecuting(NetworkSocket.SocketAsync<NetworkSocket.Fast.FastPacket> client, NetworkSocket.Fast.FastPacket packet)
         {
-            return client.TagBag.IsValidated;
+            var valid = (bool)client.TagBag.IsValidated;
+            if (valid == false)
+            {
+                throw new Exception("未登录就尝试请求其它服务");
+            }
+        }
+
+        public override void OnExecuted(NetworkSocket.SocketAsync<NetworkSocket.Fast.FastPacket> client, NetworkSocket.Fast.FastPacket packet)
+        {
         }
     }
 }
