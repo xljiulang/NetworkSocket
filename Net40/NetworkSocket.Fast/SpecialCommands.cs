@@ -12,8 +12,8 @@ namespace NetworkSocket.Fast
     public enum SpecialCommands : int
     {
         /// <summary>
-        /// 代理代码命令
+        /// 服务组件版本号
         /// </summary>
-        ProxyCode = int.MinValue,
+        Version = int.MinValue ,
     }
 }

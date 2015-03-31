@@ -55,7 +55,9 @@
     <Compile Include="Attributes\ServiceAttribute.cs" />
     <Compile Include="Attributes\Implements.cs" />
     <Compile Include="Attributes\SpecialServiceAttribute.cs" />
+    <Compile Include="FastServiceBase.cs" />
     <Compile Include="FastTcpCommon.cs" />
+    <Compile Include="IFilter.cs" />
     <Compile Include="RemoteException.cs" />
     <Compile Include="FastTcpClientBase.cs">
       <SubType>Code</SubType>
@@ -69,10 +71,8 @@
     <Compile Include="FastPacket.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="CallbackTable.cs" />
-    <Compile Include="ProxyMaker.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="SpecialCommands.cs" />
+    <Compile Include="SpecialService.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NetworkSocket\NetworkSocket.csproj">

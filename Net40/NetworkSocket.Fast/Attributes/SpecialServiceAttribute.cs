@@ -8,7 +8,7 @@ namespace NetworkSocket.Fast.Attributes
     /// <summary>
     /// 表示特殊的服务方法
     /// </summary>
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
     internal sealed class SpecialServiceAttribute : Attribute
     {
     }

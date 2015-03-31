@@ -20,7 +20,12 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 所有服务方法
         /// </summary>
-        private List<ServiceMethod> serverMethods;
+        private List<ServiceMethod> serviceMethodList;
+
+        /// <summary>
+        /// 特殊服务
+        /// </summary>
+        private SpecialService specialService;
 
         /// <summary>
         /// 获取或设置序列化工具
@@ -33,15 +38,75 @@ namespace NetworkSocket.Fast
         /// </summary>
         public FastTcpServerBase()
         {
+            this.serviceMethodList = new List<ServiceMethod>();
+            this.specialService = new SpecialService();
             this.Serializer = new DefaultSerializer();
-            this.serverMethods = FastTcpCommon.GetServiceMethodList(this.GetType());
 
-            this.CheckServiceMethodRepeatCommand(this.serverMethods);
-            foreach (var method in this.serverMethods)
+            var specialMethods = FastTcpCommon.GetServiceMethodList(typeof(SpecialService));
+            this.serviceMethodList.AddRange(specialMethods);
+        }
+
+        /// <summary>
+        /// 绑定本程序集所有的服务
+        /// </summary>
+        public void BindService()
+        {
+            var services = this.GetType().Assembly.GetTypes().Where(item => typeof(FastServiceBase).IsAssignableFrom(item));
+            this.BindService(services);
+        }
+
+        /// <summary>
+        /// 绑定服务
+        /// </summary>
+        /// <typeparam name="T">服务类型</typeparam>
+        public void BindService<T>() where T : FastServiceBase
+        {
+            this.BindService(typeof(T));
+        }
+
+        /// <summary>
+        /// 绑定服务
+        /// </summary>
+        /// <param name="serviceType">服务类型</param>
+        public void BindService(params Type[] serviceType)
+        {
+            this.BindService((IEnumerable<Type>)serviceType);
+        }
+
+        /// <summary>
+        /// 绑定服务
+        /// </summary>
+        /// <param name="serivceType">服务类型</param>
+        public void BindService(IEnumerable<Type> serivceType)
+        {
+            if (serivceType == null)
+            {
+                throw new ArgumentNullException("serivceType");
+            }
+
+            if (serivceType.Any(item => item == null))
+            {
+                throw new ArgumentException("serivceType不能含null值");
+            }
+
+            if (serivceType.Any(item => typeof(FastServiceBase).IsAssignableFrom(item) == false))
+            {
+                throw new ArgumentException("serivceType必须派生于FastServiceBase");
+            }
+
+            foreach (var type in serivceType)
+            {
+                var methods = FastTcpCommon.GetServiceMethodList(type);
+                this.serviceMethodList.AddRange(methods);
+            }
+
+            this.CheckServiceMethodRepeatCommand(this.serviceMethodList);
+            foreach (var method in this.serviceMethodList)
             {
                 this.CheckForServiceMethodContract(method);
             }
         }
+
 
         /// <summary>
         /// 检测服务方法是否有声明相同的Command
@@ -62,7 +127,7 @@ namespace NetworkSocket.Fast
         /// <param name="method">服务方法</param>
         private void CheckForServiceMethodContract(ServiceMethod method)
         {
-            if (Enum.IsDefined(typeof(SpecialCommands), method.ServiceAttribute.Command) && method.Method.IsDefined(typeof(SpecialServiceAttribute), false) == false)
+            if (Enum.IsDefined(typeof(SpecialCommands), method.ServiceAttribute.Command) && method.IsDefined(typeof(SpecialServiceAttribute), true) == false)
             {
                 throw new Exception(string.Format("服务方法{0}的Command是不允许使用的SpecialCommand命令", method.Method.Name));
             }
@@ -83,6 +148,7 @@ namespace NetworkSocket.Fast
                 }
             }
         }
+
 
         /// <summary>
         /// 当接收到远程端的数据时，将触发此方法
@@ -126,7 +192,7 @@ namespace NetworkSocket.Fast
         /// <param name="packet">数据包</param>
         private void ProcessNormalPacket(SocketAsync<FastPacket> client, FastPacket packet)
         {
-            var method = this.serverMethods.Find(item => item.ServiceAttribute.Command == packet.Command);
+            var method = this.serviceMethodList.Find(item => item.ServiceAttribute.Command == packet.Command);
             if (method == null)
             {
                 var exception = new Exception(string.Format("命令为{0}的服务方法不存在", packet.Command));
@@ -134,59 +200,50 @@ namespace NetworkSocket.Fast
                 return;
             }
 
-            // 如果是Cmd值对应是Self类型方法 也就是客户端主动调用服务方法
-            if (method.ServiceAttribute.Implement == Implements.Self)
+            var isSpecail = true;
+            FastServiceBase fastService = this.specialService;
+
+            if (Enum.IsDefined(typeof(SpecialCommands), packet.Command) == false)
             {
-                this.TryInvoke(method, client, packet);
+                fastService = this.GetService(method.DeclaringType) as FastServiceBase;
+                isSpecail = false;
+            }
+
+            if (fastService == null)
+            {
+                var ex = new Exception(string.Format("无法获取类型{0}的实例", method.Method.DeclaringType));
+                this.RaiseException(client, packet, ex);
                 return;
             }
 
-            // 如果是收到返回值 从回调表找出相关回调来调用
-            var callBack = CallbackTable.Take(packet.HashCode);
-            if (callBack != null)
+            // 处理数据包
+            fastService.Serializer = this.Serializer;
+            fastService.ProcessPacket(client, packet, method);
+
+            if (isSpecail == false)
             {
-                var returnBytes = packet.GetBodyParameter().FirstOrDefault();
-                callBack(packet.IsException, returnBytes);
+                this.DisposeService(fastService);
             }
         }
 
 
         /// <summary>
-        /// 调用自身方法
-        /// 将返回值发送给客户端
-        /// 或将异常发送给客户端
-        /// </summary>       
-        /// <param name="method">方法</param>
-        /// <param name="client">客户端对象</param>
-        /// <param name="packet">数据</param>
-        private void TryInvoke(ServiceMethod method, SocketAsync<FastPacket> client, FastPacket packet)
+        /// 获取服务实例
+        /// </summary>
+        /// <param name="serviceType">服务类型</param>
+        /// <returns></returns>
+        protected virtual object GetService(Type serviceType)
         {
-            try
-            {
-                // 执行Filter特性
-                foreach (var filter in method.Filters)
-                {
-                    filter.OnExecuting(client, packet);
-                }
+            return Activator.CreateInstance(serviceType) as FastServiceBase;
+        }
 
-                var parameters = FastTcpCommon.GetServiceMethodParameters(method, packet, this.Serializer, client);
-                var returnValue = method.Invoke(this, parameters);
-
-                foreach (var filter in method.Filters)
-                {
-                    filter.OnExecuted(client, packet);
-                }
-
-                if (method.HasReturn && client.IsConnected)
-                {
-                    packet.SetBodyBinary(this.Serializer, returnValue);
-                    client.Send(packet);
-                }
-            }
-            catch (Exception ex)
-            {
-                this.RaiseException(client, packet, ex);
-            }
+        /// <summary>
+        /// 释放服务资源
+        /// </summary>
+        /// <param name="service">服务实例</param>
+        protected virtual void DisposeService(IDisposable service)
+        {
+            service.Dispose();
         }
 
 
@@ -212,44 +269,6 @@ namespace NetworkSocket.Fast
         }
 
         /// <summary>
-        /// 将数据发送到远程端        
-        /// </summary>
-        /// <param name="client">客户端</param>
-        /// <param name="cmd">数据包的Action值</param>
-        /// <param name="parameters">参数列表</param>
-        /// <exception cref="RemoteException"></exception>
-        protected void InvokeRemote(SocketAsync<FastPacket> client, int cmd, params object[] parameters)
-        {
-            FastTcpCommon.InvokeRemote(client, this.Serializer, cmd, parameters);
-        }
-
-        /// <summary>
-        /// 将数据发送到远程端     
-        /// 并返回结果数据任务
-        /// </summary>
-        /// <typeparam name="T">返回值类型</typeparam>
-        /// <param name="client">客户端</param>
-        /// <param name="cmd">数据包的命令值</param>
-        /// <param name="parameters"></param>
-        /// <returns>参数列表</returns>
-        protected Task<T> InvokeRemote<T>(SocketAsync<FastPacket> client, int cmd, params object[] parameters)
-        {
-            return FastTcpCommon.InvokeRemote<T>(client, this.Serializer, cmd, parameters);
-        }
-
-        /// <summary>
-        /// 生成客户端代理代码
-        /// </summary>
-        /// <param name="client">客户端</param>
-        /// <returns></returns>
-        [SpecialService]
-        [Service(Implements.Self, (int)SpecialCommands.ProxyCode)]
-        public string GetProxyCode(SocketAsync<FastPacket> client)
-        {
-            return new ProxyMaker(this.GetType()).ToString();
-        }
-
-        /// <summary>
         /// 释放资源
         /// </summary>
         /// <param name="disposing">是否也释放托管资源</param>
@@ -258,8 +277,9 @@ namespace NetworkSocket.Fast
             base.Dispose(disposing);
             if (disposing)
             {
-                this.serverMethods.Clear();
-                this.serverMethods = null;
+                this.specialService.Dispose();
+                this.serviceMethodList.Clear();
+                this.serviceMethodList = null;
                 this.Serializer = null;
             }
         }

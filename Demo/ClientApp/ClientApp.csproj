@@ -53,23 +53,22 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FastServer.cs" />
-    <Compile Include="FastServerProxyBase.cs" />
-    <Compile Include="MainForm.cs">
+    <Compile Include="ServerInvoker.cs" />
+    <Compile Include="Forms\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="MainForm.Designer.cs">
+    <Compile Include="Forms\MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SumForm.cs">
+    <Compile Include="Forms\SumForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="SumForm.Designer.cs">
+    <Compile Include="Forms\SumForm.Designer.cs">
       <DependentUpon>SumForm.cs</DependentUpon>
     </Compile>
-    <EmbeddedResource Include="MainForm.resx">
+    <EmbeddedResource Include="Forms\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -82,7 +81,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <EmbeddedResource Include="SumForm.resx">
+    <EmbeddedResource Include="Forms\SumForm.resx">
       <DependentUpon>SumForm.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="app.config" />

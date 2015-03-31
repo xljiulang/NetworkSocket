@@ -8,18 +8,14 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace ClientApp
+namespace ClientApp.Forms
 {
     public partial class SumForm : Form
     {
-        private FastServer myServer;
-
-        public SumForm(FastServer server)
+        public SumForm()
         {
             InitializeComponent();
-
-            this.myServer = server;
-            this.button_Sum.Click += button_Sum_Click;            
+            this.button_Sum.Click += button_Sum_Click;
         }
 
         private async void button_Sum_Click(object sender, EventArgs e)
@@ -32,8 +28,8 @@ namespace ClientApp
             int.TryParse(this.textBox2.Text, out y);
             int.TryParse(this.textBox3.Text, out z);
 
-            var sum = await this.myServer.GetSun(x, y, z);
+            var sum = await ServerInvoker.Instance.GetSun(x, y, z);
             MessageBox.Show("服务器返回：" + sum.ToString());
-        }       
+        }
     }
 }

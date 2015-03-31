@@ -8,8 +8,8 @@ namespace NetworkSocket.Fast.Attributes
     /// <summary>
     /// 表示服务器服务方法过滤器基础特性
     /// </summary>
-    [AttributeUsage(AttributeTargets.Method)]
-    public abstract class FilterAttribute : Attribute
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
+    public abstract class FilterAttribute : Attribute, IFilter
     {
         /// <summary>
         /// 执行顺序

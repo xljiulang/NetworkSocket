@@ -1,4 +1,4 @@
-﻿namespace ClientApp
+﻿namespace ClientApp.Forms
 {
     partial class SumForm
     {

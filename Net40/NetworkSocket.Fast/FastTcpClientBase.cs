@@ -17,7 +17,7 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 所有服务方法
         /// </summary>
-        private List<ServiceMethod> serverMethods;
+        private List<ServiceMethod> serviceMethodList;
 
         /// <summary>
         /// 获取或设置序列化工具
@@ -30,7 +30,7 @@ namespace NetworkSocket.Fast
         /// </summary>
         public FastTcpClientBase()
         {
-            this.serverMethods = FastTcpCommon.GetServiceMethodList(this.GetType());
+            this.serviceMethodList = FastTcpCommon.GetServiceMethodList(this.GetType());
             this.Serializer = new DefaultSerializer();
         }
 
@@ -73,7 +73,7 @@ namespace NetworkSocket.Fast
         /// <param name="packet">数据包</param>
         private void ProcessNormalPacket(FastPacket packet)
         {
-            var method = this.serverMethods.FirstOrDefault(item => item.ServiceAttribute.Command == packet.Command);
+            var method = this.serviceMethodList.FirstOrDefault(item => item.ServiceAttribute.Command == packet.Command);
             if (method == null)
             {
                 var exception = new Exception(string.Format("命令为{0}的服务方法不存在", packet.Command));
@@ -168,14 +168,13 @@ namespace NetworkSocket.Fast
         }
 
         /// <summary>
-        /// 获取客户端代理代码
+        /// 获取服务组件版本号
         /// </summary>       
-        /// <exception cref="RemoteException"></exception>
         /// <returns></returns>
-        [Service(Implements.Remote, (int)SpecialCommands.ProxyCode)]
-        public Task<string> GetProxyCode()
+        [Service(Implements.Remote, (int)SpecialCommands.Version)]
+        public Task<string> GetVersion()
         {
-            return this.InvokeRemote<string>((int)SpecialCommands.ProxyCode);
+            return this.InvokeRemote<string>((int)SpecialCommands.Version);
         }
 
         /// <summary>
@@ -187,8 +186,8 @@ namespace NetworkSocket.Fast
             base.Dispose(disposing);
             if (disposing)
             {
-                this.serverMethods.Clear();
-                this.serverMethods = null;
+                this.serviceMethodList.Clear();
+                this.serviceMethodList = null;
                 this.Serializer = null;
             }
         }

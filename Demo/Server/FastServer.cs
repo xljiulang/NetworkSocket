@@ -8,7 +8,10 @@ using NetworkSocket.Fast;
 using NetworkSocket;
 using NetworkSocket.Fast.Attributes;
 using Models;
-
+using Autofac;
+using System.Reflection;
+using Server.Interfaces;
+using Server.Services;
 
 namespace Server
 {
@@ -17,6 +20,90 @@ namespace Server
     /// </summary>
     public class FastServer : FastTcpServerBase
     {
+        #region 依赖注入
+        /// <summary>
+        /// Autofac依赖注入容器
+        /// </summary>
+        private IContainer container;
+
+        /// <summary>
+        /// Autofac生命范围
+        /// </summary>
+        [ThreadStatic]
+        private ILifetimeScope liftTimeScope;
+
+        /// <summary>
+        /// FastServer
+        /// </summary>
+        public FastServer()
+        {
+            this.RegisterResolver();
+        }
+
+        /// <summary>
+        /// 依赖转换控制
+        /// </summary>
+        private void RegisterResolver()
+        {
+            var builder = new ContainerBuilder();
+
+            // 注册服务            
+            builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
+                .Where(type => (typeof(FastServiceBase).IsAssignableFrom(type)))
+                .PropertiesAutowired();
+
+            // 通知服务为单例
+            builder.RegisterType<NotifyService>()
+                .SingleInstance();
+
+            // 注册DbContext           
+            builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
+               .Where(type => (typeof(IDbContext).IsAssignableFrom(type)))
+               .AsImplementedInterfaces()
+               .InstancePerLifetimeScope();
+
+            // 注册Dao
+            builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
+               .Where(type => (typeof(IDao).IsAssignableFrom(type)))
+               .PropertiesAutowired()
+               .AsImplementedInterfaces()
+               .InstancePerLifetimeScope();
+
+            this.container = builder.Build();
+        }
+
+        /// <summary>
+        /// 使用Autofac获取服务实例
+        /// </summary>
+        /// <param name="serviceType">服务类型</param>
+        /// <returns></returns>
+        protected override object GetService(Type serviceType)
+        {
+            this.liftTimeScope = this.container.BeginLifetimeScope();
+            return this.liftTimeScope.Resolve(serviceType);
+        }
+
+        /// <summary>
+        /// 使用Autofac管理服务生命周期
+        /// </summary>
+        /// <param name="service">服务实例</param>
+        protected override void DisposeService(IDisposable service)
+        {
+            this.liftTimeScope.Dispose();
+        }
+
+        /// <summary>
+        /// 获取服务
+        /// </summary>
+        /// <typeparam name="T">服务类型</typeparam>
+        /// <returns></returns>
+        public T Service<T>() where T : FastServiceBase
+        {
+            return this.container.Resolve<T>();
+        }
+        #endregion
+
+        #region 消息处理
         /// <summary>
         /// 接收到客户端连接
         /// </summary>
@@ -45,73 +132,6 @@ namespace Server
             Console.WriteLine(exception);
             base.OnException(client, exception);
         }
-
-
-        /// <summary>
-        /// 登录操作
-        /// </summary>
-        /// <param name="client">客户端</param>
-        /// <param name="user">用户数据</param>
-        /// <param name="ifAdmin"></param>
-        /// <returns></returns>    
-        [Service(Implements.Self, 100)]
-        public bool Login(SocketAsync<FastPacket> client, User user, bool ifAdmin)
-        {
-            if (user == null)
-            {
-                throw new ArgumentNullException("user");
-            }
-
-            Console.WriteLine("用户{0}登录操作...", user.Account);
-
-            var dataBase = new List<User> { new User { Account = "abc", Password = "123456" }, new User { Account = "admin", Password = "123456" } };
-            var state = dataBase.Exists(item => item.Account == user.Account && item.Password == user.Password);
-
-            // 登录客户是否已验证通过
-            client.TagBag.IsValidated = state;
-            return state;
-        }
-
-        /// <summary>
-        /// 求合操作
-        /// 客户端登录并验证通过后才能调用此服务
-        /// </summary>
-        /// <param name="client">客户端</param>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <param name="z"></param>
-        /// <returns></returns>
-        [Login]
-        [Service(Implements.Self, 101)]
-        public int GetSun(SocketAsync<FastPacket> client, int x, int y, int z)
-        {
-            Console.WriteLine("收到GetSum({0}, {1}, {2})", x, y, z);
-            return x + y + z;
-        }
-
-        /// <summary>
-        /// 警告客户端
-        /// </summary>
-        /// <param name="client">客户端</param>
-        /// <param name="title">标题</param>
-        /// <param name="contents">信息内容</param>
-        /// <returns></returns> 
-        [Service(Implements.Remote, 102)]
-        public void WarmingClient(SocketAsync<FastPacket> client, string title, string contents)
-        {
-            this.InvokeRemote(client, 102, title, contents);
-        }
-
-        /// <summary>
-        /// 让客户端进行排序计算，并返回排序结果
-        /// </summary>
-        /// <param name="client">客户端</param>
-        /// <param name="list">要排序的数据</param>
-        /// <param name="callBack">回调</param>
-        [Service(Implements.Remote, 103)]
-        public Task<List<int>> SortByClient(SocketAsync<FastPacket> client, List<int> list)
-        {
-            return this.InvokeRemote<List<int>>(client, 103, list);
-        }
+        #endregion
     }
 }
