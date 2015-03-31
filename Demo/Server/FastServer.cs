@@ -12,6 +12,8 @@ using Autofac;
 using System.Reflection;
 using Server.Interfaces;
 using Server.Services;
+using NetworkSocket.Fast.Filters;
+using Server.Database;
 
 namespace Server
 {
@@ -56,6 +58,8 @@ namespace Server
             builder.RegisterType<NotifyService>()
                 .SingleInstance();
 
+            builder.RegisterType<Filter>();
+
             // 注册DbContext           
             builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
                .Where(type => (typeof(IDbContext).IsAssignableFrom(type)))
@@ -68,6 +72,11 @@ namespace Server
                .PropertiesAutowired()
                .AsImplementedInterfaces()
                .InstancePerLifetimeScope();
+
+            // 注册日志
+            builder.RegisterType<Loger>()
+                .As<ILog>()
+                .InstancePerLifetimeScope();
 
             this.container = builder.Build();
         }
@@ -93,11 +102,28 @@ namespace Server
         }
 
         /// <summary>
+        /// 获取并替换默认过滤器
+        /// </summary>
+        /// <param name="method"></param>
+        /// <returns></returns>
+        protected override IEnumerable<IFilter> GetFilters(MethodInfo method)
+        {
+            return base.GetFilters(method)
+                .Cast<FilterAttribute>()
+                .Select(item =>
+                {
+                    var filter = this.liftTimeScope.Resolve<Filter>();
+                    filter.FilterAttribute = this.liftTimeScope.InjectProperties(item);
+                    return filter;
+                });
+        }
+
+        /// <summary>
         /// 获取服务
         /// </summary>
         /// <typeparam name="T">服务类型</typeparam>
         /// <returns></returns>
-        public T Service<T>() where T : FastServiceBase
+        public T Resolve<T>() where T : FastServiceBase
         {
             return this.container.Resolve<T>();
         }

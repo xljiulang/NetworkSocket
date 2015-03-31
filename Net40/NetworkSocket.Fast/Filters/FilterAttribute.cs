@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace NetworkSocket.Fast.Attributes
+namespace NetworkSocket.Fast.Filters
 {
     /// <summary>
     /// 表示服务器服务方法过滤器基础特性

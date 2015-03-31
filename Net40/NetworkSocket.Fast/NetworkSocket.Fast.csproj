@@ -57,13 +57,14 @@
     <Compile Include="Attributes\SpecialServiceAttribute.cs" />
     <Compile Include="FastServiceBase.cs" />
     <Compile Include="FastTcpCommon.cs" />
+    <Compile Include="Filters\Filter.cs" />
     <Compile Include="IFilter.cs" />
     <Compile Include="RemoteException.cs" />
     <Compile Include="FastTcpClientBase.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="FastTcpServerBase.cs" />
-    <Compile Include="Attributes\FilterAttribute.cs" />
+    <Compile Include="Filters\FilterAttribute.cs" />
     <Compile Include="DefaultSerializer.cs" />
     <Compile Include="ISerializer.cs" />
     <Compile Include="Methods\FastMethod.cs" />

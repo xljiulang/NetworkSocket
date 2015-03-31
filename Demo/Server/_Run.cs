@@ -25,12 +25,12 @@ namespace Server
             fastServer.StartListen(4502);
 
             #region 依赖注入断言
-            var n1 = fastServer.Service<NotifyService>();
-            var n2 = fastServer.Service<NotifyService>();
+            var n1 = fastServer.Resolve<NotifyService>();
+            var n2 = fastServer.Resolve<NotifyService>();
             Debug.Assert(object.ReferenceEquals(n1, n2));
 
-            var s1 = fastServer.Service<SystemService>();
-            var s2 = fastServer.Service<SystemService>();
+            var s1 = fastServer.Resolve<SystemService>();
+            var s2 = fastServer.Resolve<SystemService>();
             Debug.Assert(object.ReferenceEquals(s1, s2) == false);
             #endregion
 

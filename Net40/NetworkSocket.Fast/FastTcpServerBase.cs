@@ -1,4 +1,5 @@
 ﻿using NetworkSocket.Fast.Attributes;
+using NetworkSocket.Fast.Filters;
 using NetworkSocket.Fast.Methods;
 using System;
 using System.Collections.Generic;

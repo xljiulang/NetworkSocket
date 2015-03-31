@@ -52,10 +52,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Database\DbContext.cs" />
+    <Compile Include="Database\Loger.cs" />
     <Compile Include="Database\RoleDao.cs" />
     <Compile Include="Database\UserDao.cs" />
     <Compile Include="Interfaces\IDao.cs" />
     <Compile Include="Interfaces\IDbContext.cs" />
+    <Compile Include="Interfaces\ILog.cs" />
     <Compile Include="Interfaces\IUserDao.cs" />
     <Compile Include="Interfaces\IRoleDao.cs" />
     <Compile Include="Services\MathService.cs" />
