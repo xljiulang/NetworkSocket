@@ -33,11 +33,6 @@ namespace NetworkSocket.Fast.Methods
         public ServiceAttribute ServiceAttribute { get; private set; }
 
         /// <summary>
-        /// 获取所有过滤器
-        /// </summary>
-        public FilterAttribute[] Filters { get; private set; }
-
-        /// <summary>
         /// 获取声明该成员的类型
         /// </summary>
         public Type DeclaringType
@@ -59,16 +54,6 @@ namespace NetworkSocket.Fast.Methods
             this.Parameters = method.GetParameters();
             this.ParameterTypes = method.GetParameters().Select(item => item.ParameterType).ToArray();
             this.ServiceAttribute = Attribute.GetCustomAttribute(method, typeof(ServiceAttribute)) as ServiceAttribute;
-
-            var mFilters = Attribute.GetCustomAttributes(method, typeof(FilterAttribute), true) as FilterAttribute[];
-            var cFilters = Attribute.GetCustomAttributes(method.DeclaringType, typeof(FilterAttribute), true) as FilterAttribute[];
-
-            var hashSet = new HashSet<FilterAttribute>(mFilters);
-            foreach (var filter in cFilters)
-            {
-                hashSet.Add(filter);
-            }
-            this.Filters = hashSet.OrderBy(item => item.Order).ToArray();
         }
 
         /// <summary>
@@ -80,6 +65,23 @@ namespace NetworkSocket.Fast.Methods
         public bool IsDefined(Type type, bool inherit)
         {
             return this.Method.IsDefined(type, inherit) || this.Method.DeclaringType.IsDefined(type, inherit);
+        }
+
+        /// <summary>
+        /// 获取过滤器实例
+        /// </summary>
+        /// <returns></returns>
+        public FilterAttribute[] GetFilters()
+        {
+            var methodFilters = Attribute.GetCustomAttributes(this.Method, typeof(FilterAttribute), true) as FilterAttribute[];
+            var classFilters = Attribute.GetCustomAttributes(this.Method.DeclaringType, typeof(FilterAttribute), true) as FilterAttribute[];
+
+            var hashSet = new HashSet<FilterAttribute>(methodFilters);
+            foreach (var filter in classFilters)
+            {
+                hashSet.Add(filter);
+            }
+            return hashSet.OrderBy(f => f.Order).ToArray();
         }
     }
 }

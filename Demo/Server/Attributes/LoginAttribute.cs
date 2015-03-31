@@ -13,8 +13,6 @@ namespace Server.Attributes
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public class LoginAttribute : FilterAttribute
     {
-        public IDbContext DbContext { get; set; }
-
         public override void OnExecuting(NetworkSocket.SocketAsync<NetworkSocket.Fast.FastPacket> client, NetworkSocket.Fast.FastPacket packet)
         {
             bool valid = client.TagBag.IsValidated ?? false;

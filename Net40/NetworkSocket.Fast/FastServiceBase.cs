@@ -56,8 +56,9 @@ namespace NetworkSocket.Fast
         {
             try
             {
-                // 执行Filter特性
-                foreach (var filter in method.Filters)
+                // 执行Filter
+                var filters = method.GetFilters();
+                foreach (var filter in filters)
                 {
                     filter.OnExecuting(client, packet);
                 }
@@ -65,7 +66,8 @@ namespace NetworkSocket.Fast
                 var parameters = FastTcpCommon.GetServiceMethodParameters(method, packet, this.Serializer, client);
                 var returnValue = method.Invoke(this, parameters);
 
-                foreach (var filter in method.Filters)
+                // 执行Filter
+                foreach (var filter in filters)
                 {
                     filter.OnExecuted(client, packet);
                 }
