@@ -218,6 +218,7 @@ namespace NetworkSocket.Fast
 
             // 处理数据包
             fastService.Serializer = this.Serializer;
+            fastService.GetFilters = this.GetFilters;
             fastService.ProcessPacket(client, packet, method);
 
             if (isSpecail == false)
@@ -244,6 +245,24 @@ namespace NetworkSocket.Fast
         protected virtual void DisposeService(IDisposable service)
         {
             service.Dispose();
+        }
+
+        /// <summary>
+        /// 获取过滤器
+        /// </summary>
+        /// <param name="method">方法</param>
+        /// <returns></returns>
+        protected virtual IEnumerable<IFilter> GetFilters(MethodInfo method)
+        {
+            var methodFilters = Attribute.GetCustomAttributes(method, typeof(FilterAttribute), true) as FilterAttribute[];
+            var classFilters = Attribute.GetCustomAttributes(method.DeclaringType, typeof(FilterAttribute), true) as FilterAttribute[];
+
+            var hashSet = new HashSet<FilterAttribute>(methodFilters);
+            foreach (var filter in classFilters)
+            {
+                hashSet.Add(filter);
+            }
+            return hashSet.OrderBy(f => f.Order);
         }
 
 

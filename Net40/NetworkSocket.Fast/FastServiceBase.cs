@@ -3,6 +3,7 @@ using NetworkSocket.Fast.Methods;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -18,6 +19,11 @@ namespace NetworkSocket.Fast
         /// 获取或设置序列化工具
         /// </summary>
         internal ISerializer Serializer;
+
+        /// <summary>
+        /// 获取过滤委托
+        /// </summary>
+        internal Func<MethodInfo, IEnumerable<IFilter>> GetFilters;
 
         /// <summary>
         /// 处理封包
@@ -57,19 +63,25 @@ namespace NetworkSocket.Fast
             try
             {
                 // 执行Filter
-                var filters = method.GetFilters();
-                foreach (var filter in filters)
+                var filters = this.GetFilters(method.Method);
+                if (filters != null)
                 {
-                    filter.OnExecuting(client, packet);
+                    foreach (var filter in filters)
+                    {
+                        filter.OnExecuting(client, packet);
+                    }
                 }
 
                 var parameters = FastTcpCommon.GetServiceMethodParameters(method, packet, this.Serializer, client);
                 var returnValue = method.Invoke(this, parameters);
 
                 // 执行Filter
-                foreach (var filter in filters)
+                if (filters != null)
                 {
-                    filter.OnExecuted(client, packet);
+                    foreach (var filter in filters)
+                    {
+                        filter.OnExecuted(client, packet);
+                    }
                 }
 
                 if (method.HasReturn && client.IsConnected)

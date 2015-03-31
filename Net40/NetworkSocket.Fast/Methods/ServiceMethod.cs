@@ -66,22 +66,5 @@ namespace NetworkSocket.Fast.Methods
         {
             return this.Method.IsDefined(type, inherit) || this.Method.DeclaringType.IsDefined(type, inherit);
         }
-
-        /// <summary>
-        /// 获取过滤器实例
-        /// </summary>
-        /// <returns></returns>
-        public FilterAttribute[] GetFilters()
-        {
-            var methodFilters = Attribute.GetCustomAttributes(this.Method, typeof(FilterAttribute), true) as FilterAttribute[];
-            var classFilters = Attribute.GetCustomAttributes(this.Method.DeclaringType, typeof(FilterAttribute), true) as FilterAttribute[];
-
-            var hashSet = new HashSet<FilterAttribute>(methodFilters);
-            foreach (var filter in classFilters)
-            {
-                hashSet.Add(filter);
-            }
-            return hashSet.OrderBy(f => f.Order).ToArray();
-        }
     }
 }
