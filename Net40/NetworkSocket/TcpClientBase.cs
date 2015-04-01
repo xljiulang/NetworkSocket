@@ -13,6 +13,11 @@ namespace NetworkSocket
     public abstract class TcpClientBase<T> : SocketAsync<T>, ITcpClient<T> where T : PacketBase
     {
         /// <summary>
+        /// 最近连接的远程终结点
+        /// </summary>
+        private IPEndPoint lastRemoteEndPoint;
+
+        /// <summary>
         /// Tcp客户端抽象类
         /// </summary>
         public TcpClientBase()
@@ -48,6 +53,7 @@ namespace NetworkSocket
                 return taskSource.Task;
             }
 
+            this.lastRemoteEndPoint = remoteEndPoint;
             var socket = new Socket(remoteEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             var connectArg = new SocketAsyncEventArgs { RemoteEndPoint = remoteEndPoint, UserToken = taskSource };
             connectArg.Completed += this.ConnectArg_Completed;
@@ -84,6 +90,19 @@ namespace NetworkSocket
             taskSource.SetResult(result);
         }
 
+        /// <summary>
+        /// 当前与远程端连接断开之后，进行重新连接   
+        /// 如果还连接，则返回TaskOf(false)
+        /// </summary>
+        /// <returns></returns>
+        public Task<bool> ReConnect()
+        {
+            if (this.IsConnected == true || this.lastRemoteEndPoint == null)
+            {
+                return Task.Factory.StartNew(() => false);
+            }
+            return this.Connect(this.lastRemoteEndPoint);
+        }
 
         /// <summary>
         /// 当接收到远程端的数据时，将触发此方法

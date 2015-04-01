@@ -96,15 +96,13 @@ namespace NetworkSocket.Fast
         {
             foreach (var filter in filters)
             {
-                switch (filter.FilterScope)
+                if (filter.FilterScope == FilterScope.Authorization)
                 {
-                    case FilterScope.Authorization:
-                        ((IAuthorizationFilter)filter.Instance).OnAuthorization(client, packet);
-                        break;
-
-                    default:
-                        ((IActionFilter)filter.Instance).OnExecuting(client, packet);
-                        break;
+                    ((IAuthorizationFilter)filter.Instance).OnAuthorization(client, packet);
+                }
+                else
+                {
+                    ((IActionFilter)filter.Instance).OnExecuting(client, packet);
                 }
             }
         }
@@ -115,7 +113,7 @@ namespace NetworkSocket.Fast
         /// <param name="filters">过滤器</param>
         /// <param name="client">客户端</param>
         /// <param name="packet">数据包</param>
-        public void InvokeFiltersAfter(IEnumerable<Filter> filters, SocketAsync<FastPacket> client, FastPacket packet)
+        private void InvokeFiltersAfter(IEnumerable<Filter> filters, SocketAsync<FastPacket> client, FastPacket packet)
         {
             foreach (var filter in filters)
             {

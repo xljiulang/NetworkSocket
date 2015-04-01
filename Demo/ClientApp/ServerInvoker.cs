@@ -7,6 +7,7 @@ using NetworkSocket.Fast;
 using NetworkSocket.Fast.Attributes;
 using System.Threading.Tasks;
 using Models;
+using System.Threading;
 
 namespace ClientApp
 {
@@ -54,6 +55,25 @@ namespace ClientApp
         public List<Int32> SortByClient(List<Int32> list)
         {
             return list.OrderBy(item => item).ToList();
+        }
+
+
+        protected override void OnDisconnect()
+        {
+            this.ReConnect().ContinueWith(t => this.TryReConnect(t.Result));
+        }
+
+        private void TryReConnect(bool result)
+        {
+            if (result == false)
+            {
+                Thread.Sleep(1000);
+                this.ReConnect().ContinueWith(t => this.TryReConnect(t.Result));
+            }
+            else
+            {
+                // 重连成功
+            }
         }
     }
 }
