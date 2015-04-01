@@ -15,7 +15,7 @@ namespace Server.Services
 {
     /// <summary>
     /// 系统
-    /// </summary>
+    /// </summary>   
     public class SystemService : FastServiceBase
     {
         public IUserDao UserDao { get; set; }
@@ -26,9 +26,9 @@ namespace Server.Services
         /// <param name="user">用户数据</param>
         /// <param name="ifAdmin"></param>
         /// <returns></returns>    
-        [Service(Implements.Self, 100)]
+        [Service(Implements.Self, 100)]       
         public bool Login(User user, bool ifAdmin)
-        {
+        {           
             if (user == null)
             {
                 throw new ArgumentNullException("user");
@@ -42,19 +42,10 @@ namespace Server.Services
             return state;
         }
 
-        public override void OnAuthorization(ActionContext actionContext)
-        {
-            base.OnAuthorization(actionContext);
-        }
 
-        public override void OnExecuting(ActionContext actionContext)
+        public override void OnException(ExceptionContext exceptionContext)
         {
-            base.OnExecuting(actionContext);
-        }
 
-        public override void OnExecuted(ActionContext actionContext)
-        {
-            base.OnExecuted(actionContext);
         }
     }
 }

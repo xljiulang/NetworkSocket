@@ -29,12 +29,12 @@ namespace NetworkSocket.Fast
     /// <summary>
     /// 过滤器集合
     /// </summary>
-    public class FilterCollection : IEnumerable<Filter>
+    public class FilterCollection : IEnumerable<IFilter>
     {
         /// <summary>
         /// 过滤器列表
         /// </summary>
-        private List<Filter> filters = new List<Filter>();
+        private List<IFilter> filters = new List<IFilter>();
 
         /// <summary>
         /// 获取IAction过滤器
@@ -47,12 +47,18 @@ namespace NetworkSocket.Fast
         public IEnumerable<IAuthorizationFilter> AuthorizationFilters { get; private set; }
 
         /// <summary>
+        /// 获取IExceptionFilter过滤器
+        /// </summary>
+        public IEnumerable<IExceptionFilter> ExceptionFilters { get; private set; }
+
+        /// <summary>
         /// 全局过滤器
         /// </summary>
         internal FilterCollection()
         {
-            this.ActionFilters = new List<IActionFilter>();
-            this.AuthorizationFilters = new List<IAuthorizationFilter>();
+            this.ActionFilters = Enumerable.Empty<IActionFilter>();
+            this.AuthorizationFilters = Enumerable.Empty<IAuthorizationFilter>();
+            this.ExceptionFilters = Enumerable.Empty<IExceptionFilter>();
         }
 
         /// <summary>
@@ -61,18 +67,30 @@ namespace NetworkSocket.Fast
         /// <param name="filter">过滤器</param>
         public void Add(IFilter filter)
         {
-            this.filters.Add(new Filter { Instance = filter, FilterScope = FilterScope.Global });
+            this.filters.Add(filter);
             var actionFilter = filter as IActionFilter;
             var authorizationFilter = filter as IAuthorizationFilter;
+            var exceptionFilter = filter as IExceptionFilter;
 
             if (actionFilter != null)
             {
-                ((IList<IActionFilter>)this.ActionFilters).Add(actionFilter);
+                this.ActionFilters = this.ActionFilters
+                    .Concat(new[] { actionFilter })
+                    .OrderBy(item => item.Order);
             }
 
             if (authorizationFilter != null)
             {
-                ((IList<IAuthorizationFilter>)this.AuthorizationFilters).Add(authorizationFilter);
+                this.AuthorizationFilters = this.AuthorizationFilters
+                    .Concat(new[] { authorizationFilter })
+                    .OrderBy(item => item.Order);
+            }
+
+            if (exceptionFilter != null)
+            {
+                this.ExceptionFilters = this.ExceptionFilters
+                    .Concat(new[] { exceptionFilter })
+                    .OrderBy(item => item.Order);
             }
         }
 
@@ -80,7 +98,7 @@ namespace NetworkSocket.Fast
         /// 获取迭代器
         /// </summary>
         /// <returns></returns>
-        public IEnumerator<Filter> GetEnumerator()
+        public IEnumerator<IFilter> GetEnumerator()
         {
             return this.filters.GetEnumerator();
         }

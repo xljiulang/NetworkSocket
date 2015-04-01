@@ -16,7 +16,7 @@ namespace NetworkSocket.Fast
     /// <summary>
     /// 快速构建Tcp服务端抽象类 
     /// </summary>
-    public abstract class FastTcpServerBase : TcpServerBase<FastPacket>, IAuthorizationFilter, IActionFilter
+    public abstract class FastTcpServerBase : TcpServerBase<FastPacket>, IAuthorizationFilter, IActionFilter, IExceptionFilter
     {
         /// <summary>
         /// 所有服务行为
@@ -53,7 +53,7 @@ namespace NetworkSocket.Fast
             var specialActions = FastTcpCommon.GetServiceActions(typeof(SpecialService));
             this.serviceActions.AddRange(specialActions);
 
-            // 添加到全局过滤器
+            // 添加自身到全局过滤器
             GlobalFilters.Add(this);
         }
 
@@ -221,31 +221,30 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="action">服务行为</param>
         /// <returns></returns>
-        protected virtual IEnumerable<Filter> GetFilters(FastAction action)
+        protected virtual IEnumerable<IFilter> GetFilters(FastAction action)
         {
-            var actionAttributes = action.GetMethodFilterAttributes();
+            var methodAttributes = action.GetMethodFilterAttributes();
 
-            var serviceAttributes = action.GetClassFilterAttributes()
+            var classAttributes = action.GetClassFilterAttributes()
                 .Where(filter => filter.AllowMultiple ||
-                    actionAttributes.Any(mFilter => mFilter.TypeId == filter.TypeId) == false);
+                    methodAttributes.Any(mFilter => mFilter.TypeId == filter.TypeId) == false);
 
-            var actionFilters = actionAttributes
-                .Select(fiter => new Filter
-                {
-                    Instance = fiter,
-                    FilterScope = (fiter is IAuthorizationFilter) ? FilterScope.Authorization : FilterScope.Method
-                });
+            var methodFilters = methodAttributes.Select(fiter => new
+            {
+                Filter = fiter,
+                Level = (fiter is IAuthorizationFilter) ? FilterLevel.Authorization : FilterLevel.Method
+            });
 
-            var serviceFilters = serviceAttributes
-                .Select(fiter => new Filter
-                 {
-                     Instance = fiter,
-                     FilterScope = (fiter is IAuthorizationFilter) ? FilterScope.Authorization : FilterScope.Class
-                 });
+            var classFilters = classAttributes.Select(fiter => new
+            {
+                Filter = fiter,
+                Level = (fiter is IAuthorizationFilter) ? FilterLevel.Authorization : FilterLevel.Class
+            });
 
-            var filters = serviceFilters.Concat(actionFilters)
-                .OrderBy(filter => filter.FilterScope)
-                .ThenBy(filter => filter.Instance.Order);
+            var filters = classFilters.Concat(methodFilters)
+                .OrderBy(filter => filter.Level)
+                .ThenBy(filter => filter.Filter.Order)
+                .Select(filter => filter.Filter);
 
             return filters;
         }
@@ -257,15 +256,11 @@ namespace NetworkSocket.Fast
         private void RaiseException(ExceptionContext exceptionContext)
         {
             FastTcpCommon.RaiseRemoteException(exceptionContext, this.Serializer);
-            this.OnException(exceptionContext);
-        }
 
-        /// <summary>
-        /// 当操作中遇到处理异常时，将触发此方法
-        /// </summary>
-        /// <param name="exceptionContext">上下文</param>      
-        protected virtual void OnException(ExceptionContext exceptionContext)
-        {
+            foreach (var filter in GlobalFilters.FilterCollection.ExceptionFilters)
+            {
+                filter.OnException(exceptionContext);
+            }
         }
 
         /// <summary>
@@ -337,6 +332,15 @@ namespace NetworkSocket.Fast
         public virtual void OnExecuted(ActionContext actionContext)
         {
         }
+
+        /// <summary>
+        /// 异常时触发
+        /// </summary>
+        /// <param name="exceptionContext">上下文</param>
+        public virtual void OnException(ExceptionContext exceptionContext)
+        {
+        }
+
         #endregion
     }
 }

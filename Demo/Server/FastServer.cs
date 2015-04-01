@@ -104,13 +104,9 @@ namespace Server
         /// </summary>
         /// <param name="action">服务行为</param>
         /// <returns></returns>
-        protected override IEnumerable<Filter> GetFilters(FastAction action)
+        protected override IEnumerable<IFilter> GetFilters(FastAction action)
         {
-            return base.GetFilters(action).Select(filter =>
-            {
-                filter.Instance = LiftTimeScope.InjectProperties(filter.Instance);
-                return filter;
-            });
+            return base.GetFilters(action).Select(filter => LiftTimeScope.InjectProperties(filter));
         }
 
         /// <summary>
@@ -143,16 +139,6 @@ namespace Server
             Console.WriteLine("客户端{0}断开连接，当前连接数为：{1}", client, this.AliveClients.Count);
         }
 
-        /// <summary>
-        /// 异常
-        /// </summary>
-        /// <param name="context">上下文</param>       
-        protected override void OnException(ExceptionContext context)
-        {
-            Console.WriteLine(context.Exception);
-            base.OnException(context);
-        }
-
         public override void OnAuthorization(ActionContext actionContext)
         {
             base.OnAuthorization(actionContext);
@@ -166,6 +152,11 @@ namespace Server
         public override void OnExecuted(ActionContext actionContext)
         {
             base.OnExecuted(actionContext);
+        }
+
+        public override void OnException(ExceptionContext exceptionContext)
+        {
+            base.OnException(exceptionContext);
         }
         #endregion
 
