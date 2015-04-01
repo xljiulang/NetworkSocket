@@ -1,6 +1,5 @@
 ﻿using NetworkSocket.Fast.Attributes;
 using NetworkSocket.Fast.Filters;
-using NetworkSocket.Fast.Methods;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,9 +11,9 @@ namespace NetworkSocket.Fast
 {
     /// <summary>
     /// Fast服务抽象类
-    /// 要求所有服务从此类派生
+    /// 所有自身实现的服务方法的第一个参数是ActionContext类型
     /// </summary>
-    public abstract class FastServiceBase : IDisposable
+    public abstract class FastServiceBase : IAuthorizationFilter, IActionFilter, IDisposable
     {
         /// <summary>
         /// 获取或设置序列化工具
@@ -24,86 +23,89 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 获取过滤委托
         /// </summary>
-        internal Func<MethodInfo, IEnumerable<Filter>> GetFilters;
+        internal Func<FastAction, IEnumerable<Filter>> GetFilters;
 
         /// <summary>
-        /// 处理封包
+        /// 线程唯一上下文
         /// </summary>
-        /// <param name="client">客户端</param>
-        /// <param name="packet">封包</param>
-        /// <param name="method">服务方法</param>
-        internal void ProcessPacket(SocketAsync<FastPacket> client, FastPacket packet, ServiceMethod method)
+        [ThreadStatic]
+        private static ActionContext staticContext;
+
+        /// <summary>
+        /// 获取当前服务行为上下文
+        /// </summary>
+        public ActionContext CurrentContext
         {
-            // 如果是Cmd值对应是Self类型方法 也就是客户端主动调用服务方法
-            if (method.ServiceAttribute.Implement == Implements.Self)
+            get
             {
-                this.TryInvoke(method, client, packet);
+                return staticContext;
+            }
+            private set
+            {
+                staticContext = value;
+            }
+        }
+
+        /// <summary>
+        /// 处理服务方法
+        /// </summary>
+        /// <param name="actionContext">上下文</param>      
+        internal void ProcessAction(ActionContext actionContext)
+        {
+            // 如果是Cmd值对应是Self类型方法 也就是客户端主动调用服务行为
+            if (actionContext.Action.Implement == Implements.Self)
+            {
+                this.TryInvokeAction(actionContext);
                 return;
             }
 
             // 如果是收到返回值 从回调表找出相关回调来调用
-            var callBack = CallbackTable.Take(packet.HashCode);
+            var callBack = CallbackTable.Take(actionContext.Packet.HashCode);
             if (callBack != null)
             {
-                var returnBytes = packet.GetBodyParameter().FirstOrDefault();
-                callBack(packet.IsException, returnBytes);
+                var returnBytes = actionContext.Packet.GetBodyParameter().FirstOrDefault();
+                callBack(actionContext.Packet.IsException, returnBytes);
             }
         }
-
 
         /// <summary>
         /// 调用自身方法
         /// 将返回值发送给客户端
         /// 或将异常发送给客户端
         /// </summary>       
-        /// <param name="method">方法</param>
-        /// <param name="client">客户端对象</param>
-        /// <param name="packet">数据</param>
-        private void TryInvoke(ServiceMethod method, SocketAsync<FastPacket> client, FastPacket packet)
+        /// <param name="actionContext">上下文</param>       
+        private void TryInvokeAction(ActionContext actionContext)
         {
             try
             {
-                // 执行Filter
-                var filters = this.GetFilters(method.Method);
-                this.InvokeFiltersBefore(filters, client, packet);
-
-                var parameters = FastTcpCommon.GetServiceMethodParameters(method, packet, this.Serializer, client);
-                var returnValue = method.Invoke(this, parameters);
+                // 设置上下文
+                this.CurrentContext = actionContext;
 
                 // 执行Filter
-                this.InvokeFiltersAfter(filters, client, packet);
+                var filters = this.GetFilters(actionContext.Action);
+                this.InvokeFiltersBefore(filters, actionContext);
 
-                if (method.HasReturn && client.IsConnected)
+                var parameters = FastTcpCommon.GetActionParameters(actionContext, this.Serializer);
+                var returnValue = actionContext.Action.Execute(this, parameters);
+
+                // 执行Filter
+                this.InvokeFiltersAfter(filters, actionContext);
+
+                if (actionContext.Action.IsVoidReturn == false && actionContext.Client.IsConnected)
                 {
-                    packet.SetBodyBinary(this.Serializer, returnValue);
-                    client.Send(packet);
+                    actionContext.Packet.SetBodyBinary(this.Serializer, returnValue);
+                    actionContext.Client.Send(actionContext.Packet);
                 }
             }
             catch (Exception ex)
             {
-                this.RaiseException(client, packet, ex);
+                var exContext = new ExceptionContext(actionContext, ex);
+                this.RaiseException(exContext);
             }
-        }
-
-
-        /// <summary>
-        /// 执行过滤器
-        /// </summary>
-        /// <param name="filters">过滤器</param>
-        /// <param name="client">客户端</param>
-        /// <param name="packet">数据包</param>
-        private void InvokeFiltersBefore(IEnumerable<Filter> filters, SocketAsync<FastPacket> client, FastPacket packet)
-        {
-            foreach (var filter in filters)
+            finally
             {
-                if (filter.FilterScope == FilterScope.Authorization)
-                {
-                    ((IAuthorizationFilter)filter.Instance).OnAuthorization(client, packet);
-                }
-                else
-                {
-                    ((IActionFilter)filter.Instance).OnExecuting(client, packet);
-                }
+                // 释放上下文
+                this.CurrentContext = null;
             }
         }
 
@@ -111,15 +113,63 @@ namespace NetworkSocket.Fast
         /// 执行过滤器
         /// </summary>
         /// <param name="filters">过滤器</param>
-        /// <param name="client">客户端</param>
-        /// <param name="packet">数据包</param>
-        private void InvokeFiltersAfter(IEnumerable<Filter> filters, SocketAsync<FastPacket> client, FastPacket packet)
+        /// <param name="actionContext">上下文</param>   
+        private void InvokeFiltersBefore(IEnumerable<Filter> filters, ActionContext actionContext)
         {
+            // OnAuthorization
+            foreach (var globalFilter in GlobalFilters.FilterCollection.AuthorizationFilters)
+            {
+                globalFilter.OnAuthorization(actionContext);
+            }
+            this.OnAuthorization(actionContext);
             foreach (var filter in filters)
             {
-                if (filter.FilterScope != FilterScope.Authorization)
+                var authorizationFilter = filter.Instance as IAuthorizationFilter;
+                if (authorizationFilter != null)
                 {
-                    ((IActionFilter)filter.Instance).OnExecuted(client, packet);
+                    authorizationFilter.OnAuthorization(actionContext);
+                }
+            }
+
+            // OnExecuting
+            foreach (var globalFilter in GlobalFilters.FilterCollection.ActionFilters)
+            {
+                globalFilter.OnExecuting(actionContext);
+            }
+            this.OnExecuting(actionContext);
+            foreach (var filter in filters)
+            {
+                var actionFilter = filter.Instance as IActionFilter;
+                if (actionFilter != null)
+                {
+                    actionFilter.OnExecuting(actionContext);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 执行过滤器
+        /// </summary>
+        /// <param name="filters">过滤器</param>
+        /// <param name="actionContext">上下文</param>       
+        private void InvokeFiltersAfter(IEnumerable<Filter> filters, ActionContext actionContext)
+        {
+            // 全局过滤器
+            foreach (var globalFilter in GlobalFilters.FilterCollection.ActionFilters)
+            {
+                globalFilter.OnExecuted(actionContext);
+            }
+
+            // 自身过滤器
+            this.OnExecuted(actionContext);
+
+            // 特性过滤器
+            foreach (var filter in filters)
+            {
+                var actionFilter = filter.Instance as IActionFilter;
+                if (actionFilter != null)
+                {
+                    actionFilter.OnExecuted(actionContext);
                 }
             }
         }
@@ -127,21 +177,18 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 并将异常传给客户端并调用OnException
         /// </summary>
-        /// <param name="client">客户端</param>
-        /// <param name="packet">封包</param>
-        /// <param name="exception">异常</param>         
-        private void RaiseException(SocketAsync<FastPacket> client, FastPacket packet, Exception exception)
+        /// <param name="exceptionContext">上下文</param>    
+        private void RaiseException(ExceptionContext exceptionContext)
         {
-            FastTcpCommon.RaiseRemoteException(client, packet, exception, this.Serializer);
-            this.OnException(client, exception);
+            FastTcpCommon.RaiseRemoteException(exceptionContext, this.Serializer);
+            this.OnException(exceptionContext);
         }
 
         /// <summary>
         /// 当操作中遇到处理异常时，将触发此方法
         /// </summary>
-        /// <param name="client">客户端</param>
-        /// <param name="exception">异常</param>
-        protected virtual void OnException(SocketAsync<FastPacket> client, Exception exception)
+        /// <param name="exceptionContext">上下文</param>       
+        protected virtual void OnException(ExceptionContext exceptionContext)
         {
         }
 
@@ -172,6 +219,56 @@ namespace NetworkSocket.Fast
             return FastTcpCommon.InvokeRemote<T>(client, this.Serializer, cmd, parameters);
         }
 
+
+        #region 过滤器接口实现
+        /// <summary>
+        /// 获取或设置排序
+        /// </summary>
+        public int Order
+        {
+            get
+            {
+                return -1;
+            }
+        }
+
+        /// <summary>
+        /// 是否允许多个实例
+        /// </summary>
+        public bool AllowMultiple
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// 授权时触发       
+        /// </summary>
+        /// <param name="actionContext">上下文</param>       
+        /// <returns></returns>
+        public virtual void OnAuthorization(ActionContext actionContext)
+        {
+        }
+
+        /// <summary>
+        /// 在执行服务行为前触发       
+        /// </summary>
+        /// <param name="actionContext">上下文</param>       
+        /// <returns></returns>
+        public virtual void OnExecuting(ActionContext actionContext)
+        {
+        }
+
+        /// <summary>
+        /// 在执行服务行为后触发
+        /// </summary>
+        /// <param name="actionContext">上下文</param>      
+        public virtual void OnExecuted(ActionContext actionContext)
+        {
+        }
+        #endregion
 
         #region IDisponse成员
         /// <summary>

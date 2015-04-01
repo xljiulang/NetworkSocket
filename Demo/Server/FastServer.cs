@@ -32,7 +32,7 @@ namespace Server
         /// Autofac生命范围
         /// </summary>
         [ThreadStatic]
-        private ILifetimeScope liftTimeScope;
+        private static ILifetimeScope LiftTimeScope;
 
         /// <summary>
         /// FastServer
@@ -85,9 +85,9 @@ namespace Server
         /// <param name="serviceType">服务类型</param>
         /// <returns></returns>
         protected override FastServiceBase GetService(Type serviceType)
-        {          
-            this.liftTimeScope = this.container.BeginLifetimeScope();
-            return this.liftTimeScope.Resolve(serviceType) as FastServiceBase;
+        {
+            LiftTimeScope = this.container.BeginLifetimeScope();
+            return LiftTimeScope.Resolve(serviceType) as FastServiceBase;
         }
 
         /// <summary>
@@ -96,19 +96,19 @@ namespace Server
         /// <param name="service">服务实例</param>
         protected override void DisposeService(FastServiceBase service)
         {
-            this.liftTimeScope.Dispose();
+            LiftTimeScope.Dispose();
         }
 
         /// <summary>
         /// 给过滤器添加属性注入
         /// </summary>
-        /// <param name="method">方法</param>
+        /// <param name="action">服务行为</param>
         /// <returns></returns>
-        protected override IEnumerable<Filter> GetFilters(MethodInfo method)
+        protected override IEnumerable<Filter> GetFilters(FastAction action)
         {
-            return base.GetFilters(method).Select(filter =>
+            return base.GetFilters(action).Select(filter =>
             {
-                filter.Instance = this.liftTimeScope.InjectProperties(filter.Instance);
+                filter.Instance = LiftTimeScope.InjectProperties(filter.Instance);
                 return filter;
             });
         }
@@ -146,13 +146,29 @@ namespace Server
         /// <summary>
         /// 异常
         /// </summary>
-        /// <param name="client"></param>
-        /// <param name="exception"></param>
-        protected override void OnException(SocketAsync<FastPacket> client, Exception exception)
+        /// <param name="context">上下文</param>       
+        protected override void OnException(ExceptionContext context)
         {
-            Console.WriteLine(exception);
-            base.OnException(client, exception);
+            Console.WriteLine(context.Exception);
+            base.OnException(context);
+        }
+
+        public override void OnAuthorization(ActionContext actionContext)
+        {
+            base.OnAuthorization(actionContext);
+        }
+
+        public override void OnExecuting(ActionContext actionContext)
+        {
+            base.OnExecuting(actionContext);
+        }
+
+        public override void OnExecuted(ActionContext actionContext)
+        {
+            base.OnExecuted(actionContext);
         }
         #endregion
+
+
     }
 }

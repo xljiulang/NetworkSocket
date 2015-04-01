@@ -1,5 +1,5 @@
 ﻿using NetworkSocket.Fast.Attributes;
-using NetworkSocket.Fast.Methods;
+using NetworkSocket.Fast.Filters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,36 +14,36 @@ namespace NetworkSocket.Fast
     internal static class FastTcpCommon
     {
         /// <summary>
-        /// 获取类型的服务方法
+        /// 获取服务类型的服务行为
         /// </summary>
-        /// <param name="seviceType">类型</param>
+        /// <param name="seviceType">服务类型</param>
         /// <returns></returns>
-        public static List<ServiceMethod> GetServiceMethodList(Type seviceType)
+        public static List<FastAction> GetServiceActions(Type seviceType)
         {
             var methods = seviceType.GetMethods().Where(item => Attribute.IsDefined(item, typeof(ServiceAttribute)));
-            return methods.Select(item => new ServiceMethod(item)).ToList();
+            return methods.Select(method => new FastAction(method)).ToList();
         }
 
         /// <summary>
         /// 抛出远程异常
         /// 如果无法抛出，则返回远程异常
         /// </summary>       
-        /// <param name="packet">异常包</param>
+        /// <param name="exceptionPacket">异常包</param>
         /// <param name="serializer">序列化工具</param>
         /// <returns></returns>
-        public static RemoteException ThrowRemoteException(FastPacket packet, ISerializer serializer)
+        public static RemoteException ThrowRemoteException(FastPacket exceptionPacket, ISerializer serializer)
         {
-            if (packet.IsException == false)
+            if (exceptionPacket.IsException == false)
             {
                 return null;
             }
 
-            var bytes = packet.GetBodyParameter().FirstOrDefault();
-            var exceptionCallBack = CallbackTable.Take(packet.HashCode);
+            var bytes = exceptionPacket.GetBodyParameter().FirstOrDefault();
+            var exceptionCallBack = CallbackTable.Take(exceptionPacket.HashCode);
 
             if (exceptionCallBack != null)
             {
-                exceptionCallBack(packet.IsException, bytes);
+                exceptionCallBack(exceptionPacket.IsException, bytes);
                 return null;
             }
             return serializer.Deserialize(bytes, typeof(RemoteException)) as RemoteException;
@@ -52,15 +52,13 @@ namespace NetworkSocket.Fast
         /// <summary>       
         /// 触发远程异常
         /// </summary>
-        /// <param name="client">客户端</param>
-        /// <param name="packet">封包</param>
-        /// <param name="exception">异常</param>     
+        /// <param name="context">上下文</param> 
         /// <param name="serializer">序列化工具</param>
-        public static void RaiseRemoteException(SocketAsync<FastPacket> client, FastPacket packet, Exception exception, ISerializer serializer)
+        public static void RaiseRemoteException(ExceptionContext context, ISerializer serializer)
         {
-            var remoteException = new RemoteException(packet.Command, exception.ToString());
-            packet.SetException(serializer, remoteException);
-            client.Send(packet);
+            var remoteException = new RemoteException(context.Packet.Command, context.Exception.ToString());
+            context.Packet.SetException(serializer, remoteException);
+            context.Client.Send(context.Packet);
         }
 
         /// <summary>
@@ -118,41 +116,68 @@ namespace NetworkSocket.Fast
         }
 
         /// <summary>
-        /// 生成服务方法的调用参数
+        /// 生成客户端服务行为的调用参数
         /// </summary>        
-        /// <param name="method">方法</param>
-        /// <param name="packet">数据包</param>
+        /// <param name="context">上下文</param>       
         /// <param name="serializer">序列化工具</param>
         /// <returns></returns>
-        public static object[] GetServiceMethodParameters(ServiceMethod method, FastPacket packet, ISerializer serializer)
+        public static object[] GetActionParameters(ActionContext context, ISerializer serializer)
         {
-            var items = packet.GetBodyParameter();
+            var items = context.Packet.GetBodyParameter();
             var parameters = new object[items.Count];
             for (var i = 0; i < items.Count; i++)
             {
-                parameters[i] = serializer.Deserialize(items[i], method.ParameterTypes[i]);
+                parameters[i] = serializer.Deserialize(items[i], context.Action.ParameterTypes[i]);
             }
             return parameters;
+        }     
+
+        /// <summary>
+        /// 检测服务行为是否有声明相同的Command
+        /// </summary>
+        /// <param name="actions">服务行为</param>
+        public static void CheckActionsRepeatCommand(IEnumerable<FastAction> actions)
+        {
+            var group = actions.GroupBy(item => item.Command).FirstOrDefault(g => g.Count() > 1);
+            if (group != null)
+            {
+                throw new Exception(string.Format("Command为{0}不允许被重复使用", group.Key));
+            }
         }
 
 
         /// <summary>
-        /// 生成服务方法的调用参数
-        /// </summary>       
-        /// <param name="method">方法</param>       
-        /// <param name="packet">数据</param>
-        /// <param name="serializer">序列化工具</param>
-        /// <param name="client">客户端参数</param>
-        public static object[] GetServiceMethodParameters(ServiceMethod method, FastPacket packet, ISerializer serializer, SocketAsync<FastPacket> client)
+        /// 检测服务行为的声明和参数
+        /// </summary>
+        /// <param name="actions">服务行为</param>
+        public static void CheckActionsContract(IEnumerable<FastAction> actions)
         {
-            var items = packet.GetBodyParameter();
-            var parameters = new object[items.Count + 1];
-            parameters[0] = client;
-            for (var i = 0; i < items.Count; i++)
+            foreach (var action in actions)
             {
-                parameters[i + 1] = serializer.Deserialize(items[i], method.ParameterTypes[i + 1]);
+                FastTcpCommon.CheckActionContract(action);
             }
-            return parameters;
+        }
+
+
+        /// <summary>
+        /// 检测服务行为的声明和参数
+        /// </summary>
+        /// <param name="action">服务行为</param>
+        private static void CheckActionContract(FastAction action)
+        {
+            if (Enum.IsDefined(typeof(SpecialCommands), action.Command) && action.IsDefined(typeof(SpecialServiceAttribute), true) == false)
+            {
+                throw new Exception(string.Format("服务行为{0}的Command是不允许使用的SpecialCommand命令", action.Name));
+            }
+
+            if (action.Implement == Implements.Remote)
+            {
+                var isTask = action.ReturnType.IsGenericType && action.ReturnType.GetGenericTypeDefinition() == typeof(Task<>);
+                if ((action.IsVoidReturn || isTask) == false)
+                {
+                    throw new Exception(string.Format("服务行为{0}的的返回类型必须是Task<T>类型", action.Name));
+                }
+            }
         }
     }
 }

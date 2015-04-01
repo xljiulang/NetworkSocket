@@ -13,14 +13,14 @@ namespace Server.Attributes
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
     public class LoginAttribute : FilterAttribute, IAuthorizationFilter
-    {       
-        public void OnAuthorization(NetworkSocket.SocketAsync<NetworkSocket.Fast.FastPacket> client, NetworkSocket.Fast.FastPacket packet)
+    {
+        public void OnAuthorization(NetworkSocket.Fast.ActionContext actionContext)
         {
-            bool valid = client.TagBag.IsValidated ?? false;
+            bool valid = actionContext.Client.TagBag.Logined ?? false;
             if (valid == false)
             {
                 throw new Exception("未登录就尝试请求其它服务");
-            }          
+            }
         }
     }
 }

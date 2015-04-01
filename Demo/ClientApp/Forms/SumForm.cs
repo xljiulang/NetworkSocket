@@ -28,7 +28,7 @@ namespace ClientApp.Forms
             int.TryParse(this.textBox2.Text, out y);
             int.TryParse(this.textBox3.Text, out z);
 
-            var sum = await ServerInvoker.Instance.GetSun(x, y, z);
+            var sum = await RemoteServer.Instance.GetSun(x, y, z);
             MessageBox.Show("服务器返回：" + sum.ToString());
         }
     }

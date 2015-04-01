@@ -18,12 +18,12 @@ namespace Server.Attributes
             this.log = log;
         }
 
-        public void OnExecuting(NetworkSocket.SocketAsync<NetworkSocket.Fast.FastPacket> client, NetworkSocket.Fast.FastPacket packet)
+        public void OnExecuting(NetworkSocket.Fast.ActionContext actionContext)
         {
-            this.Loger.Log(string.Format("cmd:{0} log:{1}", packet.Command, this.log));
+            this.Loger.Log(string.Format("cmd:{0} log:{1}", actionContext.Action.Command, this.log));
         }
 
-        public void OnExecuted(NetworkSocket.SocketAsync<NetworkSocket.Fast.FastPacket> client, NetworkSocket.Fast.FastPacket packet)
+        public void OnExecuted(NetworkSocket.Fast.ActionContext actionContext)
         {
         }
     }

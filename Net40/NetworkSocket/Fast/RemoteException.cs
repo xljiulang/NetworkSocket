@@ -6,7 +6,7 @@ using System.Text;
 namespace NetworkSocket.Fast
 {
     /// <summary>
-    /// 表示远程端服务方法异常
+    /// 表示远程端服务行为异常
     /// </summary>
     [Serializable]
     public class RemoteException : Exception
@@ -22,14 +22,14 @@ namespace NetworkSocket.Fast
         public string Reason { get; set; }
 
         /// <summary>
-        /// 远程端服务方法异常
+        /// 远程端服务行为异常
         /// </summary>
         public RemoteException()
         {
         }
 
         /// <summary>
-        /// 远程端服务方法异常
+        /// 远程端服务行为异常
         /// </summary>
         /// <param name="cmd">请求指令</param>
         public RemoteException(int cmd)
@@ -38,7 +38,7 @@ namespace NetworkSocket.Fast
         }
 
         /// <summary>
-        /// 远程端服务方法异常
+        /// 远程端服务行为异常
         /// </summary>
         /// <param name="cmd">请求指令</param>
         /// <param name="reason">异常原因</param>
@@ -55,7 +55,7 @@ namespace NetworkSocket.Fast
         {
             get
             {
-                return string.Format("远程端命令为{0}的服务方法异常", this.Command);
+                return string.Format("远程端命令为{0}的服务行为异常", this.Command);
             }
         }
 

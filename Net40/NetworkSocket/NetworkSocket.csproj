@@ -51,6 +51,8 @@
     <Reference Include="System.Web.Extensions" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Fast\ExceptionContext.cs" />
+    <Compile Include="Fast\FastAction.cs" />
     <Compile Include="ByteBuilder.cs" />
     <Compile Include="ByteConverter.cs" />
     <Compile Include="Endians.cs" />
@@ -64,16 +66,17 @@
     <Compile Include="Fast\FastTcpClientBase.cs" />
     <Compile Include="Fast\FastTcpCommon.cs" />
     <Compile Include="Fast\FastTcpServerBase.cs" />
-    <Compile Include="Fast\Filters\Filter.cs" />
+    <Compile Include="Fast\Filter.cs" />
+    <Compile Include="Fast\ActionContext.cs" />
     <Compile Include="Fast\Filters\FilterAttribute.cs" />
-    <Compile Include="Fast\Filters\FilterScope.cs" />
+    <Compile Include="Fast\FilterScope.cs" />
     <Compile Include="Fast\Filters\IActionFilter.cs" />
     <Compile Include="Fast\Filters\IAuthorizationFilter.cs" />
-    <Compile Include="Fast\Filters\IFilter.cs" />
+    <Compile Include="Fast\GlobalFilters.cs" />
+    <Compile Include="Fast\IFilter.cs" />
     <Compile Include="Fast\ISerializer.cs" />
-    <Compile Include="Fast\Methods\FastMethod.cs" />
-    <Compile Include="Fast\Methods\ServiceMethod.cs" />
     <Compile Include="Fast\RemoteException.cs" />
+    <Compile Include="Fast\RequestContext.cs" />
     <Compile Include="Fast\SpecialCommands.cs" />
     <Compile Include="Fast\SpecialService.cs" />
     <Compile Include="ISocketAsync.cs" />

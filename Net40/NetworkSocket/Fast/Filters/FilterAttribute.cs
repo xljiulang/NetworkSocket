@@ -7,15 +7,36 @@ using System.Text;
 namespace NetworkSocket.Fast.Filters
 {
     /// <summary>
-    /// 表示服务器服务方法过滤器基础特性
+    /// 表示服务或服务行为过滤器基础特性
     /// </summary>
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
     public abstract class FilterAttribute : Attribute, IFilter
     {
         /// <summary>
+        /// 排序
+        /// </summary>
+        private int order;
+
+        /// <summary>
         /// 缓存
         /// </summary>
         private static readonly ConcurrentDictionary<Type, bool> multiuseAttributeCache = new ConcurrentDictionary<Type, bool>();
+
+        /// <summary>
+        /// 表示服务或服务行为过滤器基础特性
+        /// </summary>
+        public FilterAttribute()
+        {
+        }
+
+        /// <summary>
+        /// 表示服务或服务行为过滤器基础特性
+        /// </summary>
+        /// <param name="order">执行顺序 越小最优先</param>
+        public FilterAttribute(int order)
+        {
+            this.Order = order;
+        }
 
         /// <summary>
         /// 获取特性是否允许多个实例
@@ -32,10 +53,24 @@ namespace NetworkSocket.Fast.Filters
         }
 
         /// <summary>
-        /// 执行顺序
+        /// 获取执行顺序
         /// 越小最优先
         /// </summary>
-        public int Order { get; set; }
+        public int Order
+        {
+            get
+            {
+                return this.order;
+            }
+            set
+            {
+                if (value < 0)
+                {
+                    throw new Exception("Order不能小于0");
+                }
+                this.order = value;
+            }
+        }
 
         /// <summary>
         /// 获取是否允许多个实例存在
@@ -47,5 +82,6 @@ namespace NetworkSocket.Fast.Filters
                 return IsAllowMultiple(this.GetType());
             }
         }
+
     }
 }

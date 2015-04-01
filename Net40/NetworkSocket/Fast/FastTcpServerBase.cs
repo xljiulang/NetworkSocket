@@ -1,6 +1,5 @@
 ﻿using NetworkSocket.Fast.Attributes;
 using NetworkSocket.Fast.Filters;
-using NetworkSocket.Fast.Methods;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -17,12 +16,12 @@ namespace NetworkSocket.Fast
     /// <summary>
     /// 快速构建Tcp服务端抽象类 
     /// </summary>
-    public abstract class FastTcpServerBase : TcpServerBase<FastPacket>
+    public abstract class FastTcpServerBase : TcpServerBase<FastPacket>, IAuthorizationFilter, IActionFilter
     {
         /// <summary>
-        /// 所有服务方法
+        /// 所有服务行为
         /// </summary>
-        private List<ServiceMethod> serviceMethodList;
+        private List<FastAction> serviceActions;
 
         /// <summary>
         /// 特殊服务
@@ -45,13 +44,17 @@ namespace NetworkSocket.Fast
         /// </summary>
         public FastTcpServerBase()
         {
-            this.serviceMethodList = new List<ServiceMethod>();
+            this.serviceActions = new List<FastAction>();
             this.specialService = new SpecialService();
             this.serviceResolver = new ConcurrentDictionary<Type, FastServiceBase>();
             this.Serializer = new DefaultSerializer();
 
-            var specialMethods = FastTcpCommon.GetServiceMethodList(typeof(SpecialService));
-            this.serviceMethodList.AddRange(specialMethods);
+            // 添加特殊服务行为
+            var specialActions = FastTcpCommon.GetServiceActions(typeof(SpecialService));
+            this.serviceActions.AddRange(specialActions);
+
+            // 添加到全局过滤器
+            GlobalFilters.Add(this);
         }
 
         /// <summary>
@@ -59,8 +62,8 @@ namespace NetworkSocket.Fast
         /// </summary>
         public void BindService()
         {
-            var services = this.GetType().Assembly.GetTypes().Where(item => typeof(FastServiceBase).IsAssignableFrom(item));
-            this.BindService(services);
+            var allServices = this.GetType().Assembly.GetTypes().Where(item => typeof(FastServiceBase).IsAssignableFrom(item));
+            this.BindService(allServices);
         }
 
         /// <summary>
@@ -104,59 +107,13 @@ namespace NetworkSocket.Fast
 
             foreach (var type in serivceType)
             {
-                var methods = FastTcpCommon.GetServiceMethodList(type);
-                this.serviceMethodList.AddRange(methods);
+                var actions = FastTcpCommon.GetServiceActions(type);
+                this.serviceActions.AddRange(actions);
             }
 
-            this.CheckServiceMethodRepeatCommand(this.serviceMethodList);
-            foreach (var method in this.serviceMethodList)
-            {
-                this.CheckForServiceMethodContract(method);
-            }
+            FastTcpCommon.CheckActionsRepeatCommand(this.serviceActions);
+            FastTcpCommon.CheckActionsContract(this.serviceActions);
         }
-
-
-        /// <summary>
-        /// 检测服务方法是否有声明相同的Command
-        /// </summary>
-        /// <param name="methods"></param>
-        private void CheckServiceMethodRepeatCommand(IEnumerable<ServiceMethod> methods)
-        {
-            var group = methods.GroupBy(item => item.ServiceAttribute.Command).FirstOrDefault(g => g.Count() > 1);
-            if (group != null)
-            {
-                throw new Exception(string.Format("Command为{0}不允许被重复使用", group.Key));
-            }
-        }
-
-        /// <summary>
-        /// 检测服务方法的声明和参数
-        /// </summary>
-        /// <param name="method">服务方法</param>
-        private void CheckForServiceMethodContract(ServiceMethod method)
-        {
-            if (Enum.IsDefined(typeof(SpecialCommands), method.ServiceAttribute.Command) && method.IsDefined(typeof(SpecialServiceAttribute), true) == false)
-            {
-                throw new Exception(string.Format("服务方法{0}的Command是不允许使用的SpecialCommand命令", method.Method.Name));
-            }
-
-            if (method.ParameterTypes.Length == 0 || method.ParameterTypes.First().Equals(typeof(SocketAsync<FastPacket>)) == false)
-            {
-                throw new Exception(string.Format("服务方法{0}的第一个参数必须是SocketAsync<FastPacket>类型", method.Method.Name));
-            }
-
-            if (method.ServiceAttribute.Implement == Implements.Remote)
-            {
-                var returnType = method.Method.ReturnType;
-                var isTask = returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(Task<>);
-                var isVoid = method.HasReturn == false;
-                if ((isVoid || isTask) == false)
-                {
-                    throw new Exception(string.Format("服务方法{0}的的返回类型必须是Task<T>类型", method.Method.Name));
-                }
-            }
-        }
-
 
         /// <summary>
         /// 当接收到远程端的数据时，将触发此方法
@@ -189,7 +146,8 @@ namespace NetworkSocket.Fast
             var exception = FastTcpCommon.ThrowRemoteException(packet, this.Serializer);
             if (exception != null)
             {
-                this.OnException(client, exception);
+                var exceptionContext = new ExceptionContext { Client = client, Packet = packet, Exception = exception };
+                this.OnException(exceptionContext);
             }
         }
 
@@ -200,34 +158,36 @@ namespace NetworkSocket.Fast
         /// <param name="packet">数据包</param>
         private void ProcessNormalPacket(SocketAsync<FastPacket> client, FastPacket packet)
         {
-            var method = this.serviceMethodList.Find(item => item.ServiceAttribute.Command == packet.Command);
-            if (method == null)
+            var requestContext = new RequestContext { Client = client, Packet = packet };
+            var action = this.serviceActions.Find(item => item.Command == packet.Command);
+
+            if (action == null)
             {
-                var exception = new Exception(string.Format("命令为{0}的服务方法不存在", packet.Command));
-                this.RaiseException(client, packet, exception);
+                var exception = new Exception(string.Format("命令为{0}的服务行为不存在", packet.Command));
+                this.RaiseException(new ExceptionContext(requestContext, exception));
                 return;
             }
 
             var isSpecail = true;
-            FastServiceBase fastService = this.specialService;
+            var fastService = (FastServiceBase)this.specialService;
 
             if (Enum.IsDefined(typeof(SpecialCommands), packet.Command) == false)
             {
-                fastService = this.GetService(method.DeclaringType);
+                fastService = this.GetService(action.DeclaringService);
                 isSpecail = false;
             }
 
             if (fastService == null)
             {
-                var ex = new Exception(string.Format("无法获取类型{0}的实例", method.Method.DeclaringType));
-                this.RaiseException(client, packet, ex);
+                var ex = new Exception(string.Format("无法获取类型{0}的实例", action.DeclaringService));
+                this.RaiseException(new ExceptionContext(requestContext, ex));
                 return;
             }
 
-            // 处理数据包
+            // 处理数据包           
             fastService.Serializer = this.Serializer;
             fastService.GetFilters = this.GetFilters;
-            fastService.ProcessPacket(client, packet, method);
+            fastService.ProcessAction(new ActionContext(requestContext, action));
 
             if (isSpecail == false)
             {
@@ -256,55 +216,55 @@ namespace NetworkSocket.Fast
         }
 
         /// <summary>
-        /// 获取过滤器
+        /// 获取服务行为的过滤器
+        /// 不包括全局过滤器
         /// </summary>
-        /// <param name="method">方法</param>
+        /// <param name="action">服务行为</param>
         /// <returns></returns>
-        protected virtual IEnumerable<Filter> GetFilters(MethodInfo method)
+        protected virtual IEnumerable<Filter> GetFilters(FastAction action)
         {
-            var methodAttributes = Attribute.GetCustomAttributes(method, typeof(FilterAttribute), true)
-                .Cast<FilterAttribute>();
+            var actionAttributes = action.GetMethodFilterAttributes();
 
-            var classAttributes = Attribute.GetCustomAttributes(method.DeclaringType, typeof(FilterAttribute), true)
-                .Cast<FilterAttribute>()
-                .Where(filter => filter.AllowMultiple || methodAttributes.Any(mFilter => mFilter.TypeId == filter.TypeId) == false);
+            var serviceAttributes = action.GetClassFilterAttributes()
+                .Where(filter => filter.AllowMultiple ||
+                    actionAttributes.Any(mFilter => mFilter.TypeId == filter.TypeId) == false);
 
-
-            var methodFilters = methodAttributes
+            var actionFilters = actionAttributes
                 .Select(fiter => new Filter
                 {
                     Instance = fiter,
-                    FilterScope = (fiter is IAuthorizationFilter) ? FilterScope.Authorization : FilterScope.ActionMethod
+                    FilterScope = (fiter is IAuthorizationFilter) ? FilterScope.Authorization : FilterScope.Method
                 });
 
-            var classFilters = classAttributes
+            var serviceFilters = serviceAttributes
                 .Select(fiter => new Filter
                  {
                      Instance = fiter,
-                     FilterScope = (fiter is IAuthorizationFilter) ? FilterScope.Authorization : FilterScope.ActionClass
+                     FilterScope = (fiter is IAuthorizationFilter) ? FilterScope.Authorization : FilterScope.Class
                  });
 
-            return methodFilters.Concat(classFilters).OrderBy(filter => filter.FilterScope).ThenBy(filter => filter.Instance.Order);
+            var filters = serviceFilters.Concat(actionFilters)
+                .OrderBy(filter => filter.FilterScope)
+                .ThenBy(filter => filter.Instance.Order);
+
+            return filters;
         }
 
         /// <summary>
         /// 并将异常传给客户端并调用OnException
         /// </summary>
-        /// <param name="client">客户端</param>
-        /// <param name="packet">封包</param>
-        /// <param name="exception">异常</param>         
-        private void RaiseException(SocketAsync<FastPacket> client, FastPacket packet, Exception exception)
+        /// <param name="exceptionContext">上下文</param>              
+        private void RaiseException(ExceptionContext exceptionContext)
         {
-            FastTcpCommon.RaiseRemoteException(client, packet, exception, this.Serializer);
-            this.OnException(client, exception);
+            FastTcpCommon.RaiseRemoteException(exceptionContext, this.Serializer);
+            this.OnException(exceptionContext);
         }
 
         /// <summary>
         /// 当操作中遇到处理异常时，将触发此方法
         /// </summary>
-        /// <param name="client">客户端</param>
-        /// <param name="exception">异常</param>
-        protected virtual void OnException(SocketAsync<FastPacket> client, Exception exception)
+        /// <param name="exceptionContext">上下文</param>      
+        protected virtual void OnException(ExceptionContext exceptionContext)
         {
         }
 
@@ -318,14 +278,65 @@ namespace NetworkSocket.Fast
             if (disposing)
             {
                 this.specialService.Dispose();
-                this.serviceMethodList.Clear();
+                this.serviceActions.Clear();
                 this.serviceResolver.Clear();
 
                 this.serviceResolver = null;
                 this.specialService = null;
-                this.serviceMethodList = null;
+                this.serviceActions = null;
                 this.Serializer = null;
             }
         }
+
+
+        #region 过滤器接口实现
+        /// <summary>
+        /// 获取或设置排序
+        /// </summary>
+        public int Order
+        {
+            get
+            {
+                return -1;
+            }
+        }
+
+        /// <summary>
+        /// 是否允许多个实例
+        /// </summary>
+        public bool AllowMultiple
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// 授权时触发       
+        /// </summary>
+        /// <param name="actionContext">上下文</param>       
+        /// <returns></returns>
+        public virtual void OnAuthorization(ActionContext actionContext)
+        {
+        }
+
+        /// <summary>
+        /// 在执行服务行为前触发       
+        /// </summary>
+        /// <param name="actionContext">上下文</param>       
+        /// <returns></returns>
+        public virtual void OnExecuting(ActionContext actionContext)
+        {
+        }
+
+        /// <summary>
+        /// 在执行服务行为后触发
+        /// </summary>
+        /// <param name="actionContext">上下文</param>      
+        public virtual void OnExecuted(ActionContext actionContext)
+        {
+        }
+        #endregion
     }
 }

@@ -11,18 +11,16 @@ namespace NetworkSocket.Fast.Filters
     public interface IActionFilter : IFilter
     {
         /// <summary>
-        /// 在执行服务方法前触发       
+        /// 在执行服务行为前触发       
         /// </summary>
-        /// <param name="client">客户端</param>
-        /// <param name="packet">数据包</param>
+        /// <param name="actionContext">上下文</param>       
         /// <returns></returns>
-        void OnExecuting(SocketAsync<FastPacket> client, FastPacket packet);
+        void OnExecuting(ActionContext actionContext);
 
         /// <summary>
-        /// 在执行服务方法后触发
+        /// 在执行服务行为后触发
         /// </summary>
-        /// <param name="client">客户端</param>
-        /// <param name="packet">数据包</param>
-        void OnExecuted(SocketAsync<FastPacket> client, FastPacket packet);
+        /// <param name="actionContext">上下文</param>      
+        void OnExecuted(ActionContext actionContext);
     }
 }

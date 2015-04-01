@@ -1,5 +1,4 @@
 ﻿using NetworkSocket.Fast.Attributes;
-using NetworkSocket.Fast.Methods;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,9 +14,9 @@ namespace NetworkSocket.Fast
     public abstract class FastTcpClientBase : TcpClientBase<FastPacket>
     {
         /// <summary>
-        /// 所有服务方法
+        /// 所有服务行为
         /// </summary>
-        private List<ServiceMethod> serviceMethodList;
+        private List<FastAction> serviceActions;
 
         /// <summary>
         /// 获取或设置序列化工具
@@ -30,7 +29,7 @@ namespace NetworkSocket.Fast
         /// </summary>
         public FastTcpClientBase()
         {
-            this.serviceMethodList = FastTcpCommon.GetServiceMethodList(this.GetType());
+            this.serviceActions = FastTcpCommon.GetServiceActions(this.GetType());
             this.Serializer = new DefaultSerializer();
         }
 
@@ -63,7 +62,8 @@ namespace NetworkSocket.Fast
             var exception = FastTcpCommon.ThrowRemoteException(packet, this.Serializer);
             if (exception != null)
             {
-                this.OnException(exception);
+                var exContext = new ExceptionContext { Client = this, Packet = packet, Exception = exception };
+                this.OnException(exContext);
             }
         }
 
@@ -73,18 +73,20 @@ namespace NetworkSocket.Fast
         /// <param name="packet">数据包</param>
         private void ProcessNormalPacket(FastPacket packet)
         {
-            var method = this.serviceMethodList.FirstOrDefault(item => item.ServiceAttribute.Command == packet.Command);
-            if (method == null)
+            var requestContext = new RequestContext { Client = this, Packet = packet };
+            var action = this.serviceActions.FirstOrDefault(item => item.Command == packet.Command);
+
+            if (action == null)
             {
-                var exception = new Exception(string.Format("命令为{0}的服务方法不存在", packet.Command));
-                this.RaiseException(packet, exception);
+                var exception = new Exception(string.Format("命令为{0}的服务行为不存在", packet.Command));
+                this.RaiseException(new ExceptionContext(requestContext, exception));
                 return;
             }
 
-            // 如果是Cmd值对应是Self类型方法 也就是客户端主动调用服务方法
-            if (method.ServiceAttribute.Implement == Implements.Self)
+            // 如果是Cmd值对应是Self类型方法 也就是客户端主动调用服务行为
+            if (action.Implement == Implements.Self)
             {
-                this.TryInvoke(method, packet);
+                this.TryInvokeAction(new ActionContext(requestContext, action));
                 return;
             }
 
@@ -103,23 +105,23 @@ namespace NetworkSocket.Fast
         /// 将返回值发送给服务器
         /// 或将异常发送给服务器
         /// </summary>    
-        /// <param name="method">方法</param>
-        /// <param name="packet">数据</param>
-        private void TryInvoke(ServiceMethod method, FastPacket packet)
+        /// <param name="actionContext">上下文</param>       
+        private void TryInvokeAction(ActionContext actionContext)
         {
             try
             {
-                var parameters = FastTcpCommon.GetServiceMethodParameters(method, packet, this.Serializer);
-                var returnValue = method.Invoke(this, parameters);
-                if (method.HasReturn && this.IsConnected)
+                var parameters = FastTcpCommon.GetActionParameters(actionContext, this.Serializer);
+                var returnValue = actionContext.Action.Execute(this, parameters);
+                if (actionContext.Action.IsVoidReturn == false && this.IsConnected)
                 {
-                    packet.SetBodyBinary(this.Serializer, returnValue);
-                    this.Send(packet);
+                    actionContext.Packet.SetBodyBinary(this.Serializer, returnValue);
+                    this.Send(actionContext.Packet);
                 }
             }
             catch (Exception ex)
             {
-                this.RaiseException(packet, ex);
+                var exceptionContext = new ExceptionContext(actionContext, ex);
+                this.RaiseException(exceptionContext);
             }
         }
 
@@ -127,19 +129,18 @@ namespace NetworkSocket.Fast
         /// <summary>        
         /// 并将异常传给客户端并调用OnException
         /// </summary>       
-        /// <param name="packet">数据包</param>
-        /// <param name="exception">异常</param>         
-        private void RaiseException(FastPacket packet, Exception exception)
+        /// <param name="exceptionContext">上下文</param>               
+        private void RaiseException(ExceptionContext exceptionContext)
         {
-            FastTcpCommon.RaiseRemoteException(this, packet, exception, this.Serializer);
-            this.OnException(exception);
+            FastTcpCommon.RaiseRemoteException(exceptionContext, this.Serializer);
+            this.OnException(exceptionContext);
         }
 
         /// <summary>
         /// 当操作中遇到处理异常时，将触发此方法
         /// </summary>      
-        /// <param name="exception">异常</param>
-        protected virtual void OnException(Exception exception)
+        /// <param name="exceptionContext">上下文</param>
+        protected virtual void OnException(ExceptionContext exceptionContext)
         {
         }
 
@@ -186,8 +187,8 @@ namespace NetworkSocket.Fast
             base.Dispose(disposing);
             if (disposing)
             {
-                this.serviceMethodList.Clear();
-                this.serviceMethodList = null;
+                this.serviceActions.Clear();
+                this.serviceActions = null;
                 this.Serializer = null;
             }
         }

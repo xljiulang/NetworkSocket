@@ -23,8 +23,8 @@ namespace ClientApp.Forms
         private async void MainForm_Load(object sender, EventArgs e)
         {
             var endPoint = new System.Net.IPEndPoint(System.Net.IPAddress.Loopback, 4502);
-            var state = await ServerInvoker.Instance.Connect(endPoint);
-            var version = state ? await ServerInvoker.Instance.GetVersion() : "未知";
+            var state = await RemoteServer.Instance.Connect(endPoint);
+            var version = state ? await RemoteServer.Instance.GetVersion() : "未知";
 
             this.Text = "连接" + (state ? "成功" : "失败") + " 服务版本：" + version;
             this.btn_Login.Enabled = state;
@@ -38,7 +38,7 @@ namespace ClientApp.Forms
                 Password = this.textBox_Password.Text
             };
 
-            var state = await ServerInvoker.Instance.Login(user, false);
+            var state = await RemoteServer.Instance.Login(user, false);
             if (state == false)
             {
                 MessageBox.Show("登录" + (state ? "成功" : "失败"));

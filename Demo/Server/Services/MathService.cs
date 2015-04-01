@@ -22,15 +22,14 @@ namespace Server.Services
         /// <summary>
         /// 求合操作
         /// 客户端登录并验证通过后才能调用此服务
-        /// </summary>
-        /// <param name="client">客户端</param>
+        /// </summary>     
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <param name="z"></param>
         /// <returns></returns>
         [Service(Implements.Self, 300)]
         [Log("日志")]
-        public int GetSun(SocketAsync<FastPacket> client, int x, int y, int z)
+        public int GetSun(int x, int y, int z)
         {
             Console.WriteLine("收到GetSum({0}, {1}, {2})", x, y, z);
             return x + y + z;

@@ -11,10 +11,10 @@ namespace NetworkSocket.Fast.Filters
     public interface IAuthorizationFilter : IFilter
     {
         /// <summary>
-        /// 授权触发
+        /// 授权时触发       
         /// </summary>
-        /// <param name="client">客户端</param>
-        /// <param name="packet">数据包</param>
-        void OnAuthorization(SocketAsync<FastPacket> client, FastPacket packet);
+        /// <param name="actionContext">上下文</param>       
+        /// <returns></returns>
+        void OnAuthorization(ActionContext actionContext);
     }
 }

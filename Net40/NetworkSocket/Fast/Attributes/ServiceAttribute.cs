@@ -6,7 +6,7 @@ using System.Text;
 namespace NetworkSocket.Fast.Attributes
 {
     /// <summary>
-    /// 表示服务方法特性
+    /// 表示服务行为标记特性
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     public class ServiceAttribute : Attribute
@@ -17,15 +17,15 @@ namespace NetworkSocket.Fast.Attributes
         public Implements Implement { get; set; }
 
         /// <summary>
-        /// 方法对应的数据包命令值
+        /// 服务行为对应的数据包命令值
         /// </summary>
         public int Command { get; set; }
 
         /// <summary>
-        /// 修饰方法行为的特性
+        /// 表示服务行为标记特性
         /// </summary>       
-        /// <param name="implement">实现者</param>
-        /// <param name="cmd">命令值</param>
+        /// <param name="implement">实现服务的目标</param>
+        /// <param name="cmd">服务行为对应的数据包命令值</param>
         public ServiceAttribute(Implements implement, int cmd)
         {
             this.Implement = implement;

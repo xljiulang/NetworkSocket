@@ -14,17 +14,17 @@ namespace ClientApp
     /// <summary>
     /// 客户端的实现
     /// </summary>
-    public class ServerInvoker : FastTcpClientBase
+    public class RemoteServer : FastTcpClientBase
     {
         /// <summary>
         /// 唯一实例
         /// </summary>
-        private static readonly Lazy<ServerInvoker> instance = new Lazy<ServerInvoker>(() => new ServerInvoker());
+        private static readonly Lazy<RemoteServer> instance = new Lazy<RemoteServer>(() => new RemoteServer());
 
         /// <summary>
         /// 获取唯一实例
         /// </summary>
-        public static ServerInvoker Instance
+        public static RemoteServer Instance
         {
             get
             {
