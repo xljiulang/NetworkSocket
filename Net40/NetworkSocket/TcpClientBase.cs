@@ -2,7 +2,6 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-using NetworkSocket.Interfaces;
 
 namespace NetworkSocket
 {

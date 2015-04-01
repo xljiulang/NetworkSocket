@@ -5,7 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
-namespace NetworkSocket.Interfaces
+namespace NetworkSocket
 {
     /// <summary>
     /// 异步Socket接口

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 
-namespace NetworkSocket.Interfaces
+namespace NetworkSocket
 {
     /// <summary>
     /// Tcp服务接口
@@ -26,8 +26,6 @@ namespace NetworkSocket.Interfaces
         /// 获取服务是否已处在监听中
         /// </summary>
         bool IsListening { get; }
-
-
 
         /// <summary>
         /// 开始启动监听

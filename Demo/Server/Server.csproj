@@ -70,10 +70,6 @@
     <Compile Include="FastServer.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Net40\NetworkSocket.Fast\NetworkSocket.Fast.csproj">
-      <Project>{6D50EA40-87CB-40D8-9CF6-57308BBD8FDF}</Project>
-      <Name>NetworkSocket.Fast</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\Net40\NetworkSocket\NetworkSocket.csproj">
       <Project>{80D0FA44-523B-4E68-BDC2-B12901D5855B}</Project>
       <Name>NetworkSocket</Name>

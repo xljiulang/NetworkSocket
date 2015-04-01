@@ -48,14 +48,37 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Web.Extensions" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ByteBuilder.cs" />
     <Compile Include="ByteConverter.cs" />
     <Compile Include="Endians.cs" />
-    <Compile Include="Interfaces\ISocketAsync.cs" />
-    <Compile Include="Interfaces\ITcpClient.cs" />
-    <Compile Include="Interfaces\ITcpServer.cs" />
+    <Compile Include="Fast\Attributes\Implements.cs" />
+    <Compile Include="Fast\Attributes\ServiceAttribute.cs" />
+    <Compile Include="Fast\Attributes\SpecialServiceAttribute.cs" />
+    <Compile Include="Fast\CallbackTable.cs" />
+    <Compile Include="Fast\DefaultSerializer.cs" />
+    <Compile Include="Fast\FastPacket.cs" />
+    <Compile Include="Fast\FastServiceBase.cs" />
+    <Compile Include="Fast\FastTcpClientBase.cs" />
+    <Compile Include="Fast\FastTcpCommon.cs" />
+    <Compile Include="Fast\FastTcpServerBase.cs" />
+    <Compile Include="Fast\Filters\Filter.cs" />
+    <Compile Include="Fast\Filters\FilterAttribute.cs" />
+    <Compile Include="Fast\Filters\FilterScope.cs" />
+    <Compile Include="Fast\Filters\IActionFilter.cs" />
+    <Compile Include="Fast\Filters\IAuthorizationFilter.cs" />
+    <Compile Include="Fast\Filters\IFilter.cs" />
+    <Compile Include="Fast\ISerializer.cs" />
+    <Compile Include="Fast\Methods\FastMethod.cs" />
+    <Compile Include="Fast\Methods\ServiceMethod.cs" />
+    <Compile Include="Fast\RemoteException.cs" />
+    <Compile Include="Fast\SpecialCommands.cs" />
+    <Compile Include="Fast\SpecialService.cs" />
+    <Compile Include="ISocketAsync.cs" />
+    <Compile Include="ITcpClient.cs" />
+    <Compile Include="ITcpServer.cs" />
     <Compile Include="SocketAsyncEventArgBuffer.cs" />
     <Compile Include="SocketAsyncEventArgPool.cs" />
     <Compile Include="Tasks\LimitedTask.cs" />
@@ -78,6 +101,7 @@
   <ItemGroup>
     <None Include="_Sn.snk" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>mkdir $(SolutionDir)\Release\Net40

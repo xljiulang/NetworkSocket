@@ -5,7 +5,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NetworkSocket.Interfaces
+namespace NetworkSocket
 {
     /// <summary>
     /// Tcp客户端接口
