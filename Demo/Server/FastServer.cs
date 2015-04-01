@@ -84,17 +84,17 @@ namespace Server
         /// </summary>
         /// <param name="serviceType">服务类型</param>
         /// <returns></returns>
-        protected override object GetService(Type serviceType)
-        {
+        protected override FastServiceBase GetService(Type serviceType)
+        {          
             this.liftTimeScope = this.container.BeginLifetimeScope();
-            return this.liftTimeScope.Resolve(serviceType);
+            return this.liftTimeScope.Resolve(serviceType) as FastServiceBase;
         }
 
         /// <summary>
         /// 使用Autofac管理服务生命周期
         /// </summary>
         /// <param name="service">服务实例</param>
-        protected override void DisposeService(IDisposable service)
+        protected override void DisposeService(FastServiceBase service)
         {
             this.liftTimeScope.Dispose();
         }

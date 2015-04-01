@@ -2,6 +2,7 @@
 using NetworkSocket.Fast.Filters;
 using NetworkSocket.Fast.Methods;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -29,6 +30,11 @@ namespace NetworkSocket.Fast
         private SpecialService specialService;
 
         /// <summary>
+        /// 服务实例反转缓存
+        /// </summary>
+        private ConcurrentDictionary<Type, FastServiceBase> serviceResolver;
+
+        /// <summary>
         /// 获取或设置序列化工具
         /// 默认是Json序列化
         /// </summary>
@@ -41,6 +47,7 @@ namespace NetworkSocket.Fast
         {
             this.serviceMethodList = new List<ServiceMethod>();
             this.specialService = new SpecialService();
+            this.serviceResolver = new ConcurrentDictionary<Type, FastServiceBase>();
             this.Serializer = new DefaultSerializer();
 
             var specialMethods = FastTcpCommon.GetServiceMethodList(typeof(SpecialService));
@@ -206,7 +213,7 @@ namespace NetworkSocket.Fast
 
             if (Enum.IsDefined(typeof(SpecialCommands), packet.Command) == false)
             {
-                fastService = this.GetService(method.DeclaringType) as FastServiceBase;
+                fastService = this.GetService(method.DeclaringType);
                 isSpecail = false;
             }
 
@@ -234,16 +241,16 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="serviceType">服务类型</param>
         /// <returns></returns>
-        protected virtual object GetService(Type serviceType)
+        protected virtual FastServiceBase GetService(Type serviceType)
         {
-            return Activator.CreateInstance(serviceType) as FastServiceBase;
+            return this.serviceResolver.GetOrAdd(serviceType, type => Activator.CreateInstance(type) as FastServiceBase);
         }
 
         /// <summary>
         /// 释放服务资源
         /// </summary>
         /// <param name="service">服务实例</param>
-        protected virtual void DisposeService(IDisposable service)
+        protected virtual void DisposeService(FastServiceBase service)
         {
             service.Dispose();
         }
@@ -271,13 +278,13 @@ namespace NetworkSocket.Fast
                 });
 
             var classFilters = classAttributes
-                 .Select(fiter => new Filter
+                .Select(fiter => new Filter
                  {
                      Instance = fiter,
                      FilterScope = (fiter is IAuthorizationFilter) ? FilterScope.Authorization : FilterScope.ActionClass
                  });
 
-            return methodFilters.Concat(classFilters).OrderBy(filter => filter.FilterScope).ThenBy(item => item.Instance.Order);
+            return methodFilters.Concat(classFilters).OrderBy(filter => filter.FilterScope).ThenBy(filter => filter.Instance.Order);
         }
 
         /// <summary>
@@ -312,6 +319,10 @@ namespace NetworkSocket.Fast
             {
                 this.specialService.Dispose();
                 this.serviceMethodList.Clear();
+                this.serviceResolver.Clear();
+
+                this.serviceResolver = null;
+                this.specialService = null;
                 this.serviceMethodList = null;
                 this.Serializer = null;
             }

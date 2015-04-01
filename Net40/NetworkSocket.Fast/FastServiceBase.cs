@@ -211,6 +211,7 @@ namespace NetworkSocket.Fast
             if (disposing)
             {
                 this.Serializer = null;
+                this.GetFilters = null;
             }
         }
         #endregion
