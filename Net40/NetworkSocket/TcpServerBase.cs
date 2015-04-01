@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using System.Linq;
 
 
 namespace NetworkSocket
@@ -97,6 +98,11 @@ namespace NetworkSocket
             catch (Exception ex)
             {
                 this.listenSocket.Dispose();
+                var tcpPort = TcpTable.Snapshot().FirstOrDefault(item => item.Port == localEndPoint.Port);
+                if (tcpPort != null)
+                {
+                    throw new Exception(string.Format("端口已被PID为{0}进程占用", tcpPort.OwnerPId));
+                }
                 throw ex;
             }
         }
