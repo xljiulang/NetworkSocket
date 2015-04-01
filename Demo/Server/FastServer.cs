@@ -58,8 +58,6 @@ namespace Server
             builder.RegisterType<NotifyService>()
                 .SingleInstance();
 
-            builder.RegisterType<Filter>();
-
             // 注册DbContext           
             builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
                .Where(type => (typeof(IDbContext).IsAssignableFrom(type)))
@@ -102,20 +100,17 @@ namespace Server
         }
 
         /// <summary>
-        /// 获取并替换默认过滤器
+        /// 给过滤器添加属性注入
         /// </summary>
-        /// <param name="method"></param>
+        /// <param name="method">方法</param>
         /// <returns></returns>
-        protected override IEnumerable<IFilter> GetFilters(MethodInfo method)
+        protected override IEnumerable<Filter> GetFilters(MethodInfo method)
         {
-            return base.GetFilters(method)
-                .Cast<FilterAttribute>()
-                .Select(item =>
-                {
-                    var filter = this.liftTimeScope.Resolve<Filter>();
-                    filter.FilterAttribute = this.liftTimeScope.InjectProperties(item);
-                    return filter;
-                });
+            return base.GetFilters(method).Select(filter =>
+            {
+                filter.Instance = this.liftTimeScope.InjectProperties(filter.Instance);
+                return filter;
+            });
         }
 
         /// <summary>

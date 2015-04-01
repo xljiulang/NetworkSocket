@@ -51,6 +51,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Attributes\LogAttribute.cs" />
     <Compile Include="Database\DbContext.cs" />
     <Compile Include="Database\Loger.cs" />
     <Compile Include="Database\RoleDao.cs" />

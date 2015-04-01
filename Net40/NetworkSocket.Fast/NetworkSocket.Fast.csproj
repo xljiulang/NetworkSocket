@@ -58,7 +58,10 @@
     <Compile Include="FastServiceBase.cs" />
     <Compile Include="FastTcpCommon.cs" />
     <Compile Include="Filters\Filter.cs" />
-    <Compile Include="IFilter.cs" />
+    <Compile Include="Filters\FilterScope.cs" />
+    <Compile Include="Filters\IActionFilter.cs" />
+    <Compile Include="Filters\IAuthorizationFilter.cs" />
+    <Compile Include="Filters\IFilter.cs" />
     <Compile Include="RemoteException.cs" />
     <Compile Include="FastTcpClientBase.cs">
       <SubType>Code</SubType>

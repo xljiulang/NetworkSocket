@@ -29,6 +29,7 @@ namespace Server.Services
         /// <param name="z"></param>
         /// <returns></returns>
         [Service(Implements.Self, 300)]
+        [Log("日志")]
         public int GetSun(SocketAsync<FastPacket> client, int x, int y, int z)
         {
             Console.WriteLine("收到GetSum({0}, {1}, {2})", x, y, z);

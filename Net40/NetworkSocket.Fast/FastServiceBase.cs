@@ -1,4 +1,5 @@
 ﻿using NetworkSocket.Fast.Attributes;
+using NetworkSocket.Fast.Filters;
 using NetworkSocket.Fast.Methods;
 using System;
 using System.Collections.Generic;
@@ -23,7 +24,7 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 获取过滤委托
         /// </summary>
-        internal Func<MethodInfo, IEnumerable<IFilter>> GetFilters;
+        internal Func<MethodInfo, IEnumerable<Filter>> GetFilters;
 
         /// <summary>
         /// 处理封包
@@ -64,25 +65,13 @@ namespace NetworkSocket.Fast
             {
                 // 执行Filter
                 var filters = this.GetFilters(method.Method);
-                if (filters != null)
-                {
-                    foreach (var filter in filters)
-                    {
-                        filter.OnExecuting(client, packet);
-                    }
-                }
+                this.InvokeFiltersBefore(filters, client, packet);
 
                 var parameters = FastTcpCommon.GetServiceMethodParameters(method, packet, this.Serializer, client);
                 var returnValue = method.Invoke(this, parameters);
 
                 // 执行Filter
-                if (filters != null)
-                {
-                    foreach (var filter in filters)
-                    {
-                        filter.OnExecuted(client, packet);
-                    }
-                }
+                this.InvokeFiltersAfter(filters, client, packet);
 
                 if (method.HasReturn && client.IsConnected)
                 {
@@ -93,6 +82,47 @@ namespace NetworkSocket.Fast
             catch (Exception ex)
             {
                 this.RaiseException(client, packet, ex);
+            }
+        }
+
+
+        /// <summary>
+        /// 执行过滤器
+        /// </summary>
+        /// <param name="filters">过滤器</param>
+        /// <param name="client">客户端</param>
+        /// <param name="packet">数据包</param>
+        private void InvokeFiltersBefore(IEnumerable<Filter> filters, SocketAsync<FastPacket> client, FastPacket packet)
+        {
+            foreach (var filter in filters)
+            {
+                switch (filter.FilterScope)
+                {
+                    case FilterScope.Authorization:
+                        ((IAuthorizationFilter)filter.Instance).OnAuthorization(client, packet);
+                        break;
+
+                    default:
+                        ((IActionFilter)filter.Instance).OnExecuting(client, packet);
+                        break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 执行过滤器
+        /// </summary>
+        /// <param name="filters">过滤器</param>
+        /// <param name="client">客户端</param>
+        /// <param name="packet">数据包</param>
+        public void InvokeFiltersAfter(IEnumerable<Filter> filters, SocketAsync<FastPacket> client, FastPacket packet)
+        {
+            foreach (var filter in filters)
+            {
+                if (filter.FilterScope != FilterScope.Authorization)
+                {
+                    ((IActionFilter)filter.Instance).OnExecuted(client, packet);
+                }
             }
         }
 

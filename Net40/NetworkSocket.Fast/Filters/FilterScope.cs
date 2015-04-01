@@ -6,18 +6,23 @@ using System.Text;
 namespace NetworkSocket.Fast.Filters
 {
     /// <summary>
-    /// 过滤器
+    /// 过滤器范围
     /// </summary>
-    public class Filter
+    public enum FilterScope
     {
         /// <summary>
-        /// 获取或设置实例
+        /// 权限过滤
         /// </summary>
-        public IFilter Instance { get; set; }
+        Authorization,
 
         /// <summary>
-        /// 获取或设置适用范围
+        /// 类级方法过滤
         /// </summary>
-        public FilterScope FilterScope { get; set; }
+        ActionClass,
+
+        /// <summary>
+        /// 成员组方法过滤
+        /// </summary>
+        ActionMethod,
     }
 }

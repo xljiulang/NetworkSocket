@@ -253,19 +253,32 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="method">方法</param>
         /// <returns></returns>
-        protected virtual IEnumerable<IFilter> GetFilters(MethodInfo method)
+        protected virtual IEnumerable<Filter> GetFilters(MethodInfo method)
         {
-            var methodFilters = Attribute.GetCustomAttributes(method, typeof(FilterAttribute), true) as FilterAttribute[];
-            var classFilters = Attribute.GetCustomAttributes(method.DeclaringType, typeof(FilterAttribute), true) as FilterAttribute[];
+            var methodAttributes = Attribute.GetCustomAttributes(method, typeof(FilterAttribute), true)
+                .Cast<FilterAttribute>();
 
-            var hashSet = new HashSet<FilterAttribute>(methodFilters);
-            foreach (var filter in classFilters)
-            {
-                hashSet.Add(filter);
-            }
-            return hashSet.OrderBy(f => f.Order);
+            var classAttributes = Attribute.GetCustomAttributes(method.DeclaringType, typeof(FilterAttribute), true)
+                .Cast<FilterAttribute>()
+                .Where(filter => filter.AllowMultiple || methodAttributes.Any(mFilter => mFilter.TypeId == filter.TypeId) == false);
+
+
+            var methodFilters = methodAttributes
+                .Select(fiter => new Filter
+                {
+                    Instance = fiter,
+                    FilterScope = (fiter is IAuthorizationFilter) ? FilterScope.Authorization : FilterScope.ActionMethod
+                });
+
+            var classFilters = classAttributes
+                 .Select(fiter => new Filter
+                 {
+                     Instance = fiter,
+                     FilterScope = (fiter is IAuthorizationFilter) ? FilterScope.Authorization : FilterScope.ActionClass
+                 });
+
+            return methodFilters.Concat(classFilters).OrderBy(filter => filter.FilterScope).ThenBy(item => item.Instance.Order);
         }
-
 
         /// <summary>
         /// 并将异常传给客户端并调用OnException
