@@ -1,4 +1,5 @@
 ﻿using Models;
+using NetworkSocket.Fast;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -38,16 +39,23 @@ namespace ClientApp.Forms
                 Password = this.textBox_Password.Text
             };
 
-            var state = await RemoteServer.Instance.Login(user, false);
-            if (state == false)
+            try
             {
-                MessageBox.Show("登录" + (state ? "成功" : "失败"));
+                var state = await RemoteServer.Instance.Login(user, false);
+                if (state == false)
+                {
+                    MessageBox.Show("登录" + (state ? "成功" : "失败"));
+                }
+                else
+                {
+                    this.Hide();
+                    new SumForm().ShowDialog();
+                    this.Close();
+                }
             }
-            else
+            catch (RemoteException ex)
             {
-                this.Hide();
-                new SumForm().ShowDialog();
-                this.Close();
+                MessageBox.Show(ex.Reason, ex.Message);
             }
         }
 

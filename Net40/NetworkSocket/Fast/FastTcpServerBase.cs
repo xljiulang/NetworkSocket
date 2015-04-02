@@ -164,7 +164,7 @@ namespace NetworkSocket.Fast
             if (action == null)
             {
                 var exception = new Exception(string.Format("命令为{0}的服务行为不存在", packet.Command));
-                this.RaiseException(new ExceptionContext(requestContext, exception));
+                this.RaiseExceptionAndThrow(new ExceptionContext(requestContext, exception));
                 return;
             }
 
@@ -180,7 +180,7 @@ namespace NetworkSocket.Fast
             if (fastService == null)
             {
                 var ex = new Exception(string.Format("无法获取类型{0}的实例", action.DeclaringService));
-                this.RaiseException(new ExceptionContext(requestContext, ex));
+                this.RaiseExceptionAndThrow(new ExceptionContext(requestContext, ex));
                 return;
             }
 
@@ -250,16 +250,25 @@ namespace NetworkSocket.Fast
         }
 
         /// <summary>
-        /// 并将异常传给客户端并调用OnException
+        /// 并将异常传给客户端
+        /// 然后抛出
         /// </summary>
         /// <param name="exceptionContext">上下文</param>              
-        private void RaiseException(ExceptionContext exceptionContext)
+        private void RaiseExceptionAndThrow(ExceptionContext exceptionContext)
         {
             FastTcpCommon.RaiseRemoteException(exceptionContext, this.Serializer);
 
-            foreach (var filter in GlobalFilters.FilterCollection.ExceptionFilters)
+            foreach (var filter in GlobalFilters.ExceptionFilters)
             {
-                filter.OnException(exceptionContext);
+                if (exceptionContext.ExceptionHandled == false)
+                {
+                    filter.OnException(exceptionContext);
+                }
+            }
+
+            if (exceptionContext.ExceptionHandled == false)
+            {
+                throw exceptionContext.Exception;
             }
         }
 
@@ -310,34 +319,34 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 授权时触发       
         /// </summary>
-        /// <param name="actionContext">上下文</param>       
+        /// <param name="filterContext">上下文</param>       
         /// <returns></returns>
-        public virtual void OnAuthorization(ActionContext actionContext)
+        public virtual void OnAuthorization(ActionContext filterContext)
         {
         }
 
         /// <summary>
         /// 在执行服务行为前触发       
         /// </summary>
-        /// <param name="actionContext">上下文</param>       
+        /// <param name="filterContext">上下文</param>       
         /// <returns></returns>
-        public virtual void OnExecuting(ActionContext actionContext)
+        public virtual void OnExecuting(ActionContext filterContext)
         {
         }
 
         /// <summary>
         /// 在执行服务行为后触发
         /// </summary>
-        /// <param name="actionContext">上下文</param>      
-        public virtual void OnExecuted(ActionContext actionContext)
+        /// <param name="filterContext">上下文</param>      
+        public virtual void OnExecuted(ActionContext filterContext)
         {
         }
 
         /// <summary>
         /// 异常时触发
         /// </summary>
-        /// <param name="exceptionContext">上下文</param>
-        public virtual void OnException(ExceptionContext exceptionContext)
+        /// <param name="filterContext">上下文</param>
+        public virtual void OnException(ExceptionContext filterContext)
         {
         }
 

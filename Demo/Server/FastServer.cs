@@ -139,24 +139,10 @@ namespace Server
             Console.WriteLine("客户端{0}断开连接，当前连接数为：{1}", client, this.AliveClients.Count);
         }
 
-        public override void OnAuthorization(ActionContext actionContext)
+        public override void OnException(ExceptionContext filterContext)
         {
-            base.OnAuthorization(actionContext);
-        }
-
-        public override void OnExecuting(ActionContext actionContext)
-        {
-            base.OnExecuting(actionContext);
-        }
-
-        public override void OnExecuted(ActionContext actionContext)
-        {
-            base.OnExecuted(actionContext);
-        }
-
-        public override void OnException(ExceptionContext exceptionContext)
-        {
-            base.OnException(exceptionContext);
+            Console.WriteLine(filterContext.Exception);
+            // filterContext.ExceptionHandled = true;
         }
         #endregion
 

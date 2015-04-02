@@ -13,8 +13,8 @@ namespace NetworkSocket.Fast.Filters
         /// <summary>
         /// 授权时触发       
         /// </summary>
-        /// <param name="actionContext">上下文</param>       
+        /// <param name="filterContext">上下文</param>       
         /// <returns></returns>
-        void OnAuthorization(ActionContext actionContext);
+        void OnAuthorization(ActionContext filterContext);
     }
 }

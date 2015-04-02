@@ -26,9 +26,9 @@ namespace Server.Services
         /// <param name="user">用户数据</param>
         /// <param name="ifAdmin"></param>
         /// <returns></returns>    
-        [Service(Implements.Self, 100)]       
+        [Service(Implements.Self, 100)]
         public bool Login(User user, bool ifAdmin)
-        {           
+        {
             if (user == null)
             {
                 throw new ArgumentNullException("user");
@@ -40,12 +40,6 @@ namespace Server.Services
             // 记录客户端的登录结果
             this.CurrentContext.Client.TagBag.Logined = state;
             return state;
-        }
-
-
-        public override void OnException(ExceptionContext exceptionContext)
-        {
-
         }
     }
 }

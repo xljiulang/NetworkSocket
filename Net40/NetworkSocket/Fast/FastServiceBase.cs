@@ -99,8 +99,12 @@ namespace NetworkSocket.Fast
             }
             catch (Exception ex)
             {
-                var exContext = new ExceptionContext(actionContext, ex);
-                this.RaiseException(filters, exContext);
+                var exceptionContext = new ExceptionContext(actionContext, ex);
+                this.RaiseException(filters, exceptionContext);
+                if (exceptionContext.ExceptionHandled == false)
+                {
+                    throw;
+                }
             }
             finally
             {
@@ -117,7 +121,7 @@ namespace NetworkSocket.Fast
         private void InvokeFiltersBefore(IEnumerable<IFilter> filters, ActionContext actionContext)
         {
             // OnAuthorization
-            foreach (var globalFilter in GlobalFilters.FilterCollection.AuthorizationFilters)
+            foreach (var globalFilter in GlobalFilters.AuthorizationFilters)
             {
                 globalFilter.OnAuthorization(actionContext);
             }
@@ -132,7 +136,7 @@ namespace NetworkSocket.Fast
             }
 
             // OnExecuting
-            foreach (var globalFilter in GlobalFilters.FilterCollection.ActionFilters)
+            foreach (var globalFilter in GlobalFilters.ActionFilters)
             {
                 globalFilter.OnExecuting(actionContext);
             }
@@ -155,7 +159,7 @@ namespace NetworkSocket.Fast
         private void InvokeFiltersAfter(IEnumerable<IFilter> filters, ActionContext actionContext)
         {
             // 全局过滤器
-            foreach (var globalFilter in GlobalFilters.FilterCollection.ActionFilters)
+            foreach (var globalFilter in GlobalFilters.ActionFilters)
             {
                 globalFilter.OnExecuted(actionContext);
             }
@@ -175,7 +179,7 @@ namespace NetworkSocket.Fast
         }
 
         /// <summary>
-        /// 并将异常传给客户端并调用OnException
+        /// 并将异常传给客户端
         /// </summary>
         /// <param name="actionFilters">服务行为过滤器</param>
         /// <param name="exceptionContext">上下文</param>    
@@ -183,17 +187,23 @@ namespace NetworkSocket.Fast
         {
             FastTcpCommon.RaiseRemoteException(exceptionContext, this.Serializer);
 
-            foreach (var filter in GlobalFilters.FilterCollection.ExceptionFilters)
+            foreach (var filter in GlobalFilters.ExceptionFilters)
             {
-                filter.OnException(exceptionContext);
+                if (exceptionContext.ExceptionHandled == false)
+                {
+                    filter.OnException(exceptionContext);
+                }
             }
 
-            this.OnException(exceptionContext);
+            if (exceptionContext.ExceptionHandled == false)
+            {
+                this.OnException(exceptionContext);
+            }
 
             foreach (var filter in actionFilters)
             {
                 var exceptionFilter = filter as IExceptionFilter;
-                if (exceptionFilter != null)
+                if (exceptionFilter != null && exceptionContext.ExceptionHandled == false)
                 {
                     exceptionFilter.OnException(exceptionContext);
                 }
@@ -254,33 +264,33 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 授权时触发       
         /// </summary>
-        /// <param name="actionContext">上下文</param>       
+        /// <param name="filterContext">上下文</param>       
         /// <returns></returns>
-        public virtual void OnAuthorization(ActionContext actionContext)
+        public virtual void OnAuthorization(ActionContext filterContext)
         {
         }
 
         /// <summary>
         /// 在执行服务行为前触发       
         /// </summary>
-        /// <param name="actionContext">上下文</param>       
+        /// <param name="filterContext">上下文</param>       
         /// <returns></returns>
-        public virtual void OnExecuting(ActionContext actionContext)
+        public virtual void OnExecuting(ActionContext filterContext)
         {
         }
 
         /// <summary>
         /// 异常触发
         /// </summary>
-        /// <param name="exceptionContext">上下文</param>
-        public virtual void OnException(ExceptionContext exceptionContext)
+        /// <param name="filterContext">上下文</param>
+        public virtual void OnException(ExceptionContext filterContext)
         {
         }
         /// <summary>
         /// 在执行服务行为后触发
         /// </summary>
-        /// <param name="actionContext">上下文</param>      
-        public virtual void OnExecuted(ActionContext actionContext)
+        /// <param name="filterContext">上下文</param>      
+        public virtual void OnExecuted(ActionContext filterContext)
         {
         }
         #endregion

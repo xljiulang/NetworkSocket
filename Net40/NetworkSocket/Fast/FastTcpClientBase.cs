@@ -139,8 +139,8 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 当操作中遇到处理异常时，将触发此方法
         /// </summary>      
-        /// <param name="exceptionContext">上下文</param>
-        protected virtual void OnException(ExceptionContext exceptionContext)
+        /// <param name="filterContext">上下文</param>
+        protected virtual void OnException(ExceptionContext filterContext)
         {
         }
 

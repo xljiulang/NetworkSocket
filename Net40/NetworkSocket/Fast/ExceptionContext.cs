@@ -16,6 +16,11 @@ namespace NetworkSocket.Fast
         public Exception Exception { get; set; }
 
         /// <summary>
+        /// 获取或设置异常是否已处理
+        /// </summary>
+        public bool ExceptionHandled { get; set; }
+
+        /// <summary>
         /// 异常上下文
         /// </summary>
         public ExceptionContext()

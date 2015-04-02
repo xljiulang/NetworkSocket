@@ -13,7 +13,7 @@ namespace NetworkSocket.Fast.Filters
         /// <summary>
         /// 异常触发
         /// </summary>
-        /// <param name="exceptionContext">上下文</param>
-        void OnException(ExceptionContext exceptionContext);
+        /// <param name="filterContext">上下文</param>
+        void OnException(ExceptionContext filterContext);
     }
 }
