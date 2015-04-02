@@ -6,13 +6,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Server.Attributes
+namespace Server.Filters
 {
     /// <summary>
-    /// 登录特性
+    /// 登录过滤器
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
-    public class LoginAttribute : FilterAttribute, IAuthorizationFilter
+    public class LoginFilterAttribute : FilterAttribute, IAuthorizationFilter
     {
         public void OnAuthorization(NetworkSocket.Fast.ActionContext actionContext)
         {

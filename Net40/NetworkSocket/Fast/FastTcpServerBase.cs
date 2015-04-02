@@ -17,7 +17,7 @@ namespace NetworkSocket.Fast
     /// <summary>
     /// 快速构建Tcp服务端抽象类 
     /// </summary>
-    public abstract class FastTcpServerBase : TcpServerBase<FastPacket>, IFastTcpServer, IAuthorizationFilter, IActionFilter, IExceptionFilter
+    public abstract class FastTcpServerBase : TcpServerBase<FastPacket>, IFastTcpServer
     {
         /// <summary>
         /// 所有服务行为
@@ -43,9 +43,6 @@ namespace NetworkSocket.Fast
             this.fastActionList = new List<FastAction>();
             this.Serializer = new DefaultSerializer();
             this.FilterAttributeProvider = new FilterAttributeProvider();
-
-            // 添加自身到全局过滤器
-            GlobalFilters.Add(this);
         }
 
         /// <summary>
@@ -102,7 +99,7 @@ namespace NetworkSocket.Fast
 
             foreach (var type in serivceType)
             {
-                var actions = FastTcpCommon.GetServiceActions(type);
+                var actions = FastTcpCommon.GetServiceFastActions(type);
                 this.fastActionList.AddRange(actions);
             }
 
@@ -131,7 +128,7 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="serviceType">服务类型</param>
         /// <returns></returns>
-        private IFastService GetService(Type serviceType)
+        public IFastService GetService(Type serviceType)
         {
             var fastService = DependencyResolver.Current.GetService(serviceType) as IFastService;
             fastService.FastTcpServer = this;
@@ -159,31 +156,44 @@ namespace NetworkSocket.Fast
         /// <param name="packet">数据包</param>
         protected override void OnRecvComplete(SocketAsync<FastPacket> client, FastPacket packet)
         {
-            if (packet.IsException == false)
-            {
-                this.ProcessNormalPacket(client, packet);
-                return;
-            }
+            var requestContext = new RequestContext { Client = client, Packet = packet };
 
-            // 抛出远程异常
-            var exception = FastTcpCommon.ThrowRemoteException(packet, this.Serializer);
-            if (exception != null)
+            if (packet.IsException)
             {
-                var exceptionContext = new ExceptionContext { Client = client, Packet = packet, Exception = exception };
-                this.OnException(exceptionContext);
+                this.ProcessRemoteException(requestContext);
+            }
+            else
+            {
+                this.ProcessRequest(requestContext);
             }
         }
 
         /// <summary>
-        /// 处理正常数据包
+        /// 处理远返回的程异常
         /// </summary>
-        /// <param name="client">客户端</param>
-        /// <param name="packet">数据包</param>
-        private void ProcessNormalPacket(SocketAsync<FastPacket> client, FastPacket packet)
+        /// <param name="requestContext">请求上下文</param>
+        private void ProcessRemoteException(RequestContext requestContext)
         {
-            var requestContext = new RequestContext { Client = client, Packet = packet };
-            var action = this.GetFastAction(requestContext);
+            var exceptionContext = FastTcpCommon.SetFastActionTaskException(requestContext, this.Serializer);
+            if (exceptionContext == null)
+            {
+                return;
+            }
 
+            this.ExecExceptionFilters(exceptionContext);
+            if (exceptionContext.ExceptionHandled == false)
+            {
+                throw exceptionContext.Exception;
+            }
+        }
+
+        /// <summary>
+        /// 处理正常的数据请求
+        /// </summary>
+        /// <param name="requestContext">请求上下文</param>       
+        private void ProcessRequest(RequestContext requestContext)
+        {
+            var action = this.GetFastAction(requestContext);
             if (action == null)
             {
                 return;
@@ -219,6 +229,8 @@ namespace NetworkSocket.Fast
 
             var exception = new Exception(string.Format("命令为{0}的服务行为不存在", requestContext.Packet.Command));
             var exceptionContext = new ExceptionContext(requestContext, exception);
+
+            FastTcpCommon.SetRemoteException(exceptionContext, this.Serializer);
             this.ExecExceptionFilters(exceptionContext);
 
             if (exceptionContext.ExceptionHandled == false)
@@ -244,6 +256,8 @@ namespace NetworkSocket.Fast
             }
             var exception = new Exception(string.Format("无法获取类型{0}的实例", actionContext.Action.DeclaringService));
             var exceptionContext = new ExceptionContext(actionContext, exception);
+
+            FastTcpCommon.SetRemoteException(exceptionContext, this.Serializer);
             this.ExecExceptionFilters(exceptionContext);
 
             if (exceptionContext.ExceptionHandled == false)
@@ -253,66 +267,6 @@ namespace NetworkSocket.Fast
 
             return null;
         }
-
-
-        #region IFilter
-        /// <summary>
-        /// 获取或设置排序
-        /// </summary>
-        public int Order
-        {
-            get
-            {
-                return 0;
-            }
-        }
-
-        /// <summary>
-        /// 是否允许多个实例
-        /// </summary>
-        public bool AllowMultiple
-        {
-            get
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// 授权时触发       
-        /// </summary>
-        /// <param name="filterContext">上下文</param>       
-        /// <returns></returns>
-        public virtual void OnAuthorization(ActionContext filterContext)
-        {
-        }
-
-        /// <summary>
-        /// 在执行服务行为前触发       
-        /// </summary>
-        /// <param name="filterContext">上下文</param>       
-        /// <returns></returns>
-        public virtual void OnExecuting(ActionContext filterContext)
-        {
-        }
-
-        /// <summary>
-        /// 在执行服务行为后触发
-        /// </summary>
-        /// <param name="filterContext">上下文</param>      
-        public virtual void OnExecuted(ActionContext filterContext)
-        {
-        }
-
-        /// <summary>
-        /// 异常时触发
-        /// </summary>
-        /// <param name="filterContext">上下文</param>
-        public virtual void OnException(ExceptionContext filterContext)
-        {
-        }
-        #endregion
-
         #region IDisponse
         /// <summary>
         /// 释放资源
@@ -330,6 +284,5 @@ namespace NetworkSocket.Fast
             }
         }
         #endregion
-
     }
 }

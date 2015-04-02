@@ -30,7 +30,7 @@ namespace NetworkSocket.Fast
         /// </summary>
         public FastTcpClientBase()
         {
-            this.fastActionList = FastTcpCommon.GetServiceActions(this.GetType());
+            this.fastActionList = FastTcpCommon.GetServiceFastActions(this.GetType());
             this.Serializer = new DefaultSerializer();
         }
 
@@ -53,28 +53,42 @@ namespace NetworkSocket.Fast
         /// <param name="packet">数据包</param>
         protected override void OnRecvComplete(FastPacket packet)
         {
+            var requestContext = new RequestContext { Client = this, Packet = packet };
             if (packet.IsException == false)
             {
-                this.ProcessNormalPacket(packet);
-                return;
+                this.ProcessRequest(requestContext);
             }
-
-            // 抛出远程异常
-            var exception = FastTcpCommon.ThrowRemoteException(packet, this.Serializer);
-            if (exception != null)
+            else
             {
-                var exContext = new ExceptionContext { Client = this, Packet = packet, Exception = exception };
-                this.OnException(exContext);
+                this.ProcessRemoteException(requestContext);
             }
         }
 
         /// <summary>
-        /// 处理正常数据包
-        /// </summary>      
-        /// <param name="packet">数据包</param>
-        private void ProcessNormalPacket(FastPacket packet)
+        /// 处理远返回的程异常
+        /// </summary>
+        /// <param name="requestContext">请求上下文</param>
+        private void ProcessRemoteException(RequestContext requestContext)
         {
-            var requestContext = new RequestContext { Client = this, Packet = packet };
+            var exceptionContext = FastTcpCommon.SetFastActionTaskException(requestContext, this.Serializer);
+            if (exceptionContext == null)
+            {
+                return;
+            }
+
+            this.OnException(exceptionContext);
+            if (exceptionContext.ExceptionHandled == false)
+            {
+                throw exceptionContext.Exception;
+            }
+        }
+
+        /// <summary>
+        /// 处理正常的数据请求
+        /// </summary>      
+        /// <param name="requestContext">请求上下文</param>
+        private void ProcessRequest(RequestContext requestContext)
+        {
             var action = this.GetFastAction(requestContext);
             if (action == null)
             {
@@ -88,7 +102,7 @@ namespace NetworkSocket.Fast
             }
             else
             {
-                FastTcpCommon.RaiseTaskResult(actionContext);
+                FastTcpCommon.SetFastActionTaskResult(actionContext);
             }
         }
 
@@ -107,7 +121,9 @@ namespace NetworkSocket.Fast
 
             var exception = new Exception(string.Format("命令为{0}的服务行为不存在", requestContext.Packet.Command));
             var exceptionContext = new ExceptionContext(requestContext, exception);
-            this.RaiseException(exceptionContext);
+
+            FastTcpCommon.SetRemoteException(exceptionContext, this.Serializer);
+            this.OnException(exceptionContext);
 
             if (exceptionContext.ExceptionHandled == false)
             {
@@ -128,34 +144,50 @@ namespace NetworkSocket.Fast
         {
             try
             {
-                var parameters = FastTcpCommon.GetActionParameters(actionContext, this.Serializer);
-                var returnValue = actionContext.Action.Execute(this, parameters);
-                if (actionContext.Action.IsVoidReturn == false && this.IsConnected)
+                this.ExecuteAction(actionContext);
+            }
+            catch (AggregateException exception)
+            {
+                foreach (var inner in exception.InnerExceptions)
                 {
-                    actionContext.Packet.SetBodyBinary(this.Serializer, returnValue);
-                    this.Send(actionContext.Packet);
+                    this.ProcessExecutingException(actionContext, inner);
                 }
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                var exceptionContext = new ExceptionContext(actionContext, ex);
-                this.RaiseException(exceptionContext);
-                if (exceptionContext.ExceptionHandled == false)
-                {
-                    throw;
-                }
+                this.ProcessExecutingException(actionContext, exception);
+            }
+        }
+        /// <summary>
+        /// 执行服务行为
+        /// </summary>
+        /// <param name="actionContext">上下文</param>   
+        private void ExecuteAction(ActionContext actionContext)
+        {
+            var parameters = FastTcpCommon.GetFastActionParameters(actionContext, this.Serializer);
+            var returnValue = actionContext.Action.Execute(this, parameters);
+            if (actionContext.Action.IsVoidReturn == false && this.IsConnected)
+            {
+                actionContext.Packet.SetBodyBinary(this.Serializer, returnValue);
+                this.Send(actionContext.Packet);
             }
         }
 
-
-        /// <summary>        
-        /// 并将异常传给客户端并调用OnException
-        /// </summary>       
-        /// <param name="exceptionContext">上下文</param>               
-        private void RaiseException(ExceptionContext exceptionContext)
+        /// <summary>
+        /// 处理服务行为执行过程中产生的异常
+        /// </summary>
+        /// <param name="actionContext">上下文</param>       
+        /// <param name="exception">异常项</param>
+        private void ProcessExecutingException(ActionContext actionContext, Exception exception)
         {
-            FastTcpCommon.RaiseRemoteException(exceptionContext, this.Serializer);
+            var exceptionContext = new ExceptionContext(actionContext, exception);
+            FastTcpCommon.SetRemoteException(exceptionContext, this.Serializer);
             this.OnException(exceptionContext);
+
+            if (exceptionContext.ExceptionHandled == false)
+            {
+                throw exception;
+            }
         }
 
         /// <summary>

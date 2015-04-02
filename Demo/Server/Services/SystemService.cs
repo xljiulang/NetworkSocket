@@ -2,7 +2,7 @@
 using NetworkSocket;
 using NetworkSocket.Fast;
 using NetworkSocket.Fast.Attributes;
-using Server.Attributes;
+using Server.Filters;
 using Server.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -25,9 +25,9 @@ namespace Server.Services
         /// </summary>       
         /// <returns></returns>
         [Service(Implements.Self, 0)]
-        [Log("获取版本号")]
+        [LogFilter("获取版本号")]
         public string GetVersion()
-        {
+        {            
             return this.GetType().Assembly.GetName().Version.ToString();
         }
 
@@ -38,22 +38,16 @@ namespace Server.Services
         /// <param name="ifAdmin"></param>
         /// <returns></returns>    
         [Service(Implements.Self, 100)]
-        [Log("登录操作")]
+        [LogFilter("登录操作")]
         public bool Login(User user, bool ifAdmin)
         {
-            // 调用客户端进行排序计算功能
-            var sortResult = this.FastTcpServer
-                .GetService<NotifyService>()
-                .SortByClient(this.CurrentContext.Client, new List<int> { 3, 2, 1 })
-                .Result;
-
             if (user == null)
             {
                 throw new ArgumentNullException("user");
             }
 
             // 记录客户端的登录结果
-            var state = this.UserDao.IsExist(user);           
+            var state = this.UserDao.IsExist(user);
             this.CurrentContext.Client.TagBag.Logined = state;
             return state;
         }

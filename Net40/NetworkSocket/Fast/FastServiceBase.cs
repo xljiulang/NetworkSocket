@@ -54,7 +54,7 @@ namespace NetworkSocket.Fast
             }
             else
             {
-                FastTcpCommon.RaiseTaskResult(actionContext);
+                FastTcpCommon.SetFastActionTaskResult(actionContext);
             }
         }
 
@@ -72,18 +72,38 @@ namespace NetworkSocket.Fast
                 this.CurrentContext = actionContext;
                 this.ExecuteAction(actionContext, filters);
             }
+            catch (AggregateException exception)
+            {
+                foreach (var inner in exception.InnerExceptions)
+                {
+                    this.ProcessExecutingException(actionContext, filters, inner);
+                }
+            }
             catch (Exception exception)
             {
-                var exceptionContext = new ExceptionContext(actionContext, exception);
-                this.ExecExceptionFilters(filters, exceptionContext);
-                if (exceptionContext.ExceptionHandled == false)
-                {
-                    throw;
-                }
+                this.ProcessExecutingException(actionContext, filters, exception);
             }
             finally
             {
                 this.CurrentContext = null;
+            }
+        }
+
+        /// <summary>
+        /// 处理服务行为执行过程中产生的异常
+        /// </summary>
+        /// <param name="actionContext">上下文</param>
+        /// <param name="actionfilters">过滤器</param>
+        /// <param name="exception">异常项</param>
+        private void ProcessExecutingException(ActionContext actionContext, IEnumerable<IFilter> actionfilters, Exception exception)
+        {
+            var exceptionContext = new ExceptionContext(actionContext, exception);
+            FastTcpCommon.SetRemoteException(exceptionContext, this.FastTcpServer.Serializer);
+            this.ExecExceptionFilters(actionfilters, exceptionContext);
+
+            if (exceptionContext.ExceptionHandled == false)
+            {
+                throw exception;
             }
         }
 
@@ -98,7 +118,7 @@ namespace NetworkSocket.Fast
             // 执行Filter
             this.ExecFiltersBeforeAction(filters, actionContext);
 
-            var parameters = FastTcpCommon.GetActionParameters(actionContext, this.FastTcpServer.Serializer);
+            var parameters = FastTcpCommon.GetFastActionParameters(actionContext, this.FastTcpServer.Serializer);
             var returnValue = actionContext.Action.Execute(this, parameters);
 
             // 执行Filter

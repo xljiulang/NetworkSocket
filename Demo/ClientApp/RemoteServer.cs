@@ -56,8 +56,6 @@ namespace ClientApp
         [Service(Implements.Self, 200)]
         public void WarmingClient(String title, String contents)
         {
-            Console.WriteLine(title);
-            Console.WriteLine(contents);
         }
 
         [Service(Implements.Self, 201)]
@@ -78,10 +76,6 @@ namespace ClientApp
             {
                 Thread.Sleep(1000);
                 this.ReConnect().ContinueWith(t => this.TryReConnect(t.Result));
-            }
-            else
-            {
-                // 重连成功
             }
         }
     }

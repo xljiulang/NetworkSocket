@@ -11,6 +11,7 @@ using System.IO;
 using System.Reflection;
 using NetworkSocket.Fast;
 using Server.Services;
+using Server.Filters;
 
 namespace Server
 {
@@ -19,6 +20,8 @@ namespace Server
         static void Main(string[] args)
         {
             Console.Title = "FastServer";
+
+            GlobalFilters.Add(new ExceptionFilterAttribute());
 
             var fastServer = new FastServer();
             fastServer.BindService();

@@ -5,22 +5,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Server.Attributes
+namespace Server.Filters
 {
-    public class LogAttribute : FilterAttribute, IActionFilter
+    /// <summary>
+    /// 日志过滤器
+    /// </summary>
+    public class LogFilterAttribute : FilterAttribute, IActionFilter
     {
         public ILog Loger { get; set; }
 
         private string message;
 
-        public LogAttribute(string message)
+        public LogFilterAttribute(string message)
         {
-            this.Loger = new Server.Database.Loger();
             this.message = message;
         }
         public void OnExecuting(NetworkSocket.Fast.ActionContext actionContext)
         {
-            var log = string.Format("Client:{0} Action:{1} Message:{2}", actionContext.Client, actionContext.Action, this.message);
+            var log = string.Format("Time:{0} Client:{1} Action:{2} Message:{3}", DateTime.Now.ToString("mm:ss"), actionContext.Client, actionContext.Action, this.message);
             this.Loger.Write(log);
         }
 

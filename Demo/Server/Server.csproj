@@ -51,7 +51,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Attributes\LogAttribute.cs" />
+    <Compile Include="Filters\ExceptionFilterAttribute.cs" />
+    <Compile Include="Filters\LogFilterAttribute.cs" />
     <Compile Include="AutofacFilterAttributeProvider.cs" />
     <Compile Include="Database\DbContext.cs" />
     <Compile Include="Database\Loger.cs" />
@@ -66,7 +67,7 @@
     <Compile Include="Services\MathService.cs" />
     <Compile Include="Services\NotifyService.cs" />
     <Compile Include="Services\SystemService.cs" />
-    <Compile Include="Attributes\LoginAttribute.cs" />
+    <Compile Include="Filters\LoginFilterAttribute.cs" />
     <Compile Include="_Run.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="FastServer.cs" />

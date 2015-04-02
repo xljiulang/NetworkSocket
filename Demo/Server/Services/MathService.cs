@@ -1,7 +1,7 @@
 ﻿using NetworkSocket;
 using NetworkSocket.Fast;
 using NetworkSocket.Fast.Attributes;
-using Server.Attributes;
+using Server.Filters;
 using Server.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -17,7 +17,7 @@ namespace Server.Services
     /// 数学计算
     /// 需要客户端登录才能访问
     /// </summary>
-    [Login]
+    [LoginFilter]
     public class MathService : FastServiceBase
     {
         /// <summary>
@@ -29,11 +29,11 @@ namespace Server.Services
         /// <param name="z"></param>
         /// <returns></returns>
         [Service(Implements.Self, 300)]
-        [Log("求合操作")]
+        [LogFilter("求合操作")]
         public int GetSun(int x, int y, int z)
         {
             // 模拟长时间运算
-            Thread.Sleep(2000);
+            Thread.Sleep(1000);
             return x + y + z;
         }
     }

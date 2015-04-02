@@ -31,7 +31,7 @@ namespace Server
 
             // 注册服务            
             builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
-                .Where(type => (typeof(FastServiceBase).IsAssignableFrom(type)))
+                .Where(type => (typeof(IFastService).IsAssignableFrom(type)))
                 .PropertiesAutowired();
 
             // 通知服务为单例
@@ -72,7 +72,8 @@ namespace Server
         /// <param name="client">客户端</param>
         protected override void OnConnect(SocketAsync<FastPacket> client)
         {
-            Console.WriteLine("Client:{0} Action:Connect ConnectCount:{1}", client, this.AliveClients.Count);
+            var log = string.Format("Time:{0} Client:{1} Action:{2} Message:{3}", DateTime.Now.ToString("mm:ss"), client, "Connect", "ConnectCount(" + this.AliveClients.Count + ")");
+            Console.WriteLine(log);
         }
 
         /// <summary>
@@ -81,18 +82,8 @@ namespace Server
         /// <param name="client">客户端</param>
         protected override void OnDisconnect(SocketAsync<FastPacket> client)
         {
-            Console.WriteLine("Client:{0} Action:Disconnect ConnectCount:{1}", client, this.AliveClients.Count);
-        }
-
-        /// <summary>
-        /// 异常处理
-        /// </summary>
-        /// <param name="filterContext"></param>
-        public override void OnException(ExceptionContext filterContext)
-        {
-            // 标记处理完成
-            filterContext.ExceptionHandled = true;
-            Console.WriteLine("Exception:" + filterContext.Exception.Message);
+            var log = string.Format("Time:{0} Client:{1} Action:{2} Message:{3}", DateTime.Now.ToString("mm:ss"), client, "Disconnect", "ConnectCount(" + this.AliveClients.Count + ")");
+            Console.WriteLine(log);
         }
     }
 }

@@ -22,16 +22,20 @@ namespace NetworkSocket.Fast.Internal
         /// <param name="serviceType">所请求的服务或对象的类型</param>
         /// <returns></returns>
         public object GetService(Type serviceType)
-        {            
+        {
+            if (serviceType == null || serviceType.IsAnsiClass || serviceType.IsInterface)
+            {
+                return null;
+            }
             return this.serviceResolver.GetOrAdd(serviceType, type => Activator.CreateInstance(type));
-        }        
+        }
 
         /// <summary>
         /// 结束服务实例的生命
         /// </summary>
         /// <param name="service">服务实例</param>
         public void TerminateService(IDisposable service)
-        {            
+        {
         }
     }
 }
