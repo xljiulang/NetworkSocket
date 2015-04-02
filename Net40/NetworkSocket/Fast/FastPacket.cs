@@ -59,13 +59,14 @@ namespace NetworkSocket.Fast
 
         /// <summary>
         /// 设置异常包
+        /// 异常项的Message属性文本作为数据包的唯一参数
         /// </summary>
         /// <param name="serializer">序列化工具</param>
-        /// <param name="exception">异常</param>
-        internal void SetException(ISerializer serializer, RemoteException exception)
+        /// <param name="message">异常信息</param>
+        internal void SetException(ISerializer serializer, string message)
         {
             this.IsException = true;
-            this.SetBodyBinary(serializer, exception);
+            this.SetBodyBinary(serializer, message);
         }
 
         /// <summary>

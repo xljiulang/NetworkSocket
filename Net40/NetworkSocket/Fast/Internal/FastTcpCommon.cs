@@ -69,8 +69,7 @@ namespace NetworkSocket.Fast.Internal
         /// <param name="serializer">序列化工具</param>
         public static void SetRemoteException(ExceptionContext context, ISerializer serializer)
         {
-            var remoteException = new RemoteException(context.Packet.Command, context.Exception.ToString());
-            context.Packet.SetException(serializer, remoteException);
+            context.Packet.SetException(serializer, context.Exception.Message);
             context.Client.Send(context.Packet);
         }
 
@@ -115,11 +114,9 @@ namespace NetworkSocket.Fast.Internal
                 }
                 else
                 {
-                    var exception = serializer.Deserialize(bytes, typeof(RemoteException)) as RemoteException;
-                    if (exception != null)
-                    {
-                        taskSource.TrySetException(exception);
-                    }
+                    var message = (string)serializer.Deserialize(bytes, typeof(string));
+                    var exception = new RemoteException(message);
+                    taskSource.TrySetException(exception);
                 }
             };
 

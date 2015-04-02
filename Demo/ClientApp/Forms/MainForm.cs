@@ -55,7 +55,7 @@ namespace ClientApp.Forms
             }
             catch (RemoteException ex)
             {
-                MessageBox.Show(ex.Reason, ex.Message);
+                MessageBox.Show(ex.Message, "远程服务器异常");
             }
         }
 
