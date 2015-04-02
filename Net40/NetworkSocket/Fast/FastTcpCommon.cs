@@ -130,7 +130,7 @@ namespace NetworkSocket.Fast
                 parameters[i] = serializer.Deserialize(items[i], context.Action.ParameterTypes[i]);
             }
             return parameters;
-        }     
+        }
 
         /// <summary>
         /// 检测服务行为是否有声明相同的Command
@@ -176,6 +176,126 @@ namespace NetworkSocket.Fast
                 if ((action.IsVoidReturn || isTask) == false)
                 {
                     throw new Exception(string.Format("服务行为{0}的的返回类型必须是Task<T>类型", action.Name));
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// 在服务行为前 执行过滤器
+        /// </summary>
+        /// <param name="service">服务实例</param>
+        /// <param name="actionFilters">服务行为过滤器</param>
+        /// <param name="actionContext">上下文</param>   
+        public static void ExecFiltersBeforeAction(this FastServiceBase service, IEnumerable<IFilter> actionFilters, ActionContext actionContext)
+        {
+            // OnAuthorization
+            foreach (var globalFilter in GlobalFilters.AuthorizationFilters)
+            {
+                globalFilter.OnAuthorization(actionContext);
+            }
+            service.OnAuthorization(actionContext);
+            foreach (var filter in actionFilters)
+            {
+                var authorizationFilter = filter as IAuthorizationFilter;
+                if (authorizationFilter != null)
+                {
+                    authorizationFilter.OnAuthorization(actionContext);
+                }
+            }
+
+            // OnExecuting
+            foreach (var globalFilter in GlobalFilters.ActionFilters)
+            {
+                globalFilter.OnExecuting(actionContext);
+            }
+            service.OnExecuting(actionContext);
+            foreach (var filter in actionFilters)
+            {
+                var actionFilter = filter as IActionFilter;
+                if (actionFilter != null)
+                {
+                    actionFilter.OnExecuting(actionContext);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 在服务行为后执行过滤器
+        /// </summary>
+        /// <param name="service">服务实例</param>
+        /// <param name="actionFilters">服务行为过滤器</param>
+        /// <param name="actionContext">上下文</param>       
+        public static void ExecFiltersAfterAction(this FastServiceBase service, IEnumerable<IFilter> actionFilters, ActionContext actionContext)
+        {
+            // 全局过滤器
+            foreach (var globalFilter in GlobalFilters.ActionFilters)
+            {
+                globalFilter.OnExecuted(actionContext);
+            }
+
+            // 自身过滤器
+            service.OnExecuted(actionContext);
+
+            // 特性过滤器
+            foreach (var filter in actionFilters)
+            {
+                var actionFilter = filter as IActionFilter;
+                if (actionFilter != null)
+                {
+                    actionFilter.OnExecuted(actionContext);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 执行异常过滤器
+        /// </summary>
+        /// <param name="service">服务实例</param>
+        /// <param name="actionFilters">服务行为过滤器</param>
+        /// <param name="exceptionContext">上下文</param>       
+        public static void ExecExceptionFilters(this FastServiceBase service, IEnumerable<IFilter> actionFilters, ExceptionContext exceptionContext)
+        {
+            FastTcpCommon.RaiseRemoteException(exceptionContext, service.Serializer);
+
+            foreach (var filter in GlobalFilters.ExceptionFilters)
+            {
+                if (exceptionContext.ExceptionHandled == false)
+                {
+                    filter.OnException(exceptionContext);
+                }
+            }
+
+            if (exceptionContext.ExceptionHandled == false)
+            {
+                service.OnException(exceptionContext);
+            }
+
+            foreach (var filter in actionFilters)
+            {
+                var exceptionFilter = filter as IExceptionFilter;
+                if (exceptionFilter != null && exceptionContext.ExceptionHandled == false)
+                {
+                    exceptionFilter.OnException(exceptionContext);
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// 执行异常过滤器
+        /// </summary>
+        /// <param name="server">服务实例</param>    
+        /// <param name="exceptionContext">上下文</param>       
+        public static void ExecExceptionFilters(this FastTcpServerBase server,  ExceptionContext exceptionContext)
+        {
+            FastTcpCommon.RaiseRemoteException(exceptionContext, server.Serializer);
+
+            foreach (var filter in GlobalFilters.ExceptionFilters)
+            {
+                if (exceptionContext.ExceptionHandled == false)
+                {
+                    filter.OnException(exceptionContext);
                 }
             }
         }

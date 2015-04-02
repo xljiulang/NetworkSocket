@@ -16,7 +16,7 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 所有服务行为
         /// </summary>
-        private List<FastAction> serviceActions;
+        private List<FastAction> fastActionList;
 
         /// <summary>
         /// 获取或设置序列化工具
@@ -29,7 +29,7 @@ namespace NetworkSocket.Fast
         /// </summary>
         public FastTcpClientBase()
         {
-            this.serviceActions = FastTcpCommon.GetServiceActions(this.GetType());
+            this.fastActionList = FastTcpCommon.GetServiceActions(this.GetType());
             this.Serializer = new DefaultSerializer();
         }
 
@@ -74,7 +74,7 @@ namespace NetworkSocket.Fast
         private void ProcessNormalPacket(FastPacket packet)
         {
             var requestContext = new RequestContext { Client = this, Packet = packet };
-            var action = this.serviceActions.FirstOrDefault(item => item.Command == packet.Command);
+            var action = this.fastActionList.FirstOrDefault(item => item.Command == packet.Command);
 
             if (action == null)
             {
@@ -187,8 +187,8 @@ namespace NetworkSocket.Fast
             base.Dispose(disposing);
             if (disposing)
             {
-                this.serviceActions.Clear();
-                this.serviceActions = null;
+                this.fastActionList.Clear();
+                this.fastActionList = null;
                 this.Serializer = null;
             }
         }

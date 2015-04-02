@@ -22,30 +22,10 @@ namespace Server
     /// </summary>
     public class FastServer : FastTcpServerBase
     {
-        #region 依赖注入
         /// <summary>
-        /// Autofac依赖注入容器
+        /// 注册依赖注入
         /// </summary>
-        private IContainer container;
-
-        /// <summary>
-        /// Autofac生命范围
-        /// </summary>
-        [ThreadStatic]
-        private static ILifetimeScope LiftTimeScope;
-
-        /// <summary>
-        /// FastServer
-        /// </summary>
-        public FastServer()
-        {
-            this.RegisterResolver();
-        }
-
-        /// <summary>
-        /// 依赖转换控制
-        /// </summary>
-        private void RegisterResolver()
+        public void RegisterResolver()
         {
             var builder = new ContainerBuilder();
 
@@ -76,51 +56,17 @@ namespace Server
                 .As<ILog>()
                 .InstancePerLifetimeScope();
 
-            this.container = builder.Build();
+            var container = builder.Build();
+
+            // 设置依赖关系解析程序
+            DependencyResolver.SetResolver(new AutofacResolver(container));
+
+            // 给过滤器添加属性注入
+            this.FilterAttributeProvider = new AutofacFilterAttributeProvider();
         }
 
-        /// <summary>
-        /// 使用Autofac获取服务实例
-        /// </summary>
-        /// <param name="serviceType">服务类型</param>
-        /// <returns></returns>
-        protected override FastServiceBase GetService(Type serviceType)
-        {
-            LiftTimeScope = this.container.BeginLifetimeScope();
-            return LiftTimeScope.Resolve(serviceType) as FastServiceBase;
-        }
+       
 
-        /// <summary>
-        /// 使用Autofac管理服务生命周期
-        /// </summary>
-        /// <param name="service">服务实例</param>
-        protected override void DisposeService(FastServiceBase service)
-        {
-            LiftTimeScope.Dispose();
-        }
-
-        /// <summary>
-        /// 给过滤器添加属性注入
-        /// </summary>
-        /// <param name="action">服务行为</param>
-        /// <returns></returns>
-        protected override IEnumerable<IFilter> GetFilters(FastAction action)
-        {
-            return base.GetFilters(action).Select(filter => LiftTimeScope.InjectProperties(filter));
-        }
-
-        /// <summary>
-        /// 获取服务
-        /// </summary>
-        /// <typeparam name="T">服务类型</typeparam>
-        /// <returns></returns>
-        public T Resolve<T>() where T : FastServiceBase
-        {
-            return this.container.Resolve<T>();
-        }
-        #endregion
-
-        #region 消息处理
         /// <summary>
         /// 接收到客户端连接
         /// </summary>
@@ -139,13 +85,11 @@ namespace Server
             Console.WriteLine("客户端{0}断开连接，当前连接数为：{1}", client, this.AliveClients.Count);
         }
 
+
         public override void OnException(ExceptionContext filterContext)
         {
             Console.WriteLine(filterContext.Exception);
             // filterContext.ExceptionHandled = true;
-        }
-        #endregion
-
-
+        }   
     }
 }

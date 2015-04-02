@@ -21,17 +21,12 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 所有服务行为
         /// </summary>
-        private List<FastAction> serviceActions;
+        private List<FastAction> fastActionList;
 
         /// <summary>
         /// 特殊服务
         /// </summary>
         private SpecialService specialService;
-
-        /// <summary>
-        /// 服务实例反转缓存
-        /// </summary>
-        private ConcurrentDictionary<Type, FastServiceBase> serviceResolver;
 
         /// <summary>
         /// 获取或设置序列化工具
@@ -40,18 +35,24 @@ namespace NetworkSocket.Fast
         public ISerializer Serializer { get; set; }
 
         /// <summary>
+        /// 获取或设置服务行为特性过滤器提供者
+        /// </summary>
+        public IFilterAttributeProvider FilterAttributeProvider { get; set; }
+
+        /// <summary>
         /// 快速构建Tcp服务端
         /// </summary>
         public FastTcpServerBase()
         {
-            this.serviceActions = new List<FastAction>();
-            this.specialService = new SpecialService();
-            this.serviceResolver = new ConcurrentDictionary<Type, FastServiceBase>();
             this.Serializer = new DefaultSerializer();
+            this.FilterAttributeProvider = new FilterAttributeProvider();
+
+            this.fastActionList = new List<FastAction>();
+            this.specialService = new SpecialService() { FilterAttributeProvider = this.FilterAttributeProvider };
 
             // 添加特殊服务行为
             var specialActions = FastTcpCommon.GetServiceActions(typeof(SpecialService));
-            this.serviceActions.AddRange(specialActions);
+            this.fastActionList.AddRange(specialActions);
 
             // 添加自身到全局过滤器
             GlobalFilters.Add(this);
@@ -108,11 +109,11 @@ namespace NetworkSocket.Fast
             foreach (var type in serivceType)
             {
                 var actions = FastTcpCommon.GetServiceActions(type);
-                this.serviceActions.AddRange(actions);
+                this.fastActionList.AddRange(actions);
             }
 
-            FastTcpCommon.CheckActionsRepeatCommand(this.serviceActions);
-            FastTcpCommon.CheckActionsContract(this.serviceActions);
+            FastTcpCommon.CheckActionsRepeatCommand(this.fastActionList);
+            FastTcpCommon.CheckActionsContract(this.fastActionList);
         }
 
         /// <summary>
@@ -159,141 +160,65 @@ namespace NetworkSocket.Fast
         private void ProcessNormalPacket(SocketAsync<FastPacket> client, FastPacket packet)
         {
             var requestContext = new RequestContext { Client = client, Packet = packet };
-            var action = this.serviceActions.Find(item => item.Command == packet.Command);
+            var action = this.fastActionList.Find(item => item.Command == packet.Command);
 
             if (action == null)
             {
                 var exception = new Exception(string.Format("命令为{0}的服务行为不存在", packet.Command));
-                this.RaiseExceptionAndThrow(new ExceptionContext(requestContext, exception));
+                this.ExecExceptionFiltersAndThrow(new ExceptionContext(requestContext, exception));
                 return;
             }
 
-            var isSpecail = true;
-            var fastService = (FastServiceBase)this.specialService;
-
-            if (Enum.IsDefined(typeof(SpecialCommands), packet.Command) == false)
-            {
-                fastService = this.GetService(action.DeclaringService);
-                isSpecail = false;
-            }
+            var isSpecail = Enum.IsDefined(typeof(SpecialCommands), packet.Command);
+            var fastService = isSpecail ? this.specialService : (FastServiceBase)DependencyResolver.Current.GetService(action.DeclaringService);
 
             if (fastService == null)
             {
                 var ex = new Exception(string.Format("无法获取类型{0}的实例", action.DeclaringService));
-                this.RaiseExceptionAndThrow(new ExceptionContext(requestContext, ex));
+                this.ExecExceptionFiltersAndThrow(new ExceptionContext(requestContext, ex));
                 return;
             }
 
-            // 处理数据包           
+            // 设置参数并执行服务行为           
             fastService.Serializer = this.Serializer;
-            fastService.GetFilters = this.GetFilters;
-            fastService.ProcessAction(new ActionContext(requestContext, action));
-
             if (isSpecail == false)
             {
-                this.DisposeService(fastService);
+                fastService.FilterAttributeProvider = this.FilterAttributeProvider;
             }
-        }
+            fastService.ProcessAction(new ActionContext(requestContext, action));
 
 
-        /// <summary>
-        /// 获取服务实例
-        /// </summary>
-        /// <param name="serviceType">服务类型</param>
-        /// <returns></returns>
-        protected virtual FastServiceBase GetService(Type serviceType)
-        {
-            return this.serviceResolver.GetOrAdd(serviceType, type => Activator.CreateInstance(type) as FastServiceBase);
-        }
-
-        /// <summary>
-        /// 释放服务资源
-        /// </summary>
-        /// <param name="service">服务实例</param>
-        protected virtual void DisposeService(FastServiceBase service)
-        {
-            service.Dispose();
-        }
-
-        /// <summary>
-        /// 获取服务行为的过滤器
-        /// 不包括全局过滤器
-        /// </summary>
-        /// <param name="action">服务行为</param>
-        /// <returns></returns>
-        protected virtual IEnumerable<IFilter> GetFilters(FastAction action)
-        {
-            var methodAttributes = action.GetMethodFilterAttributes();
-
-            var classAttributes = action.GetClassFilterAttributes()
-                .Where(filter => filter.AllowMultiple ||
-                    methodAttributes.Any(mFilter => mFilter.TypeId == filter.TypeId) == false);
-
-            var methodFilters = methodAttributes.Select(fiter => new
+            // 释放资源
+            if (isSpecail == false)
             {
-                Filter = fiter,
-                Level = (fiter is IAuthorizationFilter) ? FilterLevel.Authorization : FilterLevel.Method
-            });
-
-            var classFilters = classAttributes.Select(fiter => new
-            {
-                Filter = fiter,
-                Level = (fiter is IAuthorizationFilter) ? FilterLevel.Authorization : FilterLevel.Class
-            });
-
-            var filters = classFilters.Concat(methodFilters)
-                .OrderBy(filter => filter.Level)
-                .ThenBy(filter => filter.Filter.Order)
-                .Select(filter => filter.Filter);
-
-            return filters;
-        }
-
-        /// <summary>
-        /// 并将异常传给客户端
-        /// 然后抛出
-        /// </summary>
-        /// <param name="exceptionContext">上下文</param>              
-        private void RaiseExceptionAndThrow(ExceptionContext exceptionContext)
-        {
-            FastTcpCommon.RaiseRemoteException(exceptionContext, this.Serializer);
-
-            foreach (var filter in GlobalFilters.ExceptionFilters)
-            {
-                if (exceptionContext.ExceptionHandled == false)
+                if (DependencyResolver.Current.SupportLifetimeManage == true)
                 {
-                    filter.OnException(exceptionContext);
+                    DependencyResolver.Current.TerminateService(fastService);
+                }
+
+                if (fastService.IsDisposed == false)
+                {
+                    fastService.Dispose();
                 }
             }
+        }
 
+        /// <summary>
+        /// 执行异常过滤器
+        /// 然后根据ExceptionHandled抛出异常
+        /// </summary>
+        /// <param name="exceptionContext">上下文</param>              
+        private void ExecExceptionFiltersAndThrow(ExceptionContext exceptionContext)
+        {
+            this.ExecExceptionFilters(exceptionContext);
             if (exceptionContext.ExceptionHandled == false)
             {
                 throw exceptionContext.Exception;
             }
         }
 
-        /// <summary>
-        /// 释放资源
-        /// </summary>
-        /// <param name="disposing">是否也释放托管资源</param>
-        protected override void Dispose(bool disposing)
-        {
-            base.Dispose(disposing);
-            if (disposing)
-            {
-                this.specialService.Dispose();
-                this.serviceActions.Clear();
-                this.serviceResolver.Clear();
 
-                this.serviceResolver = null;
-                this.specialService = null;
-                this.serviceActions = null;
-                this.Serializer = null;
-            }
-        }
-
-
-        #region 过滤器接口实现
+        #region IFilter
         /// <summary>
         /// 获取或设置排序
         /// </summary>
@@ -349,7 +274,28 @@ namespace NetworkSocket.Fast
         public virtual void OnException(ExceptionContext filterContext)
         {
         }
-
         #endregion
+
+        #region IDisponse
+        /// <summary>
+        /// 释放资源
+        /// </summary>
+        /// <param name="disposing">是否也释放托管资源</param>
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+            if (disposing)
+            {
+                this.specialService.Dispose();
+                this.fastActionList.Clear();
+
+                this.specialService = null;
+                this.fastActionList = null;
+                this.Serializer = null;
+                this.FilterAttributeProvider = null;
+            }
+        }
+        #endregion
+
     }
 }

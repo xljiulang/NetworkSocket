@@ -95,7 +95,7 @@ namespace NetworkSocket
                 this.LocalEndPoint = localEndPoint;
                 this.IsListening = true;
             }
-            catch (Exception ex)
+            catch
             {
                 this.listenSocket.Dispose();
                 var tcpPort = TcpTable.Snapshot().FirstOrDefault(item => item.Port == localEndPoint.Port);
@@ -103,7 +103,7 @@ namespace NetworkSocket
                 {
                     throw new Exception(string.Format("端口已被PID为{0}进程占用", tcpPort.OwnerPId));
                 }
-                throw ex;
+                throw;
             }
         }
 
@@ -240,7 +240,7 @@ namespace NetworkSocket
             return false;
         }
 
-        #region IDisponse成员
+        #region IDisposable
         /// <summary>
         /// 获取对象是否已释放
         /// </summary>

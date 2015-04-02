@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Server.Services
@@ -32,6 +33,9 @@ namespace Server.Services
         public int GetSun(int x, int y, int z)
         {
             Console.WriteLine("收到GetSum({0}, {1}, {2})", x, y, z);
+
+            // 长时间运算
+            Thread.Sleep(2000);
             return x + y + z;
         }
     }

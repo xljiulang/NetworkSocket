@@ -26,6 +26,15 @@ namespace NetworkSocket.Fast
         /// </summary>
         public static IEnumerable<IExceptionFilter> ExceptionFilters { get; private set; }
 
+        /// <summary>
+        /// 全局过滤器
+        /// </summary>
+        static GlobalFilters()
+        {
+            AuthorizationFilters = Enumerable.Empty<IAuthorizationFilter>();
+            ActionFilters = Enumerable.Empty<IActionFilter>();
+            ExceptionFilters = Enumerable.Empty<IExceptionFilter>();
+        }
 
         /// <summary>
         /// 添加过滤器

@@ -253,7 +253,7 @@ namespace NetworkSocket
             return this.RemoteEndPoint == null ? string.Empty : this.RemoteEndPoint.ToString();
         }
 
-        #region IDisponse成员
+        #region IDisposable
 
         /// <summary>
         /// 获取是否已释放
