@@ -57,17 +57,6 @@ namespace Server
             this.CurrentLifetimeScope = this.container.BeginLifetimeScope();
             return this.CurrentLifetimeScope.Resolve(serviceType);
         }
-        /// <summary>
-        /// 获取是否支持自动管理服务的生命周期
-        /// 返回true则TerminateService会被调用
-        /// </summary>
-        public bool SupportLifetimeManage
-        {
-            get
-            {
-                return true;
-            }
-        }
 
         /// <summary>
         /// 结束服务实例的生命

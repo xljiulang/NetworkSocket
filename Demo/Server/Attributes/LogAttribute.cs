@@ -15,6 +15,7 @@ namespace Server.Attributes
 
         public LogAttribute(string message)
         {
+            this.Loger = new Server.Database.Loger();
             this.message = message;
         }
         public void OnExecuting(NetworkSocket.Fast.ActionContext actionContext)

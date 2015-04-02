@@ -18,12 +18,6 @@ namespace NetworkSocket.Fast
         object GetService(Type serviceType);
 
         /// <summary>
-        /// 获取是否支持自动管理服务的生命周期
-        /// 返回true则TerminateService会被调用
-        /// </summary>
-        bool SupportLifetimeManage { get; }
-
-        /// <summary>
         /// 结束服务实例的生命
         /// </summary>
         /// <param name="service">服务实例</param>

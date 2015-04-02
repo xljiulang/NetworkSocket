@@ -201,14 +201,7 @@ namespace NetworkSocket.Fast
             fastService.Execute(actionContext);
 
             // 释放资源
-            if (DependencyResolver.Current.SupportLifetimeManage == true)
-            {
-                DependencyResolver.Current.TerminateService(fastService);
-            }
-            else
-            {
-                fastService.Dispose();
-            }
+            DependencyResolver.Current.TerminateService(fastService);
         }
 
         /// <summary>
