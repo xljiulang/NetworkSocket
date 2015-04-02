@@ -2,6 +2,7 @@
 using NetworkSocket.Fast.Filters;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -12,6 +13,7 @@ namespace NetworkSocket.Fast
     /// <summary>
     /// 服务行为    
     /// </summary>
+    [DebuggerDisplay("Name = {Name}")]
     public class FastAction
     {
         /// <summary>
@@ -155,6 +157,15 @@ namespace NetworkSocket.Fast
         public object Execute(object service, params object[] parameters)
         {
             return this.methodInvoker.Invoke(service, parameters);
+        }
+
+        /// <summary>
+        /// 字符串显示
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return this.Name;
         }
     }
 }

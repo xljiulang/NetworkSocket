@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -8,6 +9,7 @@ namespace NetworkSocket.Fast
     /// <summary>
     /// 异常上下文
     /// </summary>
+    [DebuggerDisplay("Message = {Exception.Message}")]
     public class ExceptionContext : RequestContext
     {
         /// <summary>
@@ -49,6 +51,15 @@ namespace NetworkSocket.Fast
             this.Client = context.Client;
             this.Packet = context.Packet;
             this.Exception = exception;
+        }
+
+        /// <summary>
+        /// 字符串显示
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return this.Exception.Message;
         }
     }
 }

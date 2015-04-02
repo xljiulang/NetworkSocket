@@ -180,5 +180,14 @@ namespace NetworkSocket.Fast
             builder.Remove(totalLength);
             return new FastPacket(cmd, hashCode, isException, body);
         }
+
+        /// <summary>
+        /// 字符串显示
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return this.Command.ToString();
+        }
     }
 }

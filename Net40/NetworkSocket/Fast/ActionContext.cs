@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -8,6 +9,7 @@ namespace NetworkSocket.Fast
     /// <summary>
     /// 服务行为上下文
     /// </summary>
+    [DebuggerDisplay("Action = {Action}")]
     public class ActionContext : RequestContext
     {
         /// <summary>
@@ -32,6 +34,15 @@ namespace NetworkSocket.Fast
             this.Client = context.Client;
             this.Packet = context.Packet;
             this.Action = action;
+        }
+
+        /// <summary>
+        /// 字符串显示
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return this.Action.ToString();
         }
     }
 }

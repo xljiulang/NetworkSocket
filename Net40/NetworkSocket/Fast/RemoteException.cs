@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -9,6 +10,7 @@ namespace NetworkSocket.Fast
     /// 表示远程端服务行为异常
     /// </summary>
     [Serializable]
+    [DebuggerDisplay("Message = {Message}")]
     public class RemoteException : Exception
     {
         /// <summary>
