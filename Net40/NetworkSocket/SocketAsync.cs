@@ -209,20 +209,28 @@ namespace NetworkSocket
         /// <summary>
         /// 异步发送数据
         /// </summary>
-        /// <param name="package">数据包</param>
-        public void Send(T package)
+        /// <param name="packet">数据包</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="SocketException"></exception>       
+        public void Send(T packet)
         {
-            this.SendHandler(package);
+            this.SendHandler(packet);
 
-            if (package == null || this.IsConnected == false)
+            if (packet == null)
             {
-                return;
+                throw new ArgumentNullException("packet");
             }
 
-            var bytes = package.ToByteArray();
+            if (this.IsConnected == false)
+            {
+                throw new SocketException();
+            }
+
+            var bytes = packet.ToByteArray();
             if (bytes == null)
             {
-                return;
+                throw new ArgumentException("packet");
             }
 
             this.Send(bytes);
@@ -233,6 +241,8 @@ namespace NetworkSocket
         /// 异步发送数据
         /// </summary>
         /// <param name="bytes">数据</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="SocketException"></exception>
         private void Send(byte[] bytes)
         {
             var eventArg = SocketAsyncEventArgPool.Instance.Take();
