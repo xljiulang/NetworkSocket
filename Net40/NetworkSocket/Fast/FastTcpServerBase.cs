@@ -17,7 +17,7 @@ namespace NetworkSocket.Fast
     /// <summary>
     /// 快速构建Tcp服务端抽象类 
     /// </summary>
-    public abstract class FastTcpServerBase : TcpServerBase<FastPacket>, IAuthorizationFilter, IActionFilter, IExceptionFilter
+    public abstract class FastTcpServerBase : TcpServerBase<FastPacket>, IFastTcpServer, IAuthorizationFilter, IActionFilter, IExceptionFilter
     {
         /// <summary>
         /// 所有服务行为
@@ -49,37 +49,41 @@ namespace NetworkSocket.Fast
         }
 
         /// <summary>
-        /// 绑定本程序集所有的服务
+        /// 绑定本程序集所有实现IFastService的服务
         /// </summary>
-        public void BindService()
+        /// <returns></returns>
+        public FastTcpServerBase BindService()
         {
-            var allServices = this.GetType().Assembly.GetTypes().Where(item => typeof(FastServiceBase).IsAssignableFrom(item));
-            this.BindService(allServices);
+            var allServices = this.GetType().Assembly.GetTypes().Where(item => typeof(IFastService).IsAssignableFrom(item));
+            return this.BindService(allServices);
         }
 
         /// <summary>
         /// 绑定服务
         /// </summary>
         /// <typeparam name="T">服务类型</typeparam>
-        public void BindService<T>() where T : FastServiceBase
+        /// <returns></returns>
+        public FastTcpServerBase BindService<T>() where T : IFastService
         {
-            this.BindService(typeof(T));
+            return this.BindService(typeof(T));
         }
 
         /// <summary>
         /// 绑定服务
         /// </summary>
         /// <param name="serviceType">服务类型</param>
-        public void BindService(params Type[] serviceType)
+        /// <returns></returns>
+        public FastTcpServerBase BindService(params Type[] serviceType)
         {
-            this.BindService((IEnumerable<Type>)serviceType);
+            return this.BindService((IEnumerable<Type>)serviceType);
         }
 
         /// <summary>
         /// 绑定服务
         /// </summary>
         /// <param name="serivceType">服务类型</param>
-        public void BindService(IEnumerable<Type> serivceType)
+        /// <returns></returns>
+        public FastTcpServerBase BindService(IEnumerable<Type> serivceType)
         {
             if (serivceType == null)
             {
@@ -91,9 +95,9 @@ namespace NetworkSocket.Fast
                 throw new ArgumentException("serivceType不能含null值");
             }
 
-            if (serivceType.Any(item => typeof(FastServiceBase).IsAssignableFrom(item) == false))
+            if (serivceType.Any(item => typeof(IFastService).IsAssignableFrom(item) == false))
             {
-                throw new ArgumentException("serivceType必须派生于FastServiceBase");
+                throw new ArgumentException("serivceType必须派生于IFastService");
             }
 
             foreach (var type in serivceType)
@@ -104,6 +108,8 @@ namespace NetworkSocket.Fast
 
             FastTcpCommon.CheckActionsRepeatCommand(this.fastActionList);
             FastTcpCommon.CheckActionsTaskOrVoid(this.fastActionList);
+
+            return this;
         }
 
         /// <summary>
@@ -160,7 +166,7 @@ namespace NetworkSocket.Fast
             }
 
             // 获取服务实例
-            var fastService = DependencyResolver.Current.GetService(action.DeclaringService) as FastServiceBase;
+            var fastService = DependencyResolver.Current.GetService(action.DeclaringService) as IFastService;
             if (fastService == null)
             {
                 var exception = new Exception(string.Format("无法获取类型{0}的实例", action.DeclaringService));
@@ -169,16 +175,15 @@ namespace NetworkSocket.Fast
             }
 
             // 设置参数并执行服务行为           
-            fastService.Serializer = this.Serializer;
-            fastService.FilterAttributeProvider = this.FilterAttributeProvider;
-            fastService.ProcessAction(new ActionContext(requestContext, action));
+            fastService.FastTcpServer = this;
+            fastService.Execute(new ActionContext(requestContext, action));
 
             // 释放资源
             if (DependencyResolver.Current.SupportLifetimeManage == true)
             {
                 DependencyResolver.Current.TerminateService(fastService);
             }
-            if (fastService.IsDisposed == false)
+            else
             {
                 fastService.Dispose();
             }

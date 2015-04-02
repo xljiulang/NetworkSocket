@@ -14,7 +14,7 @@ namespace NetworkSocket.Fast
     /// Fast服务抽象类
     /// 所有自身实现的服务方法的第一个参数是ActionContext类型
     /// </summary>
-    public abstract class FastServiceBase : IAuthorizationFilter, IActionFilter, IExceptionFilter, IDisposable
+    public abstract class FastServiceBase : IFastService, IAuthorizationFilter, IActionFilter, IExceptionFilter, IDisposable
     {
         /// <summary>
         /// 线程唯一上下文
@@ -23,14 +23,9 @@ namespace NetworkSocket.Fast
         private static ActionContext currentContext;
 
         /// <summary>
-        /// 获取或设置序列化工具
+        /// 获取或设置关联的TcpServer
         /// </summary>
-        internal ISerializer Serializer;
-
-        /// <summary>
-        /// 服务行为特性过滤器提供者
-        /// </summary>
-        internal IFilterAttributeProvider FilterAttributeProvider;
+        public IFastTcpServer FastTcpServer { get; set; }
 
         /// <summary>
         /// 获取当前服务行为上下文
@@ -48,10 +43,10 @@ namespace NetworkSocket.Fast
         }
 
         /// <summary>
-        /// 处理服务方法
+        /// 执行服务行为
         /// </summary>
         /// <param name="actionContext">上下文</param>      
-        internal void ProcessAction(ActionContext actionContext)
+        public void Execute(ActionContext actionContext)
         {
             // 如果是Cmd值对应是Self类型方法 也就是客户端主动调用服务行为
             if (actionContext.Action.Implement == Implements.Self)
@@ -78,7 +73,7 @@ namespace NetworkSocket.Fast
         private void TryInvokeAction(ActionContext actionContext)
         {
             // 获取服务行为的特性过滤器
-            var filters = this.FilterAttributeProvider.GetActionFilters(actionContext.Action);
+            var filters = this.FastTcpServer.FilterAttributeProvider.GetActionFilters(actionContext.Action);
 
             try
             {
@@ -86,7 +81,7 @@ namespace NetworkSocket.Fast
                 this.CurrentContext = actionContext;
                 this.ExecFiltersBeforeAction(filters, actionContext);
 
-                var parameters = FastTcpCommon.GetActionParameters(actionContext, this.Serializer);
+                var parameters = FastTcpCommon.GetActionParameters(actionContext, this.FastTcpServer.Serializer);
                 var returnValue = actionContext.Action.Execute(this, parameters);
 
                 // 执行Filter
@@ -94,7 +89,7 @@ namespace NetworkSocket.Fast
 
                 if (actionContext.Action.IsVoidReturn == false && actionContext.Client.IsConnected)
                 {
-                    actionContext.Packet.SetBodyBinary(this.Serializer, returnValue);
+                    actionContext.Packet.SetBodyBinary(this.FastTcpServer.Serializer, returnValue);
                     actionContext.Client.Send(actionContext.Packet);
                 }
             }
@@ -123,7 +118,7 @@ namespace NetworkSocket.Fast
         /// <exception cref="RemoteException"></exception>
         protected void InvokeRemote(SocketAsync<FastPacket> client, int cmd, params object[] parameters)
         {
-            FastTcpCommon.InvokeRemote(client, this.Serializer, cmd, parameters);
+            FastTcpCommon.InvokeRemote(client, this.FastTcpServer.Serializer, cmd, parameters);
         }
 
         /// <summary>
@@ -138,7 +133,7 @@ namespace NetworkSocket.Fast
         /// <returns>远程数据任务</returns>
         protected Task<T> InvokeRemote<T>(SocketAsync<FastPacket> client, int cmd, params object[] parameters)
         {
-            return FastTcpCommon.InvokeRemote<T>(client, this.Serializer, cmd, parameters);
+            return FastTcpCommon.InvokeRemote<T>(client, this.FastTcpServer.Serializer, cmd, parameters);
         }
 
         #region IFilter
@@ -233,8 +228,7 @@ namespace NetworkSocket.Fast
         {
             if (disposing)
             {
-                this.Serializer = null;
-                this.FilterAttributeProvider = null;
+                this.FastTcpServer = null;
             }
         }
         #endregion

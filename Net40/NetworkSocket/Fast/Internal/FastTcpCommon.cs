@@ -251,7 +251,7 @@ namespace NetworkSocket.Fast.Internal
         /// <param name="exceptionContext">上下文</param>       
         public static void ExecExceptionFilters(this FastServiceBase service, IEnumerable<IFilter> actionFilters, ExceptionContext exceptionContext)
         {
-            FastTcpCommon.RaiseRemoteException(exceptionContext, service.Serializer);
+            FastTcpCommon.RaiseRemoteException(exceptionContext, service.FastTcpServer.Serializer);
 
             foreach (var filter in GlobalFilters.ExceptionFilters)
             {
