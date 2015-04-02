@@ -1,4 +1,5 @@
 ﻿using NetworkSocket.Fast.Attributes;
+using NetworkSocket.Fast.Internal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -168,16 +169,7 @@ namespace NetworkSocket.Fast
             return FastTcpCommon.InvokeRemote<T>(this, this.Serializer, cmd, parameters);
         }
 
-        /// <summary>
-        /// 获取服务组件版本号
-        /// </summary>       
-        /// <returns></returns>
-        [Service(Implements.Remote, (int)SpecialCommands.Version)]
-        public Task<string> GetVersion()
-        {
-            return this.InvokeRemote<string>((int)SpecialCommands.Version);
-        }
-
+      
         /// <summary>
         /// 释放资源
         /// </summary>

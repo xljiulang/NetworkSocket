@@ -1,5 +1,6 @@
 ﻿using NetworkSocket.Fast.Attributes;
 using NetworkSocket.Fast.Filters;
+using NetworkSocket.Fast.Internal;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -24,11 +25,6 @@ namespace NetworkSocket.Fast
         private List<FastAction> fastActionList;
 
         /// <summary>
-        /// 特殊服务
-        /// </summary>
-        private SpecialService specialService;
-
-        /// <summary>
         /// 获取或设置序列化工具
         /// 默认是Json序列化
         /// </summary>
@@ -44,15 +40,9 @@ namespace NetworkSocket.Fast
         /// </summary>
         public FastTcpServerBase()
         {
+            this.fastActionList = new List<FastAction>();
             this.Serializer = new DefaultSerializer();
             this.FilterAttributeProvider = new FilterAttributeProvider();
-
-            this.fastActionList = new List<FastAction>();
-            this.specialService = new SpecialService() { FilterAttributeProvider = this.FilterAttributeProvider };
-
-            // 添加特殊服务行为
-            var specialActions = FastTcpCommon.GetServiceActions(typeof(SpecialService));
-            this.fastActionList.AddRange(specialActions);
 
             // 添加自身到全局过滤器
             GlobalFilters.Add(this);
@@ -113,7 +103,7 @@ namespace NetworkSocket.Fast
             }
 
             FastTcpCommon.CheckActionsRepeatCommand(this.fastActionList);
-            FastTcpCommon.CheckActionsContract(this.fastActionList);
+            FastTcpCommon.CheckActionsTaskOrVoid(this.fastActionList);
         }
 
         /// <summary>
@@ -169,37 +159,28 @@ namespace NetworkSocket.Fast
                 return;
             }
 
-            var isSpecail = Enum.IsDefined(typeof(SpecialCommands), packet.Command);
-            var fastService = isSpecail ? this.specialService : (FastServiceBase)DependencyResolver.Current.GetService(action.DeclaringService);
-
+            // 获取服务实例
+            var fastService = DependencyResolver.Current.GetService(action.DeclaringService) as FastServiceBase;
             if (fastService == null)
             {
-                var ex = new Exception(string.Format("无法获取类型{0}的实例", action.DeclaringService));
-                this.ExecExceptionFiltersAndThrow(new ExceptionContext(requestContext, ex));
+                var exception = new Exception(string.Format("无法获取类型{0}的实例", action.DeclaringService));
+                this.ExecExceptionFiltersAndThrow(new ExceptionContext(requestContext, exception));
                 return;
             }
 
             // 设置参数并执行服务行为           
             fastService.Serializer = this.Serializer;
-            if (isSpecail == false)
-            {
-                fastService.FilterAttributeProvider = this.FilterAttributeProvider;
-            }
+            fastService.FilterAttributeProvider = this.FilterAttributeProvider;
             fastService.ProcessAction(new ActionContext(requestContext, action));
 
-
             // 释放资源
-            if (isSpecail == false)
+            if (DependencyResolver.Current.SupportLifetimeManage == true)
             {
-                if (DependencyResolver.Current.SupportLifetimeManage == true)
-                {
-                    DependencyResolver.Current.TerminateService(fastService);
-                }
-
-                if (fastService.IsDisposed == false)
-                {
-                    fastService.Dispose();
-                }
+                DependencyResolver.Current.TerminateService(fastService);
+            }
+            if (fastService.IsDisposed == false)
+            {
+                fastService.Dispose();
             }
         }
 
@@ -226,7 +207,7 @@ namespace NetworkSocket.Fast
         {
             get
             {
-                return -1;
+                return 0;
             }
         }
 
@@ -237,7 +218,7 @@ namespace NetworkSocket.Fast
         {
             get
             {
-                return true;
+                return false;
             }
         }
 
@@ -286,10 +267,7 @@ namespace NetworkSocket.Fast
             base.Dispose(disposing);
             if (disposing)
             {
-                this.specialService.Dispose();
                 this.fastActionList.Clear();
-
-                this.specialService = null;
                 this.fastActionList = null;
                 this.Serializer = null;
                 this.FilterAttributeProvider = null;

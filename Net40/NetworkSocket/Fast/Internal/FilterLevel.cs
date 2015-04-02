@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace NetworkSocket.Fast
+namespace NetworkSocket.Fast.Internal
 {
     /// <summary>
     /// 过滤器级别

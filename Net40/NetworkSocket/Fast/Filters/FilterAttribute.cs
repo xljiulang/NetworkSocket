@@ -82,6 +82,5 @@ namespace NetworkSocket.Fast.Filters
                 return IsAllowMultiple(this.GetType());
             }
         }
-
     }
 }

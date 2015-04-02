@@ -51,7 +51,7 @@
     <Reference Include="System.Web.Extensions" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Fast\DefaultDependencyResolver.cs" />
+    <Compile Include="Fast\Internal\DefaultDependencyResolver.cs" />
     <Compile Include="Fast\DependencyResolver.cs" />
     <Compile Include="Fast\ExceptionContext.cs" />
     <Compile Include="Fast\FastAction.cs" />
@@ -61,17 +61,17 @@
     <Compile Include="Fast\Attributes\Implements.cs" />
     <Compile Include="Fast\Attributes\ServiceAttribute.cs" />
     <Compile Include="Fast\Attributes\SpecialServiceAttribute.cs" />
-    <Compile Include="Fast\CallbackTable.cs" />
-    <Compile Include="Fast\DefaultSerializer.cs" />
+    <Compile Include="Fast\Internal\CallbackTable.cs" />
+    <Compile Include="Fast\Internal\DefaultSerializer.cs" />
     <Compile Include="Fast\FastPacket.cs" />
     <Compile Include="Fast\FastServiceBase.cs" />
     <Compile Include="Fast\FastTcpClientBase.cs" />
-    <Compile Include="Fast\FastTcpCommon.cs" />
+    <Compile Include="Fast\Internal\FastTcpCommon.cs" />
     <Compile Include="Fast\FastTcpServerBase.cs" />
     <Compile Include="Fast\ActionContext.cs" />
     <Compile Include="Fast\FilterAttributeProvider.cs" />
     <Compile Include="Fast\Filters\FilterAttribute.cs" />
-    <Compile Include="Fast\FilterLevel.cs" />
+    <Compile Include="Fast\Internal\FilterLevel.cs" />
     <Compile Include="Fast\Filters\IActionFilter.cs" />
     <Compile Include="Fast\Filters\IAuthorizationFilter.cs" />
     <Compile Include="Fast\Filters\IExceptionFilter.cs" />
@@ -81,8 +81,6 @@
     <Compile Include="Fast\ISerializer.cs" />
     <Compile Include="Fast\RemoteException.cs" />
     <Compile Include="Fast\RequestContext.cs" />
-    <Compile Include="Fast\SpecialCommands.cs" />
-    <Compile Include="Fast\SpecialService.cs" />
     <Compile Include="Fast\IDependencyResolver.cs" />
     <Compile Include="ISocketAsync.cs" />
     <Compile Include="ITcpClient.cs" />

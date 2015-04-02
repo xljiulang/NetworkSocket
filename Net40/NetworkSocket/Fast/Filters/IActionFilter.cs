@@ -6,7 +6,7 @@ using System.Text;
 namespace NetworkSocket.Fast.Filters
 {
     /// <summary>
-    /// Action过滤器
+    /// 服务行为过滤器
     /// </summary>
     public interface IActionFilter : IFilter
     {

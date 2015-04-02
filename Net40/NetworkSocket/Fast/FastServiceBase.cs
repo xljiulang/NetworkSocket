@@ -1,5 +1,6 @@
 ﻿using NetworkSocket.Fast.Attributes;
 using NetworkSocket.Fast.Filters;
+using NetworkSocket.Fast.Internal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -148,7 +149,7 @@ namespace NetworkSocket.Fast
         {
             get
             {
-                return -1;
+                return 0;
             }
         }
 
@@ -159,7 +160,7 @@ namespace NetworkSocket.Fast
         {
             get
             {
-                return true;
+                return false;
             }
         }
 

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NetworkSocket.Fast
+namespace NetworkSocket.Fast.Internal
 {
     /// <summary>
     /// FastTcp公共类
@@ -147,29 +147,24 @@ namespace NetworkSocket.Fast
 
 
         /// <summary>
-        /// 检测服务行为的声明和参数
+        /// 检测服务行为的返回类型
         /// </summary>
         /// <param name="actions">服务行为</param>
-        public static void CheckActionsContract(IEnumerable<FastAction> actions)
+        public static void CheckActionsTaskOrVoid(IEnumerable<FastAction> actions)
         {
             foreach (var action in actions)
             {
-                FastTcpCommon.CheckActionContract(action);
+                FastTcpCommon.CheckActionTaskOrVoid(action);
             }
         }
 
 
         /// <summary>
-        /// 检测服务行为的声明和参数
+        /// 检测服务行为的返回类型
         /// </summary>
         /// <param name="action">服务行为</param>
-        private static void CheckActionContract(FastAction action)
+        private static void CheckActionTaskOrVoid(FastAction action)
         {
-            if (Enum.IsDefined(typeof(SpecialCommands), action.Command) && action.IsDefined(typeof(SpecialServiceAttribute), true) == false)
-            {
-                throw new Exception(string.Format("服务行为{0}的Command是不允许使用的SpecialCommand命令", action.Name));
-            }
-
             if (action.Implement == Implements.Remote)
             {
                 var isTask = action.ReturnType.IsGenericType && action.ReturnType.GetGenericTypeDefinition() == typeof(Task<>);
@@ -287,7 +282,7 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="server">服务实例</param>    
         /// <param name="exceptionContext">上下文</param>       
-        public static void ExecExceptionFilters(this FastTcpServerBase server,  ExceptionContext exceptionContext)
+        public static void ExecExceptionFilters(this FastTcpServerBase server, ExceptionContext exceptionContext)
         {
             FastTcpCommon.RaiseRemoteException(exceptionContext, server.Serializer);
 

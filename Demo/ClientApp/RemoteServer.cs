@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using Models;
 using NetworkSocket;
 using NetworkSocket.Fast;
 using NetworkSocket.Fast.Attributes;
-using System.Threading.Tasks;
-using Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace ClientApp
 {
@@ -30,6 +30,15 @@ namespace ClientApp
             {
                 return instance.Value;
             }
+        }
+        /// <summary>
+        /// 获取服务组件版本号
+        /// </summary>       
+        /// <returns></returns>
+        [Service(Implements.Remote, 0)]
+        public Task<string> GetVersion()
+        {
+            return this.InvokeRemote<string>(0);
         }
 
         [Service(Implements.Remote, 100)]

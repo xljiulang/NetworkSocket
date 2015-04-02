@@ -40,8 +40,24 @@ namespace NetworkSocket.Fast
         /// 添加过滤器
         /// </summary>
         /// <param name="filter">过滤器</param>
-        public static void Add(IFilter filter)
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <returns></returns>
+        public static bool Add(IFilter filter)
         {
+            if (filter == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            if (filter.AllowMultiple == false)
+            {
+                var allFilters = ActionFilters.Cast<IFilter>().Concat(AuthorizationFilters).Concat(ExceptionFilters);
+                if (allFilters.Any(item => item.GetType() == filter.GetType()))
+                {
+                    return false;
+                }
+            }
+
             var actionFilter = filter as IActionFilter;
             var authorizationFilter = filter as IAuthorizationFilter;
             var exceptionFilter = filter as IExceptionFilter;
@@ -66,6 +82,8 @@ namespace NetworkSocket.Fast
                     .Concat(new[] { exceptionFilter })
                     .OrderBy(item => item.Order);
             }
+
+            return true;
         }
     }
 }

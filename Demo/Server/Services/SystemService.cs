@@ -21,6 +21,16 @@ namespace Server.Services
         public IUserDao UserDao { get; set; }
 
         /// <summary>
+        /// 获取服务组件版本号
+        /// </summary>       
+        /// <returns></returns>
+        [Service(Implements.Self, 0)]
+        public string GetVersion()
+        {
+            return this.GetType().Assembly.GetName().Version.ToString();
+        }
+
+        /// <summary>
         /// 登录操作
         /// </summary>       
         /// <param name="user">用户数据</param>
