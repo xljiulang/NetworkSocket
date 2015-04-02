@@ -8,8 +8,9 @@ namespace Server.Database
 {
     public class Loger : ILog
     {
-        public bool Log(string txt)
+        public bool Write(string log)
         {
+            Console.WriteLine(log);
             return true;
         }
 

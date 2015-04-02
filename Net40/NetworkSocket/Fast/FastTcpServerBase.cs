@@ -112,6 +112,32 @@ namespace NetworkSocket.Fast
             return this;
         }
 
+
+
+        /// <summary>
+        /// 获取服务实例
+        /// 并赋值给服务实例的FastTcpServer属性
+        /// </summary>
+        /// <typeparam name="T">服务类型</typeparam>
+        /// <returns></returns>
+        public T GetService<T>() where T : IFastService
+        {
+            return (T)this.GetService(typeof(T));
+        }
+
+        /// <summary>
+        /// 获取服务实例
+        /// 并赋值给服务实例的FastTcpServer属性
+        /// </summary>
+        /// <param name="serviceType">服务类型</param>
+        /// <returns></returns>
+        private IFastService GetService(Type serviceType)
+        {
+            var fastService = DependencyResolver.Current.GetService(serviceType) as IFastService;
+            fastService.FastTcpServer = this;
+            return fastService;
+        }
+
         /// <summary>
         /// 当接收到远程端的数据时，将触发此方法
         /// 此方法用于处理和分析收到的数据
@@ -156,27 +182,23 @@ namespace NetworkSocket.Fast
         private void ProcessNormalPacket(SocketAsync<FastPacket> client, FastPacket packet)
         {
             var requestContext = new RequestContext { Client = client, Packet = packet };
-            var action = this.fastActionList.Find(item => item.Command == packet.Command);
+            var action = this.GetFastAction(requestContext);
 
             if (action == null)
             {
-                var exception = new Exception(string.Format("命令为{0}的服务行为不存在", packet.Command));
-                this.ExecExceptionFiltersAndThrow(new ExceptionContext(requestContext, exception));
                 return;
             }
 
-            // 获取服务实例
-            var fastService = DependencyResolver.Current.GetService(action.DeclaringService) as IFastService;
+            var actionContext = new ActionContext(requestContext, action);
+            var fastService = this.GetFastService(actionContext);
+
             if (fastService == null)
             {
-                var exception = new Exception(string.Format("无法获取类型{0}的实例", action.DeclaringService));
-                this.ExecExceptionFiltersAndThrow(new ExceptionContext(requestContext, exception));
                 return;
             }
 
-            // 设置参数并执行服务行为           
-            fastService.FastTcpServer = this;
-            fastService.Execute(new ActionContext(requestContext, action));
+            // 执行服务行为          
+            fastService.Execute(actionContext);
 
             // 释放资源
             if (DependencyResolver.Current.SupportLifetimeManage == true)
@@ -190,17 +212,53 @@ namespace NetworkSocket.Fast
         }
 
         /// <summary>
-        /// 执行异常过滤器
-        /// 然后根据ExceptionHandled抛出异常
+        /// 获取服务行为
         /// </summary>
-        /// <param name="exceptionContext">上下文</param>              
-        private void ExecExceptionFiltersAndThrow(ExceptionContext exceptionContext)
+        /// <param name="requestContext">请求上下文</param>
+        /// <returns></returns>
+        private FastAction GetFastAction(RequestContext requestContext)
         {
+            var action = this.fastActionList.Find(item => item.Command == requestContext.Packet.Command);
+            if (action != null)
+            {
+                return action;
+            }
+
+            var exception = new Exception(string.Format("命令为{0}的服务行为不存在", requestContext.Packet.Command));
+            var exceptionContext = new ExceptionContext(requestContext, exception);
             this.ExecExceptionFilters(exceptionContext);
+
             if (exceptionContext.ExceptionHandled == false)
             {
-                throw exceptionContext.Exception;
+                throw exception;
             }
+
+            return null;
+        }
+
+        /// <summary>
+        /// 获取FastService实例
+        /// </summary>
+        /// <param name="actionContext">服务行为上下文</param>
+        /// <returns></returns>
+        private IFastService GetFastService(ActionContext actionContext)
+        {
+            // 获取服务实例
+            var fastService = this.GetService(actionContext.Action.DeclaringService);
+            if (fastService != null)
+            {
+                return fastService;
+            }
+            var exception = new Exception(string.Format("无法获取类型{0}的实例", actionContext.Action.DeclaringService));
+            var exceptionContext = new ExceptionContext(actionContext, exception);
+            this.ExecExceptionFilters(exceptionContext);
+
+            if (exceptionContext.ExceptionHandled == false)
+            {
+                throw exception;
+            }
+
+            return null;
         }
 
 

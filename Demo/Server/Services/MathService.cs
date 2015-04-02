@@ -29,12 +29,10 @@ namespace Server.Services
         /// <param name="z"></param>
         /// <returns></returns>
         [Service(Implements.Self, 300)]
-        [Log("日志")]
+        [Log("求合操作")]
         public int GetSun(int x, int y, int z)
         {
-            Console.WriteLine("收到GetSum({0}, {1}, {2})", x, y, z);
-
-            // 长时间运算
+            // 模拟长时间运算
             Thread.Sleep(2000);
             return x + y + z;
         }

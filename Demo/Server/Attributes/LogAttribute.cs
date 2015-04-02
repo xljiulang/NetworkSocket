@@ -11,16 +11,16 @@ namespace Server.Attributes
     {
         public ILog Loger { get; set; }
 
-        private string log;
+        private string message;
 
-        public LogAttribute(string log)
+        public LogAttribute(string message)
         {
-            this.log = log;
+            this.message = message;
         }
-
         public void OnExecuting(NetworkSocket.Fast.ActionContext actionContext)
         {
-            this.Loger.Log(string.Format("cmd:{0} log:{1}", actionContext.Action.Command, this.log));
+            var log = string.Format("Client:{0} Action:{1} Message:{2}", actionContext.Client, actionContext.Action, this.message);
+            this.Loger.Write(log);
         }
 
         public void OnExecuted(NetworkSocket.Fast.ActionContext actionContext)

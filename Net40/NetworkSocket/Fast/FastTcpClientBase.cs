@@ -75,29 +75,46 @@ namespace NetworkSocket.Fast
         private void ProcessNormalPacket(FastPacket packet)
         {
             var requestContext = new RequestContext { Client = this, Packet = packet };
-            var action = this.fastActionList.FirstOrDefault(item => item.Command == packet.Command);
-
+            var action = this.GetFastAction(requestContext);
             if (action == null)
             {
-                var exception = new Exception(string.Format("命令为{0}的服务行为不存在", packet.Command));
-                this.RaiseException(new ExceptionContext(requestContext, exception));
                 return;
             }
 
-            // 如果是Cmd值对应是Self类型方法 也就是客户端主动调用服务行为
+            var actionContext = new ActionContext(requestContext, action);
             if (action.Implement == Implements.Self)
             {
-                this.TryInvokeAction(new ActionContext(requestContext, action));
-                return;
+                this.TryExecuteAction(actionContext);
+            }
+            else
+            {
+                FastTcpCommon.RaiseTaskResult(actionContext);
+            }
+        }
+
+        /// <summary>
+        /// 获取服务行为
+        /// </summary>
+        /// <param name="requestContext">请求上下文</param>
+        /// <returns></returns>
+        private FastAction GetFastAction(RequestContext requestContext)
+        {
+            var action = this.fastActionList.Find(item => item.Command == requestContext.Packet.Command);
+            if (action != null)
+            {
+                return action;
             }
 
-            // 如果是收到返回值 从回调表找出相关回调来调用
-            var callBack = CallbackTable.Take(packet.HashCode);
-            if (callBack != null)
+            var exception = new Exception(string.Format("命令为{0}的服务行为不存在", requestContext.Packet.Command));
+            var exceptionContext = new ExceptionContext(requestContext, exception);
+            this.RaiseException(exceptionContext);
+
+            if (exceptionContext.ExceptionHandled == false)
             {
-                var returnBytes = packet.GetBodyParameter().FirstOrDefault();
-                callBack(packet.IsException, returnBytes);
+                throw exception;
             }
+
+            return null;
         }
 
 
@@ -107,7 +124,7 @@ namespace NetworkSocket.Fast
         /// 或将异常发送给服务器
         /// </summary>    
         /// <param name="actionContext">上下文</param>       
-        private void TryInvokeAction(ActionContext actionContext)
+        private void TryExecuteAction(ActionContext actionContext)
         {
             try
             {
@@ -123,6 +140,10 @@ namespace NetworkSocket.Fast
             {
                 var exceptionContext = new ExceptionContext(actionContext, ex);
                 this.RaiseException(exceptionContext);
+                if (exceptionContext.ExceptionHandled == false)
+                {
+                    throw;
+                }
             }
         }
 
@@ -169,7 +190,7 @@ namespace NetworkSocket.Fast
             return FastTcpCommon.InvokeRemote<T>(this, this.Serializer, cmd, parameters);
         }
 
-      
+        #region IDisponse
         /// <summary>
         /// 释放资源
         /// </summary>
@@ -184,5 +205,6 @@ namespace NetworkSocket.Fast
                 this.Serializer = null;
             }
         }
+        #endregion
     }
 }

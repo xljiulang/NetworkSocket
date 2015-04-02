@@ -23,9 +23,9 @@ namespace Server
             var fastServer = new FastServer();
             fastServer.BindService();
             fastServer.RegisterResolver();
-            fastServer.StartListen(4502);                      
+            fastServer.StartListen(4502);
 
-            Console.WriteLine("FastServer服务启动");
+            Console.WriteLine("服务已启动，端口：" + fastServer.LocalEndPoint.Port);
             while (true)
             {
                 Console.ReadLine();

@@ -294,5 +294,19 @@ namespace NetworkSocket.Fast.Internal
                 }
             }
         }
+        
+        /// <summary>
+        /// 触发任务结果
+        /// </summary>
+        /// <param name="actionContext">上下文</param>
+        public static void RaiseTaskResult(ActionContext actionContext)
+        {
+            var callBack = CallbackTable.Take(actionContext.Packet.HashCode);
+            if (callBack != null)
+            {
+                var returnBytes = actionContext.Packet.GetBodyParameter().FirstOrDefault();
+                callBack(actionContext.Packet.IsException, returnBytes);
+            }
+        }
     }
 }

@@ -11,10 +11,9 @@ using System.Threading.Tasks;
 namespace NetworkSocket.Fast
 {
     /// <summary>
-    /// Fast服务抽象类
-    /// 所有自身实现的服务方法的第一个参数是ActionContext类型
+    /// Fast服务抽象类   
     /// </summary>
-    public abstract class FastServiceBase : IFastService, IAuthorizationFilter, IActionFilter, IExceptionFilter, IDisposable
+    public abstract class FastServiceBase : IFastService, IAuthorizationFilter, IActionFilter, IExceptionFilter
     {
         /// <summary>
         /// 线程唯一上下文
@@ -30,7 +29,7 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 获取当前服务行为上下文
         /// </summary>
-        public ActionContext CurrentContext
+        protected ActionContext CurrentContext
         {
             get
             {
@@ -51,51 +50,31 @@ namespace NetworkSocket.Fast
             // 如果是Cmd值对应是Self类型方法 也就是客户端主动调用服务行为
             if (actionContext.Action.Implement == Implements.Self)
             {
-                this.TryInvokeAction(actionContext);
-                return;
+                this.TryExecuteAction(actionContext);
             }
-
-            // 如果是收到返回值 从回调表找出相关回调来调用
-            var callBack = CallbackTable.Take(actionContext.Packet.HashCode);
-            if (callBack != null)
+            else
             {
-                var returnBytes = actionContext.Packet.GetBodyParameter().FirstOrDefault();
-                callBack(actionContext.Packet.IsException, returnBytes);
+                FastTcpCommon.RaiseTaskResult(actionContext);
             }
         }
 
         /// <summary>
-        /// 调用自身方法
-        /// 将返回值发送给客户端
-        /// 或将异常发送给客户端
+        /// 调用自身实现的服务行为
+        /// 将返回值发送给客户端        
         /// </summary>       
-        /// <param name="actionContext">上下文</param>       
-        private void TryInvokeAction(ActionContext actionContext)
+        /// <param name="actionContext">上下文</param>  
+        private void TryExecuteAction(ActionContext actionContext)
         {
-            // 获取服务行为的特性过滤器
             var filters = this.FastTcpServer.FilterAttributeProvider.GetActionFilters(actionContext.Action);
 
             try
             {
-                // 设置上下文
                 this.CurrentContext = actionContext;
-                this.ExecFiltersBeforeAction(filters, actionContext);
-
-                var parameters = FastTcpCommon.GetActionParameters(actionContext, this.FastTcpServer.Serializer);
-                var returnValue = actionContext.Action.Execute(this, parameters);
-
-                // 执行Filter
-                this.ExecFiltersAfterAction(filters, actionContext);
-
-                if (actionContext.Action.IsVoidReturn == false && actionContext.Client.IsConnected)
-                {
-                    actionContext.Packet.SetBodyBinary(this.FastTcpServer.Serializer, returnValue);
-                    actionContext.Client.Send(actionContext.Packet);
-                }
+                this.ExecuteAction(actionContext, filters);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                var exceptionContext = new ExceptionContext(actionContext, ex);
+                var exceptionContext = new ExceptionContext(actionContext, exception);
                 this.ExecExceptionFilters(filters, exceptionContext);
                 if (exceptionContext.ExceptionHandled == false)
                 {
@@ -104,8 +83,32 @@ namespace NetworkSocket.Fast
             }
             finally
             {
-                // 释放上下文
                 this.CurrentContext = null;
+            }
+        }
+
+        /// <summary>
+        /// 调用自身实现的服务行为
+        /// 将返回值发送给客户端        
+        /// </summary>       
+        /// <param name="actionContext">上下文</param>       
+        /// <param name="filters">过滤器</param>
+        private void ExecuteAction(ActionContext actionContext, IEnumerable<IFilter> filters)
+        {
+            // 执行Filter
+            this.ExecFiltersBeforeAction(filters, actionContext);
+
+            var parameters = FastTcpCommon.GetActionParameters(actionContext, this.FastTcpServer.Serializer);
+            var returnValue = actionContext.Action.Execute(this, parameters);
+
+            // 执行Filter
+            this.ExecFiltersAfterAction(filters, actionContext);
+
+            // 返回数据
+            if (actionContext.Action.IsVoidReturn == false && actionContext.Client.IsConnected)
+            {
+                actionContext.Packet.SetBodyBinary(this.FastTcpServer.Serializer, returnValue);
+                actionContext.Client.Send(actionContext.Packet);
             }
         }
 

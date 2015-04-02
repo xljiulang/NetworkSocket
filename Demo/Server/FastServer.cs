@@ -65,7 +65,6 @@ namespace Server
             this.FilterAttributeProvider = new AutofacFilterAttributeProvider();
         }
 
-       
 
         /// <summary>
         /// 接收到客户端连接
@@ -73,7 +72,7 @@ namespace Server
         /// <param name="client">客户端</param>
         protected override void OnConnect(SocketAsync<FastPacket> client)
         {
-            Console.WriteLine("客户端{0}连接进来，当前连接数为：{1}", client, this.AliveClients.Count);
+            Console.WriteLine("Client:{0} Action:Connect ConnectCount:{1}", client, this.AliveClients.Count);
         }
 
         /// <summary>
@@ -82,14 +81,18 @@ namespace Server
         /// <param name="client">客户端</param>
         protected override void OnDisconnect(SocketAsync<FastPacket> client)
         {
-            Console.WriteLine("客户端{0}断开连接，当前连接数为：{1}", client, this.AliveClients.Count);
+            Console.WriteLine("Client:{0} Action:Disconnect ConnectCount:{1}", client, this.AliveClients.Count);
         }
 
-
+        /// <summary>
+        /// 异常处理
+        /// </summary>
+        /// <param name="filterContext"></param>
         public override void OnException(ExceptionContext filterContext)
         {
-            Console.WriteLine(filterContext.Exception);
-            // filterContext.ExceptionHandled = true;
-        }   
+            // 标记处理完成
+            filterContext.ExceptionHandled = true;
+            Console.WriteLine("Exception:" + filterContext.Exception.Message);
+        }
     }
 }

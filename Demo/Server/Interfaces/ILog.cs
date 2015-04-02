@@ -7,6 +7,6 @@ namespace Server.Interfaces
 {
     public interface ILog : IDisposable
     {
-        bool Log(string txt);
+        bool Write(string log);
     }
 }

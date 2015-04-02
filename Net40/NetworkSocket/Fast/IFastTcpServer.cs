@@ -19,5 +19,13 @@ namespace NetworkSocket.Fast
         /// 获取或设置服务行为特性过滤器提供者
         /// </summary>
         IFilterAttributeProvider FilterAttributeProvider { get; set; }
+
+        /// <summary>
+        /// 获取服务实例
+        /// 并赋值给服务实例的FastTcpServer属性
+        /// </summary>
+        /// <typeparam name="T">服务类型</typeparam>
+        /// <returns></returns>
+        T GetService<T>() where T : IFastService;
     }
 }
