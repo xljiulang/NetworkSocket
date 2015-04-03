@@ -18,7 +18,7 @@ namespace ClientApp.Forms
             InitializeComponent();
 
             this.btn_Login.Click += btn_Login_Click;
-            this.Load += MainForm_Load;
+            this.Load += MainForm_Load;           
         }
 
         private async void MainForm_Load(object sender, EventArgs e)
@@ -32,7 +32,7 @@ namespace ClientApp.Forms
         }
 
         private async void btn_Login_Click(object sender, EventArgs e)
-        {
+        {           
             var user = new User
             {
                 Account = this.textBox_Account.Text,
@@ -52,6 +52,10 @@ namespace ClientApp.Forms
                     new SumForm().ShowDialog();
                     this.Close();
                 }
+            }
+            catch (TimeoutException ex)
+            {
+                this.Text = ex.Message;
             }
             catch (RemoteException ex)
             {

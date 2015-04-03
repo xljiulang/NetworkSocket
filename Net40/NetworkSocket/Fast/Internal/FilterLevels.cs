@@ -1,0 +1,28 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace NetworkSocket.Fast.Internal
+{
+    /// <summary>
+    /// 过滤器级别
+    /// </summary>
+    internal enum FilterLevels
+    {
+        /// <summary>
+        /// 权限级过滤
+        /// </summary>
+        Authorization,
+
+        /// <summary>
+        /// 类级过滤
+        /// </summary>
+        Class,
+
+        /// <summary>
+        /// 方法级过滤
+        /// </summary>
+        Method,
+    }
+}

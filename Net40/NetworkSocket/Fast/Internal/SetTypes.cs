@@ -6,23 +6,23 @@ using System.Text;
 namespace NetworkSocket.Fast.Internal
 {
     /// <summary>
-    /// 过滤器级别
+    /// 任务设置行为
     /// </summary>
-    internal enum FilterLevel
+    internal enum SetTypes
     {
         /// <summary>
-        /// 权限级过滤
+        /// 设置结果
         /// </summary>
-        Authorization,
+        SetReult,
 
         /// <summary>
-        /// 类级过滤
+        /// 设置异常
         /// </summary>
-        Class,
+        SetException,
 
         /// <summary>
-        /// 方法级过滤
+        /// 设置超时
         /// </summary>
-        Method,
+        SetTimeout
     }
 }

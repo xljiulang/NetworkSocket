@@ -20,7 +20,7 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 获取哈希值
         /// </summary>
-        public int HashCode { get; private set; }
+        public long HashCode { get; private set; }
 
         /// <summary>
         /// 获取是否异常
@@ -36,10 +36,11 @@ namespace NetworkSocket.Fast
         /// 通讯协议的封包
         /// </summary>
         /// <param name="cmd">命令值</param>
-        public FastPacket(int cmd)
+        /// <param name="hashCode">哈希码</param>
+        public FastPacket(int cmd, long hashCode)
         {
             this.Command = cmd;
-            this.HashCode = Guid.NewGuid().GetHashCode();
+            this.HashCode = hashCode;
         }
 
         /// <summary>
@@ -49,7 +50,7 @@ namespace NetworkSocket.Fast
         /// <param name="hashCode">哈希码</param>     
         /// <param name="isException">是否为异常包</param>
         /// <param name="body">数据体</param>
-        public FastPacket(int cmd, int hashCode, bool isException, byte[] body)
+        public FastPacket(int cmd, long hashCode, bool isException, byte[] body)
         {
             this.Command = cmd;
             this.HashCode = hashCode;
@@ -129,8 +130,8 @@ namespace NetworkSocket.Fast
         /// <returns></returns>
         public override byte[] ToByteArray()
         {
-            // 总长度(4) + command(4) + hashCode(4) + IsException(1)
-            const int headLength = 13;
+            // 总长度(4) + command(4) + hashCode(8) + IsException(1)
+            const int headLength = 17;
             // 总长度
             int totalLength = this.Body == null ? headLength : headLength + this.Body.Length;
 
@@ -153,8 +154,8 @@ namespace NetworkSocket.Fast
         public static FastPacket GetPacket(ByteBuilder builder)
         {
             // 包头长度
-            const int headLength = 13;
-            // 不会少于13
+            const int headLength = 17;
+            // 不会少于17
             if (builder.Length < headLength)
             {
                 return null;
@@ -171,11 +172,11 @@ namespace NetworkSocket.Fast
             // cmd
             var cmd = builder.ToInt32(4, Endians.Big);
             // 哈希值
-            var hashCode = builder.ToInt32(8, Endians.Big);
+            var hashCode = builder.ToInt64(8, Endians.Big);
             // 是否异常
-            var isException = builder.ToBoolean(12);
+            var isException = builder.ToBoolean(16);
             // 实体数据
-            var body = builder.ToArray(13, totalLength - headLength);
+            var body = builder.ToArray(17, totalLength - headLength);
 
             // 清空本条数据
             builder.Remove(totalLength);

@@ -23,6 +23,32 @@ namespace NetworkSocket.Fast
         private List<FastAction> fastActionList;
 
         /// <summary>
+        /// 数据包哈希码提供者
+        /// </summary>
+        internal HashCodeProvider HashCodeProvider;
+
+        /// <summary>
+        /// 任务行为表
+        /// </summary>
+        internal TaskSetActionTable TaskSetActionTable;
+
+        /// <summary>
+        /// 获取或设置请求超时时间
+        /// 单位毫秒
+        /// </summary>
+        public int TimeOut
+        {
+            get
+            {
+                return this.TaskSetActionTable.TimeOut;
+            }
+            set
+            {
+                this.TaskSetActionTable.TimeOut = value;
+            }
+        }
+
+        /// <summary>
         /// 获取或设置序列化工具
         /// 默认是Json序列化
         /// </summary>
@@ -39,6 +65,9 @@ namespace NetworkSocket.Fast
         public FastTcpServerBase()
         {
             this.fastActionList = new List<FastAction>();
+            this.HashCodeProvider = new HashCodeProvider();
+            this.TaskSetActionTable = new TaskSetActionTable();
+
             this.Serializer = new DefaultSerializer();
             this.FilterAttributeProvider = new FilterAttributeProvider();
         }
@@ -172,7 +201,7 @@ namespace NetworkSocket.Fast
         /// <param name="requestContext">请求上下文</param>
         private void ProcessRemoteException(RequestContext requestContext)
         {
-            var exceptionContext = this.SetFastActionTaskException(requestContext);
+            var exceptionContext = this.SetFastActionTaskException(requestContext, this.TaskSetActionTable);
             if (exceptionContext == null)
             {
                 return;
@@ -194,6 +223,12 @@ namespace NetworkSocket.Fast
             var action = this.GetFastAction(requestContext);
             if (action == null)
             {
+                return;
+            }
+
+            if (action.Implement == Implements.Remote)
+            {
+                FastTcpCommon.SetFastActionTaskResult(requestContext, this.TaskSetActionTable);
                 return;
             }
 
@@ -278,6 +313,11 @@ namespace NetworkSocket.Fast
             {
                 this.fastActionList.Clear();
                 this.fastActionList = null;
+
+                this.TaskSetActionTable.Clear();
+                this.TaskSetActionTable = null;
+
+                this.HashCodeProvider = null;
                 this.Serializer = null;
                 this.FilterAttributeProvider = null;
             }

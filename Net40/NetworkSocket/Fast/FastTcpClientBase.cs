@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,6 +20,32 @@ namespace NetworkSocket.Fast
         private List<FastAction> fastActionList;
 
         /// <summary>
+        /// 数据包哈希码提供者
+        /// </summary>
+        private HashCodeProvider hashCodeProvider;
+
+        /// <summary>
+        /// 任务行为表
+        /// </summary>
+        private TaskSetActionTable taskSetActionTable;
+
+        /// <summary>
+        /// 获取或设置请求超时时间
+        /// 单位毫秒
+        /// </summary>
+        public int TimeOut
+        {
+            get
+            {
+                return this.taskSetActionTable.TimeOut;
+            }
+            set
+            {
+                this.taskSetActionTable.TimeOut = value;
+            }
+        }
+
+        /// <summary>
         /// 获取或设置序列化工具
         /// 默认是Json序列化
         /// </summary>
@@ -30,6 +57,8 @@ namespace NetworkSocket.Fast
         public FastTcpClientBase()
         {
             this.fastActionList = FastTcpCommon.GetServiceFastActions(this.GetType());
+            this.hashCodeProvider = new HashCodeProvider();
+            this.taskSetActionTable = new TaskSetActionTable();
             this.Serializer = new DefaultSerializer();
         }
 
@@ -69,7 +98,7 @@ namespace NetworkSocket.Fast
         /// <param name="requestContext">请求上下文</param>
         private void ProcessRemoteException(RequestContext requestContext)
         {
-            var exceptionContext = this.SetFastActionTaskException(requestContext);
+            var exceptionContext = this.SetFastActionTaskException(requestContext, this.taskSetActionTable);
             if (exceptionContext == null)
             {
                 return;
@@ -101,7 +130,7 @@ namespace NetworkSocket.Fast
             }
             else
             {
-                FastTcpCommon.SetFastActionTaskResult(actionContext);
+                FastTcpCommon.SetFastActionTaskResult(actionContext, this.taskSetActionTable);
             }
         }
 
@@ -200,11 +229,15 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 将数据发送到远程端        
         /// </summary>       
-        /// <param name="cmd">数据包的Action值</param>
-        /// <param name="parameters">参数列表</param>
-        protected void InvokeRemote(int cmd, params object[] parameters)
+        /// <param name="command">数据包的command值</param>
+        /// <param name="parameters">参数列表</param>   
+        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="SocketException"></exception> 
+        protected void InvokeRemote(int command, params object[] parameters)
         {
-            FastTcpCommon.InvokeRemote(this, this.Serializer, cmd, parameters);
+            var packet = new FastPacket(command, this.hashCodeProvider.GetPacketHashCode());
+            packet.SetBodyBinary(this.Serializer, parameters);
+            this.Send(packet);
         }
 
         /// <summary>
@@ -212,13 +245,15 @@ namespace NetworkSocket.Fast
         /// 并返回结果数据任务
         /// </summary>
         /// <typeparam name="T">返回值类型</typeparam>
-        /// <param name="cmd">数据包的命令值</param>
-        /// <param name="parameters"></param>
-        /// <returns>参数列表</returns>
+        /// <param name="command">数据包的命令值</param>
+        /// <param name="parameters">参数</param>          
+        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="SocketException"></exception> 
         /// <exception cref="RemoteException"></exception>
-        protected Task<T> InvokeRemote<T>(int cmd, params object[] parameters)
+        /// <returns>远程数据任务</returns>    
+        protected Task<T> InvokeRemote<T>(int command, params object[] parameters)
         {
-            return FastTcpCommon.InvokeRemote<T>(this, this.Serializer, cmd, parameters);
+            return FastTcpCommon.InvokeRemote<T>(this, this.taskSetActionTable, this.Serializer, command, this.hashCodeProvider.GetPacketHashCode(), parameters);
         }
 
         #region IDisponse
@@ -233,6 +268,11 @@ namespace NetworkSocket.Fast
             {
                 this.fastActionList.Clear();
                 this.fastActionList = null;
+
+                this.taskSetActionTable.Clear();
+                this.taskSetActionTable = null;
+
+                this.hashCodeProvider = null;
                 this.Serializer = null;
             }
         }

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 
 namespace NetworkSocket.Fast
@@ -44,24 +45,6 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="actionContext">上下文</param>      
         public void Execute(ActionContext actionContext)
-        {
-            // 如果是Cmd值对应是Self类型方法 也就是客户端主动调用服务行为
-            if (actionContext.Action.Implement == Implements.Self)
-            {
-                this.TryExecuteAction(actionContext);
-            }
-            else
-            {
-                FastTcpCommon.SetFastActionTaskResult(actionContext);
-            }
-        }
-
-        /// <summary>
-        /// 调用自身实现的服务行为
-        /// 将返回值发送给客户端        
-        /// </summary>       
-        /// <param name="actionContext">上下文</param>  
-        private void TryExecuteAction(ActionContext actionContext)
         {
             var filters = this.FastTcpServer.FilterAttributeProvider.GetActionFilters(actionContext.Action);
 
@@ -134,12 +117,18 @@ namespace NetworkSocket.Fast
         /// 将数据发送到远程端        
         /// </summary>
         /// <param name="client">客户端</param>
-        /// <param name="cmd">数据包的Action值</param>
-        /// <param name="parameters">参数列表</param>
-        /// <exception cref="RemoteException"></exception>
-        protected void InvokeRemote(SocketAsync<FastPacket> client, int cmd, params object[] parameters)
+        /// <param name="command">数据包的command值</param>
+        /// <param name="parameters">参数列表</param>    
+        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="SocketException"></exception>         
+        protected void InvokeRemote(SocketAsync<FastPacket> client, int command, params object[] parameters)
         {
-            FastTcpCommon.InvokeRemote(client, this.FastTcpServer.Serializer, cmd, parameters);
+            var tcpServer = this.FastTcpServer as FastTcpServerBase;
+            var hashCode = tcpServer.HashCodeProvider.GetPacketHashCode();
+            var packet = new FastPacket(command, hashCode);
+
+            packet.SetBodyBinary(tcpServer.Serializer, parameters);
+            client.Send(packet);
         }
 
         /// <summary>
@@ -148,13 +137,20 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <typeparam name="T">返回值类型</typeparam>
         /// <param name="client">客户端</param>
-        /// <param name="cmd">数据包的命令值</param>
-        /// <param name="parameters"></param>
+        /// <param name="command">数据包的命令值</param>
+        /// <param name="parameters">参数</param>     
+        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="SocketException"></exception> 
         /// <exception cref="RemoteException"></exception>
-        /// <returns>远程数据任务</returns>
-        protected Task<T> InvokeRemote<T>(SocketAsync<FastPacket> client, int cmd, params object[] parameters)
+        /// <returns>远程数据任务</returns>  
+        protected Task<T> InvokeRemote<T>(SocketAsync<FastPacket> client, int command, params object[] parameters)
         {
-            return FastTcpCommon.InvokeRemote<T>(client, this.FastTcpServer.Serializer, cmd, parameters);
+            var tcpServer = this.FastTcpServer as FastTcpServerBase;
+            var hashCode = tcpServer.HashCodeProvider.GetPacketHashCode();
+            var taskSetActionTable = tcpServer.TaskSetActionTable;
+            var serializer = tcpServer.Serializer;
+
+            return FastTcpCommon.InvokeRemote<T>(client, taskSetActionTable, serializer, command, hashCode, parameters);
         }
 
         #region IFilter

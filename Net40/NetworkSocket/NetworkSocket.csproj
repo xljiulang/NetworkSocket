@@ -60,8 +60,11 @@
     <Compile Include="ByteConverter.cs" />
     <Compile Include="Endians.cs" />
     <Compile Include="Fast\Implements.cs" />
+    <Compile Include="Fast\Internal\HashCodeProvider.cs" />
+    <Compile Include="Fast\Internal\TaskSetAction.cs" />
+    <Compile Include="Fast\Internal\SetTypes.cs" />
+    <Compile Include="Fast\Internal\TaskSetActionTable.cs" />
     <Compile Include="Fast\ServiceAttribute.cs" />
-    <Compile Include="Fast\Internal\CallbackTable.cs" />
     <Compile Include="Fast\Internal\DefaultSerializer.cs" />
     <Compile Include="Fast\FastPacket.cs" />
     <Compile Include="Fast\FastServiceBase.cs" />
@@ -71,7 +74,7 @@
     <Compile Include="Fast\ActionContext.cs" />
     <Compile Include="Fast\FilterAttributeProvider.cs" />
     <Compile Include="Fast\FilterAttribute.cs" />
-    <Compile Include="Fast\Internal\FilterLevel.cs" />
+    <Compile Include="Fast\Internal\FilterLevels.cs" />
     <Compile Include="Fast\IActionFilter.cs" />
     <Compile Include="Fast\IAuthorizationFilter.cs" />
     <Compile Include="Fast\IExceptionFilter.cs" />

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -29,7 +30,7 @@ namespace ClientApp.Forms
             int.TryParse(this.textBox3.Text, out z);
 
             var sum = await RemoteServer.Instance.GetSun(x, y, z);
-            MessageBox.Show("服务器返回：" + sum.ToString());
+            MessageBox.Show(string.Format("{0} + {1} + {2} = {3}", x, y, z, sum), "计算结果");
         }
     }
 }

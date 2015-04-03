@@ -31,8 +31,7 @@ namespace Server.Services
         [LogFilter("求合操作")]
         public int GetSun(int x, int y, int z)
         {
-            // 模拟长时间运算
-            Thread.Sleep(1000);
+            // 模拟长时间运算           
             return x + y + z;
         }
     }

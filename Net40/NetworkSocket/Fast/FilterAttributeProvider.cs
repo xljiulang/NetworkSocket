@@ -33,13 +33,13 @@ namespace NetworkSocket.Fast
             var methodFilters = methodAttributes.Select(fiter => new
             {
                 Filter = fiter,
-                Level = (fiter is IAuthorizationFilter) ? FilterLevel.Authorization : FilterLevel.Method
+                Level = (fiter is IAuthorizationFilter) ? FilterLevels.Authorization : FilterLevels.Method
             });
 
             var classFilters = classAttributes.Select(fiter => new
             {
                 Filter = fiter,
-                Level = (fiter is IAuthorizationFilter) ? FilterLevel.Authorization : FilterLevel.Class
+                Level = (fiter is IAuthorizationFilter) ? FilterLevels.Authorization : FilterLevels.Class
             });
 
             var filters = classFilters.Concat(methodFilters)
