@@ -235,7 +235,7 @@ namespace NetworkSocket.Fast
         /// <exception cref="SocketException"></exception> 
         protected void InvokeRemote(int command, params object[] parameters)
         {
-            var packet = new FastPacket(command, this.hashCodeProvider.GetPacketHashCode());
+            var packet = new FastPacket(command, this.hashCodeProvider.GetHashCode());
             packet.SetBodyBinary(this.Serializer, parameters);
             this.Send(packet);
         }
@@ -253,7 +253,7 @@ namespace NetworkSocket.Fast
         /// <returns>远程数据任务</returns>    
         protected Task<T> InvokeRemote<T>(int command, params object[] parameters)
         {
-            return FastTcpCommon.InvokeRemote<T>(this, this.taskSetActionTable, this.Serializer, command, this.hashCodeProvider.GetPacketHashCode(), parameters);
+            return FastTcpCommon.InvokeRemote<T>(this, this.taskSetActionTable, this.Serializer, command, this.hashCodeProvider.GetHashCode(), parameters);
         }
 
         #region IDisponse

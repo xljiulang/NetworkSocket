@@ -277,7 +277,7 @@ namespace NetworkSocket.Fast.Internal
             {
                 globalFilter.OnAuthorization(actionContext);
             }
-            fastService.OnAuthorization(actionContext);
+            ((IAuthorizationFilter)fastService).OnAuthorization(actionContext);
             foreach (var filter in actionFilters)
             {
                 var authorizationFilter = filter as IAuthorizationFilter;
@@ -292,7 +292,9 @@ namespace NetworkSocket.Fast.Internal
             {
                 globalFilter.OnExecuting(actionContext);
             }
-            fastService.OnExecuting(actionContext);
+
+            ((IActionFilter)fastService).OnExecuting(actionContext);
+
             foreach (var filter in actionFilters)
             {
                 var actionFilter = filter as IActionFilter;
@@ -318,7 +320,7 @@ namespace NetworkSocket.Fast.Internal
             }
 
             // 自身过滤器
-            fastService.OnExecuted(actionContext);
+            ((IActionFilter)fastService).OnExecuted(actionContext);
 
             // 特性过滤器
             foreach (var filter in actionFilters)
@@ -349,7 +351,7 @@ namespace NetworkSocket.Fast.Internal
 
             if (exceptionContext.ExceptionHandled == false)
             {
-                fastService.OnException(exceptionContext);
+                ((IExceptionFilter)fastService).OnException(exceptionContext);
             }
 
             foreach (var filter in actionFilters)

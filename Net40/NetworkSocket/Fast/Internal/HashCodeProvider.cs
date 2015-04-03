@@ -22,9 +22,10 @@ namespace NetworkSocket.Fast.Internal
 
         /// <summary>
         /// 获取哈希码
+        /// 每获取一次自增1
         /// </summary>
         /// <returns></returns>
-        public long GetPacketHashCode()
+        new public long GetHashCode()
         {
             lock (this.syncRoot)
             {

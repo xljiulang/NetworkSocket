@@ -26,7 +26,7 @@ namespace NetworkSocket.Fast.Internal
         public int TimeOut { get; set; }
 
         /// <summary>
-        /// 静态构造器
+        /// 任务行为表
         /// </summary>
         public TaskSetActionTable()
         {
