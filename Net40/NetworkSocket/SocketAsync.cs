@@ -214,9 +214,7 @@ namespace NetworkSocket
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="SocketException"></exception>       
         public void Send(T packet)
-        {
-            this.SendHandler(packet);
-
+        {           
             if (packet == null)
             {
                 throw new ArgumentNullException("packet");
@@ -233,6 +231,7 @@ namespace NetworkSocket
                 throw new ArgumentException("packet");
             }
 
+            this.SendHandler(packet);
             this.Send(bytes);
         }
 
