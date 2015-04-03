@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using NetworkSocket.Fast;
-using NetworkSocket.Fast.Filters;
 
 namespace Server.Filters
 {

@@ -1,6 +1,4 @@
-﻿using NetworkSocket.Fast.Attributes;
-using NetworkSocket.Fast.Filters;
-using NetworkSocket.Fast.Internal;
+﻿using NetworkSocket.Fast.Internal;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;

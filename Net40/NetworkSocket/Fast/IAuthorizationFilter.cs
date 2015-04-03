@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace NetworkSocket.Fast.Filters
+namespace NetworkSocket.Fast
 {
     /// <summary>
     /// 权限过虑器

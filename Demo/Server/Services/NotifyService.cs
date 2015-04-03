@@ -1,6 +1,5 @@
 ﻿using NetworkSocket;
 using NetworkSocket.Fast;
-using NetworkSocket.Fast.Attributes;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace NetworkSocket.Fast.Attributes
+namespace NetworkSocket.Fast
 {
     /// <summary>
     /// 表示服务行为标记特性

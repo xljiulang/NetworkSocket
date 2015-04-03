@@ -6,13 +6,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using NetworkSocket.Fast;
 using NetworkSocket;
-using NetworkSocket.Fast.Attributes;
 using Models;
 using Autofac;
 using System.Reflection;
 using Server.Interfaces;
 using Server.Services;
-using NetworkSocket.Fast.Filters;
 using Server.Database;
 
 namespace Server

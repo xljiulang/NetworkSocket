@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace NetworkSocket.Fast.Filters
+namespace NetworkSocket.Fast
 {
     /// <summary>
     /// 表示服务或服务行为过滤器基础特性

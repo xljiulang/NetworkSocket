@@ -1,7 +1,6 @@
 ﻿using Models;
 using NetworkSocket;
 using NetworkSocket.Fast;
-using NetworkSocket.Fast.Attributes;
 using Server.Filters;
 using Server.Interfaces;
 using System;
