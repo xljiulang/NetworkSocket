@@ -174,7 +174,7 @@ namespace NetworkSocket.Fast
         /// <param name="requestContext">请求上下文</param>
         private void ProcessRemoteException(RequestContext requestContext)
         {
-            var exceptionContext = FastTcpCommon.SetFastActionTaskException(requestContext, this.Serializer);
+            var exceptionContext = this.SetFastActionTaskException(requestContext);
             if (exceptionContext == null)
             {
                 return;
@@ -230,7 +230,7 @@ namespace NetworkSocket.Fast
             var exception = new Exception(string.Format("命令为{0}的服务行为不存在", requestContext.Packet.Command));
             var exceptionContext = new ExceptionContext(requestContext, exception);
 
-            FastTcpCommon.SetRemoteException(exceptionContext, this.Serializer);
+            this.SetRemoteException(exceptionContext);
             this.ExecExceptionFilters(exceptionContext);
 
             if (exceptionContext.ExceptionHandled == false)
@@ -257,7 +257,7 @@ namespace NetworkSocket.Fast
             var exception = new Exception(string.Format("无法获取类型{0}的实例", actionContext.Action.DeclaringService));
             var exceptionContext = new ExceptionContext(actionContext, exception);
 
-            FastTcpCommon.SetRemoteException(exceptionContext, this.Serializer);
+            this.SetRemoteException(exceptionContext);
             this.ExecExceptionFilters(exceptionContext);
 
             if (exceptionContext.ExceptionHandled == false)
@@ -267,6 +267,7 @@ namespace NetworkSocket.Fast
 
             return null;
         }
+
         #region IDisponse
         /// <summary>
         /// 释放资源

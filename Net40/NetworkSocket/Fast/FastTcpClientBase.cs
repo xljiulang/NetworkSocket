@@ -70,7 +70,7 @@ namespace NetworkSocket.Fast
         /// <param name="requestContext">请求上下文</param>
         private void ProcessRemoteException(RequestContext requestContext)
         {
-            var exceptionContext = FastTcpCommon.SetFastActionTaskException(requestContext, this.Serializer);
+            var exceptionContext = this.SetFastActionTaskException(requestContext);
             if (exceptionContext == null)
             {
                 return;
@@ -122,7 +122,7 @@ namespace NetworkSocket.Fast
             var exception = new Exception(string.Format("命令为{0}的服务行为不存在", requestContext.Packet.Command));
             var exceptionContext = new ExceptionContext(requestContext, exception);
 
-            FastTcpCommon.SetRemoteException(exceptionContext, this.Serializer);
+            this.SetRemoteException(exceptionContext);
             this.OnException(exceptionContext);
 
             if (exceptionContext.ExceptionHandled == false)
@@ -164,7 +164,7 @@ namespace NetworkSocket.Fast
         /// <param name="actionContext">上下文</param>   
         private void ExecuteAction(ActionContext actionContext)
         {
-            var parameters = FastTcpCommon.GetFastActionParameters(actionContext, this.Serializer);
+            var parameters = this.GetFastActionParameters(actionContext);
             var returnValue = actionContext.Action.Execute(this, parameters);
             if (actionContext.Action.IsVoidReturn == false && this.IsConnected)
             {
@@ -181,7 +181,7 @@ namespace NetworkSocket.Fast
         private void ProcessExecutingException(ActionContext actionContext, Exception exception)
         {
             var exceptionContext = new ExceptionContext(actionContext, exception);
-            FastTcpCommon.SetRemoteException(exceptionContext, this.Serializer);
+            this.SetRemoteException(exceptionContext);
             this.OnException(exceptionContext);
 
             if (exceptionContext.ExceptionHandled == false)

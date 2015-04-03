@@ -98,7 +98,7 @@ namespace NetworkSocket.Fast
         private void ProcessExecutingException(ActionContext actionContext, IEnumerable<IFilter> actionfilters, Exception exception)
         {
             var exceptionContext = new ExceptionContext(actionContext, exception);
-            FastTcpCommon.SetRemoteException(exceptionContext, this.FastTcpServer.Serializer);
+            this.SetRemoteException(exceptionContext);
             this.ExecExceptionFilters(actionfilters, exceptionContext);
 
             if (exceptionContext.ExceptionHandled == false)
@@ -118,7 +118,7 @@ namespace NetworkSocket.Fast
             // 执行Filter
             this.ExecFiltersBeforeAction(filters, actionContext);
 
-            var parameters = FastTcpCommon.GetFastActionParameters(actionContext, this.FastTcpServer.Serializer);
+            var parameters = this.GetFastActionParameters(actionContext);
             var returnValue = actionContext.Action.Execute(this, parameters);
 
             // 执行Filter

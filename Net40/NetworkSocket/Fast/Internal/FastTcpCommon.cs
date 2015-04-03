@@ -38,6 +38,31 @@ namespace NetworkSocket.Fast.Internal
             }
         }
 
+
+        /// <summary>
+        /// 设置服务行为返回的任务异常
+        /// 如果无法失败，则返回异常上下文对象
+        /// </summary>       
+        /// <param name="requestContext">请求上下文</param>
+        /// <param name="tcpServer">Tcp服务器</param>
+        /// <returns></returns>
+        public static ExceptionContext SetFastActionTaskException(this IFastTcpServer tcpServer, RequestContext requestContext)
+        {
+            return FastTcpCommon.SetFastActionTaskException(requestContext, tcpServer.Serializer);
+        }
+
+        /// <summary>
+        /// 设置服务行为返回的任务异常
+        /// 如果无法失败，则返回异常上下文对象
+        /// </summary>       
+        /// <param name="requestContext">请求上下文</param>
+        /// <param name="tcpClient">Tcp客户端</param>
+        /// <returns></returns>
+        public static ExceptionContext SetFastActionTaskException(this FastTcpClientBase tcpClient, RequestContext requestContext)
+        {
+            return FastTcpCommon.SetFastActionTaskException(requestContext, tcpClient.Serializer);
+        }
+
         /// <summary>
         /// 设置服务行为返回的任务异常
         /// 如果无法失败，则返回异常上下文对象
@@ -45,7 +70,7 @@ namespace NetworkSocket.Fast.Internal
         /// <param name="requestContext">请求上下文</param>
         /// <param name="serializer">序列化工具</param>
         /// <returns></returns>
-        public static ExceptionContext SetFastActionTaskException(RequestContext requestContext, ISerializer serializer)
+        private static ExceptionContext SetFastActionTaskException(RequestContext requestContext, ISerializer serializer)
         {
             var bytes = requestContext.Packet.GetBodyParameter().FirstOrDefault();
             var exceptionCallBack = CallbackTable.Take(requestContext.Packet.HashCode);
@@ -57,20 +82,52 @@ namespace NetworkSocket.Fast.Internal
             }
             else
             {
-                var remoteException = serializer.Deserialize(bytes, typeof(RemoteException)) as RemoteException;
-                return new ExceptionContext(requestContext, remoteException);
+                var message = (string)serializer.Deserialize(bytes, typeof(string));
+                var exception = new RemoteException(message);
+                return new ExceptionContext(requestContext, exception);
             }
         }
 
         /// <summary>       
         /// 设置远程异常
         /// </summary>
-        /// <param name="context">上下文</param> 
-        /// <param name="serializer">序列化工具</param>
-        public static void SetRemoteException(ExceptionContext context, ISerializer serializer)
+        /// <param name="exceptionContext">上下文</param> 
+        /// <param name="tcpServer">tcp服务器</param>
+        public static void SetRemoteException(this IFastTcpServer tcpServer, ExceptionContext exceptionContext)
         {
-            context.Packet.SetException(serializer, context.Exception.Message);
-            context.Client.Send(context.Packet);
+            FastTcpCommon.SetRemoteException(exceptionContext, tcpServer.Serializer);
+        }
+
+        /// <summary>       
+        /// 设置远程异常
+        /// </summary>
+        /// <param name="exceptionContext">上下文</param> 
+        /// <param name="tcpServer">tcp客户端</param>
+        public static void SetRemoteException(this FastTcpClientBase tcpClient, ExceptionContext exceptionContext)
+        {
+            FastTcpCommon.SetRemoteException(exceptionContext, tcpClient.Serializer);
+        }
+
+        /// <summary>       
+        /// 设置远程异常
+        /// </summary>
+        /// <param name="exceptionContext">上下文</param> 
+        /// <param name="tcpServer">Fast服务</param>
+        public static void SetRemoteException(this IFastService fastService, ExceptionContext exceptionContext)
+        {
+            FastTcpCommon.SetRemoteException(exceptionContext, fastService.FastTcpServer.Serializer);
+        }
+
+
+        /// <summary>       
+        /// 设置远程异常
+        /// </summary>
+        /// <param name="exceptionContext">上下文</param> 
+        /// <param name="serializer">序列化工具</param>
+        private static void SetRemoteException(ExceptionContext exceptionContext, ISerializer serializer)
+        {
+            exceptionContext.Packet.SetException(serializer, exceptionContext.Exception.Message);
+            exceptionContext.Client.Send(exceptionContext.Packet);
         }
 
         /// <summary>
@@ -78,12 +135,12 @@ namespace NetworkSocket.Fast.Internal
         /// </summary>
         /// <param name="client">客户端</param>
         /// <param name="serializer">序列化工具</param>
-        /// <param name="cmd">数据包的Action值</param>
+        /// <param name="commond">数据包的Action值</param>
         /// <param name="parameters">参数列表</param>
         /// <exception cref="RemoteException"></exception>
-        public static void InvokeRemote(SocketAsync<FastPacket> client, ISerializer serializer, int cmd, params object[] parameters)
+        public static void InvokeRemote(SocketAsync<FastPacket> client, ISerializer serializer, int commond, params object[] parameters)
         {
-            var packet = new FastPacket(cmd);
+            var packet = new FastPacket(commond);
             packet.SetBodyBinary(serializer, parameters);
             client.Send(packet);
         }
@@ -95,13 +152,13 @@ namespace NetworkSocket.Fast.Internal
         /// <typeparam name="T">返回值类型</typeparam>
         /// <param name="client">客户端</param>
         /// <param name="serializer">序列化工具</param>
-        /// <param name="cmd">数据包的命令值</param>
+        /// <param name="commond">数据包的命令值</param>
         /// <param name="parameters"></param>
         /// <returns>参数列表</returns>
-        public static Task<T> InvokeRemote<T>(SocketAsync<FastPacket> client, ISerializer serializer, int cmd, params object[] parameters)
+        public static Task<T> InvokeRemote<T>(SocketAsync<FastPacket> client, ISerializer serializer, int commond, params object[] parameters)
         {
             var taskSource = new TaskCompletionSource<T>();
-            var packet = new FastPacket(cmd);
+            var packet = new FastPacket(commond);
             packet.SetBodyBinary(serializer, parameters);
 
             // 发送之前记录回参数
@@ -126,12 +183,46 @@ namespace NetworkSocket.Fast.Internal
         }
 
         /// <summary>
-        /// 生成客户端服务行为的调用参数
+        /// 生成服务行为的调用参数
+        /// </summary>        
+        /// <param name="context">上下文</param>       
+        /// <param name="fastServer">服务</param>
+        /// <returns></returns>
+        public static object[] GetFastActionParameters(this IFastService fastServer, ActionContext context)
+        {
+            var items = context.Packet.GetBodyParameter();
+            var parameters = new object[items.Count];
+            for (var i = 0; i < items.Count; i++)
+            {
+                parameters[i] = fastServer.FastTcpServer.Serializer.Deserialize(items[i], context.Action.ParameterTypes[i]);
+            }
+            return parameters;
+        }
+
+        /// <summary>
+        /// 生成服务行为的调用参数
+        /// </summary>        
+        /// <param name="context">上下文</param>       
+        /// <param name="tcpClient">客户端</param>
+        /// <returns></returns>
+        public static object[] GetFastActionParameters(this FastTcpClientBase tcpClient, ActionContext context)
+        {
+            var items = context.Packet.GetBodyParameter();
+            var parameters = new object[items.Count];
+            for (var i = 0; i < items.Count; i++)
+            {
+                parameters[i] = tcpClient.Serializer.Deserialize(items[i], context.Action.ParameterTypes[i]);
+            }
+            return parameters;
+        }
+
+        /// <summary>
+        /// 生成服务行为的调用参数
         /// </summary>        
         /// <param name="context">上下文</param>       
         /// <param name="serializer">序列化工具</param>
         /// <returns></returns>
-        public static object[] GetFastActionParameters(ActionContext context, ISerializer serializer)
+        private static object[] GetFastActionParameters(ActionContext context, ISerializer serializer)
         {
             var items = context.Packet.GetBodyParameter();
             var parameters = new object[items.Count];
