@@ -220,7 +220,8 @@ namespace NetworkSocket
 
             if (this.IsConnected == false)
             {
-                throw new SocketException();
+                const int WSAENOTCONN = 10057;
+                throw new SocketException(WSAENOTCONN);
             }
 
             var bytes = packet.ToByteArray();
