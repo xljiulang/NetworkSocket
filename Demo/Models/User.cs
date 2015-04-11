@@ -8,6 +8,7 @@ namespace Models
     /// <summary>
     /// 用户信息实体
     /// </summary>
+    [Serializable]
     public class User
     {
         /// <summary>

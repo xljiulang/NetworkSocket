@@ -98,7 +98,7 @@ namespace NetworkSocket.Fast
         /// <param name="requestContext">请求上下文</param>
         private void ProcessRemoteException(RequestContext requestContext)
         {
-            var exceptionContext = this.SetFastActionTaskException(requestContext, this.taskSetActionTable);
+            var exceptionContext = FastTcpCommon.SetFastActionTaskException(this.Serializer, this.taskSetActionTable, requestContext);
             if (exceptionContext == null)
             {
                 return;
@@ -147,10 +147,10 @@ namespace NetworkSocket.Fast
                 return action;
             }
 
-            var exception = new Exception(string.Format("命令为{0}的服务行为不存在", requestContext.Packet.Command));
+            var exception = new ActionNotImplementException(requestContext.Packet.Command);
             var exceptionContext = new ExceptionContext(requestContext, exception);
 
-            this.SetRemoteException(exceptionContext);
+            FastTcpCommon.SetRemoteException(this.Serializer, exceptionContext);
             this.OnException(exceptionContext);
 
             if (exceptionContext.ExceptionHandled == false)
@@ -186,13 +186,15 @@ namespace NetworkSocket.Fast
                 this.ProcessExecutingException(actionContext, exception);
             }
         }
+
+
         /// <summary>
         /// 执行服务行为
         /// </summary>
         /// <param name="actionContext">上下文</param>   
         private void ExecuteAction(ActionContext actionContext)
         {
-            var parameters = this.GetFastActionParameters(actionContext);
+            var parameters = FastTcpCommon.GetFastActionParameters(this.Serializer, actionContext);
             var returnValue = actionContext.Action.Execute(this, parameters);
             if (actionContext.Action.IsVoidReturn == false && this.IsConnected)
             {
@@ -209,7 +211,7 @@ namespace NetworkSocket.Fast
         private void ProcessExecutingException(ActionContext actionContext, Exception exception)
         {
             var exceptionContext = new ExceptionContext(actionContext, exception);
-            this.SetRemoteException(exceptionContext);
+            FastTcpCommon.SetRemoteException(this.Serializer, exceptionContext);
             this.OnException(exceptionContext);
 
             if (exceptionContext.ExceptionHandled == false)

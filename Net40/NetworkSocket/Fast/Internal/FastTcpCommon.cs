@@ -42,38 +42,12 @@ namespace NetworkSocket.Fast.Internal
         /// <summary>
         /// 设置服务行为返回的任务异常
         /// 如果无法失败，则返回异常上下文对象
-        /// </summary>      
-        /// <param name="tcpServer">Tcp服务器</param>
-        /// <param name="requestContext">请求上下文</param>       
-        /// <param name="taskSetActionTable">任务行为表</param>
-        /// <returns></returns>
-        public static ExceptionContext SetFastActionTaskException(this IFastTcpServer tcpServer, RequestContext requestContext, TaskSetActionTable taskSetActionTable)
-        {
-            return FastTcpCommon.SetFastActionTaskException(requestContext, tcpServer.Serializer, taskSetActionTable);
-        }
-
-        /// <summary>
-        /// 设置服务行为返回的任务异常
-        /// 如果无法失败，则返回异常上下文对象
-        /// </summary>       
-        /// <param name="tcpClient">Tcp客户端</param>
-        /// <param name="requestContext">请求上下文</param>        
-        /// <param name="taskSetActionTable">任务行为表</param>
-        /// <returns></returns>
-        public static ExceptionContext SetFastActionTaskException(this FastTcpClientBase tcpClient, RequestContext requestContext, TaskSetActionTable taskSetActionTable)
-        {
-            return FastTcpCommon.SetFastActionTaskException(requestContext, tcpClient.Serializer, taskSetActionTable);
-        }
-
-        /// <summary>
-        /// 设置服务行为返回的任务异常
-        /// 如果无法失败，则返回异常上下文对象
-        /// </summary>       
-        /// <param name="requestContext">请求上下文</param>
+        /// </summary>  
         /// <param name="serializer">序列化工具</param>
         /// <param name="taskSetActionTable">任务行为表</param>
+        /// <param name="requestContext">请求上下文</param>
         /// <returns></returns>
-        private static ExceptionContext SetFastActionTaskException(RequestContext requestContext, ISerializer serializer, TaskSetActionTable taskSetActionTable)
+        public static ExceptionContext SetFastActionTaskException(ISerializer serializer, TaskSetActionTable taskSetActionTable, RequestContext requestContext)
         {
             var exceptionBytes = requestContext.Packet.GetBodyParameter().FirstOrDefault();
             var taskSetAction = taskSetActionTable.Take(requestContext.Packet.HashCode);
@@ -93,41 +67,10 @@ namespace NetworkSocket.Fast.Internal
 
         /// <summary>       
         /// 设置远程异常
-        /// </summary>      
-        /// <param name="tcpServer">tcp服务器</param>
-        /// <param name="exceptionContext">上下文</param> 
-        public static void SetRemoteException(this IFastTcpServer tcpServer, ExceptionContext exceptionContext)
-        {
-            FastTcpCommon.SetRemoteException(exceptionContext, tcpServer.Serializer);
-        }
-
-        /// <summary>       
-        /// 设置远程异常
         /// </summary>
-        /// <param name="tcpClient">tcp客户端</param>
-        /// <param name="exceptionContext">上下文</param> 
-        public static void SetRemoteException(this FastTcpClientBase tcpClient, ExceptionContext exceptionContext)
-        {
-            FastTcpCommon.SetRemoteException(exceptionContext, tcpClient.Serializer);
-        }
-
-        /// <summary>       
-        /// 设置远程异常
-        /// </summary>
-        /// <param name="fastService">Fast服务</param>
-        /// <param name="exceptionContext">上下文</param>       
-        public static void SetRemoteException(this IFastService fastService, ExceptionContext exceptionContext)
-        {
-            FastTcpCommon.SetRemoteException(exceptionContext, fastService.FastTcpServer.Serializer);
-        }
-
-
-        /// <summary>       
-        /// 设置远程异常
-        /// </summary>
-        /// <param name="exceptionContext">上下文</param> 
         /// <param name="serializer">序列化工具</param>
-        private static void SetRemoteException(ExceptionContext exceptionContext, ISerializer serializer)
+        /// <param name="exceptionContext">上下文</param>        
+        public static void SetRemoteException(ISerializer serializer, ExceptionContext exceptionContext)
         {
             exceptionContext.Packet.SetException(serializer, exceptionContext.Exception.Message);
             exceptionContext.Client.Send(exceptionContext.Packet);
@@ -181,35 +124,14 @@ namespace NetworkSocket.Fast.Internal
             return taskSource.Task;
         }
 
-        /// <summary>
-        /// 生成服务行为的调用参数
-        /// </summary>    
-        /// <param name="fastServer">服务</param>
-        /// <param name="actionContext">上下文</param> 
-        /// <returns></returns>
-        public static object[] GetFastActionParameters(this IFastService fastServer, ActionContext actionContext)
-        {
-            return FastTcpCommon.GetFastActionParameters(actionContext, fastServer.FastTcpServer.Serializer);
-        }
-
-        /// <summary>
-        /// 生成服务行为的调用参数
-        /// </summary>      
-        /// <param name="tcpClient">客户端</param>
-        /// <param name="actionContext">上下文</param>   
-        /// <returns></returns>
-        public static object[] GetFastActionParameters(this FastTcpClientBase tcpClient, ActionContext actionContext)
-        {
-            return FastTcpCommon.GetFastActionParameters(actionContext, tcpClient.Serializer);
-        }
 
         /// <summary>
         /// 生成服务行为的调用参数
         /// </summary>        
-        /// <param name="context">上下文</param>       
         /// <param name="serializer">序列化工具</param>
+        /// <param name="context">上下文</param> 
         /// <returns></returns>
-        private static object[] GetFastActionParameters(ActionContext context, ISerializer serializer)
+        public static object[] GetFastActionParameters(ISerializer serializer, ActionContext context)
         {
             var items = context.Packet.GetBodyParameter();
             var parameters = new object[items.Count];
@@ -259,124 +181,6 @@ namespace NetworkSocket.Fast.Internal
                 if ((action.IsVoidReturn || isTask) == false)
                 {
                     throw new Exception(string.Format("服务行为{0}的的返回类型必须是Task<T>类型", action.Name));
-                }
-            }
-        }
-
-
-        /// <summary>
-        /// 在服务行为前 执行过滤器
-        /// </summary>
-        /// <param name="fastService">服务实例</param>
-        /// <param name="actionFilters">服务行为过滤器</param>
-        /// <param name="actionContext">上下文</param>   
-        public static void ExecFiltersBeforeAction(this FastServiceBase fastService, IEnumerable<IFilter> actionFilters, ActionContext actionContext)
-        {
-            // OnAuthorization
-            foreach (var globalFilter in GlobalFilters.AuthorizationFilters)
-            {
-                globalFilter.OnAuthorization(actionContext);
-            }
-            ((IAuthorizationFilter)fastService).OnAuthorization(actionContext);
-            foreach (var filter in actionFilters)
-            {
-                var authorizationFilter = filter as IAuthorizationFilter;
-                if (authorizationFilter != null)
-                {
-                    authorizationFilter.OnAuthorization(actionContext);
-                }
-            }
-
-            // OnExecuting
-            foreach (var globalFilter in GlobalFilters.ActionFilters)
-            {
-                globalFilter.OnExecuting(actionContext);
-            }
-
-            ((IActionFilter)fastService).OnExecuting(actionContext);
-
-            foreach (var filter in actionFilters)
-            {
-                var actionFilter = filter as IActionFilter;
-                if (actionFilter != null)
-                {
-                    actionFilter.OnExecuting(actionContext);
-                }
-            }
-        }
-
-        /// <summary>
-        /// 在服务行为后执行过滤器
-        /// </summary>
-        /// <param name="fastService">服务实例</param>
-        /// <param name="actionFilters">服务行为过滤器</param>
-        /// <param name="actionContext">上下文</param>       
-        public static void ExecFiltersAfterAction(this FastServiceBase fastService, IEnumerable<IFilter> actionFilters, ActionContext actionContext)
-        {
-            // 全局过滤器
-            foreach (var globalFilter in GlobalFilters.ActionFilters)
-            {
-                globalFilter.OnExecuted(actionContext);
-            }
-
-            // 自身过滤器
-            ((IActionFilter)fastService).OnExecuted(actionContext);
-
-            // 特性过滤器
-            foreach (var filter in actionFilters)
-            {
-                var actionFilter = filter as IActionFilter;
-                if (actionFilter != null)
-                {
-                    actionFilter.OnExecuted(actionContext);
-                }
-            }
-        }
-
-        /// <summary>
-        /// 执行异常过滤器
-        /// </summary>
-        /// <param name="fastService">服务实例</param>
-        /// <param name="actionFilters">服务行为过滤器</param>
-        /// <param name="exceptionContext">上下文</param>       
-        public static void ExecExceptionFilters(this FastServiceBase fastService, IEnumerable<IFilter> actionFilters, ExceptionContext exceptionContext)
-        {
-            foreach (var filter in GlobalFilters.ExceptionFilters)
-            {
-                if (exceptionContext.ExceptionHandled == false)
-                {
-                    filter.OnException(exceptionContext);
-                }
-            }
-
-            if (exceptionContext.ExceptionHandled == false)
-            {
-                ((IExceptionFilter)fastService).OnException(exceptionContext);
-            }
-
-            foreach (var filter in actionFilters)
-            {
-                var exceptionFilter = filter as IExceptionFilter;
-                if (exceptionFilter != null && exceptionContext.ExceptionHandled == false)
-                {
-                    exceptionFilter.OnException(exceptionContext);
-                }
-            }
-        }
-
-
-        /// <summary>
-        /// 执行异常过滤器
-        /// </summary>
-        /// <param name="tcpServer">服务实例</param>    
-        /// <param name="exceptionContext">上下文</param>       
-        public static void ExecExceptionFilters(this IFastTcpServer tcpServer, ExceptionContext exceptionContext)
-        {
-            foreach (var filter in GlobalFilters.ExceptionFilters)
-            {
-                if (exceptionContext.ExceptionHandled == false)
-                {
-                    filter.OnException(exceptionContext);
                 }
             }
         }

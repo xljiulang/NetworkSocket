@@ -11,14 +11,10 @@ namespace NetworkSocket.Fast
     public interface IFastService : IDisposable
     {
         /// <summary>
-        /// 获取或设置关联的TcpServer
-        /// </summary>
-        IFastTcpServer FastTcpServer { get; set; }
-
-        /// <summary>
         /// 执行服务行为
         /// </summary>       
+        /// <param name="fastTcpServer">FastTcpServerBase实例</param>
         /// <param name="actionContext">上下文</param>      
-        void Execute(ActionContext actionContext);
+        void Execute(FastTcpServerBase fastTcpServer, ActionContext actionContext);
     }
 }

@@ -51,6 +51,7 @@
     <Reference Include="System.Web.Extensions" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Fast\ActionNotImplementException.cs" />
     <Compile Include="Fast\IFastService.cs" />
     <Compile Include="Fast\Internal\DefaultDependencyResolver.cs" />
     <Compile Include="Fast\DependencyResolver.cs" />
@@ -85,7 +86,6 @@
     <Compile Include="Fast\RemoteException.cs" />
     <Compile Include="Fast\RequestContext.cs" />
     <Compile Include="Fast\IDependencyResolver.cs" />
-    <Compile Include="Fast\IFastTcpServer.cs" />
     <Compile Include="ISocketAsync.cs" />
     <Compile Include="ITcpClient.cs" />
     <Compile Include="ITcpServer.cs" />

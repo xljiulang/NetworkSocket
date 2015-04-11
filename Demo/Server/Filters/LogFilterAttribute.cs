@@ -20,6 +20,7 @@ namespace Server.Filters
         {
             this.message = message;
         }
+
         public void OnExecuting(NetworkSocket.Fast.ActionContext actionContext)
         {
             var log = string.Format("Time:{0} Client:{1} Action:{2} Message:{3}", DateTime.Now.ToString("mm:ss"), actionContext.Client, actionContext.Action, this.message);

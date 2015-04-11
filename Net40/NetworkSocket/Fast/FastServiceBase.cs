@@ -15,24 +15,29 @@ namespace NetworkSocket.Fast
     public abstract class FastServiceBase : IFastService, IAuthorizationFilter, IActionFilter, IExceptionFilter
     {
         /// <summary>
+        /// 线程唯一FastTcpServerBase实例
+        /// </summary>
+        [ThreadStatic]
+        private static FastTcpServerBase fastTcpServer;
+
+        /// <summary>
         /// 线程唯一上下文
         /// </summary>
         [ThreadStatic]
         private static ActionContext currentContext;
 
         /// <summary>
-        /// 获取或设置关联的TcpServer
+        /// 获取关联的FastTcpServer
         /// </summary>
-        IFastTcpServer IFastService.FastTcpServer { get; set; }
-
-        /// <summary>
-        /// 获取关联的TcpServer
-        /// </summary>
-        protected IFastTcpServer FastTcpServer
+        protected FastTcpServerBase FastTcpServer
         {
             get
             {
-                return ((IFastService)this).FastTcpServer;
+                return fastTcpServer;
+            }
+            private set
+            {
+                fastTcpServer = value;
             }
         }
 
@@ -51,16 +56,30 @@ namespace NetworkSocket.Fast
             }
         }
 
+
+        /// <summary>
+        /// 获取服务实例
+        /// 并赋值给服务实例的FastTcpServer属性
+        /// </summary>
+        /// <typeparam name="T">服务类型</typeparam>
+        /// <returns></returns>
+        public T GetService<T>() where T : IFastService
+        {
+            return this.FastTcpServer.GetService<T>();
+        }
+
         /// <summary>
         /// 执行服务行为
-        /// </summary>
+        /// </summary>       
+        /// <param name="fastTcpServer">FastTcpServerBase实例</param>
         /// <param name="actionContext">上下文</param>      
-        void IFastService.Execute(ActionContext actionContext)
+        void IFastService.Execute(FastTcpServerBase fastTcpServer, ActionContext actionContext)
         {
+            this.FastTcpServer = fastTcpServer;
             var filters = this.FastTcpServer.FilterAttributeProvider.GetActionFilters(actionContext.Action);
 
             try
-            {
+            {               
                 this.CurrentContext = actionContext;
                 this.ExecuteAction(actionContext, filters);
             }
@@ -77,6 +96,7 @@ namespace NetworkSocket.Fast
             }
             finally
             {
+                this.FastTcpServer = null;
                 this.CurrentContext = null;
             }
         }
@@ -90,7 +110,7 @@ namespace NetworkSocket.Fast
         private void ProcessExecutingException(ActionContext actionContext, IEnumerable<IFilter> actionfilters, Exception exception)
         {
             var exceptionContext = new ExceptionContext(actionContext, exception);
-            this.SetRemoteException(exceptionContext);
+            FastTcpCommon.SetRemoteException(this.FastTcpServer.Serializer, exceptionContext);
             this.ExecExceptionFilters(actionfilters, exceptionContext);
 
             if (exceptionContext.ExceptionHandled == false)
@@ -110,7 +130,7 @@ namespace NetworkSocket.Fast
             // 执行Filter
             this.ExecFiltersBeforeAction(filters, actionContext);
 
-            var parameters = this.GetFastActionParameters(actionContext);
+            var parameters = FastTcpCommon.GetFastActionParameters(this.FastTcpServer.Serializer, actionContext);
             var returnValue = actionContext.Action.Execute(this, parameters);
 
             // 执行Filter
@@ -134,12 +154,7 @@ namespace NetworkSocket.Fast
         /// <exception cref="SocketException"></exception>         
         protected void InvokeRemote(SocketAsync<FastPacket> client, int command, params object[] parameters)
         {
-            var tcpServer = this.FastTcpServer as FastTcpServerBase;
-            var hashCode = tcpServer.HashCodeProvider.GetHashCode();
-            var packet = new FastPacket(command, hashCode);
-
-            packet.SetBodyBinary(tcpServer.Serializer, parameters);
-            client.Send(packet);
+            this.FastTcpServer.InvokeRemote(client, command, parameters);
         }
 
         /// <summary>
@@ -156,15 +171,11 @@ namespace NetworkSocket.Fast
         /// <returns>远程数据任务</returns>  
         protected Task<T> InvokeRemote<T>(SocketAsync<FastPacket> client, int command, params object[] parameters)
         {
-            var tcpServer = this.FastTcpServer as FastTcpServerBase;
-            var hashCode = tcpServer.HashCodeProvider.GetHashCode();
-            var taskSetActionTable = tcpServer.TaskSetActionTable;
-            var serializer = tcpServer.Serializer;
-
-            return FastTcpCommon.InvokeRemote<T>(client, taskSetActionTable, serializer, command, hashCode, parameters);
+            return this.FastTcpServer.InvokeRemote<T>(client, command, parameters);
         }
 
 
+        #region IFilter重写
         /// <summary>
         /// 授权时触发       
         /// </summary>
@@ -198,6 +209,106 @@ namespace NetworkSocket.Fast
         protected virtual void OnException(ExceptionContext filterContext)
         {
         }
+        #endregion
+
+        #region ExecFilters
+        /// <summary>
+        /// 在服务行为前 执行过滤器
+        /// </summary>       
+        /// <param name="actionFilters">服务行为过滤器</param>
+        /// <param name="actionContext">上下文</param>   
+        private void ExecFiltersBeforeAction(IEnumerable<IFilter> actionFilters, ActionContext actionContext)
+        {
+            // OnAuthorization
+            foreach (var globalFilter in GlobalFilters.AuthorizationFilters)
+            {
+                globalFilter.OnAuthorization(actionContext);
+            }
+            ((IAuthorizationFilter)this).OnAuthorization(actionContext);
+            foreach (var filter in actionFilters)
+            {
+                var authorizationFilter = filter as IAuthorizationFilter;
+                if (authorizationFilter != null)
+                {
+                    authorizationFilter.OnAuthorization(actionContext);
+                }
+            }
+
+            // OnExecuting
+            foreach (var globalFilter in GlobalFilters.ActionFilters)
+            {
+                globalFilter.OnExecuting(actionContext);
+            }
+
+            ((IActionFilter)this).OnExecuting(actionContext);
+
+            foreach (var filter in actionFilters)
+            {
+                var actionFilter = filter as IActionFilter;
+                if (actionFilter != null)
+                {
+                    actionFilter.OnExecuting(actionContext);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 在服务行为后执行过滤器
+        /// </summary>       
+        /// <param name="actionFilters">服务行为过滤器</param>
+        /// <param name="actionContext">上下文</param>       
+        private void ExecFiltersAfterAction(IEnumerable<IFilter> actionFilters, ActionContext actionContext)
+        {
+            // 全局过滤器
+            foreach (var globalFilter in GlobalFilters.ActionFilters)
+            {
+                globalFilter.OnExecuted(actionContext);
+            }
+
+            // 自身过滤器
+            ((IActionFilter)this).OnExecuted(actionContext);
+
+            // 特性过滤器
+            foreach (var filter in actionFilters)
+            {
+                var actionFilter = filter as IActionFilter;
+                if (actionFilter != null)
+                {
+                    actionFilter.OnExecuted(actionContext);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 执行异常过滤器
+        /// </summary>       
+        /// <param name="actionFilters">服务行为过滤器</param>
+        /// <param name="exceptionContext">上下文</param>       
+        private void ExecExceptionFilters(IEnumerable<IFilter> actionFilters, ExceptionContext exceptionContext)
+        {
+            foreach (var filter in GlobalFilters.ExceptionFilters)
+            {
+                if (exceptionContext.ExceptionHandled == false)
+                {
+                    filter.OnException(exceptionContext);
+                }
+            }
+
+            if (exceptionContext.ExceptionHandled == false)
+            {
+                ((IExceptionFilter)this).OnException(exceptionContext);
+            }
+
+            foreach (var filter in actionFilters)
+            {
+                var exceptionFilter = filter as IExceptionFilter;
+                if (exceptionFilter != null && exceptionContext.ExceptionHandled == false)
+                {
+                    exceptionFilter.OnException(exceptionContext);
+                }
+            }
+        }
+        #endregion
 
         #region IFilter
         /// <summary>
@@ -294,10 +405,6 @@ namespace NetworkSocket.Fast
         /// <param name="disposing">是否也释放托管资源</param>
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing)
-            {
-                ((IFastService)this).FastTcpServer = null;
-            }
         }
         #endregion
     }

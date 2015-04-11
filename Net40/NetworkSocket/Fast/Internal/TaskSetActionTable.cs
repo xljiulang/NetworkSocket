@@ -22,6 +22,7 @@ namespace NetworkSocket.Fast.Internal
 
         /// <summary>
         /// 获取或设置超时时间(毫秒)
+        /// 默认30秒
         /// </summary>
         public int TimeOut { get; set; }
 
