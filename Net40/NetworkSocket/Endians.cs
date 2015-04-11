@@ -6,7 +6,7 @@ using System.Text;
 namespace NetworkSocket
 {
     /// <summary>
-    /// 表示内存端枚举
+    /// 表示字节存储次序枚举
     /// </summary>
     public enum Endians
     {

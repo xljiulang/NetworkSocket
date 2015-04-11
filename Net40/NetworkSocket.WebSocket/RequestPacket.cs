@@ -56,7 +56,7 @@ namespace NetworkSocket.WebSocket
                 {
                     return null;
                 }
-                length = (int)builder.ToUInt64(maskIndex, Endians.Big);
+                length = (int)builder.ToUInt64(maskIndex);
                 maskIndex = maskIndex + 8;
             }
             else if (length == 126)
@@ -65,7 +65,7 @@ namespace NetworkSocket.WebSocket
                 {
                     return null;
                 }
-                length = (int)builder.ToUInt16(maskIndex, Endians.Big);
+                length = (int)builder.ToUInt16(maskIndex);
                 maskIndex = maskIndex + 2;
             }
 

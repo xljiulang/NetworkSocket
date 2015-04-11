@@ -35,12 +35,12 @@ namespace NetworkSocket.WebSocket
             if (bytes.Length > UInt16.MaxValue)
             {
                 builder.Add((byte)127);
-                builder.Add((ulong)bytes.Length, Endians.Big);
+                builder.Add((ulong)bytes.Length);
             }
             else if (bytes.Length > 125)
             {
                 builder.Add((byte)126);
-                builder.Add((ushort)bytes.Length, Endians.Big);
+                builder.Add((ushort)bytes.Length);
             }
             else
             {

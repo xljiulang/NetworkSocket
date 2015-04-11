@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using System.Diagnostics;
 
 namespace NetworkSocket
 {
@@ -13,8 +12,13 @@ namespace NetworkSocket
     /// 多线程下请锁住自身的SyncRoot字段
     /// </summary>
     [DebuggerDisplay("Length = {Length}")]
-    public sealed class ByteBuilder
+    public class ByteBuilder
     {
+        /// <summary>
+        /// 获取字节存储次序枚举
+        /// </summary>
+        public Endians Endian { get; private set; }
+
         /// <summary>
         /// 获取容量
         /// </summary>
@@ -37,10 +41,20 @@ namespace NetworkSocket
 
         /// <summary>
         /// 可变长byte集合
-        /// 默认容量是1024byte
+        /// 默认容量是1024byte，高位在前低位在后
         /// </summary>
         public ByteBuilder()
-            : this(1024)
+            : this(Endians.Big)
+        {
+        }
+
+        /// <summary>
+        /// 可变长byte集合
+        /// 默认容量是1024byte
+        /// </summary>
+        /// <param name="endian">字节存储次序</param>
+        public ByteBuilder(Endians endian)
+            : this(1024, endian)
         {
         }
 
@@ -48,9 +62,11 @@ namespace NetworkSocket
         /// 可变长byte集合
         /// </summary>
         /// <param name="capacity">容量[乘2倍数增长]</param>
-        public ByteBuilder(int capacity)
+        /// <param name="endian">字节存储次序</param>
+        public ByteBuilder(int capacity, Endians endian)
         {
             this.Capacity = capacity;
+            this.Endian = endian;
             this.Source = new byte[capacity];
             this.SyncRoot = new object();
         }
@@ -76,66 +92,60 @@ namespace NetworkSocket
         /// <summary>
         /// 将16位整数转换为byte数组再添加
         /// </summary>
-        /// <param name="value">整数</param>
-        /// <param name="endian">高低位</param>
-        public void Add(short value, Endians endian)
+        /// <param name="value">整数</param>        
+        public void Add(short value)
         {
-            var bytes = ByteConverter.ToBytes(value, endian);
+            var bytes = ByteConverter.ToBytes(value, this.Endian);
             this.Add(bytes);
         }
 
         /// <summary>
         /// 将16位整数转换为byte数组再添加
         /// </summary>
-        /// <param name="value">整数</param>
-        /// <param name="endian">高低位</param>
-        public void Add(ushort value, Endians endian)
+        /// <param name="value">整数</param>        
+        public void Add(ushort value)
         {
-            var bytes = ByteConverter.ToBytes(value, endian);
+            var bytes = ByteConverter.ToBytes(value, this.Endian);
             this.Add(bytes);
         }
 
         /// <summary>
         /// 将32位整数转换为byte数组再添加
         /// </summary>
-        /// <param name="value">整数</param>
-        /// <param name="endian">高低位</param>
-        public void Add(int value, Endians endian)
+        /// <param name="value">整数</param>        
+        public void Add(int value)
         {
-            var bytes = ByteConverter.ToBytes(value, endian);
+            var bytes = ByteConverter.ToBytes(value, this.Endian);
             this.Add(bytes);
         }
 
         /// <summary>
         /// 将32位整数转换为byte数组再添加
         /// </summary>
-        /// <param name="value">整数</param>
-        /// <param name="endian">高低位</param>
-        public void Add(uint value, Endians endian)
+        /// <param name="value">整数</param>        
+        public void Add(uint value)
         {
-            var bytes = ByteConverter.ToBytes(value, endian);
+            var bytes = ByteConverter.ToBytes(value, this.Endian);
             this.Add(bytes);
         }
 
         /// <summary>
         /// 将64位整数转换为byte数组再添加
         /// </summary>
-        /// <param name="value">整数</param>
-        /// <param name="endian">高低位</param>
-        public void Add(long value, Endians endian)
+        /// <param name="value">整数</param>        
+        public void Add(long value)
         {
-            var bytes = ByteConverter.ToBytes(value, endian);
+            var bytes = ByteConverter.ToBytes(value, this.Endian);
             this.Add(bytes);
         }
 
         /// <summary>
         /// 将64位整数转换为byte数组再添加
         /// </summary>
-        /// <param name="value">整数</param>
-        /// <param name="endian">高低位</param>
-        public void Add(ulong value, Endians endian)
+        /// <param name="value">整数</param>        
+        public void Add(ulong value)
         {
-            var bytes = ByteConverter.ToBytes(value, endian);
+            var bytes = ByteConverter.ToBytes(value, this.Endian);
             this.Add(bytes);
         }
 
@@ -241,67 +251,61 @@ namespace NetworkSocket
         /// <summary>
         /// 读取指定位置2个字节，返回其Int16表示类型
         /// </summary>
-        /// <param name="index">字节所在索引</param>
-        /// <param name="endian">高低位</param>
+        /// <param name="index">字节所在索引</param>        
         /// <returns></returns>
-        public int ToInt16(int index, Endians endian)
+        public int ToInt16(int index)
         {
-            return ByteConverter.ToInt16(this.Source, index, endian);
+            return ByteConverter.ToInt16(this.Source, index, this.Endian);
         }
 
         /// <summary>
         /// 读取指定位置2个字节，返回其UInt16表示类型
         /// </summary>
-        /// <param name="index">字节所在索引</param>
-        /// <param name="endian">高低位</param>
+        /// <param name="index">字节所在索引</param>        
         /// <returns></returns>
-        public uint ToUInt16(int index, Endians endian)
+        public uint ToUInt16(int index)
         {
-            return ByteConverter.ToUInt16(this.Source, index, endian);
+            return ByteConverter.ToUInt16(this.Source, index, this.Endian);
         }
 
         /// <summary>
         /// 读取指定位置4个字节，返回其Int32表示类型
         /// </summary>
-        /// <param name="index">字节所在索引</param>
-        /// <param name="endian">高低位</param>
+        /// <param name="index">字节所在索引</param>        
         /// <returns></returns>
-        public int ToInt32(int index, Endians endian)
+        public int ToInt32(int index)
         {
-            return ByteConverter.ToInt32(this.Source, index, endian);
+            return ByteConverter.ToInt32(this.Source, index, this.Endian);
         }
 
         /// <summary>
         /// 读取指定位置4个字节，返回其UInt32表示类型
         /// </summary>
-        /// <param name="index">字节所在索引</param>
-        /// <param name="endian">高低位</param>
+        /// <param name="index">字节所在索引</param>        
         /// <returns></returns>
-        public uint ToUInt32(int index, Endians endian)
+        public uint ToUInt32(int index)
         {
-            return ByteConverter.ToUInt32(this.Source, index, endian);
+            return ByteConverter.ToUInt32(this.Source, index, this.Endian);
         }
 
         /// <summary>
         /// 读取指定位置8个字节，返回其Int64表示类型
         /// </summary>
-        /// <param name="index">字节所在索引</param>
-        /// <param name="endian">高低位</param>
+        /// <param name="index">字节所在索引</param>        
         /// <returns></returns>
-        public long ToInt64(int index, Endians endian)
+        public long ToInt64(int index)
         {
-            return ByteConverter.ToInt64(this.Source, index, endian);
+            return ByteConverter.ToInt64(this.Source, index, this.Endian);
         }
 
         /// <summary>
         /// 读取指定位置8个字节，返回其UInt64表示类型
         /// </summary>
-        /// <param name="index">字节所在索引</param>
-        /// <param name="endian">高低位</param>
+        /// <param name="index">字节所在索引</param>        
         /// <returns></returns>
-        public ulong ToUInt64(int index, Endians endian)
+        public ulong ToUInt64(int index)
         {
-            return ByteConverter.ToUInt64(this.Source, index, endian);
+            return ByteConverter.ToUInt64(this.Source, index, this.Endian);
         }
 
         /// <summary>

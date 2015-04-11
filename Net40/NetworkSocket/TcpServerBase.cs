@@ -33,8 +33,7 @@ namespace NetworkSocket
         /// <summary>
         /// 客户端连接池
         /// </summary>
-        private SocketAsyncBag<T> clientPool = new SocketAsyncBag<T>();
-
+        private SocketAsyncBag<T> clientBag = new SocketAsyncBag<T>();
 
 
         /// <summary>
@@ -53,7 +52,6 @@ namespace NetworkSocket
         public bool IsListening { get; private set; }
 
 
-
         /// <summary>
         /// Tcp服务端抽象类
         /// </summary> 
@@ -64,8 +62,10 @@ namespace NetworkSocket
 
         /// <summary>
         /// 开始启动监听
+        /// 如果IsListening为true，将不产生任何作用
         /// </summary>
         /// <param name="port">端口</param>
+        /// <exception cref="SocketException"></exception>
         public void StartListen(int port)
         {
             this.StartListen(new IPEndPoint(IPAddress.Any, port));
@@ -73,8 +73,10 @@ namespace NetworkSocket
 
         /// <summary>
         /// 开始启动监听
+        /// 如果IsListening为true，将不产生任何作用
         /// </summary>
-        /// <param name="localEndPoint">要监听的本地IP和端口</param>        
+        /// <param name="localEndPoint">要监听的本地IP和端口</param>    
+        /// <exception cref="SocketException"></exception>
         public void StartListen(IPEndPoint localEndPoint)
         {
             if (this.IsListening)
@@ -82,29 +84,16 @@ namespace NetworkSocket
                 return;
             }
 
-            try
-            {
-                this.listenSocket = new Socket(localEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-                this.listenSocket.Bind(localEndPoint);
-                this.listenSocket.Listen(100);
+            this.listenSocket = new Socket(localEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            this.listenSocket.Bind(localEndPoint);
+            this.listenSocket.Listen(100);
 
-                this.acceptArg = new SocketAsyncEventArgs();
-                this.acceptArg.Completed += (sender, e) => { this.AcceptArgComplete(e); };
-                this.AcceptClient(this.acceptArg);
+            this.acceptArg = new SocketAsyncEventArgs();
+            this.acceptArg.Completed += (sender, e) => { this.AcceptArgCompleted(e); };
+            this.AcceptClient(this.acceptArg);
 
-                this.LocalEndPoint = localEndPoint;
-                this.IsListening = true;
-            }
-            catch
-            {
-                this.listenSocket.Dispose();
-                var tcpPort = TcpTable.Snapshot().FirstOrDefault(item => item.Port == localEndPoint.Port);
-                if (tcpPort != null)
-                {
-                    throw new Exception(string.Format("端口已被PID为{0}进程占用", tcpPort.OwnerPId));
-                }
-                throw;
-            }
+            this.LocalEndPoint = localEndPoint;
+            this.IsListening = true;
         }
 
         /// <summary>
@@ -113,15 +102,13 @@ namespace NetworkSocket
         /// <param name="arg">连接参数</param>     
         private void AcceptClient(SocketAsyncEventArgs arg)
         {
-            if (this.listenSocket == null)
+            if (this.listenSocket != null)
             {
-                return;
-            }
-
-            arg.AcceptSocket = null;
-            if (this.listenSocket.AcceptAsync(arg) == false)
-            {
-                this.AcceptArgComplete(arg);
+                arg.AcceptSocket = null;
+                if (this.listenSocket.AcceptAsync(arg) == false)
+                {
+                    this.AcceptArgCompleted(arg);
+                }
             }
         }
 
@@ -129,12 +116,12 @@ namespace NetworkSocket
         /// 连接请求IO完成
         /// </summary>
         /// <param name="arg">连接参数</param>
-        private void AcceptArgComplete(SocketAsyncEventArgs arg)
+        private void AcceptArgCompleted(SocketAsyncEventArgs arg)
         {
             if (arg.SocketError == SocketError.Success)
             {
                 // 从池中取出SocketAsync
-                var client = this.clientPool.Take();
+                var client = this.clientBag.Take();
                 // 绑定处理委托
                 client.SendHandler = (packet) => this.OnSend(client, packet);
                 client.ReceiveHandler = (builder) => this.OnReceive(client, builder);
@@ -234,7 +221,7 @@ namespace NetworkSocket
             {
                 this.OnDisconnect(client);
                 client.CloseSocket();
-                this.clientPool.Add(client);
+                this.clientBag.Add(client);
                 return true;
             }
             return false;
@@ -273,16 +260,13 @@ namespace NetworkSocket
         /// <param name="disposing">是否也释放托管资源</param>
         protected virtual void Dispose(bool disposing)
         {
-            if (this.listenSocket != null)
+            try
             {
-                try
-                {
-                    this.listenSocket.Dispose();
-                }
-                finally
-                {
-                    this.listenSocket = null;
-                }
+                if (this.listenSocket != null) this.listenSocket.Dispose();
+            }
+            finally
+            {
+                this.listenSocket = null;
             }
 
             foreach (var client in this.AliveClients)
@@ -290,19 +274,20 @@ namespace NetworkSocket
                 client.Dispose();
             }
 
-            while (this.clientPool.Count > 0)
+            while (this.clientBag.Count > 0)
             {
-                this.clientPool.Take().Dispose();
+                this.clientBag.Take().Dispose();
             }
 
-            this.AliveClients.Clear();
             this.acceptArg.Dispose();
-            this.acceptArg = null;
 
             if (disposing)
             {
-                this.clientPool = null;
+                this.AliveClients.Clear();
                 this.AliveClients = null;
+
+                this.acceptArg = null;
+                this.clientBag = null;
                 this.LocalEndPoint = null;
                 this.IsListening = false;
             }

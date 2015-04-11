@@ -81,13 +81,13 @@ namespace NetworkSocket.Fast
             {
                 return;
             }
-            var builder = new ByteBuilder(8);
+            var builder = new ByteBuilder(8, Endians.Big);
             foreach (var item in parameters)
             {
                 // 序列化参数为二进制内容
                 var paramBytes = serializer.Serialize(item);
                 // 添加参数内容长度            
-                builder.Add(paramBytes == null ? 0 : paramBytes.Length, Endians.Big);
+                builder.Add(paramBytes == null ? 0 : paramBytes.Length);
                 // 添加参数内容
                 builder.Add(paramBytes);
             }
@@ -135,10 +135,10 @@ namespace NetworkSocket.Fast
             // 总长度
             int totalLength = this.Body == null ? headLength : headLength + this.Body.Length;
 
-            var builder = new ByteBuilder(totalLength);
-            builder.Add(totalLength, Endians.Big);
-            builder.Add(this.Command, Endians.Big);
-            builder.Add(this.HashCode, Endians.Big);
+            var builder = new ByteBuilder(totalLength, Endians.Big);
+            builder.Add(totalLength);
+            builder.Add(this.Command);
+            builder.Add(this.HashCode);
             builder.Add(this.IsException);
             builder.Add(this.Body);
             return builder.Source;
@@ -162,7 +162,7 @@ namespace NetworkSocket.Fast
             }
 
             // 包长
-            var totalLength = builder.ToInt32(0, Endians.Big);
+            var totalLength = builder.ToInt32(0);
             // 包长要小于等于数据长度
             if (totalLength > builder.Length || totalLength < headLength)
             {
@@ -170,9 +170,9 @@ namespace NetworkSocket.Fast
             }
 
             // cmd
-            var cmd = builder.ToInt32(4, Endians.Big);
+            var cmd = builder.ToInt32(4);
             // 哈希值
-            var hashCode = builder.ToInt64(8, Endians.Big);
+            var hashCode = builder.ToInt64(8);
             // 是否异常
             var isException = builder.ToBoolean(16);
             // 实体数据

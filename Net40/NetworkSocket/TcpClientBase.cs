@@ -56,11 +56,11 @@ namespace NetworkSocket
             this.lastRemoteEndPoint = remoteEndPoint;
             var socket = new Socket(remoteEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             var connectArg = new SocketAsyncEventArgs { RemoteEndPoint = remoteEndPoint, UserToken = taskSource };
-            connectArg.Completed += this.ConnectArg_Completed;
+            connectArg.Completed += this.ConnectArgCompleted;
 
             if (socket.ConnectAsync(connectArg) == false)
             {
-                this.ConnectArg_Completed(socket, connectArg);
+                this.ConnectArgCompleted(socket, connectArg);
             }
             return taskSource.Task;
         }
@@ -70,7 +70,7 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="sender">连接者</param>
         /// <param name="e">事件参数</param>
-        private void ConnectArg_Completed(object sender, SocketAsyncEventArgs e)
+        private void ConnectArgCompleted(object sender, SocketAsyncEventArgs e)
         {
             var socket = sender as Socket;
             var taskSource = e.UserToken as TaskCompletionSource<bool>;

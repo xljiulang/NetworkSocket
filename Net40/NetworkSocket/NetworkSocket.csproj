@@ -51,6 +51,7 @@
     <Reference Include="System.Web.Extensions" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ByteBuilder.cs" />
     <Compile Include="Fast\ActionException.cs" />
     <Compile Include="Fast\ActionNotImplementException.cs" />
     <Compile Include="Fast\IFastService.cs" />
@@ -58,7 +59,6 @@
     <Compile Include="Fast\DependencyResolver.cs" />
     <Compile Include="Fast\ExceptionContext.cs" />
     <Compile Include="Fast\FastAction.cs" />
-    <Compile Include="ByteBuilder.cs" />
     <Compile Include="ByteConverter.cs" />
     <Compile Include="Endians.cs" />
     <Compile Include="Fast\Implements.cs" />
