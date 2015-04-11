@@ -1,0 +1,3 @@
+# NetworkSocket
+NetworkSocket是基于SocketAsyncEventArgs封装Tcp通讯协议组件，其NetworkSocket.Fast层提供类似MVC功能，可实现快速编写通讯服务项目，此外NetworkSocket.WebSocket项目亦实现了websocket版本13的服务端功能。
+
