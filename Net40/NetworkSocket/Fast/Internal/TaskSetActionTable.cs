@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NetworkSocket.Fast.Internal
+namespace NetworkSocket.Fast
 {
     /// <summary>
     /// 任务行为表

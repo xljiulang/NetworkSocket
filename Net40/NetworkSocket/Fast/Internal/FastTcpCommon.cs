@@ -5,7 +5,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NetworkSocket.Fast.Internal
+namespace NetworkSocket.Fast
 {
     /// <summary>
     /// FastTcp公共类

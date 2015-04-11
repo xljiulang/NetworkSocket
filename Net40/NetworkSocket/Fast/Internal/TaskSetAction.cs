@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-namespace NetworkSocket.Fast.Internal
+namespace NetworkSocket.Fast
 {
     /// <summary>
     /// 任务设置行为信息

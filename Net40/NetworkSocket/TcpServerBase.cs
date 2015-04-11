@@ -33,7 +33,7 @@ namespace NetworkSocket
         /// <summary>
         /// 客户端连接池
         /// </summary>
-        private SocketAsyncPool<T> clientPool = new SocketAsyncPool<T>();
+        private SocketAsyncBag<T> clientPool = new SocketAsyncBag<T>();
 
 
 
@@ -89,7 +89,7 @@ namespace NetworkSocket
                 this.listenSocket.Listen(100);
 
                 this.acceptArg = new SocketAsyncEventArgs();
-                this.acceptArg.Completed += (sender, e) => { this.ProcessAccept(e); };
+                this.acceptArg.Completed += (sender, e) => { this.AcceptArgComplete(e); };
                 this.AcceptClient(this.acceptArg);
 
                 this.LocalEndPoint = localEndPoint;
@@ -121,15 +121,15 @@ namespace NetworkSocket
             arg.AcceptSocket = null;
             if (this.listenSocket.AcceptAsync(arg) == false)
             {
-                this.ProcessAccept(arg);
+                this.AcceptArgComplete(arg);
             }
         }
 
         /// <summary>
-        /// 处理连接请求
+        /// 连接请求IO完成
         /// </summary>
         /// <param name="arg">连接参数</param>
-        private void ProcessAccept(SocketAsyncEventArgs arg)
+        private void AcceptArgComplete(SocketAsyncEventArgs arg)
         {
             if (arg.SocketError == SocketError.Success)
             {

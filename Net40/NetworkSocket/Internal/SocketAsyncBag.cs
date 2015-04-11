@@ -12,7 +12,7 @@ namespace NetworkSocket
     /// </summary>
     /// <typeparam name="T">PacketBase派生类型</typeparam>
     [DebuggerDisplay("Count = {Count}")]
-    internal sealed class SocketAsyncPool<T> where T : PacketBase
+    internal sealed class SocketAsyncBag<T> where T : PacketBase
     {
         /// <summary>
         /// 无序集合
@@ -28,7 +28,7 @@ namespace NetworkSocket
             {
                 return this.bag.Count;
             }
-        }       
+        }
 
         /// <summary>
         /// 添加SocketAsync

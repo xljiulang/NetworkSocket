@@ -10,29 +10,22 @@ namespace NetworkSocket
 {
     /// <summary>
     /// SocketAsyncEventArgs无序集合
-    /// 线程安全类型
-    /// </summary>  
-    [DebuggerDisplay("Count = {Count}")]
-    internal sealed class SocketAsyncEventArgPool
+    /// </summary>      
+    internal static class SendArgBag
     {
-        /// <summary>
-        /// 获取惟一实例
-        /// </summary>
-        public static readonly SocketAsyncEventArgPool Instance = new SocketAsyncEventArgPool();
-
         /// <summary>
         /// 无序集合
         /// </summary>
-        private ConcurrentBag<SocketAsyncEventArgs> bag = new ConcurrentBag<SocketAsyncEventArgs>();
+        private static readonly ConcurrentBag<SocketAsyncEventArgs> concurrentBag = new ConcurrentBag<SocketAsyncEventArgs>();
 
         /// <summary>
         /// 元素数量
         /// </summary>
-        public int Count
+        public static int Count
         {
             get
             {
-                return this.bag.Count;
+                return concurrentBag.Count;
             }
         }
 
@@ -40,9 +33,9 @@ namespace NetworkSocket
         /// 添加SocketAsync
         /// </summary>
         /// <param name="eventArg">SocketAsyncEventArgs对象</param>
-        public void Add(SocketAsyncEventArgs eventArg)
+        public static void Add(SocketAsyncEventArgs eventArg)
         {
-            this.bag.Add(eventArg);
+            concurrentBag.Add(eventArg);
         }
 
         /// <summary>
@@ -51,13 +44,13 @@ namespace NetworkSocket
         /// 当触发Completed事件后将自动回收
         /// </summary>
         /// <returns></returns>
-        public SocketAsyncEventArgs Take()
+        public static SocketAsyncEventArgs Take()
         {
             SocketAsyncEventArgs eventArg;
-            if (this.bag.TryTake(out eventArg) == false)
+            if (concurrentBag.TryTake(out eventArg) == false)
             {
                 eventArg = new SocketAsyncEventArgs();
-                eventArg.Completed += (sender, e) => Instance.Add(e);
+                eventArg.Completed += (sender, e) => SendArgBag.Add(e);
             }
             return eventArg;
         }

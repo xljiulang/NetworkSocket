@@ -33,7 +33,7 @@ namespace NetworkSocket
         /// <summary>
         /// 接收参数
         /// </summary>
-        private SocketAsyncEventArgs recvEventArg = new SocketAsyncEventArgs();
+        private SocketAsyncEventArgs recvArg = new SocketAsyncEventArgs();
 
 
         /// <summary>
@@ -83,8 +83,8 @@ namespace NetworkSocket
         /// </summary>  
         internal SocketAsync()
         {
-            SocketAsyncEventArgBuffer.Instance.SetBuffer(this.recvEventArg);
-            this.recvEventArg.Completed += new EventHandler<SocketAsyncEventArgs>(this.RecvCompleted);
+            RecvArgBuffer.SetBuffer(this.recvArg);
+            this.recvArg.Completed += new EventHandler<SocketAsyncEventArgs>(this.RecvCompleted);
             this.TagBag = new TagBag();
         }
 
@@ -96,7 +96,7 @@ namespace NetworkSocket
         {
             this.socket = socket;
             this.RemoteEndPoint = (IPEndPoint)this.socket.RemoteEndPoint;
-            this.recvEventArg.SocketError = SocketError.Success;
+            this.recvArg.SocketError = SocketError.Success;
             this.SetKeepAlive(socket);
         }
 
@@ -135,9 +135,12 @@ namespace NetworkSocket
         /// </summary>
         internal void BeginReceive()
         {
-            if (this.socket.ReceiveAsync(this.recvEventArg) == false)
+            lock (this.socketRoot)
             {
-                this.RecvCompleted(null, this.recvEventArg);
+                if (this.socket != null && this.socket.ReceiveAsync(this.recvArg) == false)
+                {
+                    this.RecvCompleted(null, this.recvArg);
+                }
             }
         }
 
@@ -197,13 +200,8 @@ namespace NetworkSocket
                 }
             }
 
-            lock (this.socketRoot)
-            {
-                if (this.socket != null && this.socket.ReceiveAsync(eventArg) == false)
-                {
-                    this.RecvCompleted(null, eventArg);
-                }
-            }
+            // 重新进行一次接收
+            this.BeginReceive();
         }
 
         /// <summary>
@@ -214,7 +212,7 @@ namespace NetworkSocket
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="SocketException"></exception>       
         public void Send(T packet)
-        {           
+        {
             if (packet == null)
             {
                 throw new ArgumentNullException("packet");
@@ -244,11 +242,12 @@ namespace NetworkSocket
         /// <exception cref="SocketException"></exception>
         private void Send(byte[] bytes)
         {
-            var eventArg = SocketAsyncEventArgPool.Instance.Take();
-            eventArg.SetBuffer(bytes, 0, bytes.Length);
-            if (this.socket.SendAsync(eventArg) == false)
+            var sendArg = SendArgBag.Take();
+            sendArg.SetBuffer(bytes, 0, bytes.Length);
+
+            if (this.socket.SendAsync(sendArg) == false)
             {
-                SocketAsyncEventArgPool.Instance.Add(eventArg);
+                SendArgBag.Add(sendArg);
             }
         }
 
@@ -297,7 +296,7 @@ namespace NetworkSocket
         protected virtual void Dispose(bool disposing)
         {
             this.CloseSocket();
-            this.recvEventArg.Dispose();
+            this.recvArg.Dispose();
 
             if (disposing)
             {
