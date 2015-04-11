@@ -1,4 +1,5 @@
 ﻿using Models;
+using Models.Serializer;
 using NetworkSocket.Fast;
 using System;
 using System.Collections.Generic;
@@ -18,11 +19,12 @@ namespace ClientApp.Forms
             InitializeComponent();
 
             this.btn_Login.Click += btn_Login_Click;
-            this.Load += MainForm_Load;           
+            this.Load += MainForm_Load;
         }
 
         private async void MainForm_Load(object sender, EventArgs e)
         {
+            RemoteServer.Instance.Serializer = new FastJsonSerializer();
             var endPoint = new System.Net.IPEndPoint(System.Net.IPAddress.Loopback, 4502);
             var state = await RemoteServer.Instance.Connect(endPoint);
             var version = state ? await RemoteServer.Instance.GetVersion() : "未知";
@@ -32,7 +34,7 @@ namespace ClientApp.Forms
         }
 
         private async void btn_Login_Click(object sender, EventArgs e)
-        {           
+        {
             var user = new User
             {
                 Account = this.textBox_Account.Text,

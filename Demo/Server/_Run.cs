@@ -12,6 +12,7 @@ using System.Reflection;
 using NetworkSocket.Fast;
 using Server.Services;
 using Server.Filters;
+using Models.Serializer;
 
 namespace Server
 {
@@ -23,6 +24,7 @@ namespace Server
             GlobalFilters.Add(new ExceptionFilterAttribute());
 
             var fastServer = new FastServer();
+            fastServer.Serializer = new FastJsonSerializer();
             fastServer.BindService();
             fastServer.RegisterResolver();
             fastServer.StartListen(4502);
