@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Models")]
-[assembly: AssemblyCopyright("版权所有(C)  2014")]
+[assembly: AssemblyCopyright("Copyright © chenguowei 2013-2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 [assembly: NeutralResourcesLanguage("zh-Hans")]

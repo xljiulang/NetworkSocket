@@ -79,7 +79,7 @@ namespace NetworkSocket.Fast
             var filters = this.FastTcpServer.FilterAttributeProvider.GetActionFilters(actionContext.Action);
 
             try
-            {               
+            {
                 this.CurrentContext = actionContext;
                 this.ExecuteAction(actionContext, filters);
             }
@@ -109,7 +109,7 @@ namespace NetworkSocket.Fast
         /// <param name="exception">异常项</param>
         private void ProcessExecutingException(ActionContext actionContext, IEnumerable<IFilter> actionfilters, Exception exception)
         {
-            var exceptionContext = new ExceptionContext(actionContext, exception);
+            var exceptionContext = new ExceptionContext(actionContext, new ActionException(actionContext, exception));
             FastTcpCommon.SetRemoteException(this.FastTcpServer.Serializer, exceptionContext);
             this.ExecExceptionFilters(actionfilters, exceptionContext);
 

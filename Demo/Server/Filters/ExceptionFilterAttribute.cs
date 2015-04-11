@@ -13,6 +13,12 @@ namespace Server.Filters
     {
         public void OnException(ExceptionContext filterContext)
         {
+            if (filterContext.Exception is ActionException)
+            {
+            }
+            else if (filterContext.Exception is RemoteException)
+            {
+            }
             filterContext.ExceptionHandled = true;
         }
     }

@@ -51,6 +51,7 @@
     <Reference Include="System.Web.Extensions" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Fast\ActionException.cs" />
     <Compile Include="Fast\ActionNotImplementException.cs" />
     <Compile Include="Fast\IFastService.cs" />
     <Compile Include="Fast\Internal\DefaultDependencyResolver.cs" />

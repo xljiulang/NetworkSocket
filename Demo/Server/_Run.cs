@@ -19,7 +19,6 @@ namespace Server
     {
         static void Main(string[] args)
         {
-            Console.Title = "FastServer";
 
             GlobalFilters.Add(new ExceptionFilterAttribute());
 
@@ -28,6 +27,7 @@ namespace Server
             fastServer.RegisterResolver();
             fastServer.StartListen(4502);
 
+            Console.Title = "FastServer V" + fastServer.GetService<SystemService>().GetVersion();
             Console.WriteLine("服务已启动，端口：" + fastServer.LocalEndPoint.Port);
             while (true)
             {

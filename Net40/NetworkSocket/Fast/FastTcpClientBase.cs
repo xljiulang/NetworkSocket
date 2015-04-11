@@ -210,7 +210,7 @@ namespace NetworkSocket.Fast
         /// <param name="exception">异常项</param>
         private void ProcessExecutingException(ActionContext actionContext, Exception exception)
         {
-            var exceptionContext = new ExceptionContext(actionContext, exception);
+            var exceptionContext = new ExceptionContext(actionContext, new ActionException(actionContext, exception));
             FastTcpCommon.SetRemoteException(this.Serializer, exceptionContext);
             this.OnException(exceptionContext);
 
