@@ -66,6 +66,7 @@ namespace NetworkSocket.Fast
         /// 服务行为
         /// </summary>
         /// <param name="method">方法信息</param>
+        /// <exception cref="ArgumentException"></exception>
         public FastAction(MethodInfo method)
         {
             this.method = method;
@@ -88,6 +89,7 @@ namespace NetworkSocket.Fast
         /// 生成方法的委托
         /// </summary>
         /// <param name="method">方法成员信息</param>
+        /// <exception cref="ArgumentException"></exception>
         /// <returns></returns>
         private static Func<object, object[], object> CreateMethodInvoker(MethodInfo method)
         {

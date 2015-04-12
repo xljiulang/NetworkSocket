@@ -16,6 +16,7 @@ namespace NetworkSocket.Fast
         /// 获取服务类型的服务行为
         /// </summary>
         /// <param name="seviceType">服务类型</param>
+        /// <exception cref="ArgumentException"></exception>
         /// <returns></returns>
         public static IEnumerable<FastAction> GetServiceFastActions(Type seviceType)
         {
@@ -71,11 +72,20 @@ namespace NetworkSocket.Fast
         /// 设置远程异常
         /// </summary>
         /// <param name="serializer">序列化工具</param>
-        /// <param name="exceptionContext">上下文</param>        
-        public static void SetRemoteException(ISerializer serializer, ExceptionContext exceptionContext)
+        /// <param name="exceptionContext">上下文</param> 
+        /// <returns></returns>
+        public static bool SetRemoteException(ISerializer serializer, ExceptionContext exceptionContext)
         {
-            exceptionContext.Packet.SetException(serializer, exceptionContext.Exception.Message);
-            exceptionContext.Client.Send(exceptionContext.Packet);
+            try
+            {
+                exceptionContext.Packet.SetException(serializer, exceptionContext.Exception.Message);
+                exceptionContext.Client.Send(exceptionContext.Packet);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         /// <summary>
