@@ -19,7 +19,7 @@ namespace NetworkSocket.Fast
         public long Command { get; private set; }
 
         /// <summary>
-        /// 服务行为不支持异常
+        /// 服务行为未实现异常
         /// </summary>
         /// <param name="command">服务命令</param>
         public ActionNotImplementException(long command)

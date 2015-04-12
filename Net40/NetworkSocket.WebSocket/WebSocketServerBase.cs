@@ -51,7 +51,7 @@ namespace NetworkSocket.WebSocket
             {
                 var packet = new ResponsePacket();
                 packet.SetHandshake(request.ToHandshake());
-                client.Send(packet);
+                client.TrySend(packet);
             }
             return null;
         }

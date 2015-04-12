@@ -205,6 +205,24 @@ namespace NetworkSocket
         }
 
         /// <summary>
+        /// 尝试异步发送数据
+        /// </summary>
+        /// <param name="packet">数据包</param>
+        /// <returns></returns>
+        public bool TrySend(T packet)
+        {
+            try
+            {
+                this.Send(packet);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
         /// 异步发送数据
         /// </summary>
         /// <param name="packet">数据包</param>

@@ -64,7 +64,7 @@ namespace NetworkSocket.Policies
             xml.AppendLine("</access-policy>");
 
             packet.Bytes = Encoding.UTF8.GetBytes(xml.ToString());
-            client.Send(packet);
+            client.TrySend(packet);
             // 一定要关闭才生效
             this.CloseClient(client);
         }

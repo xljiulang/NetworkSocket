@@ -51,7 +51,7 @@ namespace NetworkSocket.Fast
         /// <returns></returns>
         public virtual IEnumerable<IFilter> GetActionFilters(FastAction fastAction)
         {
-            return this.filterCached.GetOrAdd(fastAction, action => this.GetActionFiltersNoCached(action));
+            return this.filterCached.GetOrAdd(fastAction, action => GetActionFiltersNoCached(action));
         }
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="action">服务行为</param>
         /// <returns></returns>
-        private IEnumerable<IFilter> GetActionFiltersNoCached(FastAction action)
+        private static IEnumerable<IFilter> GetActionFiltersNoCached(FastAction action)
         {
             var methodAttributes = action.GetMethodFilterAttributes();
 

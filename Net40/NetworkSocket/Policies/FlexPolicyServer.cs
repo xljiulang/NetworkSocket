@@ -51,7 +51,7 @@ namespace NetworkSocket.Policies
             string xml = "<cross-domain-policy><allow-access-from domain=\"*\" to-ports=\"*\"/></cross-domain-policy>\0";
             // 需要把字符串转为Char[]
             packet.Bytes = Encoding.UTF8.GetBytes(xml.ToCharArray());
-            client.Send(packet);
+            client.TrySend(packet);
         }
     }
 }

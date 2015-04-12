@@ -76,16 +76,8 @@ namespace NetworkSocket.Fast
         /// <returns></returns>
         public static bool SetRemoteException(ISerializer serializer, ExceptionContext exceptionContext)
         {
-            try
-            {
-                exceptionContext.Packet.SetException(serializer, exceptionContext.Exception.Message);
-                exceptionContext.Client.Send(exceptionContext.Packet);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
+            exceptionContext.Packet.SetException(serializer, exceptionContext.Exception.Message);
+            return exceptionContext.Client.TrySend(exceptionContext.Packet);
         }
 
         /// <summary>
