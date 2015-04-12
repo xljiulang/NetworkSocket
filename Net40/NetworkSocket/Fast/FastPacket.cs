@@ -35,24 +35,24 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 通讯协议的封包
         /// </summary>
-        /// <param name="cmd">命令值</param>
+        /// <param name="command">命令值</param>
         /// <param name="hashCode">哈希码</param>
-        public FastPacket(int cmd, long hashCode)
+        public FastPacket(int command, long hashCode)
         {
-            this.Command = cmd;
+            this.Command = command;
             this.HashCode = hashCode;
         }
 
         /// <summary>
         /// 通讯协议的封包
         /// </summary>
-        /// <param name="cmd">命令值</param>
+        /// <param name="command">命令值</param>
         /// <param name="hashCode">哈希码</param>     
         /// <param name="isException">是否为异常包</param>
         /// <param name="body">数据体</param>
-        public FastPacket(int cmd, long hashCode, bool isException, byte[] body)
+        public FastPacket(int command, long hashCode, bool isException, byte[] body)
         {
-            this.Command = cmd;
+            this.Command = command;
             this.HashCode = hashCode;
             this.IsException = isException;
             this.Body = body;
@@ -151,7 +151,7 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="builder">接收到的历史数据</param>
         /// <returns></returns>
-        public static FastPacket GetPacket(ByteBuilder builder)
+        public static FastPacket From(ByteBuilder builder)
         {
             // 包头长度
             const int headLength = 17;
@@ -169,8 +169,8 @@ namespace NetworkSocket.Fast
                 return null;
             }
 
-            // cmd
-            var cmd = builder.ToInt32(4);
+            // command
+            var command = builder.ToInt32(4);
             // 哈希值
             var hashCode = builder.ToInt64(8);
             // 是否异常
@@ -180,7 +180,7 @@ namespace NetworkSocket.Fast
 
             // 清空本条数据
             builder.Remove(totalLength);
-            return new FastPacket(cmd, hashCode, isException, body);
+            return new FastPacket(command, hashCode, isException, body);
         }
 
         /// <summary>

@@ -12,6 +12,27 @@ namespace NetworkSocket.Fast
     public class FilterAttributeProvider : IFilterAttributeProvider
     {
         /// <summary>
+        /// 过滤器级别
+        /// </summary>
+        private enum FilterLevels
+        {
+            /// <summary>
+            /// 权限级过滤
+            /// </summary>
+            Authorization,
+
+            /// <summary>
+            /// 类级过滤
+            /// </summary>
+            Class,
+
+            /// <summary>
+            /// 方法级过滤
+            /// </summary>
+            Method,
+        }
+
+        /// <summary>
         /// 服务方法过滤器缓存
         /// </summary>
         private ConcurrentDictionary<FastAction, IEnumerable<IFilter>> filterCached = new ConcurrentDictionary<FastAction, IEnumerable<IFilter>>();

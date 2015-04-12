@@ -16,11 +16,11 @@ namespace Server
         /// 获取服务行为的特性过滤器   
         /// 并进行属性注入
         /// </summary>
-        /// <param name="action">服务行为</param>
+        /// <param name="fastAction">服务行为</param>
         /// <returns></returns>
-        public override IEnumerable<IFilter> GetActionFilters(FastAction action)
+        public override IEnumerable<IFilter> GetActionFilters(FastAction fastAction)
         {
-            var filters = base.GetActionFilters(action);
+            var filters = base.GetActionFilters(fastAction);
             var lifetimeScope = ((AutofacResolver)DependencyResolver.Current).CurrentLifetimeScope;
             return filters.Select(filter => lifetimeScope.InjectProperties(filter));
         }

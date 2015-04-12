@@ -69,7 +69,7 @@ namespace NetworkSocket.Fast
         public FastAction(MethodInfo method)
         {
             this.method = method;
-            this.methodInvoker = this.CreateMethodInvoker(method);
+            this.methodInvoker = FastAction.CreateMethodInvoker(method);
 
             this.DeclaringService = method.DeclaringType;
             this.Name = method.Name;
@@ -89,23 +89,26 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="method">方法成员信息</param>
         /// <returns></returns>
-        private Func<object, object[], object> CreateMethodInvoker(MethodInfo method)
+        private static Func<object, object[], object> CreateMethodInvoker(MethodInfo method)
         {
             var instance = Expression.Parameter(typeof(object), "instance");
             var parameters = Expression.Parameter(typeof(object[]), "parameters");
 
             var instanceCast = method.IsStatic ? null : Expression.Convert(instance, method.ReflectedType);
-            var parametersCast = method.GetParameters()
-                .Select((item, i) => Expression.Convert(Expression.ArrayIndex(parameters, Expression.Constant(i)), item.ParameterType));
+            var parametersCast = method.GetParameters().Select((p, i) =>
+            {
+                var parameter = Expression.ArrayIndex(parameters, Expression.Constant(i));
+                return Expression.Convert(parameter, p.ParameterType);
+            });
 
             var body = Expression.Call(instanceCast, method, parametersCast);
 
             if (method.ReturnType == typeof(void))
             {
                 var action = Expression.Lambda<Action<object, object[]>>(body, instance, parameters).Compile();
-                return (obj, p) =>
+                return (_instance, _parameters) =>
                 {
-                    action.Invoke(obj, p);
+                    action.Invoke(_instance, _parameters);
                     return null;
                 };
             }

@@ -187,6 +187,7 @@ namespace NetworkSocket.Fast
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="SocketException"></exception> 
         /// <exception cref="RemoteException"></exception>
+        /// <exception cref="TimeoutException"></exception>
         /// <returns>远程数据任务</returns>  
         internal Task<T> InvokeRemote<T>(SocketAsync<FastPacket> client, int command, params object[] parameters)
         {
@@ -205,7 +206,7 @@ namespace NetworkSocket.Fast
         /// <returns>如果不够一个数据包，则请返回null</returns>
         protected override FastPacket OnReceive(SocketAsync<FastPacket> client, ByteBuilder recvBuilder)
         {
-            return FastPacket.GetPacket(recvBuilder);
+            return FastPacket.From(recvBuilder);
         }
 
         /// <summary>

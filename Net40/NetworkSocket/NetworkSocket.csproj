@@ -77,7 +77,6 @@
     <Compile Include="Fast\ActionContext.cs" />
     <Compile Include="Fast\FilterAttributeProvider.cs" />
     <Compile Include="Fast\FilterAttribute.cs" />
-    <Compile Include="Fast\Internal\FilterLevels.cs" />
     <Compile Include="Fast\IActionFilter.cs" />
     <Compile Include="Fast\IAuthorizationFilter.cs" />
     <Compile Include="Fast\IExceptionFilter.cs" />

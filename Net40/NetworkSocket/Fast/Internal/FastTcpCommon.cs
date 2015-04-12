@@ -92,6 +92,7 @@ namespace NetworkSocket.Fast
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="SocketException"></exception> 
         /// <exception cref="RemoteException"></exception>
+        /// <exception cref="TimeoutException"></exception>
         /// <returns></returns>
         public static Task<T> InvokeRemote<T>(SocketAsync<FastPacket> client, TaskSetActionTable taskSetActionTable, ISerializer serializer, int command, long hashCode, params object[] parameters)
         {
@@ -115,7 +116,7 @@ namespace NetworkSocket.Fast
                 }
                 else if (setType == SetTypes.SetTimeout)
                 {
-                    var exception = new TimeoutException();
+                    var exception = new TimeoutException("远程端在指定时间内无应答");
                     taskSource.TrySetException(exception);
                 }
             };
@@ -135,11 +136,14 @@ namespace NetworkSocket.Fast
         /// <returns></returns>
         public static object[] GetFastActionParameters(ISerializer serializer, ActionContext context)
         {
-            var items = context.Packet.GetBodyParameter();
-            var parameters = new object[items.Count];
-            for (var i = 0; i < items.Count; i++)
+            var bodyParameters = context.Packet.GetBodyParameter();
+            var parameters = new object[bodyParameters.Count];
+
+            for (var i = 0; i < bodyParameters.Count; i++)
             {
-                parameters[i] = serializer.Deserialize(items[i], context.Action.ParameterTypes[i]);
+                var parameterBytes = bodyParameters[i];
+                var parameterType = context.Action.ParameterTypes[i];
+                parameters[i] = serializer.Deserialize(parameterBytes, parameterType);
             }
             return parameters;
         }

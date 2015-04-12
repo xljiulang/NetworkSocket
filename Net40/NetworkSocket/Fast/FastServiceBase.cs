@@ -167,6 +167,7 @@ namespace NetworkSocket.Fast
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="SocketException"></exception> 
         /// <exception cref="RemoteException"></exception>
+        /// <exception cref="TimeoutException"></exception>
         /// <returns>远程数据任务</returns>  
         protected Task<T> InvokeRemote<T>(SocketAsync<FastPacket> client, int command, params object[] parameters)
         {

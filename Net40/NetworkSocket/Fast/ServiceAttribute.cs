@@ -12,24 +12,24 @@ namespace NetworkSocket.Fast
     public class ServiceAttribute : Attribute
     {
         /// <summary>
-        /// 实现服务的目标
+        /// 获取实现服务的目标
         /// </summary>
-        public Implements Implement { get; set; }
+        public Implements Implement { get; private set; }
 
         /// <summary>
-        /// 服务行为对应的数据包命令值
+        /// 获取服务行为对应的数据包命令值
         /// </summary>
-        public int Command { get; set; }
+        public int Command { get; private set; }
 
         /// <summary>
         /// 表示服务行为标记特性
         /// </summary>       
         /// <param name="implement">实现服务的目标</param>
-        /// <param name="cmd">服务行为对应的数据包命令值</param>
-        public ServiceAttribute(Implements implement, int cmd)
+        /// <param name="command">服务行为对应的数据包命令值</param>
+        public ServiceAttribute(Implements implement, int command)
         {
             this.Implement = implement;
-            this.Command = cmd;
+            this.Command = command;
         }
     }
 }
