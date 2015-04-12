@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,6 +12,11 @@ namespace NetworkSocket.Fast
     public class FilterAttributeProvider : IFilterAttributeProvider
     {
         /// <summary>
+        /// 服务方法过滤器缓存
+        /// </summary>
+        private ConcurrentDictionary<FastAction, IEnumerable<IFilter>> filterCached = new ConcurrentDictionary<FastAction, IEnumerable<IFilter>>();
+
+        /// <summary>
         /// 服务行为特性过滤器提供者
         /// </summary>
         public FilterAttributeProvider()
@@ -20,9 +26,19 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 获取服务行为的特性过滤器     
         /// </summary>
+        /// <param name="fastAction">服务行为</param>
+        /// <returns></returns>
+        public virtual IEnumerable<IFilter> GetActionFilters(FastAction fastAction)
+        {
+            return this.filterCached.GetOrAdd(fastAction, action => this.GetActionFiltersNoCached(action));
+        }
+
+        /// <summary>
+        /// 获取服务行为的特性过滤器     
+        /// </summary>
         /// <param name="action">服务行为</param>
         /// <returns></returns>
-        public virtual IEnumerable<IFilter> GetActionFilters(FastAction action)
+        private IEnumerable<IFilter> GetActionFiltersNoCached(FastAction action)
         {
             var methodAttributes = action.GetMethodFilterAttributes();
 
