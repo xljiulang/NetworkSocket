@@ -19,7 +19,7 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 所有服务行为
         /// </summary>
-        private List<FastAction> fastActionList;
+        private FastActionList fastActionList;
 
         /// <summary>
         /// 数据包哈希码提供者
@@ -63,7 +63,7 @@ namespace NetworkSocket.Fast
         /// </summary>
         public FastTcpServerBase()
         {
-            this.fastActionList = new List<FastAction>();
+            this.fastActionList = new FastActionList();
             this.hashCodeProvider = new HashCodeProvider();
             this.taskSetActionTable = new TaskSetActionTable();
 
@@ -74,7 +74,8 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 绑定本程序集所有实现IFastService的服务
         /// </summary>
-        /// <returns></returns>
+        /// <returns></returns>       
+        /// <exception cref="ArgumentException"></exception>
         public FastTcpServerBase BindService()
         {
             var allServices = this.GetType().Assembly.GetTypes().Where(item => typeof(IFastService).IsAssignableFrom(item));
@@ -85,7 +86,8 @@ namespace NetworkSocket.Fast
         /// 绑定服务
         /// </summary>
         /// <typeparam name="T">服务类型</typeparam>
-        /// <returns></returns>
+        /// <returns></returns>       
+        /// <exception cref="ArgumentException"></exception>
         public FastTcpServerBase BindService<T>() where T : IFastService
         {
             return this.BindService(typeof(T));
@@ -96,6 +98,8 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="serviceType">服务类型</param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentException"></exception>
         public FastTcpServerBase BindService(params Type[] serviceType)
         {
             return this.BindService((IEnumerable<Type>)serviceType);
@@ -106,6 +110,8 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="serivceType">服务类型</param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentException"></exception>
         public FastTcpServerBase BindService(IEnumerable<Type> serivceType)
         {
             if (serivceType == null)
@@ -128,10 +134,6 @@ namespace NetworkSocket.Fast
                 var actions = FastTcpCommon.GetServiceFastActions(type);
                 this.fastActionList.AddRange(actions);
             }
-
-            FastTcpCommon.CheckActionsRepeatCommand(this.fastActionList);
-            FastTcpCommon.CheckActionsTaskOrVoid(this.fastActionList);
-
             return this;
         }
 
@@ -156,7 +158,7 @@ namespace NetworkSocket.Fast
         {
             var fastService = DependencyResolver.Current.GetService(serviceType) as IFastService;
             return fastService;
-        }     
+        }
 
         /// <summary>
         /// 将数据发送到远程端        
@@ -283,7 +285,7 @@ namespace NetworkSocket.Fast
         /// <returns></returns>
         private FastAction GetFastAction(RequestContext requestContext)
         {
-            var action = this.fastActionList.Find(item => item.Command == requestContext.Packet.Command);
+            var action = this.fastActionList.TryGet(requestContext.Packet.Command);
             if (action != null)
             {
                 return action;
@@ -356,7 +358,6 @@ namespace NetworkSocket.Fast
             base.Dispose(disposing);
             if (disposing)
             {
-                this.fastActionList.Clear();
                 this.fastActionList = null;
 
                 this.taskSetActionTable.Clear();

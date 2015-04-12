@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
@@ -16,7 +17,7 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 所有服务行为
         /// </summary>
-        private List<FastAction> fastActionList;
+        private FastActionList fastActionList;
 
         /// <summary>
         /// 数据包哈希码提供者
@@ -55,7 +56,7 @@ namespace NetworkSocket.Fast
         /// </summary>
         public FastTcpClientBase()
         {
-            this.fastActionList = FastTcpCommon.GetServiceFastActions(this.GetType());
+            this.fastActionList = new FastActionList(FastTcpCommon.GetServiceFastActions(this.GetType()));
             this.hashCodeProvider = new HashCodeProvider();
             this.taskSetActionTable = new TaskSetActionTable();
             this.Serializer = new DefaultSerializer();
@@ -140,7 +141,7 @@ namespace NetworkSocket.Fast
         /// <returns></returns>
         private FastAction GetFastAction(RequestContext requestContext)
         {
-            var action = this.fastActionList.Find(item => item.Command == requestContext.Packet.Command);
+            var action = this.fastActionList.TryGet(requestContext.Packet.Command);
             if (action != null)
             {
                 return action;
@@ -266,8 +267,7 @@ namespace NetworkSocket.Fast
         {
             base.Dispose(disposing);
             if (disposing)
-            {
-                this.fastActionList.Clear();
+            {                
                 this.fastActionList = null;
 
                 this.taskSetActionTable.Clear();

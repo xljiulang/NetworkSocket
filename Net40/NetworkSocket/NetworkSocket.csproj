@@ -62,6 +62,7 @@
     <Compile Include="ByteConverter.cs" />
     <Compile Include="Endians.cs" />
     <Compile Include="Fast\Implements.cs" />
+    <Compile Include="Fast\Internal\FastActionList.cs" />
     <Compile Include="Fast\Internal\HashCodeProvider.cs" />
     <Compile Include="Fast\Internal\TaskSetAction.cs" />
     <Compile Include="Fast\Internal\SetTypes.cs" />

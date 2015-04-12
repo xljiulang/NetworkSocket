@@ -17,10 +17,12 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="seviceType">服务类型</param>
         /// <returns></returns>
-        public static List<FastAction> GetServiceFastActions(Type seviceType)
+        public static IEnumerable<FastAction> GetServiceFastActions(Type seviceType)
         {
-            var methods = seviceType.GetMethods().Where(item => Attribute.IsDefined(item, typeof(ServiceAttribute)));
-            return methods.Select(method => new FastAction(method)).ToList();
+            return seviceType
+                .GetMethods()
+                .Where(item => Attribute.IsDefined(item, typeof(ServiceAttribute)))
+                .Select(method => new FastAction(method));
         }
 
         /// <summary>
@@ -140,49 +142,6 @@ namespace NetworkSocket.Fast
                 parameters[i] = serializer.Deserialize(items[i], context.Action.ParameterTypes[i]);
             }
             return parameters;
-        }
-
-        /// <summary>
-        /// 检测服务行为是否有声明相同的Command
-        /// </summary>
-        /// <param name="actions">服务行为</param>
-        public static void CheckActionsRepeatCommand(IEnumerable<FastAction> actions)
-        {
-            var group = actions.GroupBy(item => item.Command).FirstOrDefault(g => g.Count() > 1);
-            if (group != null)
-            {
-                throw new Exception(string.Format("Command为{0}不允许被重复使用", group.Key));
-            }
-        }
-
-
-        /// <summary>
-        /// 检测服务行为的返回类型
-        /// </summary>
-        /// <param name="actions">服务行为</param>
-        public static void CheckActionsTaskOrVoid(IEnumerable<FastAction> actions)
-        {
-            foreach (var action in actions)
-            {
-                FastTcpCommon.CheckActionTaskOrVoid(action);
-            }
-        }
-
-
-        /// <summary>
-        /// 检测服务行为的返回类型
-        /// </summary>
-        /// <param name="action">服务行为</param>
-        private static void CheckActionTaskOrVoid(FastAction action)
-        {
-            if (action.Implement == Implements.Remote)
-            {
-                var isTask = action.ReturnType.IsGenericType && action.ReturnType.GetGenericTypeDefinition() == typeof(Task<>);
-                if ((action.IsVoidReturn || isTask) == false)
-                {
-                    throw new Exception(string.Format("服务行为{0}的的返回类型必须是Task<T>类型", action.Name));
-                }
-            }
         }
     }
 }
