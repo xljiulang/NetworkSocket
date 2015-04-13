@@ -11,7 +11,7 @@ namespace NetworkSocket
     /// 异步Socket接口
     /// </summary>
     /// <typeparam name="T">协议类型</typeparam>
-    public interface ISocketAsync<T> : IDisposable where T : PacketBase
+    public interface ISocketAsync<T> where T : PacketBase
     {
         /// <summary>
         /// 获取用户数据字典

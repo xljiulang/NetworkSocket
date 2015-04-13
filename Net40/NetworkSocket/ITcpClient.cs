@@ -11,7 +11,7 @@ namespace NetworkSocket
     /// Tcp客户端接口
     /// </summary>
     /// <typeparam name="T">协议类型</typeparam>
-    public interface ITcpClient<T> : ISocketAsync<T> where T : PacketBase
+    public interface ITcpClient<T> : IDisposable, ISocketAsync<T> where T : PacketBase
     {
         /// <summary>      
         /// 断开和远程终端的连接

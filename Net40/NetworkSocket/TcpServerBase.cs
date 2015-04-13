@@ -218,14 +218,16 @@ namespace NetworkSocket
         /// <param name="client">客户端对象</param>
         public bool CloseClient(SocketAsync<T> client)
         {
-            if (this.AliveClients.Remove(client))
+            if (client.IsBounded == false)
             {
-                this.OnDisconnect(client);
-                client.CloseSocket();
-                this.clientBag.Add(client);
-                return true;
+                return false;
             }
-            return false;
+
+            this.AliveClients.Remove(client);
+            this.OnDisconnect(client);
+            client.UnBindSocket();
+            this.clientBag.Add(client);
+            return true;
         }
 
         #region IDisposable
@@ -272,12 +274,12 @@ namespace NetworkSocket
 
             foreach (var client in this.AliveClients)
             {
-                client.Dispose();
+                ((IDisposable)client).Dispose();
             }
 
             while (this.clientBag.Count > 0)
             {
-                this.clientBag.Take().Dispose();
+                ((IDisposable)this.clientBag.Take()).Dispose();
             }
 
             this.acceptArg.Dispose();

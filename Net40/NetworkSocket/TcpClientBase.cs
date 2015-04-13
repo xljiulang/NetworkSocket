@@ -162,7 +162,7 @@ namespace NetworkSocket
         /// </summary>
         public void Close()
         {
-            base.CloseSocket();
+            base.UnBindSocket();
         }
     }
 }
