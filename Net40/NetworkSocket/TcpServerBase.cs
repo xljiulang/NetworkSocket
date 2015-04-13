@@ -168,6 +168,7 @@ namespace NetworkSocket
         /// <summary>
         /// 使用Task来处理OnRecvComplete业务方法
         /// 重写此方法，使用LimitedTask来代替系统默认的Task可以控制并发数
+        /// 例：myLimitedTask.Run(() => this.OnRecvComplete(client, packet));
         /// </summary>
         /// <param name="client">客户端</param>
         /// <param name="packet">封包</param>

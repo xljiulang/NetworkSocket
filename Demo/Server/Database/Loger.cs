@@ -14,7 +14,7 @@ namespace Server.Database
         {
             if (this.IsDisposed)
             {
-                throw new Exception("调用了已释放对象的方法");
+                throw new ObjectDisposedException("Loger");
             }
             Console.WriteLine(log);
             return true;

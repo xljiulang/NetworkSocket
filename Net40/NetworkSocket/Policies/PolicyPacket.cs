@@ -29,7 +29,7 @@ namespace NetworkSocket.Policies
         /// </summary>
         /// <param name="builder">数据</param>
         /// <returns></returns>
-        public static PolicyPacket GetPacket(ByteBuilder builder)
+        public static PolicyPacket From(ByteBuilder builder)
         {
             if (builder.Length == 0)
             {

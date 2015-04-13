@@ -92,8 +92,8 @@
     <Compile Include="ITcpServer.cs" />
     <Compile Include="Internal\RecvArgBuffer.cs" />
     <Compile Include="Internal\SendArgBag.cs" />
-    <Compile Include="Tasks\LimitedTask.cs" />
-    <Compile Include="Tasks\LimitedTaskScheduler.cs" />
+    <Compile Include="LimitedTask.cs" />
+    <Compile Include="Internal\LimitedTaskScheduler.cs" />
     <Compile Include="TcpTable.cs" />
     <Compile Include="Policies\FlexPolicyServer.cs" />
     <Compile Include="Policies\PolicyPacket.cs" />

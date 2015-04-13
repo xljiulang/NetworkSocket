@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using System.Text;
 
 namespace NetworkSocket.Policies
 {
     /// <summary>
     /// Siverlight通讯策略服务
+    /// 不可继承
     /// </summary>
     public sealed class SilverlightPolicyServer : TcpServerBase<PolicyPacket>
     {
@@ -25,6 +27,7 @@ namespace NetworkSocket.Policies
         /// 启动策略服务
         /// 监听本地943端口
         /// </summary>
+        /// <exception cref="SocketException"></exception>
         public void StartListen()
         {
             this.StartListen(this.Port);
@@ -38,7 +41,7 @@ namespace NetworkSocket.Policies
         /// <returns></returns>
         protected override PolicyPacket OnReceive(SocketAsync<PolicyPacket> client, ByteBuilder recvBuilder)
         {
-            return PolicyPacket.GetPacket(recvBuilder);
+            return PolicyPacket.From(recvBuilder);
         }
 
         /// <summary>

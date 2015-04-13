@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NetworkSocket.Tasks
+namespace NetworkSocket
 {
     /// <summary>
     /// 并发限制任务调度器
