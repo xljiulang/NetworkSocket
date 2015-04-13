@@ -15,14 +15,14 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 服务行为字典
         /// </summary>
-        private Dictionary<long, FastAction> dictionary;
+        private Dictionary<int, FastAction> dictionary;
 
         /// <summary>
         /// 服务行为列表
         /// </summary>
         public FastActionList()
         {
-            this.dictionary = new Dictionary<long, FastAction>();
+            this.dictionary = new Dictionary<int, FastAction>();
         }
 
         /// <summary>
@@ -120,7 +120,7 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="command">行为命令</param>
         /// <returns></returns>
-        public FastAction TryGet(long command)
+        public FastAction TryGet(int command)
         {
             FastAction fastAction;
             if (this.dictionary.TryGetValue(command, out fastAction))
@@ -135,7 +135,7 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="command">行为命令</param>
         /// <returns></returns>
-        public bool IsExist(long command)
+        public bool IsExist(int command)
         {
             return this.dictionary.ContainsKey(command);
         }
