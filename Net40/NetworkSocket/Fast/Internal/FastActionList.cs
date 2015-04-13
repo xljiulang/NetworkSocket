@@ -60,14 +60,44 @@ namespace NetworkSocket.Fast
 
             if (fastAction.Implement == Implements.Remote)
             {
-                var isTask = fastAction.ReturnType.IsGenericType && fastAction.ReturnType.GetGenericTypeDefinition() == typeof(Task<>);
-                if ((fastAction.IsVoidReturn || isTask) == false)
-                {
-                    throw new ArgumentException(string.Format("服务行为{0}的返回类型必须是Task<T>类型", fastAction.Name));
-                }
+                this.CheckRemoteReturnType(fastAction);
+            }
+            else
+            {
+                this.CheckSelfParameterType(fastAction);
             }
 
             this.dictionary.Add(fastAction.Command, fastAction);
+        }
+
+        /// <summary>
+        /// 检测返回类型
+        /// </summary>
+        /// <param name="fastAction">服务行为</param>
+        /// <exception cref="ArgumentException"></exception>
+        private void CheckRemoteReturnType(FastAction fastAction)
+        {
+            var isTask = fastAction.ReturnType.IsGenericType && fastAction.ReturnType.GetGenericTypeDefinition() == typeof(Task<>);
+            if ((fastAction.IsVoidReturn || isTask) == false)
+            {
+                throw new ArgumentException(string.Format("服务行为{0}的返回类型必须是Task<T>类型", fastAction.Name));
+            }
+        }
+
+        /// <summary>
+        /// 检测参数类型
+        /// </summary>
+        /// <param name="fastAction">服务行为</param>
+        /// <exception cref="ArgumentException"></exception>
+        private void CheckSelfParameterType(FastAction fastAction)
+        {
+            foreach (var pType in fastAction.ParameterTypes)
+            {
+                if (pType.IsAbstract || pType.IsInterface)
+                {
+                    throw new ArgumentException(string.Format("服务行为{0}的参数类型不能包含抽象类或接口", fastAction.Name));
+                }
+            }
         }
 
         /// <summary>

@@ -107,8 +107,15 @@ namespace NetworkSocket.Fast
             {
                 if (setType == SetTypes.SetReult)
                 {
-                    var result = (T)serializer.Deserialize(bytes, typeof(T));
-                    taskSource.TrySetResult(result);
+                    if (bytes == null || bytes.Length == 0)
+                    {
+                        taskSource.TrySetResult(default(T));
+                    }
+                    else
+                    {
+                        var result = (T)serializer.Deserialize(bytes, typeof(T));
+                        taskSource.TrySetResult(result);
+                    }
                 }
                 else if (setType == SetTypes.SetException)
                 {
@@ -145,7 +152,15 @@ namespace NetworkSocket.Fast
             {
                 var parameterBytes = bodyParameters[i];
                 var parameterType = context.Action.ParameterTypes[i];
-                parameters[i] = serializer.Deserialize(parameterBytes, parameterType);
+
+                if (parameterBytes == null || parameterBytes.Length == 0)
+                {
+                    parameters[i] = Activator.CreateInstance(parameterType);
+                }
+                else
+                {
+                    parameters[i] = serializer.Deserialize(parameterBytes, parameterType);
+                }
             }
             return parameters;
         }
