@@ -55,9 +55,16 @@ namespace NetworkSocket
 
 
         /// <summary>
-        /// 获取动态数据字典
+        /// 获取用户附加数据
+        /// 与TagData共享
         /// </summary>
         public dynamic TagBag { get; private set; }
+
+        /// <summary>
+        /// 获取用户附加数据
+        /// 与TagBag共享
+        /// </summary>
+        public ITag TagData { get; private set; }
 
         /// <summary>
         /// 获取远程终结点
@@ -85,7 +92,8 @@ namespace NetworkSocket
         {
             RecvArgBuffer.SetBuffer(this.recvArg);
             this.recvArg.Completed += new EventHandler<SocketAsyncEventArgs>(this.RecvCompleted);
-            this.TagBag = new TagBag();
+            this.TagData = new TagData();
+            this.TagBag = new TagBag((TagData)this.TagData);
         }
 
         /// <summary>
@@ -170,7 +178,6 @@ namespace NetworkSocket
                 }
                 // 关闭socket前重置相关数据               
                 this.recvBuilder.Clear();
-                (this.TagBag as TagBag).Clear();
                 this.RemoteEndPoint = null;
                 return true;
             }
@@ -322,6 +329,7 @@ namespace NetworkSocket
                 this.RemoteEndPoint = null;
                 this.recvBuilder = null;
                 this.TagBag = null;
+                this.TagData = null;
                 this.socketRoot = null;
             }
         }

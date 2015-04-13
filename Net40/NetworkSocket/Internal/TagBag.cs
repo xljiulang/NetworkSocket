@@ -8,14 +8,36 @@ using System.Text;
 namespace NetworkSocket
 {
     /// <summary>
-    /// 表示动态数据字典
+    /// 表示用户附加数据
     /// </summary>    
     internal sealed class TagBag : DynamicObject
     {
         /// <summary>
         /// 原始数据字典
         /// </summary>
-        private Dictionary<string, object> dic = new Dictionary<string, object>();
+        private TagData tagData;
+
+        /// <summary>
+        /// 用户附加数据
+        /// </summary>
+        public TagBag()
+            : this(new TagData())
+        {
+        }
+
+        /// <summary>
+        /// 用户附加数据
+        /// </summary>
+        /// <param name="tagData">用户附加数据</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        public TagBag(TagData tagData)
+        {
+            if (tagData == null)
+            {
+                throw new ArgumentNullException("tagData");
+            }
+            this.tagData = tagData;
+        }
 
         /// <summary>
         /// 获取成员名称
@@ -23,7 +45,7 @@ namespace NetworkSocket
         /// <returns></returns>
         public override IEnumerable<string> GetDynamicMemberNames()
         {
-            return this.dic.Keys;
+            return this.tagData.Keys;
         }
 
         /// <summary>
@@ -34,7 +56,7 @@ namespace NetworkSocket
         /// <returns></returns>
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
-            dic.TryGetValue(binder.Name, out result);
+            result = this.tagData.TryGet(binder.Name);
             return true;
         }
 
@@ -46,16 +68,8 @@ namespace NetworkSocket
         /// <returns></returns>
         public override bool TrySetMember(SetMemberBinder binder, object value)
         {
-            this.dic[binder.Name] = value;
+            this.tagData.Set(binder.Name, value);
             return true;
-        }
-
-        /// <summary>
-        /// 清空内容
-        /// </summary>
-        public void Clear()
-        {
-            this.dic.Clear();
         }
     }
 }

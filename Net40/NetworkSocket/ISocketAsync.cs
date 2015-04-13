@@ -14,9 +14,9 @@ namespace NetworkSocket
     public interface ISocketAsync<T> : IDisposable where T : PacketBase
     {
         /// <summary>
-        /// 获取动态数据字典
+        /// 获取用户数据字典
         /// </summary>
-        dynamic TagBag { get; }
+        ITag TagData { get; }
 
         /// <summary>
         /// 获取远程终结点
@@ -26,7 +26,7 @@ namespace NetworkSocket
         /// <summary>
         /// 获取是否已连接到远程端
         /// </summary>
-        bool IsConnected { get; }       
+        bool IsConnected { get; }
 
         /// <summary>
         /// 异步发送数据

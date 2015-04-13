@@ -15,7 +15,7 @@ namespace Server.Filters
     {
         public void OnAuthorization(NetworkSocket.Fast.ActionContext actionContext)
         {
-            bool valid = actionContext.Client.TagBag.Logined ?? false;
+            var valid = actionContext.Client.TagData.TryGet<bool>("Logined");
             if (valid == false)
             {
                 throw new Exception("未登录就尝试请求其它服务");
