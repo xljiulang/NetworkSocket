@@ -32,9 +32,10 @@ namespace NetworkSocket.Fast
         private TaskSetActionTable taskSetActionTable;
 
         /// <summary>
-        /// 获取或设置请求超时时间
-        /// 单位毫秒
+        /// 获取或设置请求等待超时时间(毫秒)    
+        /// 默认30秒
         /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         public int TimeOut
         {
             get

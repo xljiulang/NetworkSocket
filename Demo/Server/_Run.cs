@@ -29,6 +29,8 @@ namespace Server
             fastServer.RegisterResolver();
             fastServer.StartListen(4502);
 
+            fastServer.TimeOut = 0;
+
             Console.Title = "FastServer V" + fastServer.GetService<SystemService>().GetVersion();
             Console.WriteLine("服务已启动，端口：" + fastServer.LocalEndPoint.Port);
             while (true)

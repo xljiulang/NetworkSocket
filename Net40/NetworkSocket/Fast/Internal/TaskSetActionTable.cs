@@ -21,18 +21,36 @@ namespace NetworkSocket.Fast
         private readonly ConcurrentDictionary<long, TaskSetAction> table = new ConcurrentDictionary<long, TaskSetAction>();
 
         /// <summary>
+        /// 超时时间
+        /// </summary>       
+        private int timeOut = 30 * 1000;
+
+        /// <summary>
         /// 获取或设置超时时间(毫秒)
         /// 默认30秒
         /// </summary>
-        public int TimeOut { get; set; }
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        public int TimeOut
+        {
+            get
+            {
+                return this.timeOut;
+            }
+            set
+            {
+                if (value <= 0)
+                {
+                    throw new ArgumentOutOfRangeException("TimeOut", "TimeOut的值必须大于0");
+                }
+                this.timeOut = value;
+            }
+        }
 
         /// <summary>
         /// 任务行为表
         /// </summary>
         public TaskSetActionTable()
         {
-            this.TimeOut = 30 * 1000;
-
             Task.Factory.StartNew(() =>
             {
                 var spinWait = new SpinWait();
