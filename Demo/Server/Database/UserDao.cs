@@ -21,7 +21,7 @@ namespace Server.Database
 
         public bool IsExist(User user)
         {
-            return true;
+            return user != null && user.Account == "admin" && user.Password == "123456";
         }
     }
 }

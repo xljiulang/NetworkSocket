@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace ClientApp
 {
@@ -66,6 +67,7 @@ namespace ClientApp
 
         protected override void OnDisconnect()
         {
+            MessageBox.Show("您与服务器连接断开了，\r\n系统将自动尝试每秒重连一次", "系统提示");
             this.ReConnect().ContinueWith(t => this.TryReConnect(t.Result));
         }
 

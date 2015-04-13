@@ -29,8 +29,15 @@ namespace ClientApp.Forms
             int.TryParse(this.textBox2.Text, out y);
             int.TryParse(this.textBox3.Text, out z);
 
-            var sum = await RemoteServer.Instance.GetSun(x, y, z);
-            MessageBox.Show(string.Format("{0} + {1} + {2} = {3}", x, y, z, sum), "计算结果");
+            try
+            {
+                var sum = await RemoteServer.Instance.GetSun(x, y, z);
+                MessageBox.Show(string.Format("{0} + {1} + {2} = {3}", x, y, z, sum), "计算结果");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "系统出错了");
+            }
         }
     }
 }

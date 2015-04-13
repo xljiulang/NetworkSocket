@@ -33,6 +33,7 @@
             this.btn_Login = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
+            this.btn_Pass = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // textBox_Password
@@ -79,11 +80,22 @@
             this.label2.TabIndex = 4;
             this.label2.Text = "密码";
             // 
+            // btn_pass
+            // 
+            this.btn_Pass.Enabled = false;
+            this.btn_Pass.Location = new System.Drawing.Point(85, 129);
+            this.btn_Pass.Name = "btn_pass";
+            this.btn_Pass.Size = new System.Drawing.Size(75, 23);
+            this.btn_Pass.TabIndex = 5;
+            this.btn_Pass.Text = "跳过";
+            this.btn_Pass.UseVisualStyleBackColor = true;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(284, 173);
+            this.Controls.Add(this.btn_Pass);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.btn_Login);
@@ -106,6 +118,7 @@
         private System.Windows.Forms.Button btn_Login;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Button btn_Pass;
     }
 }
 
