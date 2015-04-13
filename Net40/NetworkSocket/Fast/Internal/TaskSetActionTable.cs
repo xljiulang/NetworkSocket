@@ -38,7 +38,10 @@ namespace NetworkSocket.Fast
                 var spinWait = new SpinWait();
                 while (true)
                 {
-                    this.CheckTaskActionTimeout();
+                    if (this.table.Count > 0)
+                    {
+                        this.CheckTaskActionTimeout();
+                    }
                     spinWait.SpinOnce();
                 }
             });
