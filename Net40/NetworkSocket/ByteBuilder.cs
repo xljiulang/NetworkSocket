@@ -54,21 +54,51 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="endian">字节存储次序</param>
         public ByteBuilder(Endians endian)
-            : this(1024, endian)
+            : this(endian, 1024)
         {
         }
 
         /// <summary>
         /// 可变长byte集合
         /// </summary>
-        /// <param name="capacity">容量[乘2倍数增长]</param>
         /// <param name="endian">字节存储次序</param>
-        public ByteBuilder(int capacity, Endians endian)
+        /// <param name="capacity">容量[乘2倍数增长]</param>  
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        public ByteBuilder(Endians endian, int capacity)
         {
+            if (capacity <= 0)
+            {
+                throw new ArgumentOutOfRangeException("capacity", "capacity必须大于0");
+            }
             this.Capacity = capacity;
             this.Endian = endian;
             this.Source = new byte[capacity];
             this.SyncRoot = new object();
+        }
+
+        /// <summary>
+        /// 可变长byte集合
+        /// </summary>
+        /// <param name="endian">字节存储次序</param>
+        /// <param name="source">数据源</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        public ByteBuilder(Endians endian, byte[] source)
+        {
+            if (source == null)
+            {
+                throw new ArgumentNullException("source");
+            }
+            if (source.Length == 0)
+            {
+                throw new ArgumentOutOfRangeException("source", "source的长度必须大于0");
+            }
+
+            this.Endian = endian;
+            this.SyncRoot = new object();
+
+            this.Length = this.Capacity = source.Length;
+            this.Source = source;
         }
 
         /// <summary>
@@ -169,6 +199,7 @@ namespace NetworkSocket
         /// <param name="value">数据源</param>
         /// <param name="index">数据源的起始位置</param>
         /// <param name="length">复制的长度</param>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         public void Add(byte[] value, int index, int length)
         {
             if (value == null || value.Length == 0)
@@ -197,6 +228,7 @@ namespace NetworkSocket
         /// 从0位置删除指定长度的字节
         /// </summary>
         /// <param name="length">长度</param>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         public void Remove(int length)
         {
             this.Length = this.Length - length;
@@ -210,6 +242,7 @@ namespace NetworkSocket
         /// <param name="destArray">目标数组</param>
         /// <param name="index">目标数据索引</param>
         /// <param name="length">复制长度</param>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         public void CopyTo(byte[] destArray, int index, int length)
         {
             Buffer.BlockCopy(this.Source, 0, destArray, index, length);
@@ -222,6 +255,7 @@ namespace NetworkSocket
         /// <param name="destArray">目标数组</param>
         /// <param name="index">目标数据索引</param>
         /// <param name="length">剪切长度</param>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         public void CutTo(byte[] destArray, int index, int length)
         {
             this.CopyTo(destArray, index, length);
@@ -231,7 +265,8 @@ namespace NetworkSocket
         /// <summary>
         /// 返回指定位置的一个字节并转换为bool类型
         /// </summary>
-        /// <param name="index"></param>
+        /// <param name="index">索引</param>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <returns></returns>
         public bool ToBoolean(int index)
         {
@@ -242,6 +277,7 @@ namespace NetworkSocket
         /// 返回指定位置的字节
         /// </summary>
         /// <param name="index">索引位置</param>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <returns></returns>
         public byte ToByte(int index)
         {
@@ -251,9 +287,10 @@ namespace NetworkSocket
         /// <summary>
         /// 读取指定位置2个字节，返回其Int16表示类型
         /// </summary>
-        /// <param name="index">字节所在索引</param>        
+        /// <param name="index">字节所在索引</param>   
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <returns></returns>
-        public int ToInt16(int index)
+        public short ToInt16(int index)
         {
             return ByteConverter.ToInt16(this.Source, index, this.Endian);
         }
@@ -261,7 +298,8 @@ namespace NetworkSocket
         /// <summary>
         /// 读取指定位置2个字节，返回其UInt16表示类型
         /// </summary>
-        /// <param name="index">字节所在索引</param>        
+        /// <param name="index">字节所在索引</param> 
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <returns></returns>
         public uint ToUInt16(int index)
         {
@@ -271,7 +309,8 @@ namespace NetworkSocket
         /// <summary>
         /// 读取指定位置4个字节，返回其Int32表示类型
         /// </summary>
-        /// <param name="index">字节所在索引</param>        
+        /// <param name="index">字节所在索引</param>  
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <returns></returns>
         public int ToInt32(int index)
         {
@@ -281,7 +320,8 @@ namespace NetworkSocket
         /// <summary>
         /// 读取指定位置4个字节，返回其UInt32表示类型
         /// </summary>
-        /// <param name="index">字节所在索引</param>        
+        /// <param name="index">字节所在索引</param>   
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <returns></returns>
         public uint ToUInt32(int index)
         {
@@ -291,7 +331,8 @@ namespace NetworkSocket
         /// <summary>
         /// 读取指定位置8个字节，返回其Int64表示类型
         /// </summary>
-        /// <param name="index">字节所在索引</param>        
+        /// <param name="index">字节所在索引</param>   
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <returns></returns>
         public long ToInt64(int index)
         {
@@ -301,7 +342,8 @@ namespace NetworkSocket
         /// <summary>
         /// 读取指定位置8个字节，返回其UInt64表示类型
         /// </summary>
-        /// <param name="index">字节所在索引</param>        
+        /// <param name="index">字节所在索引</param>    
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <returns></returns>
         public ulong ToUInt64(int index)
         {
@@ -322,6 +364,7 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="index">索引</param>
         /// <param name="length">长度</param>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <returns></returns>
         public byte[] ToArray(int index, int length)
         {

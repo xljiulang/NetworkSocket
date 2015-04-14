@@ -17,9 +17,11 @@ namespace NetworkSocket
         /// <param name="bytes">字节数组</param>
         /// <param name="startIndex">位置</param>    
         /// <param name="endian">高低位</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <returns></returns>        
         public static unsafe long ToInt64(byte[] bytes, int startIndex, Endians endian)
-        {
+        {            
             fixed (byte* pbyte = &bytes[startIndex])
             {
                 if (endian == Endians.Little)
@@ -43,6 +45,8 @@ namespace NetworkSocket
         /// <param name="bytes">字节数组</param>
         /// <param name="startIndex">位置</param>    
         /// <param name="endian">高低位</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <returns></returns>        
         public static ulong ToUInt64(byte[] bytes, int startIndex, Endians endian)
         {
@@ -56,6 +60,8 @@ namespace NetworkSocket
         /// <param name="bytes">字节数组</param>
         /// <param name="startIndex">位置</param>    
         /// <param name="endian">高低位</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <returns></returns>        
         public unsafe static int ToInt32(byte[] bytes, int startIndex, Endians endian)
         {
@@ -79,6 +85,8 @@ namespace NetworkSocket
         /// <param name="bytes">字节数组</param>
         /// <param name="startIndex">位置</param>    
         /// <param name="endian">高低位</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <returns></returns>        
         public static uint ToUInt32(byte[] bytes, int startIndex, Endians endian)
         {
@@ -91,6 +99,8 @@ namespace NetworkSocket
         /// <param name="bytes">字节数组</param>
         /// <param name="startIndex">位置</param>    
         /// <param name="endian">高低位</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <returns></returns>
         public static unsafe short ToInt16(byte[] bytes, int startIndex, Endians endian)
         {
@@ -113,6 +123,8 @@ namespace NetworkSocket
         /// <param name="bytes">字节数组</param>
         /// <param name="startIndex">位置</param>    
         /// <param name="endian">高低位</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <returns></returns>
         public static ushort ToUInt16(byte[] bytes, int startIndex, Endians endian)
         {

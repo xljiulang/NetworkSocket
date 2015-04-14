@@ -81,7 +81,7 @@ namespace NetworkSocket.Fast
             {
                 return;
             }
-            var builder = new ByteBuilder(8, Endians.Big);
+            var builder = new ByteBuilder(Endians.Big, 8);
             foreach (var item in parameters)
             {
                 // 序列化参数为二进制内容
@@ -135,7 +135,7 @@ namespace NetworkSocket.Fast
             // 总长度
             int totalLength = this.Body == null ? headLength : headLength + this.Body.Length;
 
-            var builder = new ByteBuilder(totalLength, Endians.Big);
+            var builder = new ByteBuilder(Endians.Big, totalLength);
             builder.Add(totalLength);
             builder.Add(this.Command);
             builder.Add(this.HashCode);
