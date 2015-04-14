@@ -44,7 +44,7 @@ namespace NetworkSocket.WebSocket
             }
 
             // 获取处理接收的数据的容器
-            var resultBuilder = client.TagBag.ResultBuilder as ByteBuilder;
+            var resultBuilder = client.TagData.TryGet<ByteBuilder>("ResultBuilder");
             // 说明不是第一次握手请求
             if (resultBuilder != null)
             {
@@ -52,7 +52,7 @@ namespace NetworkSocket.WebSocket
             }
 
             // 设置ResultBuilder            
-            client.TagBag.ResultBuilder = new ByteBuilder();
+            client.TagData.Set("ResultBuilder", new ByteBuilder());
 
             // 处理握手请求
             var request = HandshakeRequest.Parse(builder.ToArrayThenClear());

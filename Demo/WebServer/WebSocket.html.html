@@ -1,0 +1,43 @@
+<DOCTYPE html>
+<html>
+<head>
+    <title>websocket客户端</title>
+    <script type="text/javascript">
+        var start = function () {
+            var inc = document.getElementById('incomming');
+            var wsImpl = window.WebSocket || window.MozWebSocket;
+            var form = document.getElementById('sendForm');
+            var input = document.getElementById('sendText');
+
+            inc.innerHTML += "正在连接到服务器 ..<br/>";
+            window.ws = new wsImpl('ws://localhost:8181/');
+
+            ws.onopen = function () {
+                inc.innerHTML += '连接成功<br/>';
+            };
+
+            ws.onmessage = function (evt) {
+                inc.innerHTML += evt.data + '<br/>';
+            };
+
+            ws.onclose = function () {
+                inc.innerHTML += '连接已断开<br/>';
+            }
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                var val = input.value;
+                ws.send(val);
+                input.value = "";
+            });
+
+        }
+        window.onload = start;
+    </script>
+</head>
+<body>
+    <form id="sendForm">
+        <input id="sendText" placeholder="发送的内容" />
+    </form>
+    <pre id="incomming"></pre>
+</body>
+</html>
