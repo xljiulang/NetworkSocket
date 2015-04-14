@@ -9,7 +9,7 @@ namespace NetworkSocket.Fast
     /// <summary>
     /// 快速构建Tcp客户端接口
     /// </summary>
-    public interface IFastTcpClient
+    public interface IFastTcpClient : ITcpClient<FastPacket>
     {
         /// <summary>
         /// 获取或设置序列化工具      
