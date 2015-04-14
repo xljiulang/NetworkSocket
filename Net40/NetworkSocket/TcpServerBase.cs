@@ -19,9 +19,7 @@ namespace NetworkSocket
     /// <typeparam name="T">发送数据包协议</typeparam>
     /// <typeparam name="TRecv">接收到的数据包类型</typeparam>
     [DebuggerDisplay("IsListening = {IsListening}")]
-    public abstract class TcpServerBase<T, TRecv> : ITcpServer<T>
-        where T : PacketBase
-        where TRecv : class
+    public abstract class TcpServerBase<T, TRecv> : ITcpServer<T> where T : PacketBase
     {
         /// <summary>
         /// 服务socket
@@ -156,21 +154,18 @@ namespace NetworkSocket
         }
 
         /// <summary>
-        /// 当接收到远程端的数据时，将触发此方法
-        /// 此方法用于处理和分析收到的数据
-        /// 如果得到一个数据包，将触发OnRecvComplete方法
-        /// [注]这里只需处理一个数据包的流程
+        /// 当接收到远程端的数据时，将触发此方法       
+        /// 返回的每个数据包将触发一次OnRecvComplete方法
         /// </summary>
         /// <param name="client">客户端</param>
         /// <param name="builder">接收到的历史数据</param>
-        /// <returns>如果不够一个数据包，则请返回null</returns>
-        protected abstract TRecv OnReceive(IClient<T> client, ByteBuilder builder);
-
+        /// <returns></returns>
+        protected abstract IEnumerable<TRecv> OnReceive(IClient<T> client, ByteBuilder builder);
 
         /// <summary>
         /// 使用Task来处理OnRecvComplete业务方法
         /// 重写此方法，使用LimitedTask来代替系统默认的Task可以控制并发数
-        /// 例：myLimitedTask.Run(() => this.OnRecvComplete(client, packet));
+        /// 例：myLimitedTask.Run(() => this.OnRecvComplete(client, tRecv));
         /// </summary>
         /// <param name="client">客户端</param>
         /// <param name="tRecv">接收到的数据类型</param>

@@ -13,9 +13,7 @@ namespace NetworkSocket
     /// <typeparam name="T">发送数据包协议</typeparam>
     /// <typeparam name="TRecv">接收到的数据包类型</typeparam>
     [DebuggerDisplay("Count = {Count}")]
-    internal sealed class SocketClientBag<T, TRecv>
-        where T : PacketBase
-        where TRecv : class
+    internal sealed class SocketClientBag<T, TRecv> where T : PacketBase
     {
         /// <summary>
         /// 无序集合

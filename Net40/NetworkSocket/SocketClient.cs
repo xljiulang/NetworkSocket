@@ -17,9 +17,7 @@ namespace NetworkSocket
     /// <typeparam name="T">发送数据包协议</typeparam>
     /// <typeparam name="TRecv">接收到的数据包类型</typeparam>
     [DebuggerDisplay("RemoteEndPoint = {RemoteEndPoint}")]
-    public class SocketClient<T, TRecv> : IClient<T>, IDisposable
-        where T : PacketBase
-        where TRecv : class
+    public class SocketClient<T, TRecv> : IClient<T>, IDisposable where T : PacketBase
     {
         /// <summary>
         /// socket
@@ -49,7 +47,7 @@ namespace NetworkSocket
         /// <summary>
         /// 处理和分析收到的数据的委托
         /// </summary>
-        internal Func<ByteBuilder, TRecv> ReceiveHandler { get; set; }
+        internal Func<ByteBuilder, IEnumerable<TRecv>> ReceiveHandler { get; set; }
         /// <summary>
         /// 接收一个数据包委托
         /// </summary>
@@ -126,32 +124,6 @@ namespace NetworkSocket
         }
 
         /// <summary>
-        /// 断开和远程端的连接             
-        /// </summary>
-        /// <returns></returns>
-        public void Close()
-        {
-            lock (this.socketRoot)
-            {
-                if (this.closed == true)
-                {
-                    return;
-                }
-
-                try
-                {
-                    this.socket.Shutdown(SocketShutdown.Both);
-                    this.socket.Dispose();
-                }
-                finally
-                {
-                    this.closed = true;
-                }
-            }
-        }
-
-
-        /// <summary>
         /// 设置客户端的心跳包
         /// </summary>
         /// <param name="socket">客户端</param>
@@ -180,6 +152,33 @@ namespace NetworkSocket
             {
             }
         }
+
+
+        /// <summary>
+        /// 断开和远程端的连接             
+        /// </summary>
+        /// <returns></returns>
+        public void Close()
+        {
+            lock (this.socketRoot)
+            {
+                if (this.closed == true)
+                {
+                    return;
+                }
+
+                try
+                {
+                    this.socket.Shutdown(SocketShutdown.Both);
+                    this.socket.Dispose();
+                }
+                finally
+                {
+                    this.closed = true;
+                }
+            }
+        }
+
 
         /// <summary>
         /// 开始接收数据
@@ -210,11 +209,12 @@ namespace NetworkSocket
 
             lock (this.recvBuilder.SyncRoot)
             {
-                TRecv packet = null;
                 this.recvBuilder.Add(eventArg.Buffer, eventArg.Offset, eventArg.BytesTransferred);
-                while ((packet = this.ReceiveHandler(this.recvBuilder)) != null)
+                var recvs = this.ReceiveHandler(this.recvBuilder);
+
+                foreach (var recv in recvs)
                 {
-                    this.RecvCompleteHandler(packet);
+                    this.RecvCompleteHandler(recv);
                 }
             }
 
@@ -256,11 +256,10 @@ namespace NetworkSocket
 
             if (this.IsConnected == false)
             {
-                const int WSAENOTCONN = 10057;
-                throw new SocketException(WSAENOTCONN);
+                throw new SocketException(SocketError.NotConnected.GetHashCode());
             }
 
-            var bytes = packet.ToByteArray();
+            var bytes = packet.ToBytes();
             if (bytes == null)
             {
                 throw new ArgumentException("packet");
@@ -339,7 +338,7 @@ namespace NetworkSocket
             {
                 this.recvBuilder = null;
                 this.recvArg = null;
-                this.socket = null;
+                this.socket = null;               
                 this.socketRoot = null;
 
                 this.TagBag = null;

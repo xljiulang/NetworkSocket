@@ -128,7 +128,7 @@ namespace NetworkSocket.Fast
         /// 转换为二进制数据
         /// </summary>
         /// <returns></returns>
-        public override byte[] ToByteArray()
+        public override byte[] ToBytes()
         {
             // 总长度(4) + command(4) + hashCode(8) + IsException(1)
             const int headLength = 17;

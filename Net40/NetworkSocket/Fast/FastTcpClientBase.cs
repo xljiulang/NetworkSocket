@@ -65,16 +65,18 @@ namespace NetworkSocket.Fast
         }
 
         /// <summary>
-        /// 当接收到远程端的数据时，将触发此方法
-        /// 此方法用于处理和分析收到的数据
-        /// 如果得到一个数据包，将触发OnRecvComplete方法
-        /// [注]这里只需处理一个数据包的流程
+        /// 当接收到远程端的数据时，将触发此方法       
+        /// 返回的每个数据包，将触发一次OnRecvComplete方法       
         /// </summary>
         /// <param name="builder">接收到的历史数据</param>
         /// <returns>如果不够一个数据包，则请返回null</returns>
-        protected override FastPacket OnReceive(ByteBuilder builder)
+        protected override IEnumerable<FastPacket> OnReceive(ByteBuilder builder)
         {
-            return FastPacket.From(builder);
+            FastPacket packet;
+            while ((packet = FastPacket.From(builder)) != null)
+            {
+                yield return packet;
+            }
         }
 
         /// <summary>

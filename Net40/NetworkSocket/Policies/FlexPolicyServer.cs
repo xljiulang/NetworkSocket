@@ -39,13 +39,13 @@ namespace NetworkSocket.Policies
         /// <param name="client">客户端</param>
         /// <param name="builder">数据</param>
         /// <returns></returns>
-        protected override byte[] OnReceive(IClient<PolicyPacket> client, ByteBuilder builder)
+        protected override IEnumerable<byte[]> OnReceive(IClient<PolicyPacket> client, ByteBuilder builder)
         {
             if (builder.Length == 0)
             {
-                return null;
+                yield break;
             }
-            return builder.ToArrayThenClear();
+            yield return builder.ToArrayThenClear();
         }
 
         /// <summary>

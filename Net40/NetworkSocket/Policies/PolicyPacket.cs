@@ -19,7 +19,7 @@ namespace NetworkSocket.Policies
         /// 转换为二进制数据
         /// </summary>
         /// <returns></returns>
-        public override byte[] ToByteArray()
+        public override byte[] ToBytes()
         {
             return this.Bytes;
         }

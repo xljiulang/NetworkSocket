@@ -14,6 +14,6 @@ namespace NetworkSocket
         /// 转换为二进制数据
         /// </summary>
         /// <returns></returns>
-        public abstract byte[] ToByteArray();
+        public abstract byte[] ToBytes();
     }
 }

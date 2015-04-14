@@ -54,7 +54,7 @@ namespace NetworkSocket.WebSocket
         /// 将封包转换为二进制数据
         /// </summary>
         /// <returns></returns>
-        public override byte[] ToByteArray()
+        public override byte[] ToBytes()
         {
             return this.Bytes == null ? new byte[0] : this.Bytes;
         }

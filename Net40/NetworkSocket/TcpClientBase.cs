@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace NetworkSocket
 {
@@ -102,19 +104,17 @@ namespace NetworkSocket
         }
 
         /// <summary>
-        /// 当接收到远程端的数据时，将触发此方法
-        /// 此方法用于处理和分析收到的数据
-        /// 如果得到一个数据包，将触发OnRecvComplete方法
-        /// [注]这里只需处理一个数据包的流程
+        /// 当接收到远程端的数据时，将触发此方法       
+        /// 返回的每个数据包将触发一次OnRecvComplete方法
         /// </summary>
         /// <param name="builder">接收到的历史数据</param>
-        /// <returns>如果不够一个数据包，则请返回null</returns>
-        protected abstract TRecv OnReceive(ByteBuilder builder);
-
+        /// <returns></returns>
+        protected abstract IEnumerable<TRecv> OnReceive(ByteBuilder builder);
 
         /// <summary>
         /// 使用Task来处理OnRecvComplete业务方法
         /// 重写此方法，使用LimitedTask来代替系统默认的Task可以控制并发数
+        /// 例：myLimitedTask.Run(() => this.OnRecvComplete(tRecv));
         /// </summary>       
         /// <param name="tRecv">接收到的数据类型</param>
         protected virtual void OnRecvCompleteHandleWithTask(TRecv tRecv)

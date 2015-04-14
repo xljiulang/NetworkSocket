@@ -15,15 +15,28 @@ namespace NetworkSocket.WebSocket
     public abstract class WebSocketServerBase : TcpServerBase<SendPacket, RecvPacket>
     {
         /// <summary>
-        /// 当接收到远程端的数据时，将触发此方法
-        /// 此方法用于处理和分析收到的数据
-        /// 如果得到一个数据包，将触发OnRecvComplete方法
-        /// [注]这里只需处理一个数据包的流程
+        /// 当接收到远程端的数据时，将触发此方法      
+        /// 返回的每一个数据包，将触发一次OnRecvComplete方法       
         /// </summary>
         /// <param name="client">客户端</param>
         /// <param name="builder">接收到的历史数据</param>
-        /// <returns>如果不够一个数据包，则请返回null</returns>
-        protected override RecvPacket OnReceive(IClient<SendPacket> client, ByteBuilder builder)
+        /// <returns></returns>
+        protected override IEnumerable<RecvPacket> OnReceive(IClient<SendPacket> client, ByteBuilder builder)
+        {
+            RecvPacket packet;
+            while ((packet = this.GetRecvPacket(client, builder)) != null)
+            {
+                yield return packet;
+            }
+        }
+
+        /// <summary>
+        /// 解析一个数据包
+        /// </summary>
+        /// <param name="client">客户端</param>
+        /// <param name="builder">接收到的历史数据</param>
+        /// <returns></returns>
+        private RecvPacket GetRecvPacket(IClient<SendPacket> client, ByteBuilder builder)
         {
             if (client.IsConnected == false)
             {
@@ -53,9 +66,9 @@ namespace NetworkSocket.WebSocket
                 packet.SetHandshake(request.ToHandshake());
                 client.TrySend(packet);
             }
+
             return null;
         }
-
 
 
         /// <summary>
@@ -216,6 +229,6 @@ namespace NetworkSocket.WebSocket
             var packet = new SendPacket();
             packet.SetBody(frameType, bytes);
             client.Send(packet);
-        }       
+        }
     }
 }

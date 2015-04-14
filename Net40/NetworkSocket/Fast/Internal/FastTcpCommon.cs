@@ -94,7 +94,7 @@ namespace NetworkSocket.Fast
         /// <exception cref="RemoteException"></exception>
         /// <exception cref="TimeoutException"></exception>
         /// <returns></returns>
-        public static Task<T> InvokeRemote<T>(IClient<FastPacket>client, TaskSetActionTable taskSetActionTable, ISerializer serializer, int command, long hashCode, params object[] parameters)
+        public static Task<T> InvokeRemote<T>(IClient<FastPacket> client, TaskSetActionTable taskSetActionTable, ISerializer serializer, int command, long hashCode, params object[] parameters)
         {
             var taskSource = new TaskCompletionSource<T>();
             var packet = new FastPacket(command, hashCode);
@@ -128,8 +128,7 @@ namespace NetworkSocket.Fast
                 }
                 else if (setType == SetTypes.SetShutdownException)
                 {
-                    const int SHUTDOWN = 10058;
-                    var exception = new SocketException(SHUTDOWN);
+                    var exception = new SocketException(SocketError.Shutdown.GetHashCode());
                     taskSource.TrySetException(exception);
                 }
             };
