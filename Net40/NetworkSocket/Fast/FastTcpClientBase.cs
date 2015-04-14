@@ -269,7 +269,7 @@ namespace NetworkSocket.Fast
         /// </summary>
         protected override void OnDisconnect()
         {
-            var taskSetActions = this.taskSetActionTable.TaskAll();
+            var taskSetActions = this.taskSetActionTable.TakeAll();
             foreach (var taskSetAction in taskSetActions)
             {
                 taskSetAction.SetAction(SetTypes.SetShutdownException, null);
