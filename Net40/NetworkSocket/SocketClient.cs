@@ -38,6 +38,7 @@ namespace NetworkSocket
         /// 接收到的未处理数据
         /// </summary>
         private ByteBuilder recvBuilder = new ByteBuilder();
+
         /// <summary>
         /// 接收参数
         /// </summary>
@@ -47,11 +48,13 @@ namespace NetworkSocket
         /// <summary>
         /// 处理和分析收到的数据的委托
         /// </summary>
-        internal Func<ByteBuilder, IEnumerable<TRecv>> ReceiveHandler { get; set; }
+        internal Func<ByteBuilder, IEnumerable<TRecv>> ReceiveHandler;
+
         /// <summary>
         /// 接收一个数据包委托
         /// </summary>
         internal Action<TRecv> RecvCompleteHandler;
+
         /// <summary>
         /// 连接断开委托   
         /// </summary>
@@ -152,33 +155,6 @@ namespace NetworkSocket
             {
             }
         }
-
-
-        /// <summary>
-        /// 断开和远程端的连接             
-        /// </summary>
-        /// <returns></returns>
-        public void Close()
-        {
-            lock (this.socketRoot)
-            {
-                if (this.closed == true)
-                {
-                    return;
-                }
-
-                try
-                {
-                    this.socket.Shutdown(SocketShutdown.Both);
-                    this.socket.Dispose();
-                }
-                finally
-                {
-                    this.closed = true;
-                }
-            }
-        }
-
 
         /// <summary>
         /// 开始接收数据
@@ -287,6 +263,30 @@ namespace NetworkSocket
             }
         }
 
+        /// <summary>
+        /// 断开和远程端的连接             
+        /// </summary>
+        /// <returns></returns>
+        public void Close()
+        {
+            lock (this.socketRoot)
+            {
+                if (this.closed == true)
+                {
+                    return;
+                }
+
+                try
+                {
+                    this.socket.Shutdown(SocketShutdown.Both);
+                    this.socket.Dispose();
+                }
+                finally
+                {
+                    this.closed = true;
+                }
+            }
+        }
 
         /// <summary>
         /// 字符串显示
@@ -338,7 +338,7 @@ namespace NetworkSocket
             {
                 this.recvBuilder = null;
                 this.recvArg = null;
-                this.socket = null;               
+                this.socket = null;
                 this.socketRoot = null;
 
                 this.TagBag = null;

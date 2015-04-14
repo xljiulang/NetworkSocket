@@ -103,7 +103,7 @@
     <Compile Include="Internal\LimitedTaskScheduler.cs" />
     <Compile Include="TcpTable.cs" />
     <Compile Include="Policies\FlexPolicyServer.cs" />
-    <Compile Include="Policies\PolicyPacket.cs" />
+    <Compile Include="Policies\BinaryPacket.cs" />
     <Compile Include="Policies\SilverlightPolicyServer.cs" />
     <Compile Include="ClientCollection.cs" />
     <Compile Include="PacketBase.cs" />

@@ -10,7 +10,7 @@ namespace NetworkSocket.Policies
     /// Flex通讯策略服务
     /// 不可继承
     /// </summary>
-    public sealed class FlexPolicyServer : TcpServerBase<PolicyPacket, byte[]>
+    public sealed class FlexPolicyServer : TcpServerBase<BinaryPacket, byte[]>
     {
         /// <summary>
         /// 本地843端口
@@ -39,7 +39,7 @@ namespace NetworkSocket.Policies
         /// <param name="client">客户端</param>
         /// <param name="builder">数据</param>
         /// <returns></returns>
-        protected override IEnumerable<byte[]> OnReceive(IClient<PolicyPacket> client, ByteBuilder builder)
+        protected override IEnumerable<byte[]> OnReceive(IClient<BinaryPacket> client, ByteBuilder builder)
         {
             if (builder.Length == 0)
             {
@@ -53,7 +53,7 @@ namespace NetworkSocket.Policies
         /// </summary>
         /// <param name="client">客户端</param>
         /// <param name="tRecv">接收到的数据类型</param>
-        protected override void OnRecvComplete(IClient<PolicyPacket> client, byte[] tRecv)
+        protected override void OnRecvComplete(IClient<BinaryPacket> client, byte[] tRecv)
         {
             string xml = "<cross-domain-policy><allow-access-from domain=\"*\" to-ports=\"*\"/></cross-domain-policy>\0";
             // 需要把字符串转为Char[]

@@ -6,9 +6,9 @@ using System.Text;
 namespace NetworkSocket.Policies
 {
     /// <summary>
-    /// Flex或Silverlight安全策协议数据封包
+    /// 二进制数据封包
     /// </summary>
-    public sealed class PolicyPacket : PacketBase
+    public sealed class BinaryPacket : PacketBase
     {
         /// <summary>
         /// 获取或设置二进制数据
@@ -23,15 +23,15 @@ namespace NetworkSocket.Policies
         {
             return this.Bytes;
         }
-     
+
         /// <summary>
         /// 隐式转换
         /// </summary>
         /// <param name="bytes">数据</param>
         /// <returns></returns>
-        public static implicit operator PolicyPacket(byte[] bytes)
+        public static implicit operator BinaryPacket(byte[] bytes)
         {
-            return new PolicyPacket { Bytes = bytes };
+            return new BinaryPacket { Bytes = bytes };
         }
     }
 }
