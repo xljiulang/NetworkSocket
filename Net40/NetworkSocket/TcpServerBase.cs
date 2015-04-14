@@ -16,9 +16,12 @@ namespace NetworkSocket
     /// 提供客户端连接、断开通知功能
     /// 所有Tcp服务端都派生于此类
     /// </summary>
-    /// <typeparam name="T">PacketBase派生类型</typeparam>
+    /// <typeparam name="T">发送数据包协议</typeparam>
+    /// <typeparam name="TRecv">接收到的数据包类型</typeparam>
     [DebuggerDisplay("IsListening = {IsListening}")]
-    public abstract class TcpServerBase<T> : ITcpServer<T> where T : PacketBase
+    public abstract class TcpServerBase<T, TRecv> : ITcpServer<T>
+        where T : PacketBase
+        where TRecv : class
     {
         /// <summary>
         /// 服务socket
@@ -33,7 +36,7 @@ namespace NetworkSocket
         /// <summary>
         /// 客户端连接池
         /// </summary>
-        private SocketClientBag<T> clientBag = new SocketClientBag<T>();
+        private SocketClientBag<T, TRecv> clientBag = new SocketClientBag<T, TRecv>();
 
 
         /// <summary>
@@ -122,8 +125,8 @@ namespace NetworkSocket
             {
                 // 从池中取出SocketAsync
                 var client = this.clientBag.Take();
-                // 绑定处理委托
-                client.SendHandler = (packet) => this.OnSend(client, packet);
+
+                // 绑定处理委托               
                 client.ReceiveHandler = (builder) => this.OnReceive(client, builder);
                 client.RecvCompleteHandler = (packet) => this.OnRecvCompleteHandleWithTask(client, packet);
                 client.DisconnectHandler = () => this.RecyceClient(client);
@@ -151,19 +154,10 @@ namespace NetworkSocket
         /// [注]这里只需处理一个数据包的流程
         /// </summary>
         /// <param name="client">客户端</param>
-        /// <param name="recvBuilder">接收到的历史数据</param>
+        /// <param name="builder">接收到的历史数据</param>
         /// <returns>如果不够一个数据包，则请返回null</returns>
-        protected abstract T OnReceive(IClient<T> client, ByteBuilder recvBuilder);
+        protected abstract TRecv OnReceive(IClient<T> client, ByteBuilder builder);
 
-
-        /// <summary>
-        /// 发送之前触发
-        /// </summary>      
-        /// <param name="client">客户端</param>
-        /// <param name="packet">数据包</param>
-        protected virtual void OnSend(IClient<T> client, T packet)
-        {
-        }
 
         /// <summary>
         /// 使用Task来处理OnRecvComplete业务方法
@@ -171,18 +165,18 @@ namespace NetworkSocket
         /// 例：myLimitedTask.Run(() => this.OnRecvComplete(client, packet));
         /// </summary>
         /// <param name="client">客户端</param>
-        /// <param name="packet">封包</param>
-        protected virtual void OnRecvCompleteHandleWithTask(IClient<T> client, T packet)
+        /// <param name="tRecv">接收到的数据类型</param>
+        protected virtual void OnRecvCompleteHandleWithTask(IClient<T> client, TRecv tRecv)
         {
-            Task.Factory.StartNew(() => this.OnRecvComplete(client, packet));
+            Task.Factory.StartNew(() => this.OnRecvComplete(client, tRecv));
         }
 
         /// <summary>
         /// 当收到到数据包时，将触发此方法
         /// </summary>
         /// <param name="client">客户端</param>
-        /// <param name="packet">数据包</param>
-        protected virtual void OnRecvComplete(IClient<T> client, T packet)
+        /// <param name="tRecv">接收到的数据类型</param>
+        protected virtual void OnRecvComplete(IClient<T> client, TRecv tRecv)
         {
         }
 
@@ -192,7 +186,7 @@ namespace NetworkSocket
         /// 关闭客户端并通知连接断开
         /// </summary>
         /// <param name="client">客户端对象</param>
-        private void RecyceClient(SocketClient<T> client)
+        private void RecyceClient(SocketClient<T, TRecv> client)
         {
             var recyced = this.AliveClients.Remove(client) == false;
             if (recyced == true)

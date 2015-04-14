@@ -58,9 +58,9 @@
     <Compile Include="HandshakeRequest.cs" />
     <Compile Include="Hybi13Packet.cs" />
     <Compile Include="FrameTypes.cs" />
-    <Compile Include="ResponsePacket.cs" />
+    <Compile Include="SendPacket.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RequestPacket.cs" />
+    <Compile Include="RecvPacket.cs" />
     <Compile Include="WebSocketServerBase.cs" />
   </ItemGroup>
   <ItemGroup>

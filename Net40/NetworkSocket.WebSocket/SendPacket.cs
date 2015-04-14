@@ -6,9 +6,9 @@ using System.Text;
 namespace NetworkSocket.WebSocket
 {
     /// <summary>
-    /// 表示回复封包
+    /// 表示要回复客户端的封包
     /// </summary>
-    internal class ResponsePacket : Hybi13Packet
+    public class SendPacket : Hybi13Packet
     {
         /// <summary>
         /// 设置握手数据

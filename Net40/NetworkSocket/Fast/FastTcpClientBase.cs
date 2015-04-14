@@ -13,7 +13,7 @@ namespace NetworkSocket.Fast
     /// <summary>
     /// 快速构建Tcp客户端抽象类
     /// </summary>
-    public abstract class FastTcpClientBase : TcpClientBase<FastPacket>, IFastTcpClient
+    public abstract class FastTcpClientBase : TcpClientBase<FastPacket, FastPacket>, IFastTcpClient
     {
         /// <summary>
         /// 所有服务行为
@@ -70,21 +70,21 @@ namespace NetworkSocket.Fast
         /// 如果得到一个数据包，将触发OnRecvComplete方法
         /// [注]这里只需处理一个数据包的流程
         /// </summary>
-        /// <param name="recvBuilder">接收到的历史数据</param>
+        /// <param name="builder">接收到的历史数据</param>
         /// <returns>如果不够一个数据包，则请返回null</returns>
-        protected override FastPacket OnReceive(ByteBuilder recvBuilder)
+        protected override FastPacket OnReceive(ByteBuilder builder)
         {
-            return FastPacket.From(recvBuilder);
+            return FastPacket.From(builder);
         }
 
         /// <summary>
         /// 当接收到服务发来的数据包时，将触发此方法
         /// </summary>
-        /// <param name="packet">数据包</param>
-        protected override void OnRecvComplete(FastPacket packet)
+        /// <param name="tRecv">接收到的数据类型</param>
+        protected override void OnRecvComplete(FastPacket tRecv)
         {
-            var requestContext = new RequestContext { Client = this, Packet = packet };
-            if (packet.IsException == false)
+            var requestContext = new RequestContext { Client = this, Packet = tRecv };
+            if (tRecv.IsException == false)
             {
                 this.ProcessRequest(requestContext);
             }

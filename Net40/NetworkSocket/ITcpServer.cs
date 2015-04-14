@@ -8,8 +8,8 @@ namespace NetworkSocket
 {
     /// <summary>
     /// Tcp服务接口
-    /// </summary>
-    /// <typeparam name="T">协议类型</typeparam>
+    /// </summary>    
+    /// <typeparam name="T">发送数据包协议</typeparam>
     public interface ITcpServer<T> : IDisposable where T : PacketBase
     {
         /// <summary>

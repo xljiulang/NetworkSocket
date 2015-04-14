@@ -8,16 +8,16 @@ using System.Threading.Tasks;
 namespace NetworkSocket.WebSocket
 {
     /// <summary>
-    /// 表示请求封包
+    /// 表示请求收到的封包
     /// </summary>
-    internal class RequestPacket : Hybi13Packet
+    public class RecvPacket : Hybi13Packet
     {
         /// <summary>
         /// 表示请求封包
         /// </summary>
         /// <param name="frameType">帧类型</param>
         /// <param name="bytes">处理后的二进制数据</param>
-        private RequestPacket(FrameTypes frameType, byte[] bytes)
+        private RecvPacket(FrameTypes frameType, byte[] bytes)
         {
             this.FrameType = frameType;
             this.Bytes = bytes;
@@ -30,7 +30,7 @@ namespace NetworkSocket.WebSocket
         /// <param name="builder">所有收到的数据</param>
         /// <param name="resultBuilder">用于保存数理后的数据</param>
         /// <returns></returns>
-        public unsafe static Hybi13Packet GetPacket(ByteBuilder builder, ByteBuilder resultBuilder)
+        public unsafe static RecvPacket From(ByteBuilder builder, ByteBuilder resultBuilder)
         {
             if (builder.Length < 2)
             {
@@ -97,7 +97,7 @@ namespace NetworkSocket.WebSocket
             if (isFinal == true && frameType != FrameTypes.Continuation)
             {
                 var bytes = resultBuilder.ToArrayThenClear();
-                return new RequestPacket(frameType, bytes);
+                return new RecvPacket(frameType, bytes);
             }
             else
             {

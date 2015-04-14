@@ -362,6 +362,17 @@ namespace NetworkSocket
         /// <summary>
         /// 返回指定长度的数据
         /// </summary>
+        /// <param name="index">索引</param>        
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        /// <returns></returns>
+        public byte[] ToArray(int index)
+        {
+            return this.ToArray(index, this.Length - index);
+        }
+
+        /// <summary>
+        /// 返回指定长度的数据
+        /// </summary>
         /// <param name="index">索引</param>
         /// <param name="length">长度</param>
         /// <exception cref="ArgumentOutOfRangeException"></exception>

@@ -9,15 +9,17 @@ namespace NetworkSocket
     /// Tcp客户端抽象类
     /// 所有Tcp客户端都派生于此类
     /// </summary>
-    /// <typeparam name="T">PacketBase派生类型</typeparam>
-    public abstract class TcpClientBase<T> : SocketClient<T>, ITcpClient<T> where T : PacketBase
+    /// <typeparam name="T">发送数据包协议</typeparam>
+    /// <typeparam name="TRecv">接收到的数据包类型</typeparam>
+    public abstract class TcpClientBase<T, TRecv> : SocketClient<T, TRecv>, ITcpClient<T>
+        where T : PacketBase
+        where TRecv : class
     {
         /// <summary>
         /// Tcp客户端抽象类
         /// </summary>
         public TcpClientBase()
         {
-            base.SendHandler = this.OnSend;
             base.ReceiveHandler = this.OnReceive;
             base.RecvCompleteHandler = this.OnRecvCompleteHandleWithTask;
             base.DisconnectHandler = this.CloseAndRaiseDisconnect;
@@ -104,27 +106,19 @@ namespace NetworkSocket
         /// 如果得到一个数据包，将触发OnRecvComplete方法
         /// [注]这里只需处理一个数据包的流程
         /// </summary>
-        /// <param name="recvBuilder">接收到的历史数据</param>
+        /// <param name="builder">接收到的历史数据</param>
         /// <returns>如果不够一个数据包，则请返回null</returns>
-        protected abstract T OnReceive(ByteBuilder recvBuilder);
-
-        /// <summary>
-        /// 发送之前触发
-        /// </summary>
-        /// <param name="packet">数据包</param>
-        protected virtual void OnSend(T packet)
-        {
-        }
+        protected abstract TRecv OnReceive(ByteBuilder builder);
 
 
         /// <summary>
         /// 使用Task来处理OnRecvComplete业务方法
         /// 重写此方法，使用LimitedTask来代替系统默认的Task可以控制并发数
         /// </summary>       
-        /// <param name="packet">封包</param>
-        protected virtual void OnRecvCompleteHandleWithTask(T packet)
+        /// <param name="tRecv">接收到的数据类型</param>
+        protected virtual void OnRecvCompleteHandleWithTask(TRecv tRecv)
         {
-            Task.Factory.StartNew(() => this.OnRecvComplete(packet));
+            Task.Factory.StartNew(() => this.OnRecvComplete(tRecv));
         }
 
         /// <summary>
@@ -139,8 +133,8 @@ namespace NetworkSocket
         /// <summary>
         /// 当接收到数据包，将触发此方法
         /// </summary>
-        /// <param name="packet">数据包</param>
-        protected virtual void OnRecvComplete(T packet)
+        /// <param name="tRecv">接收到的数据类型</param>
+        protected virtual void OnRecvComplete(TRecv tRecv)
         {
         }
 

@@ -10,7 +10,7 @@ namespace NetworkSocket
     /// <summary>
     /// 定义客户端接口
     /// </summary>
-    /// <typeparam name="T">协议类型</typeparam>
+    /// <typeparam name="T">发送数据包协议</typeparam>
     public interface IClient<T> where T : PacketBase
     {
         /// <summary>
@@ -32,7 +32,7 @@ namespace NetworkSocket
         /// 获取是否已连接到远程端
         /// </summary>
         bool IsConnected { get; }
-        
+
         /// <summary>
         /// 尝试异步发送数据
         /// </summary>

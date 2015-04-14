@@ -11,8 +11,8 @@ namespace NetworkSocket
     /// <summary>
     /// 客户端对象集合 
     /// 线程安全类型
-    /// </summary>
-    /// <typeparam name="T">数据类型</typeparam>
+    /// </summary>   
+    /// <typeparam name="T">发送数据包协议</typeparam>
     [DebuggerDisplay("Count = {Count}")]
     public sealed class ClientCollection<T> : IEnumerable<IClient<T>> where T : PacketBase
     {

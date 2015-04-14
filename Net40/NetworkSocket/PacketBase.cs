@@ -6,8 +6,7 @@ using System.Text;
 namespace NetworkSocket
 {
     /// <summary>
-    /// 通讯协议数据包抽象类
-    /// 要求所有协议实现此类的抽象方法
+    /// 通讯发送的数据包抽象类   
     /// </summary>
     public abstract class PacketBase
     {

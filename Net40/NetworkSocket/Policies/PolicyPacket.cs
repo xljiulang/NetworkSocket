@@ -23,19 +23,14 @@ namespace NetworkSocket.Policies
         {
             return this.Bytes;
         }
-
+     
         /// <summary>
-        /// 解析收到的数据
+        /// 隐式转换
         /// </summary>
-        /// <param name="builder">数据</param>
+        /// <param name="bytes">数据</param>
         /// <returns></returns>
-        public static PolicyPacket From(ByteBuilder builder)
+        public static implicit operator PolicyPacket(byte[] bytes)
         {
-            if (builder.Length == 0)
-            {
-                return null;
-            }
-            var bytes = builder.ToArrayThenClear();
             return new PolicyPacket { Bytes = bytes };
         }
     }

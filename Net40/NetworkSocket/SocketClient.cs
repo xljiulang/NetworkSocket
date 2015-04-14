@@ -14,9 +14,12 @@ namespace NetworkSocket
     /// Socket客户端
     /// 提供异步接收和发送方法
     /// </summary>
-    /// <typeparam name="T">PacketBase派生类型</typeparam>
+    /// <typeparam name="T">发送数据包协议</typeparam>
+    /// <typeparam name="TRecv">接收到的数据包类型</typeparam>
     [DebuggerDisplay("RemoteEndPoint = {RemoteEndPoint}")]
-    public class SocketClient<T> : IClient<T>, IDisposable where T : PacketBase
+    public class SocketClient<T, TRecv> : IClient<T>, IDisposable
+        where T : PacketBase
+        where TRecv : class
     {
         /// <summary>
         /// socket
@@ -44,17 +47,13 @@ namespace NetworkSocket
 
 
         /// <summary>
-        /// 发送数据的委托
-        /// </summary>
-        internal Action<T> SendHandler { get; set; }
-        /// <summary>
         /// 处理和分析收到的数据的委托
         /// </summary>
-        internal Func<ByteBuilder, T> ReceiveHandler { get; set; }
+        internal Func<ByteBuilder, TRecv> ReceiveHandler { get; set; }
         /// <summary>
         /// 接收一个数据包委托
         /// </summary>
-        internal Action<T> RecvCompleteHandler;
+        internal Action<TRecv> RecvCompleteHandler;
         /// <summary>
         /// 连接断开委托   
         /// </summary>
@@ -206,7 +205,7 @@ namespace NetworkSocket
 
             lock (this.recvBuilder.SyncRoot)
             {
-                T packet = null;
+                TRecv packet = null;
                 this.recvBuilder.Add(eventArg.Buffer, eventArg.Offset, eventArg.BytesTransferred);
                 while ((packet = this.ReceiveHandler(this.recvBuilder)) != null)
                 {
@@ -261,8 +260,6 @@ namespace NetworkSocket
             {
                 throw new ArgumentException("packet");
             }
-
-            this.SendHandler(packet);
             this.Send(bytes);
         }
 
