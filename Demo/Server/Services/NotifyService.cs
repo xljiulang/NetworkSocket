@@ -21,9 +21,9 @@ namespace Server.Services
         /// <param name="contents">信息内容</param>
         /// <returns></returns> 
         [Service(Implements.Remote, 200)]
-        public void WarmingClient(IClient<FastPacket> client, string title, string contents)
+        public Task WarmingClient(IClient<FastPacket> client, string title, string contents)
         {
-            this.InvokeRemote(client, 200, title, contents);
+            return this.InvokeRemote(client, 200, title, contents);
         }
 
         /// <summary>

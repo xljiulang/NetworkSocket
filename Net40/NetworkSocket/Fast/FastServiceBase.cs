@@ -121,25 +121,25 @@ namespace NetworkSocket.Fast
         }
 
         /// <summary>
-        /// 将数据发送到远程端        
+        /// 调用客户端实现的服务方法        
         /// </summary>
         /// <param name="client">客户端</param>
-        /// <param name="command">数据包的command值</param>
+        /// <param name="command">服务方法command值</param>
         /// <param name="parameters">参数列表</param>    
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="SocketException"></exception>         
-        protected void InvokeRemote(IClient<FastPacket> client, int command, params object[] parameters)
+        protected Task InvokeRemote(IClient<FastPacket> client, int command, params object[] parameters)
         {
-            this.CurrentContext.FastTcpServer.InvokeRemote(client, command, parameters);
+            return this.CurrentContext.FastTcpServer.InvokeRemote(client, command, parameters);
         }
 
         /// <summary>
-        /// 将数据发送到远程端     
+        /// 调用客户端实现的服务方法     
         /// 并返回结果数据任务
         /// </summary>
         /// <typeparam name="T">返回值类型</typeparam>
         /// <param name="client">客户端</param>
-        /// <param name="command">数据包的命令值</param>
+        /// <param name="command">服务方法command值</param>
         /// <param name="parameters">参数</param>     
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="SocketException"></exception> 

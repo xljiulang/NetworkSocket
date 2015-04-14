@@ -21,7 +21,7 @@ namespace NetworkSocket.Fast
         /// </summary>       
         /// <param name="command">服务行为的command值</param>
         /// <param name="parameters">参数列表</param>  
-        void InvokeRemote(int command, params object[] parameters);
+        Task InvokeRemote(int command, params object[] parameters);
 
         /// <summary>
         /// 调用服务端实现的服务方法    

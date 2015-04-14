@@ -170,12 +170,15 @@ namespace NetworkSocket.Fast
         /// <param name="parameters">参数列表</param>    
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="SocketException"></exception>         
-        void IFastTcpServer.InvokeRemote(IClient<FastPacket> client, int command, params object[] parameters)
+        Task IFastTcpServer.InvokeRemote(IClient<FastPacket> client, int command, params object[] parameters)
         {
-            var hashCode = this.hashCodeProvider.GetHashCode();
-            var packet = new FastPacket(command, hashCode);
-            packet.SetBodyBinary(this.Serializer, parameters);
-            client.Send(packet);
+            return Task.Factory.StartNew(() =>
+            {
+                var hashCode = this.hashCodeProvider.GetHashCode();
+                var packet = new FastPacket(command, hashCode);
+                packet.SetBodyBinary(this.Serializer, parameters);
+                client.Send(packet);
+            });
         }
 
         /// <summary>

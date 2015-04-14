@@ -27,7 +27,7 @@ namespace NetworkSocket.Fast
         /// <param name="client">客户端</param>
         /// <param name="command">数据包的command值</param>
         /// <param name="parameters">参数列表</param>  
-        void InvokeRemote(IClient<FastPacket> client, int command, params object[] parameters);
+        Task InvokeRemote(IClient<FastPacket> client, int command, params object[] parameters);
 
         /// <summary>
         /// 调用客户端实现的服务方法      

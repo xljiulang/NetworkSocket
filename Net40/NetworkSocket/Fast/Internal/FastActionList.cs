@@ -58,30 +58,12 @@ namespace NetworkSocket.Fast
                 throw new ArgumentException(string.Format("服务行为{0}或其命令值已存在", fastAction.Name));
             }
 
-            if (fastAction.Implement == Implements.Remote)
-            {
-                this.CheckRemoteReturnType(fastAction);
-            }
-            else
+            if (fastAction.Implement == Implements.Self)
             {
                 this.CheckSelfParameterType(fastAction);
             }
 
             this.dictionary.Add(fastAction.Command, fastAction);
-        }
-
-        /// <summary>
-        /// 检测返回类型
-        /// </summary>
-        /// <param name="fastAction">服务行为</param>
-        /// <exception cref="ArgumentException"></exception>
-        private void CheckRemoteReturnType(FastAction fastAction)
-        {
-            var isTask = fastAction.ReturnType.IsGenericType && fastAction.ReturnType.GetGenericTypeDefinition() == typeof(Task<>);
-            if ((fastAction.IsVoidReturn || isTask) == false)
-            {
-                throw new ArgumentException(string.Format("服务行为{0}的返回类型必须是Task<T>类型", fastAction.Name));
-            }
         }
 
         /// <summary>
@@ -91,12 +73,9 @@ namespace NetworkSocket.Fast
         /// <exception cref="ArgumentException"></exception>
         private void CheckSelfParameterType(FastAction fastAction)
         {
-            var isTask = fastAction.ReturnType == typeof(Task);
-            var isTaskOfT = fastAction.ReturnType.IsGenericType && fastAction.ReturnType.GetGenericTypeDefinition() == typeof(Task<>);
-
-            if (isTask || isTaskOfT)
+            if (fastAction.ReturnType.IsSerializable == false)
             {
-                throw new ArgumentException(string.Format("服务行为{0}的返回类型只能是数据对象类型", fastAction.Name));
+                throw new ArgumentException(string.Format("服务行为{0}的返回类型必须为可序列化", fastAction.Name));
             }
 
             foreach (var pType in fastAction.ParameterTypes)
@@ -104,6 +83,11 @@ namespace NetworkSocket.Fast
                 if (pType.IsAbstract || pType.IsInterface)
                 {
                     throw new ArgumentException(string.Format("服务行为{0}的参数类型不能包含抽象类或接口", fastAction.Name));
+                }
+
+                if (pType.IsSerializable == false)
+                {
+                    throw new ArgumentException(string.Format("服务行为{0}的参数类型必须为可序列化", fastAction.Name));
                 }
             }
         }

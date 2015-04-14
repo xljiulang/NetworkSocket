@@ -239,11 +239,14 @@ namespace NetworkSocket.Fast
         /// <param name="parameters">参数列表</param>   
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="SocketException"></exception> 
-        public void InvokeRemote(int command, params object[] parameters)
+        public Task InvokeRemote(int command, params object[] parameters)
         {
-            var packet = new FastPacket(command, this.hashCodeProvider.GetHashCode());
-            packet.SetBodyBinary(this.Serializer, parameters);
-            this.Send(packet);
+            return Task.Factory.StartNew(() =>
+            {
+                var packet = new FastPacket(command, this.hashCodeProvider.GetHashCode());
+                packet.SetBodyBinary(this.Serializer, parameters);
+                this.Send(packet);
+            });
         }
 
         /// <summary>
