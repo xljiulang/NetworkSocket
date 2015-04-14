@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NetworkSocket.Fast.Context;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,6 +16,6 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="filterContext">上下文</param>       
         /// <returns></returns>
-        void OnAuthorization(ActionContext filterContext);
+        void OnAuthorization(ServerActionContext filterContext);
     }
 }

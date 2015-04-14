@@ -9,20 +9,20 @@ using System.Text;
 namespace NetworkSocket
 {
     /// <summary>
-    /// SocketAsync集合 
+    /// 客户端对象集合 
     /// 线程安全类型
     /// </summary>
     /// <typeparam name="T">数据类型</typeparam>
     [DebuggerDisplay("Count = {Count}")]
-    public sealed class SocketAsyncCollection<T> : IEnumerable<SocketAsync<T>> where T : PacketBase
+    public sealed class ClientCollection<T> : IEnumerable<IClient<T>> where T : PacketBase
     {
         /// <summary>
         /// 线程安全字典
         /// </summary>
-        private ConcurrentDictionary<int, SocketAsync<T>> dic = new ConcurrentDictionary<int, SocketAsync<T>>();
+        private ConcurrentDictionary<int, IClient<T>> dic = new ConcurrentDictionary<int, IClient<T>>();
 
         /// <summary>
-        /// 获取元素的数量
+        /// 获取客户端对象的数量
         /// </summary>
         public int Count
         {
@@ -33,42 +33,42 @@ namespace NetworkSocket
         }
 
         /// <summary>
-        /// SocketAsync唯一集合
+        /// 客户端对象集合
         /// </summary>
-        internal SocketAsyncCollection()
+        internal ClientCollection()
         {
         }
 
         /// <summary>
-        /// 添加元素
+        /// 客户端对象
         /// 如果已包含此元素则返回false，同时不会增加记录
         /// </summary>
-        /// <param name="socketAsync">元素</param>
+        /// <param name="client">客户端对象</param>
         /// <returns></returns>
-        internal bool Add(SocketAsync<T> socketAsync)
+        internal bool Add(IClient<T> client)
         {
-            if (socketAsync == null)
+            if (client == null)
             {
                 return false;
             }
-            var key = socketAsync.GetHashCode();
-            return dic.TryAdd(key, socketAsync);
+            var key = client.GetHashCode();
+            return dic.TryAdd(key, client);
         }
 
         /// <summary>
-        /// 移除元素
-        /// 如果元素不存在而返回false
+        /// 移除客户端对象
+        /// 如果客户端对象不存在而返回false
         /// </summary>
-        /// <param name="socketAsync">元素</param>
+        /// <param name="client">客户端对象</param>
         /// <returns></returns>
-        internal bool Remove(SocketAsync<T> socketAsync)
+        internal bool Remove(IClient<T> client)
         {
-            if (socketAsync == null)
+            if (client == null)
             {
                 return false;
             }
-            var key = socketAsync.GetHashCode();
-            return this.dic.TryRemove(key, out socketAsync);
+            var key = client.GetHashCode();
+            return this.dic.TryRemove(key, out client);
         }
 
         /// <summary>
@@ -83,7 +83,7 @@ namespace NetworkSocket
         /// 将对象复制到数组中
         /// </summary>
         /// <returns></returns>
-        public SocketAsync<T>[] ToArray()
+        public IClient<T>[] ToArray()
         {
             return this.dic.ToArray().Select(item => item.Value).ToArray();
         }
@@ -92,9 +92,9 @@ namespace NetworkSocket
         /// 将对象复制到列表中
         /// </summary>
         /// <returns></returns>
-        public List<SocketAsync<T>> ToList()
+        public List<IClient<T>> ToList()
         {
-            return new List<SocketAsync<T>>(this.dic.ToArray().Select(item => item.Value));
+            return new List<IClient<T>>(this.dic.ToArray().Select(item => item.Value));
         }
 
         /// <summary>
@@ -102,7 +102,7 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="client">客户端</param>
         /// <returns></returns>
-        public IEnumerable<SocketAsync<T>> Except(SocketAsync<T> client)
+        public IEnumerable<IClient<T>> Except(IClient<T> client)
         {
             return this.Except(new[] { client });
         }
@@ -111,7 +111,7 @@ namespace NetworkSocket
         /// 获取枚举器
         /// </summary>
         /// <returns></returns>
-        public IEnumerator<SocketAsync<T>> GetEnumerator()
+        public IEnumerator<IClient<T>> GetEnumerator()
         {
             var enumerator = this.dic.GetEnumerator();
             while (enumerator.MoveNext())

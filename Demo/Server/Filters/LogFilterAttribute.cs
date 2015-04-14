@@ -1,4 +1,5 @@
 ﻿using NetworkSocket.Fast;
+using NetworkSocket.Fast.Context;
 using Server.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -19,16 +20,16 @@ namespace Server.Filters
         public LogFilterAttribute(string message)
         {
             this.message = message;
-        }
+        }        
 
-        public void OnExecuting(NetworkSocket.Fast.ActionContext actionContext)
+        public void OnExecuting(ServerActionContext filterContext)
         {
-            var log = string.Format("Time:{0} Client:{1} Action:{2} Message:{3}", DateTime.Now.ToString("mm:ss"), actionContext.Client, actionContext.Action, this.message);
+            var log = string.Format("Time:{0} Client:{1} Action:{2} Message:{3}", DateTime.Now.ToString("mm:ss"), filterContext.Client, filterContext.Action, this.message);
             this.Loger.Write(log);
         }
 
-        public void OnExecuted(NetworkSocket.Fast.ActionContext actionContext)
-        {
+        public void OnExecuted(ServerActionContext filterContext)
+        {           
         }
     }
 }

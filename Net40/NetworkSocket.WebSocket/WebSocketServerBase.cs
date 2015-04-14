@@ -23,7 +23,7 @@ namespace NetworkSocket.WebSocket
         /// <param name="client">客户端</param>
         /// <param name="recvBuilder">接收到的历史数据</param>
         /// <returns>如果不够一个数据包，则请返回null</returns>
-        protected override Hybi13Packet OnReceive(SocketAsync<Hybi13Packet> client, ByteBuilder recvBuilder)
+        protected override Hybi13Packet OnReceive(IClient<Hybi13Packet> client, ByteBuilder recvBuilder)
         {
             if (client.IsConnected == false)
             {
@@ -63,7 +63,7 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="client">客户端</param>
         /// <param name="packet">数据包</param>
-        protected override void OnRecvComplete(SocketAsync<Hybi13Packet> client, Hybi13Packet packet)
+        protected override void OnRecvComplete(IClient<Hybi13Packet> client, Hybi13Packet packet)
         {
             switch (packet.FrameType)
             {
@@ -78,7 +78,7 @@ namespace NetworkSocket.WebSocket
                         }
                     }
                     this.OnClose(client, reason);
-                    this.CloseClient(client);
+                    client.Close();
                     break;
 
                 case FrameTypes.Binary:
@@ -110,13 +110,12 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="client">客户端</param>
         /// <param name="reason">关闭原因</param>
-        public void CloseClient(SocketAsync<Hybi13Packet> client, CloseStatus reason)
+        public void CloseClient(IClient<Hybi13Packet> client, CloseStatus reason)
         {
             var reasonByes = ByteConverter.ToBytes((ushort)(reason), Endians.Big);
             this.Send(client, FrameTypes.Close, reasonByes);
-            this.CloseClient(client);
+            client.Close();
         }
-
 
         /// <summary>
         /// 当收到握手请求时，将触发此方法
@@ -126,7 +125,7 @@ namespace NetworkSocket.WebSocket
         /// <param name="client">客户端</param>
         /// <param name="request">握手请求</param>
         /// <returns></returns>
-        protected virtual bool CheckHandshake(SocketAsync<Hybi13Packet> client, HandshakeRequest request)
+        protected virtual bool CheckHandshake(IClient<Hybi13Packet> client, HandshakeRequest request)
         {
             return true;
         }
@@ -137,14 +136,14 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="client">客户端</param>
         /// <param name="text">文本内容</param>
-        protected abstract void OnText(SocketAsync<Hybi13Packet> client, string text);
+        protected abstract void OnText(IClient<Hybi13Packet> client, string text);
 
         /// <summary>
         /// 收到二进制请求时触发此方法
         /// </summary>
         /// <param name="client">客户端</param>
         /// <param name="bytes">二进制内容</param>
-        protected abstract void OnBinary(SocketAsync<Hybi13Packet> client, byte[] bytes);
+        protected abstract void OnBinary(IClient<Hybi13Packet> client, byte[] bytes);
 
         /// <summary>
         /// 收到Ping请求时触发此方法
@@ -152,7 +151,7 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="client">客户端</param>
         /// <param name="bytes">二进制内容</param>
-        protected virtual void OnPing(SocketAsync<Hybi13Packet> client, byte[] bytes)
+        protected virtual void OnPing(IClient<Hybi13Packet> client, byte[] bytes)
         {
         }
 
@@ -161,7 +160,7 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="client">客户端</param>
         /// <param name="bytes">二进制内容</param>
-        protected virtual void OnPong(SocketAsync<Hybi13Packet> client, byte[] bytes)
+        protected virtual void OnPong(IClient<Hybi13Packet> client, byte[] bytes)
         {
         }
 
@@ -171,7 +170,7 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="client">客户端</param>
         /// <param name="reason">关闭原因</param>
-        protected virtual void OnClose(SocketAsync<Hybi13Packet> client, CloseStatus reason)
+        protected virtual void OnClose(IClient<Hybi13Packet> client, CloseStatus reason)
         {
         }
 
@@ -180,7 +179,7 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="client">客户端</param>
         /// <param name="text">文本内容</param>
-        protected void SendText(SocketAsync<Hybi13Packet> client, string text)
+        protected void SendText(IClient<Hybi13Packet> client, string text)
         {
             var bytes = Encoding.UTF8.GetBytes(text);
             this.Send(client, FrameTypes.Text, bytes);
@@ -191,7 +190,7 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="client">客户端</param>
         /// <param name="bytes">二进制内容</param>
-        protected void SendBinary(SocketAsync<Hybi13Packet> client, byte[] bytes)
+        protected void SendBinary(IClient<Hybi13Packet> client, byte[] bytes)
         {
             this.Send(client, FrameTypes.Binary, bytes);
         }
@@ -201,7 +200,7 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="client">客户端</param>
         /// <param name="bytes">内容</param>
-        protected void SendPing(SocketAsync<Hybi13Packet> client, byte[] bytes)
+        protected void SendPing(IClient<Hybi13Packet> client, byte[] bytes)
         {
             this.Send(client, FrameTypes.Ping, bytes);
         }
@@ -212,7 +211,7 @@ namespace NetworkSocket.WebSocket
         /// <param name="client">客户端</param>
         /// <param name="frameType">帧类型</param>
         /// <param name="bytes">内容</param>
-        private void Send(SocketAsync<Hybi13Packet> client, FrameTypes frameType, byte[] bytes)
+        private void Send(IClient<Hybi13Packet> client, FrameTypes frameType, byte[] bytes)
         {
             var packet = new ResponsePacket();
             packet.SetBody(frameType, bytes);

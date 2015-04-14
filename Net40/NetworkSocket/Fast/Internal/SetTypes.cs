@@ -11,18 +11,23 @@ namespace NetworkSocket.Fast
     internal enum SetTypes
     {
         /// <summary>
-        /// 设置结果
+        /// 设置远程返回结果
         /// </summary>
-        SetReult,
+        SetReturnReult,
 
         /// <summary>
-        /// 设置异常
+        /// 设置远程返回的异常
         /// </summary>
-        SetException,
+        SetReturnException,
 
         /// <summary>
-        /// 设置超时
+        /// 设置超时引起异常
         /// </summary>
-        SetTimeout
+        SetTimeoutException,
+
+        /// <summary>
+        /// 设置远程端关闭连接异常
+        /// </summary>
+        SetShutdownException,
     }
 }

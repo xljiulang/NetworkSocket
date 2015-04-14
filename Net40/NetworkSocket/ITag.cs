@@ -22,7 +22,7 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="key">键(不区分大小写)</param>
         /// <returns></returns>
-        bool Exist(string key);
+        bool IsExist(string key);
 
         /// <summary>
         /// 尝试获取值
@@ -49,5 +49,18 @@ namespace NetworkSocket
         /// <param name="defaultValue">获取失败返回的默认值</param>
         /// <returns></returns>
         T TryGet<T>(string key, T defaultValue);
+
+
+        /// <summary>
+        /// 删除用户数据
+        /// </summary>
+        /// <param name="key">键(不区分大小写)</param>
+        void Remove(string key);
+
+
+        /// <summary>
+        /// 清除所有用户数据
+        /// </summary>
+        void Clear();
     }
 }

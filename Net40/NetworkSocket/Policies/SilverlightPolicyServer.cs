@@ -39,7 +39,7 @@ namespace NetworkSocket.Policies
         /// <param name="client">客户端</param>
         /// <param name="recvBuilder">数据</param>
         /// <returns></returns>
-        protected override PolicyPacket OnReceive(SocketAsync<PolicyPacket> client, ByteBuilder recvBuilder)
+        protected override PolicyPacket OnReceive(IClient<PolicyPacket> client, ByteBuilder recvBuilder)
         {
             return PolicyPacket.From(recvBuilder);
         }
@@ -49,7 +49,7 @@ namespace NetworkSocket.Policies
         /// </summary>
         /// <param name="client">客户端</param>
         /// <param name="packet">请求的数据包</param>
-        protected override void OnRecvComplete(SocketAsync<PolicyPacket> client, PolicyPacket packet)
+        protected override void OnRecvComplete(IClient<PolicyPacket> client, PolicyPacket packet)
         {
             var xml = new StringBuilder();
             xml.AppendLine("<?xml version=\"1.0\" encoding=\"utf-8\" ?>");
@@ -69,7 +69,7 @@ namespace NetworkSocket.Policies
             packet.Bytes = Encoding.UTF8.GetBytes(xml.ToString());
             client.TrySend(packet);
             // 一定要关闭才生效
-            this.CloseClient(client);
+            client.Close();
         }
     }
 }

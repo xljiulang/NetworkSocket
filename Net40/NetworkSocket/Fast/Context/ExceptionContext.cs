@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-namespace NetworkSocket.Fast
+namespace NetworkSocket.Fast.Context
 {
     /// <summary>
     /// 异常上下文

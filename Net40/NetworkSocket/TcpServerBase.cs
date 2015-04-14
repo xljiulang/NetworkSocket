@@ -33,13 +33,13 @@ namespace NetworkSocket
         /// <summary>
         /// 客户端连接池
         /// </summary>
-        private SocketAsyncBag<T> clientBag = new SocketAsyncBag<T>();
+        private SocketClientBag<T> clientBag = new SocketClientBag<T>();
 
 
         /// <summary>
         /// 获取所有连接的客户端对象   
         /// </summary>
-        public SocketAsyncCollection<T> AliveClients { get; private set; }
+        public ClientCollection<T> AliveClients { get; private set; }
 
         /// <summary>
         /// 获取所监听的本地IP和端口
@@ -57,7 +57,7 @@ namespace NetworkSocket
         /// </summary> 
         public TcpServerBase()
         {
-            this.AliveClients = new SocketAsyncCollection<T>();
+            this.AliveClients = new ClientCollection<T>();
         }
 
         /// <summary>
@@ -126,10 +126,10 @@ namespace NetworkSocket
                 client.SendHandler = (packet) => this.OnSend(client, packet);
                 client.ReceiveHandler = (builder) => this.OnReceive(client, builder);
                 client.RecvCompleteHandler = (packet) => this.OnRecvCompleteHandleWithTask(client, packet);
-                client.DisconnectHandler = () => this.OnClientDisconnect(client);
+                client.DisconnectHandler = () => this.RecyceClient(client);
 
                 // SocketAsync与socket绑定    
-                client.BindSocket(arg.AcceptSocket);
+                client.Bind(arg.AcceptSocket);
                 // 添加到活动列表
                 this.AliveClients.Add(client);
                 // 通知已连接
@@ -153,7 +153,7 @@ namespace NetworkSocket
         /// <param name="client">客户端</param>
         /// <param name="recvBuilder">接收到的历史数据</param>
         /// <returns>如果不够一个数据包，则请返回null</returns>
-        protected abstract T OnReceive(SocketAsync<T> client, ByteBuilder recvBuilder);
+        protected abstract T OnReceive(IClient<T> client, ByteBuilder recvBuilder);
 
 
         /// <summary>
@@ -161,7 +161,7 @@ namespace NetworkSocket
         /// </summary>      
         /// <param name="client">客户端</param>
         /// <param name="packet">数据包</param>
-        protected virtual void OnSend(SocketAsync<T> client, T packet)
+        protected virtual void OnSend(IClient<T> client, T packet)
         {
         }
 
@@ -172,7 +172,7 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="client">客户端</param>
         /// <param name="packet">封包</param>
-        protected virtual void OnRecvCompleteHandleWithTask(SocketAsync<T> client, T packet)
+        protected virtual void OnRecvCompleteHandleWithTask(IClient<T> client, T packet)
         {
             Task.Factory.StartNew(() => this.OnRecvComplete(client, packet));
         }
@@ -182,24 +182,35 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="client">客户端</param>
         /// <param name="packet">数据包</param>
-        protected virtual void OnRecvComplete(SocketAsync<T> client, T packet)
+        protected virtual void OnRecvComplete(IClient<T> client, T packet)
         {
         }
 
+
         /// <summary>
-        /// 客户端socket关闭
+        /// 回收复用客户端对象
+        /// 关闭客户端并通知连接断开
         /// </summary>
-        /// <param name="client">客户端</param>     
-        private void OnClientDisconnect(SocketAsync<T> client)
+        /// <param name="client">客户端对象</param>
+        private void RecyceClient(SocketClient<T> client)
         {
-            this.CloseClient(client);
+            var recyced = this.AliveClients.Remove(client) == false;
+            if (recyced == true)
+            {
+                return;
+            }
+
+            this.OnDisconnect(client);
+            client.Close();
+            client.TagData.Clear();
+            this.clientBag.Add(client);
         }
 
         /// <summary>
         /// 当客户端断开连接时，将触发此方法
         /// </summary>
         /// <param name="client">客户端</param>     
-        protected virtual void OnDisconnect(SocketAsync<T> client)
+        protected virtual void OnDisconnect(IClient<T> client)
         {
         }
 
@@ -207,29 +218,9 @@ namespace NetworkSocket
         /// 当客户端连接时，将触发此方法
         /// </summary>
         /// <param name="client">客户端</param>
-        protected virtual void OnConnect(SocketAsync<T> client)
+        protected virtual void OnConnect(IClient<T> client)
         {
         }
-
-
-        /// <summary>
-        /// 关闭并复用客户端对象
-        /// </summary>
-        /// <param name="client">客户端对象</param>
-        public bool CloseClient(SocketAsync<T> client)
-        {
-            if (client.IsBounded == false)
-            {
-                return false;
-            }
-
-            this.AliveClients.Remove(client);
-            this.OnDisconnect(client);
-            client.UnBindSocket();
-            this.clientBag.Add(client);
-            return true;
-        }
-
         #region IDisposable
         /// <summary>
         /// 获取对象是否已释放

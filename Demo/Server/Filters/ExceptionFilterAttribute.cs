@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using NetworkSocket.Fast;
+using NetworkSocket.Fast.Context;
 
 namespace Server.Filters
 {
@@ -11,7 +12,7 @@ namespace Server.Filters
     /// </summary>
     public class ExceptionFilterAttribute : FilterAttribute, IExceptionFilter
     {
-        public void OnException(ExceptionContext filterContext)
+        public void OnException(ServerExceptionContext filterContext)
         {
             if (filterContext.Exception is ActionException)
             {

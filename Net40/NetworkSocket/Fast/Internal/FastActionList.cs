@@ -10,7 +10,7 @@ namespace NetworkSocket.Fast
     /// <summary>
     /// 表示服务行为列表
     /// </summary>
-    internal class FastActionList : IEnumerable<FastAction>
+    internal class FastActionList
     {
         /// <summary>
         /// 服务行为字典
@@ -91,6 +91,14 @@ namespace NetworkSocket.Fast
         /// <exception cref="ArgumentException"></exception>
         private void CheckSelfParameterType(FastAction fastAction)
         {
+            var isTask = fastAction.ReturnType == typeof(Task);
+            var isTaskOfT = fastAction.ReturnType.IsGenericType && fastAction.ReturnType.GetGenericTypeDefinition() == typeof(Task<>);
+
+            if (isTask || isTaskOfT)
+            {
+                throw new ArgumentException(string.Format("服务行为{0}的返回类型只能是数据对象类型", fastAction.Name));
+            }
+
             foreach (var pType in fastAction.ParameterTypes)
             {
                 if (pType.IsAbstract || pType.IsInterface)
@@ -139,17 +147,5 @@ namespace NetworkSocket.Fast
         {
             return this.dictionary.ContainsKey(command);
         }
-
-        #region IEnumerable
-        public IEnumerator<FastAction> GetEnumerator()
-        {
-            return this.dictionary.Values.GetEnumerator();
-        }
-
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-        {
-            return this.GetEnumerator();
-        }
-        #endregion
     }
 }

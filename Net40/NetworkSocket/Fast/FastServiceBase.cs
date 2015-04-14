@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using NetworkSocket.Fast.Context;
 
 namespace NetworkSocket.Fast
 {
@@ -14,36 +15,15 @@ namespace NetworkSocket.Fast
     public abstract class FastServiceBase : IFastService, IAuthorizationFilter, IActionFilter, IExceptionFilter
     {
         /// <summary>
-        /// 线程唯一FastTcpServerBase实例
-        /// </summary>
-        [ThreadStatic]
-        private static FastTcpServerBase fastTcpServer;
-
-        /// <summary>
         /// 线程唯一上下文
         /// </summary>
         [ThreadStatic]
-        private static ActionContext currentContext;
-
-        /// <summary>
-        /// 获取关联的FastTcpServer
-        /// </summary>
-        protected FastTcpServerBase FastTcpServer
-        {
-            get
-            {
-                return fastTcpServer;
-            }
-            private set
-            {
-                fastTcpServer = value;
-            }
-        }
+        private static ServerActionContext currentContext;
 
         /// <summary>
         /// 获取当前服务行为上下文
         /// </summary>
-        protected ActionContext CurrentContext
+        protected ServerActionContext CurrentContext
         {
             get
             {
@@ -64,18 +44,16 @@ namespace NetworkSocket.Fast
         /// <returns></returns>
         public T GetService<T>() where T : IFastService
         {
-            return this.FastTcpServer.GetService<T>();
+            return (T)DependencyResolver.Current.GetService(typeof(T));
         }
 
         /// <summary>
         /// 执行服务行为
-        /// </summary>       
-        /// <param name="fastTcpServer">FastTcpServerBase实例</param>
+        /// </summary>   
         /// <param name="actionContext">上下文</param>      
-        void IFastService.Execute(FastTcpServerBase fastTcpServer, ActionContext actionContext)
+        void IFastService.Execute(ServerActionContext actionContext)
         {
-            this.FastTcpServer = fastTcpServer;
-            var filters = this.FastTcpServer.FilterAttributeProvider.GetActionFilters(actionContext.Action);
+            var filters = actionContext.FastTcpServer.FilterAttributeProvider.GetActionFilters(actionContext.Action);
 
             try
             {
@@ -95,7 +73,6 @@ namespace NetworkSocket.Fast
             }
             finally
             {
-                this.FastTcpServer = null;
                 this.CurrentContext = null;
             }
         }
@@ -106,10 +83,10 @@ namespace NetworkSocket.Fast
         /// <param name="actionContext">上下文</param>
         /// <param name="actionfilters">过滤器</param>
         /// <param name="exception">异常项</param>
-        private void ProcessExecutingException(ActionContext actionContext, IEnumerable<IFilter> actionfilters, Exception exception)
+        private void ProcessExecutingException(ServerActionContext actionContext, IEnumerable<IFilter> actionfilters, Exception exception)
         {
-            var exceptionContext = new ExceptionContext(actionContext, new ActionException(actionContext, exception));
-            FastTcpCommon.SetRemoteException(this.FastTcpServer.Serializer, exceptionContext);
+            var exceptionContext = new ServerExceptionContext(actionContext, new ActionException(actionContext, exception));
+            FastTcpCommon.SetRemoteException(actionContext.FastTcpServer.Serializer, exceptionContext);
             this.ExecExceptionFilters(actionfilters, exceptionContext);
 
             if (exceptionContext.ExceptionHandled == false)
@@ -124,12 +101,12 @@ namespace NetworkSocket.Fast
         /// </summary>       
         /// <param name="actionContext">上下文</param>       
         /// <param name="filters">过滤器</param>
-        private void ExecuteAction(ActionContext actionContext, IEnumerable<IFilter> filters)
+        private void ExecuteAction(ServerActionContext actionContext, IEnumerable<IFilter> filters)
         {
             // 执行Filter
             this.ExecFiltersBeforeAction(filters, actionContext);
 
-            var parameters = FastTcpCommon.GetFastActionParameters(this.FastTcpServer.Serializer, actionContext);
+            var parameters = FastTcpCommon.GetFastActionParameters(actionContext.FastTcpServer.Serializer, actionContext);
             var returnValue = actionContext.Action.Execute(this, parameters);
 
             // 执行Filter
@@ -138,7 +115,7 @@ namespace NetworkSocket.Fast
             // 返回数据
             if (actionContext.Action.IsVoidReturn == false && actionContext.Client.IsConnected)
             {
-                actionContext.Packet.SetBodyBinary(this.FastTcpServer.Serializer, returnValue);
+                actionContext.Packet.SetBodyBinary(actionContext.FastTcpServer.Serializer, returnValue);
                 actionContext.Client.Send(actionContext.Packet);
             }
         }
@@ -151,9 +128,9 @@ namespace NetworkSocket.Fast
         /// <param name="parameters">参数列表</param>    
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="SocketException"></exception>         
-        protected void InvokeRemote(SocketAsync<FastPacket> client, int command, params object[] parameters)
+        protected void InvokeRemote(IClient<FastPacket> client, int command, params object[] parameters)
         {
-            this.FastTcpServer.InvokeRemote(client, command, parameters);
+            this.CurrentContext.FastTcpServer.InvokeRemote(client, command, parameters);
         }
 
         /// <summary>
@@ -169,9 +146,9 @@ namespace NetworkSocket.Fast
         /// <exception cref="RemoteException"></exception>
         /// <exception cref="TimeoutException"></exception>
         /// <returns>远程数据任务</returns>  
-        protected Task<T> InvokeRemote<T>(SocketAsync<FastPacket> client, int command, params object[] parameters)
+        protected Task<T> InvokeRemote<T>(IClient<FastPacket> client, int command, params object[] parameters)
         {
-            return this.FastTcpServer.InvokeRemote<T>(client, command, parameters);
+            return this.CurrentContext.FastTcpServer.InvokeRemote<T>(client, command, parameters);
         }
 
 
@@ -181,7 +158,7 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="filterContext">上下文</param>       
         /// <returns></returns>
-        protected virtual void OnAuthorization(ActionContext filterContext)
+        protected virtual void OnAuthorization(ServerActionContext filterContext)
         {
         }
 
@@ -190,7 +167,7 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="filterContext">上下文</param>       
         /// <returns></returns>
-        protected virtual void OnExecuting(ActionContext filterContext)
+        protected virtual void OnExecuting(ServerActionContext filterContext)
         {
         }
 
@@ -198,7 +175,7 @@ namespace NetworkSocket.Fast
         /// 在执行服务行为后触发
         /// </summary>
         /// <param name="filterContext">上下文</param>      
-        protected virtual void OnExecuted(ActionContext filterContext)
+        protected virtual void OnExecuted(ServerActionContext filterContext)
         {
         }
 
@@ -206,7 +183,7 @@ namespace NetworkSocket.Fast
         /// 异常触发
         /// </summary>
         /// <param name="filterContext">上下文</param>
-        protected virtual void OnException(ExceptionContext filterContext)
+        protected virtual void OnException(ServerExceptionContext filterContext)
         {
         }
         #endregion
@@ -217,7 +194,7 @@ namespace NetworkSocket.Fast
         /// </summary>       
         /// <param name="actionFilters">服务行为过滤器</param>
         /// <param name="actionContext">上下文</param>   
-        private void ExecFiltersBeforeAction(IEnumerable<IFilter> actionFilters, ActionContext actionContext)
+        private void ExecFiltersBeforeAction(IEnumerable<IFilter> actionFilters, ServerActionContext actionContext)
         {
             // OnAuthorization
             foreach (var globalFilter in GlobalFilters.AuthorizationFilters)
@@ -257,7 +234,7 @@ namespace NetworkSocket.Fast
         /// </summary>       
         /// <param name="actionFilters">服务行为过滤器</param>
         /// <param name="actionContext">上下文</param>       
-        private void ExecFiltersAfterAction(IEnumerable<IFilter> actionFilters, ActionContext actionContext)
+        private void ExecFiltersAfterAction(IEnumerable<IFilter> actionFilters, ServerActionContext actionContext)
         {
             // 全局过滤器
             foreach (var globalFilter in GlobalFilters.ActionFilters)
@@ -284,7 +261,7 @@ namespace NetworkSocket.Fast
         /// </summary>       
         /// <param name="actionFilters">服务行为过滤器</param>
         /// <param name="exceptionContext">上下文</param>       
-        private void ExecExceptionFilters(IEnumerable<IFilter> actionFilters, ExceptionContext exceptionContext)
+        private void ExecExceptionFilters(IEnumerable<IFilter> actionFilters, ServerExceptionContext exceptionContext)
         {
             foreach (var filter in GlobalFilters.ExceptionFilters)
             {
@@ -338,7 +315,7 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="filterContext">上下文</param>       
         /// <returns></returns>
-        void IAuthorizationFilter.OnAuthorization(ActionContext filterContext)
+        void IAuthorizationFilter.OnAuthorization(ServerActionContext filterContext)
         {
             this.OnAuthorization(filterContext);
         }
@@ -348,7 +325,7 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="filterContext">上下文</param>       
         /// <returns></returns>
-        void IActionFilter.OnExecuting(ActionContext filterContext)
+        void IActionFilter.OnExecuting(ServerActionContext filterContext)
         {
             this.OnExecuting(filterContext);
         }
@@ -357,7 +334,7 @@ namespace NetworkSocket.Fast
         /// 在执行服务行为后触发
         /// </summary>
         /// <param name="filterContext">上下文</param>   
-        void IActionFilter.OnExecuted(ActionContext filterContext)
+        void IActionFilter.OnExecuted(ServerActionContext filterContext)
         {
             this.OnExecuted(filterContext);
         }
@@ -366,7 +343,7 @@ namespace NetworkSocket.Fast
         /// 异常触发
         /// </summary>
         /// <param name="filterContext">上下文</param>  
-        void IExceptionFilter.OnException(ExceptionContext filterContext)
+        void IExceptionFilter.OnException(ServerExceptionContext filterContext)
         {
             this.OnException(filterContext);
         }

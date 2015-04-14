@@ -39,7 +39,7 @@ namespace NetworkSocket.Policies
         /// <param name="client">客户端</param>
         /// <param name="recvBuilder">数据</param>
         /// <returns></returns>
-        protected override PolicyPacket OnReceive(SocketAsync<PolicyPacket> client, ByteBuilder recvBuilder)
+        protected override PolicyPacket OnReceive(IClient<PolicyPacket> client, ByteBuilder recvBuilder)
         {
             return PolicyPacket.From(recvBuilder);
         }
@@ -49,8 +49,8 @@ namespace NetworkSocket.Policies
         /// </summary>
         /// <param name="client">客户端</param>
         /// <param name="packet">请求的数据包</param>
-        protected override void OnRecvComplete(SocketAsync<PolicyPacket> client, PolicyPacket packet)
-        {
+        protected override void OnRecvComplete(IClient<PolicyPacket> client, PolicyPacket packet)
+        {            
             string xml = "<cross-domain-policy><allow-access-from domain=\"*\" to-ports=\"*\"/></cross-domain-policy>\0";
             // 需要把字符串转为Char[]
             packet.Bytes = Encoding.UTF8.GetBytes(xml.ToCharArray());

@@ -41,7 +41,7 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="key">键(不区分大小写)</param>
         /// <returns></returns>
-        public bool Exist(string key)
+        public bool IsExist(string key)
         {
             return this.dic.ContainsKey(key);
         }
@@ -91,6 +91,26 @@ namespace NetworkSocket
                 return (T)value;
             }
             return defaultValue;
+        }
+
+        /// <summary>
+        /// 删除用户数据
+        /// </summary>
+        /// <param name="key">键(不区分大小写)</param>
+        public void Remove(string key)
+        {
+            if (this.IsExist(key))
+            {
+                this.dic.Remove(key);
+            }
+        }
+
+        /// <summary>
+        /// 清除所有用户数据
+        /// </summary>
+        public void Clear()
+        {
+            this.dic.Clear();
         }
     }
 }

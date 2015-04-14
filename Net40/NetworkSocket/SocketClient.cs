@@ -11,12 +11,12 @@ using System.Diagnostics;
 namespace NetworkSocket
 {
     /// <summary>
-    /// Socket上下文对象
+    /// Socket客户端
     /// 提供异步接收和发送方法
     /// </summary>
     /// <typeparam name="T">PacketBase派生类型</typeparam>
     [DebuggerDisplay("RemoteEndPoint = {RemoteEndPoint}")]
-    public class SocketAsync<T> : IDisposable, ISocketAsync<T> where T : PacketBase
+    public class SocketClient<T> : IClient<T>, IDisposable where T : PacketBase
     {
         /// <summary>
         /// socket
@@ -24,14 +24,14 @@ namespace NetworkSocket
         private volatile Socket socket;
 
         /// <summary>
-        /// 是否已绑定socket
-        /// </summary>
-        private volatile bool bounded = false;
-
-        /// <summary>
         /// socket同步锁
         /// </summary>
         private object socketRoot = new object();
+
+        /// <summary>
+        /// 是否已关闭
+        /// </summary>
+        private bool closed = true;
 
         /// <summary>
         /// 接收到的未处理数据
@@ -42,20 +42,6 @@ namespace NetworkSocket
         /// </summary>
         private SocketAsyncEventArgs recvArg = new SocketAsyncEventArgs();
 
-        /// <summary>
-        /// 获取是否已绑定socket
-        /// </summary>
-        internal bool IsBounded
-        {
-            get
-            {
-                return this.bounded;
-            }
-            private set
-            {
-                this.bounded = value;
-            }
-        }
 
         /// <summary>
         /// 发送数据的委托
@@ -74,23 +60,12 @@ namespace NetworkSocket
         /// </summary>
         internal Action DisconnectHandler;
 
+
+
         /// <summary>
         /// 获取远程终结点
         /// </summary>
-        public IPEndPoint RemoteEndPoint
-        {
-            get
-            {
-                lock (this.socketRoot)
-                {
-                    if (this.socket == null)
-                    {
-                        return null;
-                    }
-                    return (IPEndPoint)this.socket.RemoteEndPoint;
-                }
-            }
-        }
+        public IPEndPoint RemoteEndPoint { get; private set; }
 
         /// <summary>
         /// 获取用户附加数据
@@ -120,28 +95,57 @@ namespace NetworkSocket
         }
 
         /// <summary>
-        /// 异步Socket
+        /// Socket客户端
         /// </summary>  
-        internal SocketAsync()
+        public SocketClient()
         {
-            RecvArgBuffer.SetBuffer(this.recvArg);
             this.recvArg.Completed += new EventHandler<SocketAsyncEventArgs>(this.RecvCompleted);
             this.TagData = new TagData();
             this.TagBag = new TagBag((TagData)this.TagData);
+
+            RecvArgBuffer.SetBuffer(this.recvArg);
         }
 
         /// <summary>
-        /// 将Socket对象与此对象绑定
+        /// 绑定一个Socket对象
         /// </summary>
         /// <param name="socket">套接字</param>
-        internal void BindSocket(Socket socket)
+        internal void Bind(Socket socket)
         {
             this.socket = socket;
             this.recvArg.SocketError = SocketError.Success;
             this.recvBuilder.Clear();
+            this.TagData.Clear();
+            this.RemoteEndPoint = (IPEndPoint)socket.RemoteEndPoint;
             this.SetKeepAlive(socket);
-            this.IsBounded = true;
+            this.closed = false;
         }
+
+        /// <summary>
+        /// 断开和远程端的连接             
+        /// </summary>
+        /// <returns></returns>
+        public void Close()
+        {
+            lock (this.socketRoot)
+            {
+                if (this.closed == true)
+                {
+                    return;
+                }
+
+                try
+                {
+                    this.socket.Shutdown(SocketShutdown.Both);
+                    this.socket.Dispose();
+                }
+                finally
+                {
+                    this.closed = true;
+                }
+            }
+        }
+
 
         /// <summary>
         /// 设置客户端的心跳包
@@ -186,30 +190,6 @@ namespace NetworkSocket
                 }
             }
         }
-
-        /// <summary>
-        /// 解除绑定Socket             
-        /// </summary>
-        /// <returns></returns>
-        internal void UnBindSocket()
-        {
-            if (this.IsBounded == false)
-            {
-                return;
-            }
-
-            try
-            {
-                this.socket.Shutdown(SocketShutdown.Both);
-                this.socket.Dispose();
-            }
-            finally
-            {
-                this.IsBounded = false;
-                this.socket = null;
-            }
-        }
-
 
         /// <summary>
         /// 接收到数据事件
@@ -324,7 +304,7 @@ namespace NetworkSocket
         /// <summary>
         /// 关闭和释放所有相关资源
         /// </summary>
-        void IDisposable.Dispose()
+        public void Dispose()
         {
             if (this.IsDisposed == false)
             {
@@ -337,7 +317,7 @@ namespace NetworkSocket
         /// <summary>
         /// 析构函数
         /// </summary>
-        ~SocketAsync()
+        ~SocketClient()
         {
             this.Dispose(false);
         }
@@ -348,13 +328,14 @@ namespace NetworkSocket
         /// <param name="disposing">是否也释放托管资源</param>
         protected virtual void Dispose(bool disposing)
         {
-            this.UnBindSocket();
+            this.Close();
             this.recvArg.Dispose();
 
             if (disposing)
             {
                 this.recvBuilder = null;
                 this.recvArg = null;
+                this.socket = null;
                 this.socketRoot = null;
 
                 this.TagBag = null;

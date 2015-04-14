@@ -64,10 +64,10 @@ namespace ClientApp
             return list.OrderBy(item => item).ToList();
         }
 
-
+        // 循环重连
         protected override void OnDisconnect()
         {
-            MessageBox.Show("您与服务器连接断开了，\r\n系统将自动尝试每秒重连一次", "系统提示");
+            base.OnDisconnect();
             this.ReConnect().ContinueWith(t => this.TryReConnect(t.Result));
         }
 

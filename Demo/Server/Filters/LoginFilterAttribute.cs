@@ -13,11 +13,15 @@ namespace Server.Filters
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
     public class LoginFilterAttribute : FilterAttribute, IAuthorizationFilter
     {
-        public void OnAuthorization(NetworkSocket.Fast.ActionContext actionContext)
+        public void OnAuthorization(NetworkSocket.Fast.Context.ServerActionContext filterContext)
         {
-            var valid = actionContext.Client.TagData.TryGet<bool>("Logined");
+            var valid = filterContext.Client.TagData.TryGet<bool>("Logined");
             if (valid == false)
             {
+                // 直接关闭客户端的连接
+                // filterContext.Client.Close();
+
+                // 以异常方式提示客户端
                 throw new Exception("未登录就尝试请求其它服务");
             }
         }

@@ -7,20 +7,20 @@ using System.Text;
 namespace NetworkSocket
 {
     /// <summary>
-    /// SocketAsyn无序集合
+    /// 客户端无序集合
     /// 线程安全类型
     /// </summary>
     /// <typeparam name="T">PacketBase派生类型</typeparam>
     [DebuggerDisplay("Count = {Count}")]
-    internal sealed class SocketAsyncBag<T> where T : PacketBase
+    internal sealed class SocketClientBag<T> where T : PacketBase
     {
         /// <summary>
         /// 无序集合
         /// </summary>
-        private ConcurrentBag<SocketAsync<T>> bag = new ConcurrentBag<SocketAsync<T>>();
+        private ConcurrentBag<SocketClient<T>> bag = new ConcurrentBag<SocketClient<T>>();
 
         /// <summary>
-        /// 元素数量
+        /// 客户端数量
         /// </summary>
         public int Count
         {
@@ -31,27 +31,27 @@ namespace NetworkSocket
         }
 
         /// <summary>
-        /// 添加SocketAsync
+        /// 添加客户端
         /// </summary>
-        /// <param name="SocketAsync">SocketAsync对象</param>
-        public void Add(SocketAsync<T> SocketAsync)
+        /// <param name="client">客户端对象</param>
+        public void Add(SocketClient<T> client)
         {
-            this.bag.Add(SocketAsync);
+            this.bag.Add(client);
         }
 
         /// <summary>
-        /// 取出并返回SocketAsync
-        /// 如果取出失败，则new新的SocketAsync并返回
+        /// 取出并返回客户端
+        /// 如果取出失败，则new新的SocketClient并返回
         /// </summary>
         /// <returns></returns>
-        public SocketAsync<T> Take()
+        public SocketClient<T> Take()
         {
-            SocketAsync<T> socketAsyc;
-            if (this.bag.TryTake(out socketAsyc))
+            SocketClient<T> client;
+            if (this.bag.TryTake(out client))
             {
-                return socketAsyc;
+                return client;
             }
-            return new SocketAsync<T>();
+            return new SocketClient<T>();
         }
     }
 }

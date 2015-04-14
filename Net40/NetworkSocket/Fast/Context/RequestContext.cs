@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-namespace NetworkSocket.Fast
+namespace NetworkSocket.Fast.Context
 {
     /// <summary>
     /// 请求上下文
@@ -15,7 +15,7 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 获取或设置客户端对象
         /// </summary>
-        public SocketAsync<FastPacket> Client { get; set; }
+        public IClient<FastPacket> Client { get; set; }
 
         /// <summary>
         /// 获取或设置数据包对象

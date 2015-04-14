@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NetworkSocket.Fast.Context;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,6 +15,6 @@ namespace NetworkSocket.Fast
         /// 异常触发
         /// </summary>
         /// <param name="filterContext">上下文</param>
-        void OnException(ExceptionContext filterContext);
+        void OnException(ServerExceptionContext filterContext);
     }
 }

@@ -11,12 +11,15 @@ namespace NetworkSocket
     /// Tcp客户端接口
     /// </summary>
     /// <typeparam name="T">协议类型</typeparam>
-    public interface ITcpClient<T> : IDisposable, ISocketAsync<T> where T : PacketBase
+    public interface ITcpClient<T> : IClient<T>, IDisposable where T : PacketBase
     {
-        /// <summary>      
-        /// 断开和远程终端的连接
+        /// <summary>
+        /// 连接到远程终端       
         /// </summary>
-        void Close();
+        /// <param name="ip">远程ip</param>
+        /// <param name="port">远程端口</param>
+        /// <returns></returns>
+        Task<bool> Connect(IPAddress ip, int port);
 
         /// <summary>
         /// 连接到远程终端 

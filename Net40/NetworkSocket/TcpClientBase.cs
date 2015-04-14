@@ -10,13 +10,8 @@ namespace NetworkSocket
     /// 所有Tcp客户端都派生于此类
     /// </summary>
     /// <typeparam name="T">PacketBase派生类型</typeparam>
-    public abstract class TcpClientBase<T> : SocketAsync<T>, ITcpClient<T> where T : PacketBase
+    public abstract class TcpClientBase<T> : SocketClient<T>, ITcpClient<T> where T : PacketBase
     {
-        /// <summary>
-        /// 最近连接的远程终结点
-        /// </summary>
-        private IPEndPoint lastRemoteEndPoint;
-
         /// <summary>
         /// Tcp客户端抽象类
         /// </summary>
@@ -53,7 +48,6 @@ namespace NetworkSocket
                 return taskSource.Task;
             }
 
-            this.lastRemoteEndPoint = remoteEndPoint;
             var socket = new Socket(remoteEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             var connectArg = new SocketAsyncEventArgs { RemoteEndPoint = remoteEndPoint, UserToken = taskSource };
             connectArg.Completed += this.ConnectArgCompleted;
@@ -78,7 +72,7 @@ namespace NetworkSocket
 
             if (result == true)
             {
-                base.BindSocket(socket);
+                base.Bind(socket);
                 base.BeginReceive();
             }
             else
@@ -97,11 +91,11 @@ namespace NetworkSocket
         /// <returns></returns>
         public Task<bool> ReConnect()
         {
-            if (this.IsConnected == true || this.lastRemoteEndPoint == null)
+            if (this.IsConnected == true)
             {
                 return Task.Factory.StartNew(() => false);
             }
-            return this.Connect(this.lastRemoteEndPoint);
+            return this.Connect(this.RemoteEndPoint);
         }
 
         /// <summary>
@@ -155,14 +149,6 @@ namespace NetworkSocket
         /// </summary>       
         protected virtual void OnDisconnect()
         {
-        }
-
-        /// <summary>
-        /// 断开和远程终端的连接
-        /// </summary>
-        public void Close()
-        {
-            base.UnBindSocket();
         }
     }
 }

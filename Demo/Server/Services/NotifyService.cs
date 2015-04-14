@@ -21,7 +21,7 @@ namespace Server.Services
         /// <param name="contents">信息内容</param>
         /// <returns></returns> 
         [Service(Implements.Remote, 200)]
-        public void WarmingClient(SocketAsync<FastPacket> client, string title, string contents)
+        public void WarmingClient(IClient<FastPacket> client, string title, string contents)
         {
             this.InvokeRemote(client, 200, title, contents);
         }
@@ -33,7 +33,7 @@ namespace Server.Services
         /// <param name="list">要排序的数据</param>
         /// <param name="callBack">回调</param>
         [Service(Implements.Remote, 201)]
-        public Task<List<int>> SortByClient(SocketAsync<FastPacket> client, List<int> list)
+        public Task<List<int>> SortByClient(IClient<FastPacket> client, List<int> list)
         {
             return this.InvokeRemote<List<int>>(client, 201, list);
         }

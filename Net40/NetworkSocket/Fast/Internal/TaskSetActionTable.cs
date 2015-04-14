@@ -83,7 +83,7 @@ namespace NetworkSocket.Fast
 
                 if (this.table.TryRemove(key, out taskSetAction))
                 {
-                    taskSetAction.SetAction(SetTypes.SetTimeout, null);
+                    taskSetAction.SetAction(SetTypes.SetTimeoutException, null);
                 }
             }
         }
@@ -110,6 +110,17 @@ namespace NetworkSocket.Fast
             TaskSetAction taskSetAction;
             this.table.TryRemove(key, out taskSetAction);
             return taskSetAction;
+        }
+
+        /// <summary>
+        /// 取出并移除全部的项
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<TaskSetAction> TaskAll()
+        {
+            var values = this.table.ToArray().Select(item => item.Value);
+            this.Clear();
+            return values;
         }
 
         /// <summary>

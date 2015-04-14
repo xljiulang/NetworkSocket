@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NetworkSocket.Fast.Context;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
@@ -37,35 +38,32 @@ namespace NetworkSocket.Fast
             if (taskSetAction != null)
             {
                 var returnBytes = requestContext.Packet.GetBodyParameter().FirstOrDefault();
-                taskSetAction.SetAction(SetTypes.SetReult, returnBytes);
+                taskSetAction.SetAction(SetTypes.SetReturnReult, returnBytes);
             }
         }
 
 
         /// <summary>
-        /// 设置服务行为返回的任务异常
-        /// 如果无法失败，则返回异常上下文对象
-        /// </summary>  
+        /// 设置服务行为返回的任务异常 
+        /// 设置失败则返远程异常对象
+        /// </summary>          
         /// <param name="serializer">序列化工具</param>
         /// <param name="taskSetActionTable">任务行为表</param>
         /// <param name="requestContext">请求上下文</param>
         /// <returns></returns>
-        public static ExceptionContext SetFastActionTaskException(ISerializer serializer, TaskSetActionTable taskSetActionTable, RequestContext requestContext)
+        public static RemoteException SetFastActionTaskException(ISerializer serializer, TaskSetActionTable taskSetActionTable, RequestContext requestContext)
         {
             var exceptionBytes = requestContext.Packet.GetBodyParameter().FirstOrDefault();
             var taskSetAction = taskSetActionTable.Take(requestContext.Packet.HashCode);
 
             if (taskSetAction != null)
             {
-                taskSetAction.SetAction(SetTypes.SetException, exceptionBytes);
+                taskSetAction.SetAction(SetTypes.SetReturnException, exceptionBytes);
                 return null;
             }
-            else
-            {
-                var message = (string)serializer.Deserialize(exceptionBytes, typeof(string));
-                var exception = new RemoteException(message);
-                return new ExceptionContext(requestContext, exception);
-            }
+
+            var message = (string)serializer.Deserialize(exceptionBytes, typeof(string));
+            return new RemoteException(message);
         }
 
         /// <summary>       
@@ -96,7 +94,7 @@ namespace NetworkSocket.Fast
         /// <exception cref="RemoteException"></exception>
         /// <exception cref="TimeoutException"></exception>
         /// <returns></returns>
-        public static Task<T> InvokeRemote<T>(SocketAsync<FastPacket> client, TaskSetActionTable taskSetActionTable, ISerializer serializer, int command, long hashCode, params object[] parameters)
+        public static Task<T> InvokeRemote<T>(IClient<FastPacket> client, TaskSetActionTable taskSetActionTable, ISerializer serializer, int command, long hashCode, params object[] parameters)
         {
             var taskSource = new TaskCompletionSource<T>();
             var packet = new FastPacket(command, hashCode);
@@ -105,7 +103,7 @@ namespace NetworkSocket.Fast
             // 登记TaskSetAction           
             Action<SetTypes, byte[]> setAction = (setType, bytes) =>
             {
-                if (setType == SetTypes.SetReult)
+                if (setType == SetTypes.SetReturnReult)
                 {
                     if (bytes == null || bytes.Length == 0)
                     {
@@ -117,15 +115,21 @@ namespace NetworkSocket.Fast
                         taskSource.TrySetResult(result);
                     }
                 }
-                else if (setType == SetTypes.SetException)
+                else if (setType == SetTypes.SetReturnException)
                 {
                     var message = (string)serializer.Deserialize(bytes, typeof(string));
                     var exception = new RemoteException(message);
                     taskSource.TrySetException(exception);
                 }
-                else if (setType == SetTypes.SetTimeout)
+                else if (setType == SetTypes.SetTimeoutException)
                 {
-                    var exception = new TimeoutException("远程端在指定时间内无应答");
+                    var exception = new TimeoutException();
+                    taskSource.TrySetException(exception);
+                }
+                else if (setType == SetTypes.SetShutdownException)
+                {
+                    const int SHUTDOWN = 10058;
+                    var exception = new SocketException(SHUTDOWN);
                     taskSource.TrySetException(exception);
                 }
             };

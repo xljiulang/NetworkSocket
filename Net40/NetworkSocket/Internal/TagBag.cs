@@ -20,14 +20,6 @@ namespace NetworkSocket
         /// <summary>
         /// 用户附加数据
         /// </summary>
-        public TagBag()
-            : this(new TagData())
-        {
-        }
-
-        /// <summary>
-        /// 用户附加数据
-        /// </summary>
         /// <param name="tagData">用户附加数据</param>
         /// <exception cref="ArgumentNullException"></exception>
         public TagBag(TagData tagData)

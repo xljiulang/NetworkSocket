@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NetworkSocket.Fast.Context;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +13,7 @@ namespace NetworkSocket.Fast
     /// <summary>
     /// 快速构建Tcp客户端抽象类
     /// </summary>
-    public abstract class FastTcpClientBase : TcpClientBase<FastPacket>
+    public abstract class FastTcpClientBase : TcpClientBase<FastPacket>, IFastTcpClient
     {
         /// <summary>
         /// 所有服务行为
@@ -99,13 +100,15 @@ namespace NetworkSocket.Fast
         /// <param name="requestContext">请求上下文</param>
         private void ProcessRemoteException(RequestContext requestContext)
         {
-            var exceptionContext = FastTcpCommon.SetFastActionTaskException(this.Serializer, this.taskSetActionTable, requestContext);
-            if (exceptionContext == null)
+            var remoteException = FastTcpCommon.SetFastActionTaskException(this.Serializer, this.taskSetActionTable, requestContext);
+            if (remoteException == null)
             {
                 return;
             }
 
+            var exceptionContext = new ExceptionContext(requestContext, remoteException);
             this.OnException(exceptionContext);
+
             if (exceptionContext.ExceptionHandled == false)
             {
                 throw exceptionContext.Exception;
@@ -230,13 +233,13 @@ namespace NetworkSocket.Fast
         }
 
         /// <summary>
-        /// 将数据发送到远程端        
+        /// 调用服务端实现的服务方法        
         /// </summary>       
-        /// <param name="command">数据包的command值</param>
+        /// <param name="command">服务行为的command值</param>
         /// <param name="parameters">参数列表</param>   
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="SocketException"></exception> 
-        protected void InvokeRemote(int command, params object[] parameters)
+        public void InvokeRemote(int command, params object[] parameters)
         {
             var packet = new FastPacket(command, this.hashCodeProvider.GetHashCode());
             packet.SetBodyBinary(this.Serializer, parameters);
@@ -244,20 +247,33 @@ namespace NetworkSocket.Fast
         }
 
         /// <summary>
-        /// 将数据发送到远程端     
+        /// 调用服务端实现的服务方法    
         /// 并返回结果数据任务
         /// </summary>
         /// <typeparam name="T">返回值类型</typeparam>
-        /// <param name="command">数据包的命令值</param>
+        /// <param name="command">服务行为的command值</param>
         /// <param name="parameters">参数</param>          
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="SocketException"></exception> 
         /// <exception cref="RemoteException"></exception>
         /// <exception cref="TimeoutException"></exception>
         /// <returns>远程数据任务</returns>    
-        protected Task<T> InvokeRemote<T>(int command, params object[] parameters)
+        public Task<T> InvokeRemote<T>(int command, params object[] parameters)
         {
             return FastTcpCommon.InvokeRemote<T>(this, this.taskSetActionTable, this.Serializer, command, this.hashCodeProvider.GetHashCode(), parameters);
+        }
+
+        /// <summary>
+        /// 当与服务器断开连接时，将触发此方法
+        /// 并触发未完成的请求产生SocketException异常
+        /// </summary>
+        protected override void OnDisconnect()
+        {
+            var taskSetActions = this.taskSetActionTable.TaskAll();
+            foreach (var taskSetAction in taskSetActions)
+            {
+                taskSetAction.SetAction(SetTypes.SetShutdownException, null);
+            }
         }
 
         #region IDisponse
@@ -269,7 +285,7 @@ namespace NetworkSocket.Fast
         {
             base.Dispose(disposing);
             if (disposing)
-            {                
+            {
                 this.fastActionList = null;
 
                 this.taskSetActionTable.Clear();

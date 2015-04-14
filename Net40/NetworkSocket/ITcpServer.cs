@@ -15,28 +15,18 @@ namespace NetworkSocket
         /// <summary>
         /// 获取所有连接的客户端对象   
         /// </summary>
-        SocketAsyncCollection<T> AliveClients { get; }
+        ClientCollection<T> AliveClients { get; }
 
         /// <summary>
-        /// 获取所监听的本地IP和端口
+        /// 开始启动监听       
         /// </summary>
-        IPEndPoint LocalEndPoint { get; }
-
-        /// <summary>
-        /// 获取服务是否已处在监听中
-        /// </summary>
-        bool IsListening { get; }
+        /// <param name="port">端口</param>
+        void StartListen(int port);
 
         /// <summary>
         /// 开始启动监听
         /// </summary>
         /// <param name="localEndPoint">要监听的本地IP和端口</param>
         void StartListen(IPEndPoint localEndPoint);
-
-        /// <summary>
-        /// 关闭并复用客户端对象
-        /// </summary>
-        /// <param name="client">客户端对象</param>
-        bool CloseClient(SocketAsync<T> client);
     }
 }
