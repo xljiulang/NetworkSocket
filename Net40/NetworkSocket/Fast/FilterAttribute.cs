@@ -33,6 +33,7 @@ namespace NetworkSocket.Fast
         /// 表示服务或服务行为过滤器基础特性
         /// </summary>
         /// <param name="order">执行顺序 越小最优先</param>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         public FilterAttribute(int order)
         {
             this.Order = order;
@@ -56,6 +57,7 @@ namespace NetworkSocket.Fast
         /// 获取执行顺序
         /// 越小最优先
         /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         public int Order
         {
             get
@@ -66,7 +68,7 @@ namespace NetworkSocket.Fast
             {
                 if (value < 0)
                 {
-                    throw new Exception("Order不能小于0");
+                    throw new ArgumentOutOfRangeException("order", "order必须大于或等于0");
                 }
                 this.order = value;
             }
