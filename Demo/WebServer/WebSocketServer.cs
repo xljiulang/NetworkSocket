@@ -8,7 +8,7 @@ using NetworkSocket;
 
 namespace WebServer
 {
-    public class WebSocket13 : WebSocketServerBase
+    public class WebSocketServer : WebSocketServerBase
     {
         /// <summary>
         /// 客户端以送文本信息
