@@ -23,6 +23,7 @@ namespace NetworkSocket
             base.ReceiveHandler = this.OnReceive;
             base.RecvCompleteHandler = this.OnRecvCompleteHandleWithTask;
             base.DisconnectHandler = this.CloseAndRaiseDisconnect;
+            base.SendHandler = this.OnSend;
         }
 
         /// <summary>
@@ -142,6 +143,14 @@ namespace NetworkSocket
         /// 当与服务器断开连接时，将触发此方法
         /// </summary>       
         protected virtual void OnDisconnect()
+        {
+        }
+
+        /// <summary>
+        /// 发送数据包后触发
+        /// </summary>       
+        /// <param name="packet">数据包</param>
+        protected virtual void OnSend(T packet)
         {
         }
     }

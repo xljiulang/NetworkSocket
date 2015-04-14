@@ -34,7 +34,7 @@ namespace NetworkSocket
         private SocketAsyncEventArgs acceptArg = new SocketAsyncEventArgs();
 
         /// <summary>
-        /// 客户端连接池
+        /// 空闲客户端池
         /// </summary>
         private SocketClientBag<T, TRecv> clientBag = new SocketClientBag<T, TRecv>();
 
@@ -127,6 +127,7 @@ namespace NetworkSocket
                 var client = this.clientBag.Take();
 
                 // 绑定处理委托               
+                client.SendHandler = (packet) => this.OnSend(client, packet);
                 client.ReceiveHandler = (builder) => this.OnReceive(client, builder);
                 client.RecvCompleteHandler = (packet) => this.OnRecvCompleteHandleWithTask(client, packet);
                 client.DisconnectHandler = () => this.RecyceClient(client);
@@ -145,7 +146,14 @@ namespace NetworkSocket
             this.AcceptClient(arg);
         }
 
-
+        /// <summary>
+        /// 发送数据包后触发
+        /// </summary>
+        /// <param name="client">客户端</param>
+        /// <param name="packet">数据包</param>
+        protected virtual void OnSend(IClient<T> client, T packet)
+        {
+        }
 
         /// <summary>
         /// 当接收到远程端的数据时，将触发此方法
@@ -257,14 +265,14 @@ namespace NetworkSocket
                 this.listenSocket = null;
             }
 
-            foreach (var client in this.AliveClients)
+            foreach (IDisposable client in this.AliveClients)
             {
-                ((IDisposable)client).Dispose();
+                client.Dispose();
             }
 
             while (this.clientBag.Count > 0)
             {
-                ((IDisposable)this.clientBag.Take()).Dispose();
+                this.clientBag.Take().Dispose();
             }
 
             this.acceptArg.Dispose();

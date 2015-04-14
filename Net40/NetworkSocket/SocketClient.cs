@@ -59,6 +59,11 @@ namespace NetworkSocket
         /// </summary>
         internal Action DisconnectHandler;
 
+        /// <summary>
+        /// 发送数据包的委托
+        /// </summary>
+        internal Action<T> SendHandler;
+
 
 
         /// <summary>
@@ -260,7 +265,9 @@ namespace NetworkSocket
             {
                 throw new ArgumentException("packet");
             }
+
             this.Send(bytes);
+            this.SendHandler(packet);
         }
 
 
