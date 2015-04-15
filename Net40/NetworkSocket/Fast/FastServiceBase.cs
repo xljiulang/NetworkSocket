@@ -37,8 +37,7 @@ namespace NetworkSocket.Fast
 
 
         /// <summary>
-        /// 获取服务实例
-        /// 并赋值给服务实例的FastTcpServer属性
+        /// 获取服务实例   
         /// </summary>
         /// <typeparam name="T">服务类型</typeparam>
         /// <returns></returns>

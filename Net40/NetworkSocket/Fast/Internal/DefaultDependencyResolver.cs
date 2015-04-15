@@ -23,7 +23,7 @@ namespace NetworkSocket.Fast
         /// <returns></returns>
         public object GetService(Type serviceType)
         {
-            if (serviceType == null || serviceType.IsAnsiClass || serviceType.IsInterface)
+            if (serviceType == null || serviceType.IsAbstract || serviceType.IsInterface)
             {
                 return null;
             }
