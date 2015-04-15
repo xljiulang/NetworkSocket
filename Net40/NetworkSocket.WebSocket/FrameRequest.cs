@@ -8,29 +8,28 @@ using System.Threading.Tasks;
 namespace NetworkSocket.WebSocket
 {
     /// <summary>
-    /// 表示请求收到的封包
+    /// 表示请求帧
     /// </summary>
-    public class RecvPacket : Hybi13Packet
+    public class FrameRequest : Request
     {
         /// <summary>
-        /// 表示请求封包
+        /// 获取帧类型
         /// </summary>
-        /// <param name="frameType">帧类型</param>
-        /// <param name="bytes">处理后的二进制数据</param>
-        private RecvPacket(FrameTypes frameType, byte[] bytes)
-        {
-            this.FrameType = frameType;
-            this.Bytes = bytes;
-        }
+        public Frames Frame { get; private set; }
+
+        /// <summary>
+        /// 获取请求帧的内容
+        /// </summary>
+        public byte[] Content { get; private set; }
 
         /// <summary>
         /// 解析请求的数据
         /// 返回请求数据包
         /// </summary>
         /// <param name="builder">所有收到的数据</param>
-        /// <param name="resultBuilder">用于保存数理后的数据</param>
+        /// <param name="contentBuilder">用于保存数理后的数据</param>
         /// <returns></returns>
-        public unsafe static RecvPacket From(ByteBuilder builder, ByteBuilder resultBuilder)
+        public unsafe static FrameRequest From(ByteBuilder builder, ByteBuilder contentBuilder)
         {
             if (builder.Length < 2)
             {
@@ -39,11 +38,11 @@ namespace NetworkSocket.WebSocket
 
             var isFinal = (builder.ToByte(0) & 128) != 0;
             var reservedBits = builder.ToByte(0) & 112;
-            var frameType = (FrameTypes)(builder.ToByte(0) & 15);
+            var frameType = (Frames)(builder.ToByte(0) & 15);
             var isMasked = (builder.ToByte(1) & 128) != 0;
             var length = builder.ToByte(1) & 127;
 
-            if (isMasked == false || Enum.IsDefined(typeof(FrameTypes), frameType) == false || reservedBits != 0)
+            if (isMasked == false || Enum.IsDefined(typeof(Frames), frameType) == false || reservedBits != 0)
             {
                 return null;
             }
@@ -89,15 +88,15 @@ namespace NetworkSocket.WebSocket
             }
 
             // 将数据放到resultBuilder
-            resultBuilder.Add(builder.Source, dataIndex, length);
+            contentBuilder.Add(builder.Source, dataIndex, length);
             // 清除已分析的数据
             builder.Remove(dataIndex + length);
 
             // 检查数据是否传输完成
-            if (isFinal == true && frameType != FrameTypes.Continuation)
+            if (isFinal == true && frameType != Frames.Continuation)
             {
-                var bytes = resultBuilder.ToArrayThenClear();
-                return new RecvPacket(frameType, bytes);
+                var bytes = contentBuilder.ToArrayThenClear();
+                return new FrameRequest { Frame = frameType, Content = bytes };
             }
             else
             {

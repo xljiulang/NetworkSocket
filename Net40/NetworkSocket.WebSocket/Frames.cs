@@ -8,7 +8,7 @@ namespace NetworkSocket.WebSocket
     /// <summary>
     /// 帧类型
     /// </summary>
-    public enum FrameTypes : byte
+    public enum Frames : byte
     {
         /// <summary>
         /// 后续帧

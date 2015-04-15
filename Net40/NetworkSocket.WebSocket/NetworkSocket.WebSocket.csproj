@@ -54,14 +54,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CloseStatus.cs" />
+    <Compile Include="ClientExtend.cs" />
+    <Compile Include="CloseReasons.cs" />
     <Compile Include="HandshakeRequest.cs" />
-    <Compile Include="Hybi13Packet.cs" />
-    <Compile Include="FrameTypes.cs" />
-    <Compile Include="SendPacket.cs" />
+    <Compile Include="HandshakeResponse.cs" />
+    <Compile Include="Frames.cs" />
+    <Compile Include="FrameRequest.cs" />
+    <Compile Include="Request.cs" />
+    <Compile Include="Response.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RecvPacket.cs" />
     <Compile Include="WebSocketServerBase.cs" />
+    <Compile Include="FrameResponse.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NetworkSocket\NetworkSocket.csproj">

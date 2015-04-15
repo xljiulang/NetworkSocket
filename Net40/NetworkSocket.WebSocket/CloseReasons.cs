@@ -8,13 +8,8 @@ namespace NetworkSocket.WebSocket
     /// <summary>
     /// 关闭原因状态
     /// </summary>
-    public enum CloseStatus : ushort
+    public enum CloseReasons : ushort
     {
-        /// <summary>
-        /// 表示没有原因
-        /// </summary>
-        Empty = 0,
-
         /// <summary>
         /// 正常关闭
         /// </summary>

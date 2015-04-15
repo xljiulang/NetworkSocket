@@ -8,6 +8,9 @@ using NetworkSocket;
 
 namespace WebServer
 {
+    /// <summary>
+    /// WebSocket服务
+    /// </summary>
     public class WebSocketServer : WebSocketServerBase
     {
         /// <summary>
@@ -15,14 +18,16 @@ namespace WebServer
         /// </summary>
         /// <param name="client"></param>
         /// <param name="text"></param>
-        protected override void OnText(IClient<SendPacket> client, string text)
+        protected override void OnText(IClient<Response> client, string text)
         {
-            this.SendText(client, text + "++");
+            text = string.Format("{0} => {1}", DateTime.Now.ToString("HH:mm:ss"), text);
+            client.Send(text);
             Console.WriteLine(text);
         }
 
-        protected override void OnBinary(IClient<SendPacket> client, byte[] bytes)
+        protected override void OnClose(IClient<Response> client, CloseReasons reason)
         {
+            base.OnClose(client, reason);
         }
     }
 }

@@ -10,24 +10,28 @@ namespace NetworkSocket.WebSocket
     /// <summary>
     /// 表示握手请求信息
     /// </summary>
-    public class HandshakeRequest
+    public class HandshakeRequest : Request
     {
         /// <summary>
         /// 头信息
         /// </summary>
-        public readonly IDictionary<string, string> Header;
+        public IDictionary<string, string> Header { get; private set; }
+
         /// <summary>
-        /// 请求方法eg.Get
+        /// 请求方法
         /// </summary>
         public string Method { get; private set; }
+
         /// <summary>
         /// 路径
         /// </summary>
         public string Path { get; private set; }
+
         /// <summary>
         /// 数据体
         /// </summary>
         public string Body { get; private set; }
+
         /// <summary>
         /// Scheme
         /// </summary>
@@ -38,45 +42,17 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         private HandshakeRequest()
         {
-            this.Header = new Dictionary<string, string>(System.StringComparer.InvariantCultureIgnoreCase);
-        }
-
-        /// <summary>
-        /// 生成握手内容
-        /// </summary>
-        /// <returns></returns>
-        public byte[] ToHandshake()
-        {
-            var builder = new StringBuilder();
-            builder.AppendLine("HTTP/1.1 101 Switching Protocols");
-            builder.AppendLine("Upgrade: websocket");
-            builder.AppendLine("Connection: Upgrade");
-            var responseKey = this.CreateResponseKey(this.Header["Sec-WebSocket-Key"]);
-            builder.AppendLine("Sec-WebSocket-Accept: " + responseKey);
-            builder.AppendLine();
-            return Encoding.UTF8.GetBytes(builder.ToString());
-        }
-
-        /// <summary>
-        /// 生成回复的key
-        /// </summary>
-        /// <param name="secKey">安全key</param>
-        /// <returns></returns>
-        private string CreateResponseKey(string secKey)
-        {
-            const string guid = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
-            var bytes = SHA1.Create().ComputeHash(Encoding.UTF8.GetBytes(secKey + guid));
-            return Convert.ToBase64String(bytes);
+            this.Header = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
         }
 
         /// <summary>
         /// 解析连接请求信息
         /// </summary>
-        /// <param name="bytes">原始数量</param>
+        /// <param name="builder">接收到的原始数量</param>
         /// <returns></returns>
-        public static HandshakeRequest Parse(byte[] bytes)
+        public static HandshakeRequest From(ByteBuilder builder)
         {
-            return Parse(bytes, "ws");
+            return HandshakeRequest.From(builder.ToArrayThenClear(), "ws");
         }
 
         /// <summary>
@@ -85,7 +61,7 @@ namespace NetworkSocket.WebSocket
         /// <param name="bytes">原始数量</param>
         /// <param name="scheme">scheme</param>
         /// <returns></returns>
-        public static HandshakeRequest Parse(byte[] bytes, string scheme)
+        private static HandshakeRequest From(byte[] bytes, string scheme)
         {
             const string pattern = @"^(?<method>[^\s]+)\s(?<path>[^\s]+)\sHTTP\/1\.1\r\n" +
                 @"((?<field_name>[^:\r\n]+):\s(?<field_value>[^\r\n]*)\r\n)+" +
