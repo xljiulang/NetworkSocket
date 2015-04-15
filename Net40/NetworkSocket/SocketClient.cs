@@ -283,6 +283,7 @@ namespace NetworkSocket
                 }
                 finally
                 {
+                    socket = null;
                     this.closed = true;
                 }
             }
