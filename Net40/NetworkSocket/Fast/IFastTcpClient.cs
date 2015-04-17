@@ -17,20 +17,20 @@ namespace NetworkSocket.Fast
         ISerializer Serializer { get; set; }
 
         /// <summary>
-        /// 调用服务端实现的服务方法        
+        /// 调用服务端实现的Api       
         /// </summary>       
-        /// <param name="command">服务行为的command值</param>
+        /// <param name="api">api</param>
         /// <param name="parameters">参数列表</param>  
-        Task InvokeRemote(int command, params object[] parameters);
+        Task InvokeApi(string api, params object[] parameters);
 
         /// <summary>
-        /// 调用服务端实现的服务方法    
+        /// 调用服务端实现的Api    
         /// 并返回结果数据任务
         /// </summary>
         /// <typeparam name="T">返回值类型</typeparam>
-        /// <param name="command">服务行为的command值</param>
+        /// <param name="api">api</param>
         /// <param name="parameters">参数</param>   
         /// <returns>远程数据任务</returns>    
-        Task<T> InvokeRemote<T>(int command, params object[] parameters);
+        Task<T> InvokeApi<T>(string api, params object[] parameters);
     }
 }

@@ -53,7 +53,8 @@
   <ItemGroup>
     <Compile Include="ByteBuilder.cs" />
     <Compile Include="Fast\ActionException.cs" />
-    <Compile Include="Fast\ActionNotImplementException.cs" />
+    <Compile Include="Fast\ApiNotExistException.cs" />
+    <Compile Include="Fast\ContextNullException.cs" />
     <Compile Include="Fast\IFastService.cs" />
     <Compile Include="Fast\IFastTcpClient.cs" />
     <Compile Include="Fast\IFastTcpServer.cs" />
@@ -63,13 +64,12 @@
     <Compile Include="Fast\FastAction.cs" />
     <Compile Include="ByteConverter.cs" />
     <Compile Include="Endians.cs" />
-    <Compile Include="Fast\Implements.cs" />
     <Compile Include="Fast\Internal\FastActionList.cs" />
-    <Compile Include="Fast\Internal\HashCodeProvider.cs" />
+    <Compile Include="Fast\Internal\PacketIdProvider.cs" />
     <Compile Include="Fast\Internal\TaskSetAction.cs" />
     <Compile Include="Fast\Internal\SetTypes.cs" />
     <Compile Include="Fast\Internal\TaskSetActionTable.cs" />
-    <Compile Include="Fast\ServiceAttribute.cs" />
+    <Compile Include="Fast\ApiAttribute.cs" />
     <Compile Include="Fast\Internal\DefaultSerializer.cs" />
     <Compile Include="Fast\FastPacket.cs" />
     <Compile Include="Fast\FastServiceBase.cs" />

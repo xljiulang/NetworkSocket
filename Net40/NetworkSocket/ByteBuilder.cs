@@ -30,6 +30,12 @@ namespace NetworkSocket
         public int Length { get; private set; }
 
         /// <summary>
+        /// 获取或设置指针位置
+        /// Read相关操作时变化
+        /// </summary>
+        public int Position { get; set; }
+
+        /// <summary>
         /// 获取同步锁
         /// </summary>
         public object SyncRoot { get; private set; }
@@ -274,6 +280,18 @@ namespace NetworkSocket
         }
 
         /// <summary>
+        /// 返回一个字节并转换为bool类型
+        /// </summary>       
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        /// <returns></returns>
+        public bool ReadBoolean()
+        {
+            var value = this.ToBoolean(this.Position);
+            this.Position = this.Position + 1;
+            return value;
+        }
+
+        /// <summary>
         /// 返回指定位置的字节
         /// </summary>
         /// <param name="index">索引位置</param>
@@ -282,6 +300,18 @@ namespace NetworkSocket
         public byte ToByte(int index)
         {
             return this.Source[index];
+        }
+
+        /// <summary>
+        /// 返回一个字节
+        /// </summary>      
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        /// <returns></returns>
+        public byte ReadByte()
+        {
+            var value = this.ToByte(this.Position);
+            this.Position = this.Position + 1;
+            return value;
         }
 
         /// <summary>
@@ -296,6 +326,18 @@ namespace NetworkSocket
         }
 
         /// <summary>
+        /// 读取2个字节，返回其Int16表示类型
+        /// </summary>     
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        /// <returns></returns>
+        public short ReadInt16()
+        {
+            var value = this.ToInt16(this.Position);
+            this.Position = this.Position + 2;
+            return value;
+        }
+
+        /// <summary>
         /// 读取指定位置2个字节，返回其UInt16表示类型
         /// </summary>
         /// <param name="index">字节所在索引</param> 
@@ -304,6 +346,18 @@ namespace NetworkSocket
         public uint ToUInt16(int index)
         {
             return ByteConverter.ToUInt16(this.Source, index, this.Endian);
+        }
+
+        /// <summary>
+        /// 读取2个字节，返回其UInt16表示类型
+        /// </summary>      
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        /// <returns></returns>
+        public uint ReadUInt16()
+        {
+            var value = this.ToUInt16(this.Position);
+            this.Position = this.Position + 2;
+            return value;
         }
 
         /// <summary>
@@ -318,6 +372,18 @@ namespace NetworkSocket
         }
 
         /// <summary>
+        /// 读取4个字节，返回其Int32表示类型
+        /// </summary>          
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        /// <returns></returns>
+        public int ReadInt32()
+        {
+            var value = this.ToInt32(this.Position);
+            this.Position = this.Position + 4;
+            return value;
+        }
+
+        /// <summary>
         /// 读取指定位置4个字节，返回其UInt32表示类型
         /// </summary>
         /// <param name="index">字节所在索引</param>   
@@ -326,6 +392,18 @@ namespace NetworkSocket
         public uint ToUInt32(int index)
         {
             return ByteConverter.ToUInt32(this.Source, index, this.Endian);
+        }
+
+        /// <summary>
+        /// 读取4个字节，返回其UInt32表示类型
+        /// </summary>     
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        /// <returns></returns>
+        public uint ReadUInt32()
+        {
+            var value = this.ToUInt32(this.Position);
+            this.Position = this.Position + 4;
+            return value;
         }
 
         /// <summary>
@@ -340,6 +418,18 @@ namespace NetworkSocket
         }
 
         /// <summary>
+        /// 读取8个字节，返回其Int64表示类型
+        /// </summary>         
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        /// <returns></returns>
+        public long ReadInt64()
+        {
+            var value = this.ToInt64(this.Position);
+            this.Position = this.Position + 8;
+            return value;
+        }
+
+        /// <summary>
         /// 读取指定位置8个字节，返回其UInt64表示类型
         /// </summary>
         /// <param name="index">字节所在索引</param>    
@@ -351,12 +441,45 @@ namespace NetworkSocket
         }
 
         /// <summary>
+        /// 读取8个字节，返回其UInt64表示类型
+        /// </summary>        
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        /// <returns></returns>
+        public ulong ReadUInt64()
+        {
+            var value = this.ToUInt64(this.Position);
+            this.Position = this.Position + 8;
+            return value;
+        }
+
+        /// <summary>
         /// 返回有效的数据
         /// </summary>
         /// <returns></returns>
         public byte[] ToArray()
         {
             return this.ToArray(0, this.Length);
+        }
+
+        /// <summary>
+        /// 读取有效数据
+        /// </summary>
+        /// <returns></returns>
+        public byte[] ReadArray()
+        {
+            return this.ReadArray(this.Length - this.Position);
+        }
+
+        /// <summary>
+        /// 读取有效数据
+        /// </summary>
+        /// <param name="length">读取长度</param>
+        /// <returns></returns>
+        public byte[] ReadArray(int length)
+        {
+            var value = this.ToArray(this.Position, length);
+            this.Position = this.Position + length;
+            return value;
         }
 
         /// <summary>
@@ -385,23 +508,13 @@ namespace NetworkSocket
         }
 
         /// <summary>
-        /// 返回有效数据，并清空所有数据
-        /// </summary>
-        /// <returns></returns>
-        public byte[] ToArrayThenClear()
-        {
-            var bytes = this.ToArray();
-            this.Clear();
-            return bytes;
-        }
-
-        /// <summary>
         /// 清空数据 
         /// 容量不受到影响
         /// </summary>
         /// <returns></returns>
         public void Clear()
         {
+            this.Position = 0;
             this.Length = 0;
         }
     }

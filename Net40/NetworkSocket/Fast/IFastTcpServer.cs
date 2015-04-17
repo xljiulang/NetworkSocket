@@ -22,22 +22,22 @@ namespace NetworkSocket.Fast
         IFilterAttributeProvider FilterAttributeProvider { get; set; }
 
         /// <summary>
-        /// 调用客户端实现的服务方法        
+        /// 调用客户端实现的Api        
         /// </summary>
         /// <param name="client">客户端</param>
-        /// <param name="command">数据包的command值</param>
+        /// <param name="api">数据包Api名</param>
         /// <param name="parameters">参数列表</param>  
-        Task InvokeRemote(IClient<FastPacket> client, int command, params object[] parameters);
+        Task InvokeApi(IClient<FastPacket> client, string api, params object[] parameters);
 
         /// <summary>
-        /// 调用客户端实现的服务方法      
+        /// 调用客户端实现的Api      
         /// 并返回结果数据任务
         /// </summary>
         /// <typeparam name="T">返回值类型</typeparam>
         /// <param name="client">客户端</param>
-        /// <param name="command">数据包的命令值</param>
+        /// <param name="api">数据包Api名</param>
         /// <param name="parameters">参数</param> 
         /// <returns>远程数据任务</returns>  
-        Task<T> InvokeRemote<T>(IClient<FastPacket> client, int command, params object[] parameters);
+        Task<T> InvokeApi<T>(IClient<FastPacket> client, string api, params object[] parameters);
     }
 }

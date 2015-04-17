@@ -33,18 +33,7 @@ namespace NetworkSocket.Fast
             {
                 currentContext = value;
             }
-        }
-
-
-        /// <summary>
-        /// 获取服务实例   
-        /// </summary>
-        /// <typeparam name="T">服务类型</typeparam>
-        /// <returns></returns>
-        public T GetService<T>() where T : IFastService
-        {
-            return (T)DependencyResolver.Current.GetService(typeof(T));
-        }
+        }      
 
         /// <summary>
         /// 执行服务行为
@@ -114,40 +103,51 @@ namespace NetworkSocket.Fast
             // 返回数据
             if (actionContext.Action.IsVoidReturn == false && actionContext.Client.IsConnected)
             {
-                actionContext.Packet.SetBodyBinary(actionContext.FastTcpServer.Serializer, returnValue);
+                var returnBytes = actionContext.FastTcpServer.Serializer.Serialize(returnValue);
+                actionContext.Packet.Body = returnBytes;
                 actionContext.Client.Send(actionContext.Packet);
             }
         }
 
         /// <summary>
-        /// 调用客户端实现的服务方法        
+        /// 调用客户端实现的Api        
         /// </summary>
         /// <param name="client">客户端</param>
-        /// <param name="command">服务方法command值</param>
+        /// <param name="api">api</param>
         /// <param name="parameters">参数列表</param>    
         /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="ContextNullException"></exception>
         /// <exception cref="SocketException"></exception>         
-        protected Task InvokeRemote(IClient<FastPacket> client, int command, params object[] parameters)
+        protected Task InvokeApi(IClient<FastPacket> client, string api, params object[] parameters)
         {
-            return this.CurrentContext.FastTcpServer.InvokeRemote(client, command, parameters);
+            if (this.CurrentContext == null)
+            {
+                throw new ContextNullException("CurrentContext上下文对象为空");
+            }
+            return this.CurrentContext.FastTcpServer.InvokeApi(client, api, parameters);
         }
 
         /// <summary>
-        /// 调用客户端实现的服务方法     
+        /// 调用客户端实现的Api   
         /// 并返回结果数据任务
         /// </summary>
         /// <typeparam name="T">返回值类型</typeparam>
         /// <param name="client">客户端</param>
-        /// <param name="command">服务方法command值</param>
+        /// <param name="api">api</param>
         /// <param name="parameters">参数</param>     
         /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="ContextNullException"></exception>
         /// <exception cref="SocketException"></exception> 
         /// <exception cref="RemoteException"></exception>
         /// <exception cref="TimeoutException"></exception>
         /// <returns>远程数据任务</returns>  
-        protected Task<T> InvokeRemote<T>(IClient<FastPacket> client, int command, params object[] parameters)
+        protected Task<T> InvokeApi<T>(IClient<FastPacket> client, string api, params object[] parameters)
         {
-            return this.CurrentContext.FastTcpServer.InvokeRemote<T>(client, command, parameters);
+            if (this.CurrentContext == null)
+            {
+                throw new ContextNullException("CurrentContext上下文对象为空");
+            }
+            return this.CurrentContext.FastTcpServer.InvokeApi<T>(client, api, parameters);
         }
 
 

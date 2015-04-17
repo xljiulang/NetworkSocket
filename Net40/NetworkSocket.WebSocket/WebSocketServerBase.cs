@@ -26,7 +26,7 @@ namespace NetworkSocket.WebSocket
             var contentBuilder = client.TagData.TryGet<ByteBuilder>("ContentBuilder");
             if (contentBuilder != null)
             {
-                return this.GetRequests(builder, contentBuilder);
+                return this.GetFrameRequests(builder, contentBuilder);
             }
 
             // 是握手请求
@@ -72,7 +72,7 @@ namespace NetworkSocket.WebSocket
         /// <param name="builder">接收到的数据</param>
         /// <param name="contentBuilder">处理后的内容数据</param>
         /// <returns></returns>
-        private IEnumerable<FrameRequest> GetRequests(ByteBuilder builder, ByteBuilder contentBuilder)
+        private IEnumerable<FrameRequest> GetFrameRequests(ByteBuilder builder, ByteBuilder contentBuilder)
         {
             FrameRequest request;
             while ((request = FrameRequest.From(builder, contentBuilder)) != null)

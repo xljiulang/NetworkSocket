@@ -23,10 +23,10 @@ namespace Server.Services
         /// 获取服务组件版本号
         /// </summary>       
         /// <returns></returns>
-        [Service(Implements.Self, 0)]
+        [Api]
         [LogFilter("获取版本号")]
         public string GetVersion()
-        {            
+        {
             return this.GetType().Assembly.GetName().Version.ToString();
         }
 
@@ -36,10 +36,13 @@ namespace Server.Services
         /// <param name="user">用户数据</param>
         /// <param name="ifAdmin"></param>
         /// <returns></returns>    
-        [Service(Implements.Self, 100)]
+        [Api("System.Login")]
         [LogFilter("登录操作")]
         public bool Login(User user, bool ifAdmin)
         {
+            // 调用客户端的Sort
+            var sortResult = this.InvokeApi<List<int>>(this.CurrentContext.Client, "Sort", new List<int> { 3, 1, 2 }).Result;
+
             if (user == null)
             {
                 throw new ArgumentNullException("user");

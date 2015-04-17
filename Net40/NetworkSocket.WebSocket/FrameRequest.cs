@@ -95,7 +95,8 @@ namespace NetworkSocket.WebSocket
             // 检查数据是否传输完成
             if (isFinal == true && frameType != Frames.Continuation)
             {
-                var bytes = contentBuilder.ToArrayThenClear();
+                var bytes = contentBuilder.ToArray();
+                contentBuilder.Clear();
                 return new FrameRequest { Frame = frameType, Content = bytes };
             }
             else

@@ -1,0 +1,66 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>JsonWebsocket客户端</title>
+    <link href="bootstrap.min.css" rel="stylesheet">
+    <script src="jsonWebsocket.js"></script>
+    <script src="jquery-1.7.2.min.js"></script>
+    <style type="text/css">
+        body {
+            text-align: center;
+        }
+
+        form {
+            text-align: left;
+            margin: 20px auto;
+            width: 220px;
+        }
+    </style>
+
+    <script type="text/javascript">
+
+        document.title = '正在连接到服务器 ..';
+        var ws = new jsonWebsocket('ws://localhost:8282/');
+
+        // 注册一个叫sum的api
+        ws.bindApi("sum", function (x, y, z) {
+            return x + y + z;
+        });
+
+        ws.onclose = function () {
+            document.title = '连接已断开 ..';
+        };
+
+        ws.onopen = function () {
+            ws.invkeApi('getVersion', [], function (version) {
+                document.title = '服务器版本号：' + version;
+            });
+        };
+
+        function login() {
+            var user = { account: $("[name='account']").val(), password: $("[name='password']").val() };
+            ws.invkeApi('login', [user, true], function (message) {
+                alert(message);
+            });
+        }
+    </script>
+</head>
+
+<body>
+    <form>
+        <fieldset>
+            <legend>系统登录</legend>
+        </fieldset>
+
+        <label>账号</label>
+        <input type="text" name="account" placeholder="xljiulang">
+
+        <label>密码</label>
+        <input type="text" name="password" placeholder="123456">
+
+        <p>
+            <button type="button" class="btn" onclick="login();">提交</button>
+        </p>
+    </form>
+</body>
+</html>

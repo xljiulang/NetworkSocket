@@ -24,12 +24,10 @@ namespace NetworkSocket.Fast
         /// </summary>
         private Func<object, object[], object> methodInvoker;
 
-
-
         /// <summary>
-        /// 获取服务行为名称
+        /// 获取服务行为的Api名称
         /// </summary>
-        public string Name { get; private set; }
+        public string ApiName { get; private set; }
 
         /// <summary>
         /// 获取服务行为的方法成员返回类型是否为void
@@ -45,16 +43,6 @@ namespace NetworkSocket.Fast
         /// 获取服务行为的方法成员参数类型
         /// </summary>
         public Type[] ParameterTypes { get; private set; }
-
-        /// <summary>
-        /// 获取实现服务的目标
-        /// </summary>
-        public Implements Implement { get; private set; }
-
-        /// <summary>
-        /// 获取声明的数据包命令值
-        /// </summary>
-        public int Command { get; private set; }
 
         /// <summary>
         /// 获取声明该成员的服务类型
@@ -73,17 +61,14 @@ namespace NetworkSocket.Fast
             this.methodInvoker = FastAction.CreateMethodInvoker(method);
 
             this.DeclaringService = method.DeclaringType;
-            this.Name = method.Name;
 
             this.ReturnType = method.ReturnType;
             this.IsVoidReturn = method.ReturnType.Equals(typeof(void));
             this.ParameterTypes = method.GetParameters().Select(item => item.ParameterType).ToArray();
 
-            var service = Attribute.GetCustomAttribute(method, typeof(ServiceAttribute)) as ServiceAttribute;
-            this.Command = service.Command;
-            this.Implement = service.Implement;
+            var api = Attribute.GetCustomAttribute(method, typeof(ApiAttribute)) as ApiAttribute;
+            this.ApiName = api.Name ?? method.Name;
         }
-
 
         /// <summary>
         /// 生成方法的委托
@@ -168,7 +153,7 @@ namespace NetworkSocket.Fast
         /// <returns></returns>
         public override string ToString()
         {
-            return this.Name;
+            return this.ApiName;
         }
     }
 }

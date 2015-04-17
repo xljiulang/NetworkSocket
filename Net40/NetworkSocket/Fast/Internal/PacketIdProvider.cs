@@ -6,9 +6,9 @@ using System.Text;
 namespace NetworkSocket.Fast
 {
     /// <summary>
-    /// 数据包哈希码提供者
+    /// 数据包标签符提供者
     /// </summary>
-    internal class HashCodeProvider
+    internal class PacketIdProvider
     {
         /// <summary>
         /// 基准值
@@ -21,11 +21,11 @@ namespace NetworkSocket.Fast
         private object syncRoot = new object();
 
         /// <summary>
-        /// 获取哈希码
+        /// 获取标识符
         /// 每获取一次自增1
         /// </summary>
         /// <returns></returns>
-        new public long GetHashCode()
+        public long GetId()
         {
             lock (this.syncRoot)
             {

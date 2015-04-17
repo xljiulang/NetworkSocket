@@ -52,7 +52,9 @@ namespace NetworkSocket.WebSocket
         /// <returns></returns>
         public static HandshakeRequest From(ByteBuilder builder)
         {
-            return HandshakeRequest.From(builder.ToArrayThenClear(), "ws");
+            var bytes = builder.ToArray();
+            builder.Clear();
+            return HandshakeRequest.From(bytes, "ws");
         }
 
         /// <summary>

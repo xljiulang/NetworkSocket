@@ -29,7 +29,7 @@ namespace Server
             fastServer.RegisterResolver();
             fastServer.StartListen(1330);
 
-            Console.Title = "FastServer V" + fastServer.GetService<SystemService>().GetVersion();
+            Console.Title = "FastServer V" + new SystemService().GetVersion();
             Console.WriteLine("服务已启动，端口：" + fastServer.LocalEndPoint.Port);
             while (true)
             {

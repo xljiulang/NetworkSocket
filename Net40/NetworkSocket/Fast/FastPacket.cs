@@ -9,73 +9,68 @@ namespace NetworkSocket.Fast
     /// <summary>
     /// 通讯协议的封包
     /// </summary>
-    [DebuggerDisplay("Command = {Command}")]
+    [DebuggerDisplay("ApiName = {ApiName}")]
     public sealed class FastPacket : PacketBase
     {
         /// <summary>
-        /// 获取命令值
+        /// 获取封包的字节长度
         /// </summary>
-        public int Command { get; private set; }
+        public int TotalBytes { get; private set; }
 
         /// <summary>
-        /// 获取哈希值
+        /// 获取api名称长度
         /// </summary>
-        public long HashCode { get; private set; }
+        public byte ApiNameLength { get; private set; }
 
         /// <summary>
-        /// 获取是否异常
+        /// 获取api名称
         /// </summary>
-        public bool IsException { get; private set; }
+        public string ApiName { get; private set; }
 
         /// <summary>
-        /// 获取数据体的数据
+        /// 获取封包的唯一标识
         /// </summary>
-        public byte[] Body { get; private set; }
+        public long Id { get; private set; }
+
+        /// <summary>
+        /// 获取是否为客户端的封包
+        /// </summary>
+        public bool IsFromClient { get; private set; }
+
+        /// <summary>
+        /// 获取或设置是否异常数据
+        /// </summary>
+        public bool IsException { get; set; }
+
+        /// <summary>
+        /// 获取或设置数据体的数据
+        /// </summary>
+        public byte[] Body { get; set; }
 
         /// <summary>
         /// 通讯协议的封包
         /// </summary>
-        /// <param name="command">命令值</param>
-        /// <param name="hashCode">哈希码</param>
-        public FastPacket(int command, long hashCode)
+        /// <param name="api">api名称</param>
+        /// <param name="id">标识符</param>
+        /// <param name="fromClient">是否为客户端的封包</param>
+        public FastPacket(string api, long id, bool fromClient)
         {
-            this.Command = command;
-            this.HashCode = hashCode;
+            if (string.IsNullOrEmpty(api))
+            {
+                throw new ArgumentNullException("api");
+            }
+            this.ApiName = api;
+            this.Id = id;
+            this.IsFromClient = fromClient;
         }
 
-        /// <summary>
-        /// 通讯协议的封包
-        /// </summary>
-        /// <param name="command">命令值</param>
-        /// <param name="hashCode">哈希码</param>     
-        /// <param name="isException">是否为异常包</param>
-        /// <param name="body">数据体</param>
-        public FastPacket(int command, long hashCode, bool isException, byte[] body)
-        {
-            this.Command = command;
-            this.HashCode = hashCode;
-            this.IsException = isException;
-            this.Body = body;
-        }
-
-        /// <summary>
-        /// 设置异常包
-        /// 异常项的Message属性文本作为数据包的唯一参数
-        /// </summary>
-        /// <param name="serializer">序列化工具</param>
-        /// <param name="message">异常信息</param>
-        internal void SetException(ISerializer serializer, string message)
-        {
-            this.IsException = true;
-            this.SetBodyBinary(serializer, message);
-        }
 
         /// <summary>
         /// 将参数序列化并写入为Body
         /// </summary>
         /// <param name="serializer">序列化工具</param>
         /// <param name="parameters">参数</param>
-        public void SetBodyBinary(ISerializer serializer, params object[] parameters)
+        public void SetBodyParameters(ISerializer serializer, params object[] parameters)
         {
             if (parameters == null || parameters.Length == 0)
             {
@@ -98,7 +93,7 @@ namespace NetworkSocket.Fast
         /// 将Body的数据解析为参数
         /// </summary>        
         /// <returns></returns>
-        public List<byte[]> GetBodyParameter()
+        public List<byte[]> GetBodyParameters()
         {
             var parameterList = new List<byte[]>();
 
@@ -130,15 +125,18 @@ namespace NetworkSocket.Fast
         /// <returns></returns>
         public override byte[] ToBytes()
         {
-            // 总长度(4) + command(4) + hashCode(8) + IsException(1)
-            const int headLength = 17;
-            // 总长度
-            int totalLength = this.Body == null ? headLength : headLength + this.Body.Length;
+            var apiNameBytes = Encoding.UTF8.GetBytes(this.ApiName);
+            var headLength = apiNameBytes.Length + 15;
 
-            var builder = new ByteBuilder(Endians.Big, totalLength);
-            builder.Add(totalLength);
-            builder.Add(this.Command);
-            builder.Add(this.HashCode);
+            this.ApiNameLength = (byte)apiNameBytes.Length;
+            this.TotalBytes = this.Body == null ? headLength : headLength + this.Body.Length;
+
+            var builder = new ByteBuilder(Endians.Big, this.TotalBytes);
+            builder.Add(this.TotalBytes);
+            builder.Add(this.ApiNameLength);
+            builder.Add(apiNameBytes);
+            builder.Add(this.Id);
+            builder.Add(this.IsFromClient);
             builder.Add(this.IsException);
             builder.Add(this.Body);
             return builder.Source;
@@ -153,34 +151,45 @@ namespace NetworkSocket.Fast
         /// <returns></returns>
         public static FastPacket From(ByteBuilder builder)
         {
-            // 包头长度
-            const int headLength = 17;
-            // 不会少于17
-            if (builder.Length < headLength)
+            if (builder.Length < 4)
             {
                 return null;
             }
 
             // 包长
-            var totalLength = builder.ToInt32(0);
-            // 包长要小于等于数据长度
-            if (totalLength > builder.Length || totalLength < headLength)
+            builder.Position = 0;
+            var totalBytes = builder.ReadInt32();
+
+            if (builder.Length < totalBytes)
             {
                 return null;
             }
 
-            // command
-            var command = builder.ToInt32(4);
-            // 哈希值
-            var hashCode = builder.ToInt64(8);
+            // api名称数据长度
+            var apiNameLength = builder.ReadByte();
+            // api名称数据
+            var apiNameBytes = builder.ReadArray(apiNameLength);
+            // 标识符
+            var id = builder.ReadInt64();
+            // 是否为客户端封包
+            var isFromClient = builder.ReadBoolean();
             // 是否异常
-            var isException = builder.ToBoolean(16);
+            var isException = builder.ReadBoolean();
             // 实体数据
-            var body = builder.ToArray(17, totalLength - headLength);
+            var body = builder.ReadArray(totalBytes - builder.Position);
 
             // 清空本条数据
-            builder.Remove(totalLength);
-            return new FastPacket(command, hashCode, isException, body);
+            builder.Remove(totalBytes);
+
+            var apiName = Encoding.UTF8.GetString(apiNameBytes);
+            var packet = new FastPacket(apiName, id, isFromClient)
+            {
+                TotalBytes = totalBytes,
+                ApiNameLength = apiNameLength,
+                IsException = isException,
+                Body = body
+            };
+            return packet;
         }
 
         /// <summary>
@@ -189,7 +198,7 @@ namespace NetworkSocket.Fast
         /// <returns></returns>
         public override string ToString()
         {
-            return this.Command.ToString();
+            return this.ApiName;
         }
     }
 }

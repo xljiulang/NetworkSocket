@@ -45,6 +45,9 @@
     <AssemblyOriginatorKeyFile>_Sn.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\packages\Newtonsoft.Json.6.0.8\lib\net40\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -60,6 +63,39 @@
     <Compile Include="HandshakeResponse.cs" />
     <Compile Include="Frames.cs" />
     <Compile Include="FrameRequest.cs" />
+    <Compile Include="Json\ActionContext.cs" />
+    <Compile Include="Json\ActionException.cs" />
+    <Compile Include="Json\ApiAttribute.cs" />
+    <Compile Include="Json\ApiNotExistException.cs" />
+    <Compile Include="Json\ContextNullException.cs" />
+    <Compile Include="Json\DependencyResolver.cs" />
+    <Compile Include="Json\ExceptionContext.cs" />
+    <Compile Include="Json\FilterAttribute.cs" />
+    <Compile Include="Json\FilterAttributeProvider.cs" />
+    <Compile Include="Json\GlobalFilters.cs" />
+    <Compile Include="Json\IActionFilter.cs" />
+    <Compile Include="Json\IAuthorizationFilter.cs" />
+    <Compile Include="Json\IDependencyResolver.cs" />
+    <Compile Include="Json\IExceptionFilter.cs" />
+    <Compile Include="Json\IFilter.cs" />
+    <Compile Include="Json\IFilterAttributeProvider.cs" />
+    <Compile Include="Json\IJsonSerializer.cs" />
+    <Compile Include="Json\IJsonService.cs" />
+    <Compile Include="Json\IJsonWebSocketServer.cs" />
+    <Compile Include="Json\Internal\DefaultDependencyResolver.cs" />
+    <Compile Include="Json\Internal\DefaultJsonSerializer.cs" />
+    <Compile Include="Json\Internal\JsonActionList.cs" />
+    <Compile Include="Json\Internal\JsonWebSocketCommon.cs" />
+    <Compile Include="Json\Internal\PacketIdProvider.cs" />
+    <Compile Include="Json\Internal\SetTypes.cs" />
+    <Compile Include="Json\Internal\TaskSetAction.cs" />
+    <Compile Include="Json\Internal\TaskSetActionTable.cs" />
+    <Compile Include="Json\JsonAction.cs" />
+    <Compile Include="Json\JsonPacket.cs" />
+    <Compile Include="Json\JsonServiceBase.cs" />
+    <Compile Include="Json\JsonWebSocketServer.cs" />
+    <Compile Include="Json\RemoteException.cs" />
+    <Compile Include="Json\RequestContext.cs" />
     <Compile Include="Request.cs" />
     <Compile Include="Response.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -73,6 +109,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="packages.config" />
     <None Include="_Sn.snk" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

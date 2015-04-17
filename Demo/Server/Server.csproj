@@ -65,7 +65,6 @@
     <Compile Include="Interfaces\IUserDao.cs" />
     <Compile Include="Interfaces\IRoleDao.cs" />
     <Compile Include="Services\MathService.cs" />
-    <Compile Include="Services\NotifyService.cs" />
     <Compile Include="Services\SystemService.cs" />
     <Compile Include="Filters\LoginFilterAttribute.cs" />
     <Compile Include="_Run.cs" />

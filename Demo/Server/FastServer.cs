@@ -32,10 +32,6 @@ namespace Server
                 .Where(type => (typeof(IFastService).IsAssignableFrom(type)))
                 .PropertiesAutowired();
 
-            // 通知服务为单例
-            builder.RegisterType<NotifyService>()
-                .SingleInstance();
-
             // 注册DbContext           
             builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
                .Where(type => (typeof(IDbContext).IsAssignableFrom(type)))

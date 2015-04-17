@@ -34,32 +34,29 @@ namespace ClientApp
         /// <summary>
         /// 获取服务组件版本号
         /// </summary>       
-        /// <returns></returns>
-        [Service(Implements.Remote, 0)]
+        /// <returns></returns>      
         public Task<string> GetVersion()
         {
-            return this.InvokeRemote<string>(0);
+            return this.InvokeApi<string>("GetVersion");
         }
 
-        [Service(Implements.Remote, 100)]
         public Task<Boolean> Login(User user, Boolean ifAdmin)
         {
-            return this.InvokeRemote<Boolean>(100, user, ifAdmin);
+            return this.InvokeApi<Boolean>("System.Login", user, ifAdmin);
         }
 
-        [Service(Implements.Remote, 300)]
         public Task<Int32> GetSun(Int32 x, Int32 y, Int32 z)
         {
-            return this.InvokeRemote<Int32>(300, x, y, z);
+            return this.InvokeApi<Int32>("GetSun", x, y, z);
         }
 
-        [Service(Implements.Self, 200)]
-        public void WarmingClient(String title, String contents)
+        [Api]
+        public void Warming(String title, String contents)
         {
         }
 
-        [Service(Implements.Self, 201)]
-        public List<Int32> SortByClient(List<Int32> list)
+        [Api]
+        public List<Int32> Sort(List<Int32> list)
         {
             return list.OrderBy(item => item).ToList();
         }

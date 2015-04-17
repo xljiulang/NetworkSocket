@@ -27,7 +27,7 @@ namespace Server.Services
         /// <param name="y"></param>
         /// <param name="z"></param>
         /// <returns></returns>
-        [Service(Implements.Self, 300)]
+        [Api]
         [LogFilter("求合操作")]
         public int GetSun(int x, int y, int z)
         {

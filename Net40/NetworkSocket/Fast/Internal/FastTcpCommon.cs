@@ -23,7 +23,7 @@ namespace NetworkSocket.Fast
         {
             return seviceType
                 .GetMethods()
-                .Where(item => Attribute.IsDefined(item, typeof(ServiceAttribute)))
+                .Where(item => Attribute.IsDefined(item, typeof(ApiAttribute)))
                 .Select(method => new FastAction(method));
         }
 
@@ -34,10 +34,10 @@ namespace NetworkSocket.Fast
         /// <param name="taskSetActionTable">任务行为表</param>
         public static void SetFastActionTaskResult(RequestContext requestContext, TaskSetActionTable taskSetActionTable)
         {
-            var taskSetAction = taskSetActionTable.Take(requestContext.Packet.HashCode);
+            var taskSetAction = taskSetActionTable.Take(requestContext.Packet.Id);
             if (taskSetAction != null)
             {
-                var returnBytes = requestContext.Packet.GetBodyParameter().FirstOrDefault();
+                var returnBytes = requestContext.Packet.Body;
                 taskSetAction.SetAction(SetTypes.SetReturnReult, returnBytes);
             }
         }
@@ -53,8 +53,8 @@ namespace NetworkSocket.Fast
         /// <returns></returns>
         public static RemoteException SetFastActionTaskException(ISerializer serializer, TaskSetActionTable taskSetActionTable, RequestContext requestContext)
         {
-            var exceptionBytes = requestContext.Packet.GetBodyParameter().FirstOrDefault();
-            var taskSetAction = taskSetActionTable.Take(requestContext.Packet.HashCode);
+            var exceptionBytes = requestContext.Packet.Body;
+            var taskSetAction = taskSetActionTable.Take(requestContext.Packet.Id);
 
             if (taskSetAction != null)
             {
@@ -74,31 +74,34 @@ namespace NetworkSocket.Fast
         /// <returns></returns>
         public static bool SetRemoteException(ISerializer serializer, ExceptionContext exceptionContext)
         {
-            exceptionContext.Packet.SetException(serializer, exceptionContext.Exception.Message);
-            return exceptionContext.Client.TrySend(exceptionContext.Packet);
+            var packet = exceptionContext.Packet;
+            packet.IsException = true;
+            packet.Body = Encoding.UTF8.GetBytes(exceptionContext.Exception.Message);
+            return exceptionContext.Client.TrySend(packet);
         }
 
         /// <summary>
-        /// 将数据发送到远程端     
+        /// 调用远程端的Api     
         /// 并返回结果数据任务
         /// </summary>
         /// <typeparam name="T">返回值类型</typeparam>
         /// <param name="client">客户端</param>
         /// <param name="taskSetActionTable">任务行为表</param>
         /// <param name="serializer">序列化工具</param>   
-        /// <param name="command">数据包的命令值</param>
-        /// <param name="hashCode">哈希码</param>
+        /// <param name="api">api</param>
+        /// <param name="id">标识符</param>
+        /// <param name="fromClient">是否为客户端封包</param>
         /// <param name="parameters">参数</param>
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="SocketException"></exception> 
         /// <exception cref="RemoteException"></exception>
         /// <exception cref="TimeoutException"></exception>
         /// <returns></returns>
-        public static Task<T> InvokeRemote<T>(IClient<FastPacket> client, TaskSetActionTable taskSetActionTable, ISerializer serializer, int command, long hashCode, params object[] parameters)
+        public static Task<T> InvokeApi<T>(IClient<FastPacket> client, TaskSetActionTable taskSetActionTable, ISerializer serializer, string api, long id, bool fromClient, params object[] parameters)
         {
             var taskSource = new TaskCompletionSource<T>();
-            var packet = new FastPacket(command, hashCode);
-            packet.SetBodyBinary(serializer, parameters);
+            var packet = new FastPacket(api, id, fromClient);
+            packet.SetBodyParameters(serializer, parameters);
 
             // 登记TaskSetAction           
             Action<SetTypes, byte[]> setAction = (setType, bytes) =>
@@ -117,7 +120,7 @@ namespace NetworkSocket.Fast
                 }
                 else if (setType == SetTypes.SetReturnException)
                 {
-                    var message = (string)serializer.Deserialize(bytes, typeof(string));
+                    var message = Encoding.UTF8.GetString(bytes);
                     var exception = new RemoteException(message);
                     taskSource.TrySetException(exception);
                 }
@@ -133,7 +136,7 @@ namespace NetworkSocket.Fast
                 }
             };
             var taskSetAction = new TaskSetAction(setAction);
-            taskSetActionTable.Add(packet.HashCode, taskSetAction);
+            taskSetActionTable.Add(packet.Id, taskSetAction);
 
             client.Send(packet);
             return taskSource.Task;
@@ -148,7 +151,7 @@ namespace NetworkSocket.Fast
         /// <returns></returns>
         public static object[] GetFastActionParameters(ISerializer serializer, ActionContext context)
         {
-            var bodyParameters = context.Packet.GetBodyParameter();
+            var bodyParameters = context.Packet.GetBodyParameters();
             var parameters = new object[bodyParameters.Count];
 
             for (var i = 0; i < bodyParameters.Count; i++)

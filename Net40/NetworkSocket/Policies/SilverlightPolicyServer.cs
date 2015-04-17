@@ -45,7 +45,10 @@ namespace NetworkSocket.Policies
             {
                 yield break;
             }
-            yield return builder.ToArrayThenClear();
+
+            var bytes = builder.ToArray();
+            builder.Clear();
+            yield return bytes;
         }
 
         /// <summary>

@@ -41,9 +41,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Filters\ExceptionFilterAttribute.cs" />
+    <Compile Include="Filters\LogFilterAttribute.cs" />
+    <Compile Include="Filters\LoginFilterAttribute.cs" />
+    <Compile Include="SystemService.cs" />
     <Compile Include="_Run.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="WebSocketServer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -57,9 +60,16 @@
       <Project>{80d0fa44-523b-4e68-bdc2-b12901d5855b}</Project>
       <Name>NetworkSocket</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Models\Models.csproj">
+      <Project>{f9b37780-6345-4e6f-8523-687f56895625}</Project>
+      <Name>Models</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="WebSocket.html" />
+    <Content Include="bootstrap.min.css" />
+    <Content Include="WebSocketClient.html" />
+    <Content Include="jquery-1.7.2.min.js" />
+    <Content Include="jsonWebsocket.js" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

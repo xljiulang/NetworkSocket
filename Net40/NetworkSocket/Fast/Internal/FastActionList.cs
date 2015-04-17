@@ -15,14 +15,14 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 服务行为字典
         /// </summary>
-        private Dictionary<int, FastAction> dictionary;
+        private Dictionary<string, FastAction> dictionary;
 
         /// <summary>
         /// 服务行为列表
         /// </summary>
         public FastActionList()
         {
-            this.dictionary = new Dictionary<int, FastAction>();
+            this.dictionary = new Dictionary<string, FastAction>(StringComparer.CurrentCultureIgnoreCase);
         }
 
         /// <summary>
@@ -53,17 +53,13 @@ namespace NetworkSocket.Fast
                 throw new ArgumentNullException("fastAction");
             }
 
-            if (this.dictionary.ContainsKey(fastAction.Command))
+            if (this.dictionary.ContainsKey(fastAction.ApiName))
             {
-                throw new ArgumentException(string.Format("服务行为{0}或其命令值已存在", fastAction.Name));
+                throw new ArgumentException(string.Format("服务行为{0}已存在", fastAction.ApiName));
             }
 
-            if (fastAction.Implement == Implements.Self)
-            {
-                this.CheckSelfParameterType(fastAction);
-            }
-
-            this.dictionary.Add(fastAction.Command, fastAction);
+            this.CheckSelfParameterType(fastAction);
+            this.dictionary.Add(fastAction.ApiName, fastAction);
         }
 
         /// <summary>
@@ -75,19 +71,19 @@ namespace NetworkSocket.Fast
         {
             if (fastAction.ReturnType.IsSerializable == false)
             {
-                throw new ArgumentException(string.Format("服务行为{0}的返回类型必须为可序列化", fastAction.Name));
+                throw new ArgumentException(string.Format("Api{0}的返回类型必须为可序列化", fastAction.ApiName));
             }
 
             foreach (var pType in fastAction.ParameterTypes)
             {
                 if (pType.IsAbstract || pType.IsInterface)
                 {
-                    throw new ArgumentException(string.Format("服务行为{0}的参数类型不能包含抽象类或接口", fastAction.Name));
+                    throw new ArgumentException(string.Format("Api{0}的参数类型不能包含抽象类或接口", fastAction.ApiName));
                 }
 
                 if (pType.IsSerializable == false)
                 {
-                    throw new ArgumentException(string.Format("服务行为{0}的参数类型必须为可序列化", fastAction.Name));
+                    throw new ArgumentException(string.Format("Api{0}的参数类型必须为可序列化", fastAction.ApiName));
                 }
             }
         }
@@ -110,12 +106,12 @@ namespace NetworkSocket.Fast
         /// 获取服务行为
         /// 如果获取不到则返回null
         /// </summary>
-        /// <param name="command">行为命令</param>
+        /// <param name="name">行为名称</param>
         /// <returns></returns>
-        public FastAction TryGet(int command)
+        public FastAction TryGet(string name)
         {
             FastAction fastAction;
-            if (this.dictionary.TryGetValue(command, out fastAction))
+            if (this.dictionary.TryGetValue(name, out fastAction))
             {
                 return fastAction;
             }
@@ -125,11 +121,11 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 获取是否存在
         /// </summary>
-        /// <param name="command">行为命令</param>
+        /// <param name="name">行为名称</param>
         /// <returns></returns>
-        public bool IsExist(int command)
+        public bool IsExist(string name)
         {
-            return this.dictionary.ContainsKey(command);
+            return this.dictionary.ContainsKey(name);
         }
     }
 }

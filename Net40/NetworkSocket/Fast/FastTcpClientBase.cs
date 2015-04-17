@@ -23,7 +23,7 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 数据包哈希码提供者
         /// </summary>
-        private HashCodeProvider hashCodeProvider;
+        private PacketIdProvider packetIdProvider;
 
         /// <summary>
         /// 任务行为表
@@ -59,7 +59,7 @@ namespace NetworkSocket.Fast
         public FastTcpClientBase()
         {
             this.fastActionList = new FastActionList(FastTcpCommon.GetServiceFastActions(this.GetType()));
-            this.hashCodeProvider = new HashCodeProvider();
+            this.packetIdProvider = new PacketIdProvider();
             this.taskSetActionTable = new TaskSetActionTable();
             this.Serializer = new DefaultSerializer();
         }
@@ -123,6 +123,12 @@ namespace NetworkSocket.Fast
         /// <param name="requestContext">请求上下文</param>
         private void ProcessRequest(RequestContext requestContext)
         {
+            if (requestContext.Packet.IsFromClient)
+            {
+                FastTcpCommon.SetFastActionTaskResult(requestContext, this.taskSetActionTable);
+                return;
+            }
+
             var action = this.GetFastAction(requestContext);
             if (action == null)
             {
@@ -130,14 +136,7 @@ namespace NetworkSocket.Fast
             }
 
             var actionContext = new ActionContext(requestContext, action);
-            if (action.Implement == Implements.Self)
-            {
-                this.TryExecuteAction(actionContext);
-            }
-            else
-            {
-                FastTcpCommon.SetFastActionTaskResult(actionContext, this.taskSetActionTable);
-            }
+            this.TryExecuteAction(actionContext);
         }
 
         /// <summary>
@@ -147,13 +146,13 @@ namespace NetworkSocket.Fast
         /// <returns></returns>
         private FastAction GetFastAction(RequestContext requestContext)
         {
-            var action = this.fastActionList.TryGet(requestContext.Packet.Command);
+            var action = this.fastActionList.TryGet(requestContext.Packet.ApiName);
             if (action != null)
             {
                 return action;
             }
 
-            var exception = new ActionNotImplementException(requestContext.Packet.Command);
+            var exception = new ApiNotExistException(requestContext.Packet.ApiName);
             var exceptionContext = new ExceptionContext(requestContext, exception);
 
             FastTcpCommon.SetRemoteException(this.Serializer, exceptionContext);
@@ -204,7 +203,8 @@ namespace NetworkSocket.Fast
             var returnValue = actionContext.Action.Execute(this, parameters);
             if (actionContext.Action.IsVoidReturn == false && this.IsConnected)
             {
-                actionContext.Packet.SetBodyBinary(this.Serializer, returnValue);
+                var returnByes = this.Serializer.Serialize(returnValue);
+                actionContext.Packet.Body = returnByes;
                 this.Send(actionContext.Packet);
             }
         }
@@ -235,37 +235,37 @@ namespace NetworkSocket.Fast
         }
 
         /// <summary>
-        /// 调用服务端实现的服务方法        
+        /// 调用服务端实现的Api        
         /// </summary>       
-        /// <param name="command">服务行为的command值</param>
+        /// <param name="api">服务行为的api</param>
         /// <param name="parameters">参数列表</param>   
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="SocketException"></exception> 
-        public Task InvokeRemote(int command, params object[] parameters)
+        public Task InvokeApi(string api, params object[] parameters)
         {
             return Task.Factory.StartNew(() =>
             {
-                var packet = new FastPacket(command, this.hashCodeProvider.GetHashCode());
-                packet.SetBodyBinary(this.Serializer, parameters);
+                var packet = new FastPacket(api, this.packetIdProvider.GetId(), true);
+                packet.SetBodyParameters(this.Serializer, parameters);
                 this.Send(packet);
             });
         }
 
         /// <summary>
-        /// 调用服务端实现的服务方法    
+        /// 调用服务端实现的Api   
         /// 并返回结果数据任务
         /// </summary>
         /// <typeparam name="T">返回值类型</typeparam>
-        /// <param name="command">服务行为的command值</param>
+        /// <param name="api">服务行为的api</param>
         /// <param name="parameters">参数</param>          
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="SocketException"></exception> 
         /// <exception cref="RemoteException"></exception>
         /// <exception cref="TimeoutException"></exception>
         /// <returns>远程数据任务</returns>    
-        public Task<T> InvokeRemote<T>(int command, params object[] parameters)
+        public Task<T> InvokeApi<T>(string api, params object[] parameters)
         {
-            return FastTcpCommon.InvokeRemote<T>(this, this.taskSetActionTable, this.Serializer, command, this.hashCodeProvider.GetHashCode(), parameters);
+            return FastTcpCommon.InvokeApi<T>(this, this.taskSetActionTable, this.Serializer, api, this.packetIdProvider.GetId(), true, parameters);
         }
 
         /// <summary>
@@ -296,7 +296,7 @@ namespace NetworkSocket.Fast
                 this.taskSetActionTable.Clear();
                 this.taskSetActionTable = null;
 
-                this.hashCodeProvider = null;
+                this.packetIdProvider = null;
                 this.Serializer = null;
             }
         }
