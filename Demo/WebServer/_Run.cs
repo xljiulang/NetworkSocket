@@ -14,6 +14,7 @@ namespace WebServer
         static void Main(string[] args)
         {
             Console.Title = "WebSocket";
+            GlobalFilters.Add(new Filters.ExceptionFilterAttribute());
             jwebServer.BindService<SystemService>();
             jwebServer.StartListen(8282);
 
