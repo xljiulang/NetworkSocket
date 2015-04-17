@@ -25,26 +25,22 @@ namespace WebServer
                 Console.ReadLine();
 
                 var client = jwebServer.AliveClients.FirstOrDefault();
-                if (client != null)
-                {
-                    // 调用客户端进行sum运算
-                    try
-                    {
-                        var sum = jwebServer.InvokeApi<int>(client, "sum", 1, 2, 3).Result;
-                        Console.WriteLine("InvokeApi(sum, 1, 2, 3) return {0}", sum);
-                    }
-                    catch (AggregateException ex)
-                    {
-                        Console.WriteLine(ex.InnerException.Message);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(ex.Message);
-                    }
-                }
-                else
+                if (client == null)
                 {
                     Console.WriteLine("没有连接的客户端 ..");
+                    break;
+                }
+
+                // 调用客户端进行sum运算
+                try
+                {
+                    var sum = jwebServer.InvokeApi<int>(client, "sum", 1, 2, 3).Result;
+                    Console.WriteLine("InvokeApi(sum, 1, 2, 3) return {0}", sum);
+                    jwebServer.InvokeApi(client, "notify", "这是服务器发来的通知");
+                }
+                catch (AggregateException ex)
+                {
+                    Console.WriteLine("调用远程api异常" + ex.InnerException.Message);
                 }
             }
         }

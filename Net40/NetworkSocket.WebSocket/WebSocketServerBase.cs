@@ -48,11 +48,11 @@ namespace NetworkSocket.WebSocket
             var request = HandshakeRequest.From(builder);
             if (request == null)
             {
-                client.NormalClose(CloseReasons.ProtocolError);
+                client.NormalClose(CloseCodes.ProtocolError);
                 return false;
             }
 
-            var reason = CloseReasons.NormalClosure;
+            var reason = CloseCodes.NormalClosure;
             if (this.OnCheckHandshake(client, request, out reason) == false)
             {
                 client.NormalClose(reason);
@@ -91,11 +91,11 @@ namespace NetworkSocket.WebSocket
             switch (tRecv.Frame)
             {
                 case Frames.Close:
-                    var reason = default(CloseReasons);
+                    var reason = CloseCodes.NormalClosure;
                     if (tRecv.Content.Length > 1)
                     {
                         var status = ByteConverter.ToUInt16(tRecv.Content, 0, Endians.Big);
-                        reason = (CloseReasons)status;
+                        reason = (CloseCodes)status;
                     }
                     this.OnClose(client, reason);
                     client.Close();
@@ -133,9 +133,9 @@ namespace NetworkSocket.WebSocket
         /// <param name="request">握手请求</param>
         /// <param name="reason">不通过原因</param>
         /// <returns></returns>
-        protected virtual bool OnCheckHandshake(IClient<Response> client, HandshakeRequest request, out CloseReasons reason)
+        protected virtual bool OnCheckHandshake(IClient<Response> client, HandshakeRequest request, out CloseCodes reason)
         {
-            reason = default(CloseReasons);
+            reason = CloseCodes.NormalClosure;
             return true;
         }
 
@@ -181,8 +181,8 @@ namespace NetworkSocket.WebSocket
         /// 在触发此方法后，基础服务将自动安全回收此客户端对象
         /// </summary>
         /// <param name="client">客户端</param>
-        /// <param name="reason">关闭原因</param>
-        protected virtual void OnClose(IClient<Response> client, CloseReasons reason)
+        /// <param name="code">关闭码</param>
+        protected virtual void OnClose(IClient<Response> client, CloseCodes code)
         {
         }
     }

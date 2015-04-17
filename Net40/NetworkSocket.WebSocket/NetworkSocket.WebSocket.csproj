@@ -58,7 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ClientExtend.cs" />
-    <Compile Include="CloseReasons.cs" />
+    <Compile Include="CloseCodes.cs" />
     <Compile Include="HandshakeRequest.cs" />
     <Compile Include="HandshakeResponse.cs" />
     <Compile Include="Frames.cs" />

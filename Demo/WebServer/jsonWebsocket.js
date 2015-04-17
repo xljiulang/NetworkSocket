@@ -57,7 +57,8 @@ function jsonWebsocket(url) {
 
         var callback = getCallback(packet.id);
         if (callback) {
-            callback(packet.body);
+            var apiResult = { state: packet.state, value: packet.body };
+            callback(apiResult);
         }
     }
 

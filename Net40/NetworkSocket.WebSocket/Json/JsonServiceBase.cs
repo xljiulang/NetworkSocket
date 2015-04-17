@@ -113,7 +113,7 @@ namespace NetworkSocket.WebSocket.Json
         /// 调用客户端实现的Api        
         /// </summary>
         /// <param name="client">客户端</param>
-        /// <param name="api">api</param>
+        /// <param name="api">api(区分大小写)</param>
         /// <param name="parameters">参数列表</param>    
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="ContextNullException"></exception>
@@ -133,7 +133,7 @@ namespace NetworkSocket.WebSocket.Json
         /// </summary>
         /// <typeparam name="T">返回值类型</typeparam>
         /// <param name="client">客户端</param>
-        /// <param name="api">api</param>
+        /// <param name="api">api(区分大小写)</param>
         /// <param name="parameters">参数</param>     
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="ContextNullException"></exception>

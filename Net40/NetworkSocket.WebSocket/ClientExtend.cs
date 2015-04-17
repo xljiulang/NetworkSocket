@@ -15,10 +15,10 @@ namespace NetworkSocket.WebSocket
         /// 正常关闭客户端
         /// </summary>
         /// <param name="client">客户端</param>
-        /// <param name="reason">关闭原因</param>
-        public static void NormalClose(this IClient<Response> client, CloseReasons reason)
+        /// <param name="code">关闭码</param>
+        public static void NormalClose(this IClient<Response> client, CloseCodes code)
         {
-            var content = ByteConverter.ToBytes((ushort)(reason), Endians.Big);
+            var content = ByteConverter.ToBytes((ushort)(code), Endians.Big);
             var response = new FrameResponse(Frames.Close, content);
             client.TrySend(response);
             client.Close();

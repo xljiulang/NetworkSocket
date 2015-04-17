@@ -141,7 +141,7 @@ namespace NetworkSocket.WebSocket.Json
         /// 调用客户端实现的服务方法        
         /// </summary>
         /// <param name="client">客户端</param>
-        /// <param name="api">api</param>
+        /// <param name="api">api(区分大小写)</param>
         /// <param name="parameters">参数列表</param>    
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="SocketException"></exception>         
@@ -150,7 +150,14 @@ namespace NetworkSocket.WebSocket.Json
             return Task.Factory.StartNew(() =>
             {
                 var id = this.packetIdProvider.GetId();
-                var packet = new JsonPacket { api = api, id = id, state = true, fromClient = false, body = parameters };
+                var packet = new JsonPacket
+                {
+                    api = api,
+                    id = id,
+                    state = true,
+                    fromClient = false,
+                    body = parameters
+                };
                 var packetJson = this.Serializer.Serialize(packet);
                 client.Send(packetJson);
             });
@@ -162,7 +169,7 @@ namespace NetworkSocket.WebSocket.Json
         /// </summary>
         /// <typeparam name="T">返回值类型</typeparam>
         /// <param name="client">客户端</param>
-        /// <param name="api">api</param>
+        /// <param name="api">api(区分大小写)</param>
         /// <param name="parameters">参数</param>     
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="SocketException"></exception> 
@@ -173,7 +180,14 @@ namespace NetworkSocket.WebSocket.Json
         {
             var id = this.packetIdProvider.GetId();
             var taskSource = new TaskCompletionSource<T>();
-            var packet = new JsonPacket { api = api, id = id, state = true, fromClient = false, body = parameters };
+            var packet = new JsonPacket
+            {
+                api = api,
+                id = id,
+                state = true,
+                fromClient = false,
+                body = parameters
+            };
             var packetJson = this.Serializer.Serialize(packet);
 
             // 登记TaskSetAction           
@@ -237,7 +251,7 @@ namespace NetworkSocket.WebSocket.Json
             }
             catch (Exception)
             {
-                client.NormalClose(CloseReasons.ProtocolError);
+                client.NormalClose(CloseCodes.ProtocolError);
                 return null;
             }
         }

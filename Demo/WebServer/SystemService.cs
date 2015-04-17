@@ -37,11 +37,12 @@ namespace WebServer
         [Api]
         [LogFilter("登录操作")]
         public string Login(User user, bool ifAdmin)
-        {
+        {           
             if (user == null)
             {
                 throw new ArgumentNullException("user");
             }
+
             if (string.IsNullOrEmpty(user.Account) || string.IsNullOrEmpty(user.Password))
             {
                 return "用户名和密码不能为空";
