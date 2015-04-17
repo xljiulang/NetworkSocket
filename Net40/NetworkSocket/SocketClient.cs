@@ -65,6 +65,10 @@ namespace NetworkSocket
         /// </summary>
         internal Action<T> SendHandler;
 
+        /// <summary>
+        /// 关闭时的委托
+        /// </summary>
+        internal Action CloseHandler;
 
 
         /// <summary>
@@ -285,6 +289,11 @@ namespace NetworkSocket
                 {
                     socket = null;
                     this.closed = true;
+                }
+
+                if (this.CloseHandler != null)
+                {
+                    this.CloseHandler();
                 }
             }
         }

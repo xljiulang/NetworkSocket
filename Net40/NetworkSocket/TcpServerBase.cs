@@ -129,6 +129,7 @@ namespace NetworkSocket
                 client.ReceiveHandler = (builder) => this.OnReceive(client, builder);
                 client.RecvCompleteHandler = (packet) => this.OnRecvCompleteHandleWithTask(client, packet);
                 client.DisconnectHandler = () => this.RecyceClient(client);
+                client.CloseHandler = () => this.RecyceClient(client);
 
                 // SocketAsync与socket绑定    
                 client.Bind(arg.AcceptSocket);
