@@ -13,10 +13,10 @@ namespace NetworkSocket
     /// <typeparam name="T">发送数据包协议</typeparam>
     /// <typeparam name="TRecv">接收到的数据包类型</typeparam>
     [DebuggerDisplay("Count = {Count}")]
-    internal sealed class SocketClientBag<T, TRecv> where T : PacketBase
+    internal sealed class SocketClientBag<T, TRecv> : IDisposable where T : PacketBase
     {
         /// <summary>
-        /// 无序集合
+        /// 队列
         /// </summary>
         private ConcurrentBag<SocketClient<T, TRecv>> bag = new ConcurrentBag<SocketClient<T, TRecv>>();
 
@@ -53,6 +53,18 @@ namespace NetworkSocket
                 return client;
             }
             return new SocketClient<T, TRecv>();
+        }
+
+        /// <summary>
+        /// 释放资源
+        /// </summary>
+        public void Dispose()
+        {
+            var clients = this.bag.ToArray();
+            foreach (var client in clients)
+            {
+                client.Dispose();
+            }
         }
     }
 }

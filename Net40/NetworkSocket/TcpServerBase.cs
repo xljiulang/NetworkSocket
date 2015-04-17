@@ -265,11 +265,7 @@ namespace NetworkSocket
                 client.Dispose();
             }
 
-            while (this.clientBag.Count > 0)
-            {
-                this.clientBag.Take().Dispose();
-            }
-
+            this.clientBag.Dispose();
             this.acceptArg.Dispose();
 
             if (disposing)
