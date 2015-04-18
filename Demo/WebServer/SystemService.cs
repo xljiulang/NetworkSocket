@@ -15,7 +15,7 @@ namespace WebServer
     /// <summary>
     /// 系统
     /// </summary>   
-    public class SystemService : JsonServiceBase
+    public class SystemService : JsonApiServiceBase
     {
         /// <summary>
         /// 获取服务组件版本号

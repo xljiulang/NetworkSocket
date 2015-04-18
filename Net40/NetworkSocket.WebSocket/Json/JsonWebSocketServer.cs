@@ -15,9 +15,9 @@ namespace NetworkSocket.WebSocket.Json
     public class JsonWebSocketServer : WebSocketServerBase, IJsonWebSocketServer
     {
         /// <summary>
-        /// 所有服务行为
+        /// 所有Api行为
         /// </summary>
-        private JsonActionList jsonActionList;
+        private ApiActionList apiActionList;
 
         /// <summary>
         /// 数据包哈希码提供者
@@ -53,7 +53,7 @@ namespace NetworkSocket.WebSocket.Json
         public IJsonSerializer Serializer { get; set; }
 
         /// <summary>
-        /// 获取或设置服务行为特性过滤器提供者
+        /// 获取或设置Api行为特性过滤器提供者
         /// </summary>
         public IFilterAttributeProvider FilterAttributeProvider { get; set; }
 
@@ -62,7 +62,7 @@ namespace NetworkSocket.WebSocket.Json
         /// </summary>
         public JsonWebSocketServer()
         {
-            this.jsonActionList = new JsonActionList();
+            this.apiActionList = new ApiActionList();
             this.packetIdProvider = new PacketIdProvider();
             this.taskSetActionTable = new TaskSetActionTable();
 
@@ -71,13 +71,13 @@ namespace NetworkSocket.WebSocket.Json
         }
 
         /// <summary>
-        /// 绑定本程序集所有实现IJsonService的服务
+        /// 绑定本程序集所有实现IJsonApiService的服务
         /// </summary>
         /// <returns></returns>       
         /// <exception cref="ArgumentException"></exception>
         public JsonWebSocketServer BindService()
         {
-            var allServices = this.GetType().Assembly.GetTypes().Where(item => typeof(IJsonService).IsAssignableFrom(item));
+            var allServices = this.GetType().Assembly.GetTypes().Where(item => typeof(IJsonApiService).IsAssignableFrom(item));
             return this.BindService(allServices);
         }
 
@@ -87,7 +87,7 @@ namespace NetworkSocket.WebSocket.Json
         /// <typeparam name="T">服务类型</typeparam>
         /// <returns></returns>       
         /// <exception cref="ArgumentException"></exception>
-        public JsonWebSocketServer BindService<T>() where T : IJsonService
+        public JsonWebSocketServer BindService<T>() where T : IJsonApiService
         {
             return this.BindService(typeof(T));
         }
@@ -123,15 +123,15 @@ namespace NetworkSocket.WebSocket.Json
                 throw new ArgumentException("serivceType不能含null值");
             }
 
-            if (serivceType.Any(item => typeof(IJsonService).IsAssignableFrom(item) == false))
+            if (serivceType.Any(item => typeof(IJsonApiService).IsAssignableFrom(item) == false))
             {
-                throw new ArgumentException("serivceType必须派生于IJsonService");
+                throw new ArgumentException("serivceType必须派生于IJsonApiService");
             }
 
             foreach (var type in serivceType)
             {
-                var actions = JsonWebSocketCommon.GetServiceJsonActions(type);
-                this.jsonActionList.AddRange(actions);
+                var actions = JsonWebSocketCommon.GetServiceApiActions(type);
+                this.apiActionList.AddRange(actions);
             }
             return this;
         }
@@ -292,7 +292,7 @@ namespace NetworkSocket.WebSocket.Json
         /// <param name="requestContext">请求上下文</param>
         private void ProcessRemoteException(RequestContext requestContext)
         {
-            var remoteException = JsonWebSocketCommon.SetJsonActionTaskException(this.Serializer, this.taskSetActionTable, requestContext);
+            var remoteException = JsonWebSocketCommon.SetApiActionTaskException(this.Serializer, this.taskSetActionTable, requestContext);
             if (remoteException == null)
             {
                 return;
@@ -314,24 +314,24 @@ namespace NetworkSocket.WebSocket.Json
         {
             if (requestContext.Packet.fromClient == false)
             {
-                JsonWebSocketCommon.SetJsonActionTaskResult(requestContext, this.taskSetActionTable);
+                JsonWebSocketCommon.SetApiActionTaskResult(requestContext, this.taskSetActionTable);
                 return;
             }
 
-            var action = this.GetJsonAction(requestContext);
+            var action = this.GetApiAction(requestContext);
             if (action == null)
             {
                 return;
             }
 
             var actionContext = new ActionContext(requestContext, action);
-            var jsonService = this.GetJsonService(actionContext);
+            var jsonService = this.GetApiService(actionContext);
             if (jsonService == null)
             {
                 return;
             }
 
-            // 执行服务行为           
+            // 执行Api行为           
             jsonService.Execute(actionContext);
 
             // 释放资源
@@ -339,13 +339,13 @@ namespace NetworkSocket.WebSocket.Json
         }
 
         /// <summary>
-        /// 获取服务行为
+        /// 获取Api行为
         /// </summary>
         /// <param name="requestContext">请求上下文</param>
         /// <returns></returns>
-        private JsonAction GetJsonAction(RequestContext requestContext)
+        private ApiAction GetApiAction(RequestContext requestContext)
         {
-            var action = this.jsonActionList.TryGet(requestContext.Packet.api);
+            var action = this.apiActionList.TryGet(requestContext.Packet.api);
             if (action != null)
             {
                 return action;
@@ -366,14 +366,14 @@ namespace NetworkSocket.WebSocket.Json
         }
 
         /// <summary>
-        /// 获取jsonService实例
+        /// 获取ApiService实例
         /// </summary>
-        /// <param name="actionContext">服务行为上下文</param>
+        /// <param name="actionContext">Api行为上下文</param>
         /// <returns></returns>
-        private IJsonService GetJsonService(ActionContext actionContext)
+        private IJsonApiService GetApiService(ActionContext actionContext)
         {
             // 获取服务实例
-            var jsonService = (IJsonService)DependencyResolver.Current.GetService(actionContext.Action.DeclaringService);
+            var jsonService = (IJsonApiService)DependencyResolver.Current.GetService(actionContext.Action.DeclaringService);
             if (jsonService != null)
             {
                 return jsonService;
@@ -418,7 +418,7 @@ namespace NetworkSocket.WebSocket.Json
             base.Dispose(disposing);
             if (disposing)
             {
-                this.jsonActionList = null;
+                this.apiActionList = null;
 
                 this.taskSetActionTable.Clear();
                 this.taskSetActionTable = null;

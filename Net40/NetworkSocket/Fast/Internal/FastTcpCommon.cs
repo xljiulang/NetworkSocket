@@ -14,25 +14,25 @@ namespace NetworkSocket.Fast
     internal static class FastTcpCommon
     {
         /// <summary>
-        /// 获取服务类型的服务行为
+        /// 获取服务类型的Api行为
         /// </summary>
         /// <param name="seviceType">服务类型</param>
         /// <exception cref="ArgumentException"></exception>
         /// <returns></returns>
-        public static IEnumerable<FastAction> GetServiceFastActions(Type seviceType)
+        public static IEnumerable<ApiAction> GetServiceApiActions(Type seviceType)
         {
             return seviceType
                 .GetMethods()
                 .Where(item => Attribute.IsDefined(item, typeof(ApiAttribute)))
-                .Select(method => new FastAction(method));
+                .Select(method => new ApiAction(method));
         }
 
         /// <summary>
-        /// 设置服务行为返回的任务结果
+        /// 设置Api行为返回的任务结果
         /// </summary>
         /// <param name="requestContext">上下文</param>
         /// <param name="taskSetActionTable">任务行为表</param>
-        public static void SetFastActionTaskResult(RequestContext requestContext, TaskSetActionTable taskSetActionTable)
+        public static void SetApiActionTaskResult(RequestContext requestContext, TaskSetActionTable taskSetActionTable)
         {
             var taskSetAction = taskSetActionTable.Take(requestContext.Packet.Id);
             if (taskSetAction != null)
@@ -44,14 +44,14 @@ namespace NetworkSocket.Fast
 
 
         /// <summary>
-        /// 设置服务行为返回的任务异常 
+        /// 设置Api行为返回的任务异常 
         /// 设置失败则返远程异常对象
         /// </summary>          
         /// <param name="serializer">序列化工具</param>
         /// <param name="taskSetActionTable">任务行为表</param>
         /// <param name="requestContext">请求上下文</param>
         /// <returns></returns>
-        public static RemoteException SetFastActionTaskException(ISerializer serializer, TaskSetActionTable taskSetActionTable, RequestContext requestContext)
+        public static RemoteException SetApiActionTaskException(ISerializer serializer, TaskSetActionTable taskSetActionTable, RequestContext requestContext)
         {
             var exceptionBytes = requestContext.Packet.Body;
             var taskSetAction = taskSetActionTable.Take(requestContext.Packet.Id);
@@ -144,12 +144,12 @@ namespace NetworkSocket.Fast
 
 
         /// <summary>
-        /// 生成服务行为的调用参数
+        /// 生成Api行为的调用参数
         /// </summary>        
         /// <param name="serializer">序列化工具</param>
         /// <param name="context">上下文</param> 
         /// <returns></returns>
-        public static object[] GetFastActionParameters(ISerializer serializer, ActionContext context)
+        public static object[] GetApiActionParameters(ISerializer serializer, ActionContext context)
         {
             var bodyParameters = context.Packet.GetBodyParameters();
             var parameters = new object[bodyParameters.Count];

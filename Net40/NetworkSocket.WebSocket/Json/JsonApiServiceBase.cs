@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 namespace NetworkSocket.WebSocket.Json
 {
     /// <summary>
-    /// JsonWebSocket服务抽象类   
+    /// JsonWebSocket的Api服务抽象类   
     /// </summary>
-    public abstract class JsonServiceBase : IJsonService, IAuthorizationFilter, IActionFilter, IExceptionFilter
+    public abstract class JsonApiServiceBase : IJsonApiService, IAuthorizationFilter, IActionFilter, IExceptionFilter
     {
         /// <summary>
         /// 线程唯一上下文
@@ -20,7 +20,7 @@ namespace NetworkSocket.WebSocket.Json
         private static ActionContext currentContext;
 
         /// <summary>
-        /// 获取当前服务行为上下文
+        /// 获取当前Api行为上下文
         /// </summary>
         protected ActionContext CurrentContext
         {
@@ -35,10 +35,10 @@ namespace NetworkSocket.WebSocket.Json
         }
 
         /// <summary>
-        /// 执行服务行为
+        /// 执行Api行为
         /// </summary>   
         /// <param name="actionContext">上下文</param>      
-        void IJsonService.Execute(ActionContext actionContext)
+        void IJsonApiService.Execute(ActionContext actionContext)
         {
             var filters = actionContext.WebSocketServer.FilterAttributeProvider.GetActionFilters(actionContext.Action);
 
@@ -65,7 +65,7 @@ namespace NetworkSocket.WebSocket.Json
         }
 
         /// <summary>
-        /// 处理服务行为执行过程中产生的异常
+        /// 处理Api行为执行过程中产生的异常
         /// </summary>
         /// <param name="actionContext">上下文</param>
         /// <param name="actionfilters">过滤器</param>
@@ -83,7 +83,7 @@ namespace NetworkSocket.WebSocket.Json
         }
 
         /// <summary>
-        /// 调用自身实现的服务行为
+        /// 调用自身实现的Api行为
         /// 将返回值发送给客户端        
         /// </summary>       
         /// <param name="actionContext">上下文</param>       
@@ -93,7 +93,7 @@ namespace NetworkSocket.WebSocket.Json
             // 执行Filter
             this.ExecFiltersBeforeAction(filters, actionContext);
 
-            var parameters = JsonWebSocketCommon.GetJsonActionParameters(actionContext.WebSocketServer.Serializer, actionContext);
+            var parameters = JsonWebSocketCommon.GetApiActionParameters(actionContext.WebSocketServer.Serializer, actionContext);
             var returnValue = actionContext.Action.Execute(this, parameters);
 
             // 执行Filter
@@ -162,7 +162,7 @@ namespace NetworkSocket.WebSocket.Json
         }
 
         /// <summary>
-        /// 在执行服务行为前触发       
+        /// 在执行Api行为前触发       
         /// </summary>
         /// <param name="filterContext">上下文</param>       
         /// <returns></returns>
@@ -171,7 +171,7 @@ namespace NetworkSocket.WebSocket.Json
         }
 
         /// <summary>
-        /// 在执行服务行为后触发
+        /// 在执行Api行为后触发
         /// </summary>
         /// <param name="filterContext">上下文</param>      
         protected virtual void OnExecuted(ActionContext filterContext)
@@ -189,9 +189,9 @@ namespace NetworkSocket.WebSocket.Json
 
         #region ExecFilters
         /// <summary>
-        /// 在服务行为前 执行过滤器
+        /// 在Api行为前 执行过滤器
         /// </summary>       
-        /// <param name="actionFilters">服务行为过滤器</param>
+        /// <param name="actionFilters">Api行为过滤器</param>
         /// <param name="actionContext">上下文</param>   
         private void ExecFiltersBeforeAction(IEnumerable<IFilter> actionFilters, ActionContext actionContext)
         {
@@ -229,9 +229,9 @@ namespace NetworkSocket.WebSocket.Json
         }
 
         /// <summary>
-        /// 在服务行为后执行过滤器
+        /// 在Api行为后执行过滤器
         /// </summary>       
-        /// <param name="actionFilters">服务行为过滤器</param>
+        /// <param name="actionFilters">Api行为过滤器</param>
         /// <param name="actionContext">上下文</param>       
         private void ExecFiltersAfterAction(IEnumerable<IFilter> actionFilters, ActionContext actionContext)
         {
@@ -258,7 +258,7 @@ namespace NetworkSocket.WebSocket.Json
         /// <summary>
         /// 执行异常过滤器
         /// </summary>       
-        /// <param name="actionFilters">服务行为过滤器</param>
+        /// <param name="actionFilters">Api行为过滤器</param>
         /// <param name="exceptionContext">上下文</param>       
         private void ExecExceptionFilters(IEnumerable<IFilter> actionFilters, ExceptionContext exceptionContext)
         {
@@ -320,7 +320,7 @@ namespace NetworkSocket.WebSocket.Json
         }
 
         /// <summary>
-        /// 在执行服务行为前触发       
+        /// 在执行Api行为前触发       
         /// </summary>
         /// <param name="filterContext">上下文</param>       
         /// <returns></returns>
@@ -330,7 +330,7 @@ namespace NetworkSocket.WebSocket.Json
         }
 
         /// <summary>
-        /// 在执行服务行为后触发
+        /// 在执行Api行为后触发
         /// </summary>
         /// <param name="filterContext">上下文</param>   
         void IActionFilter.OnExecuted(ActionContext filterContext)
@@ -370,7 +370,7 @@ namespace NetworkSocket.WebSocket.Json
         /// <summary>
         /// 析构函数
         /// </summary>
-        ~JsonServiceBase()
+        ~JsonApiServiceBase()
         {
             this.Dispose(false);
         }

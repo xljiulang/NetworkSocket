@@ -27,7 +27,7 @@ namespace NetworkSocket.Fast.Context
         /// <summary>
         /// 服务端异常上下文
         /// </summary>
-        /// <param name="actionContext">服务行为上下文</param>
+        /// <param name="actionContext">Api行为上下文</param>
         /// <param name="exception">异常</param>
         public ServerExceptionContext(ServerActionContext actionContext, Exception exception)
             : base(actionContext, exception)

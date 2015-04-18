@@ -16,9 +16,9 @@ namespace NetworkSocket.Fast
     public abstract class FastTcpClientBase : TcpClientBase<FastPacket, FastPacket>, IFastTcpClient
     {
         /// <summary>
-        /// 所有服务行为
+        /// 所有Api行为
         /// </summary>
-        private FastActionList fastActionList;
+        private ApiActionList apiActionList;
 
         /// <summary>
         /// 数据包哈希码提供者
@@ -58,7 +58,7 @@ namespace NetworkSocket.Fast
         /// </summary>
         public FastTcpClientBase()
         {
-            this.fastActionList = new FastActionList(FastTcpCommon.GetServiceFastActions(this.GetType()));
+            this.apiActionList = new ApiActionList(FastTcpCommon.GetServiceApiActions(this.GetType()));
             this.packetIdProvider = new PacketIdProvider();
             this.taskSetActionTable = new TaskSetActionTable();
             this.Serializer = new DefaultSerializer();
@@ -102,7 +102,7 @@ namespace NetworkSocket.Fast
         /// <param name="requestContext">请求上下文</param>
         private void ProcessRemoteException(RequestContext requestContext)
         {
-            var remoteException = FastTcpCommon.SetFastActionTaskException(this.Serializer, this.taskSetActionTable, requestContext);
+            var remoteException = FastTcpCommon.SetApiActionTaskException(this.Serializer, this.taskSetActionTable, requestContext);
             if (remoteException == null)
             {
                 return;
@@ -125,11 +125,11 @@ namespace NetworkSocket.Fast
         {
             if (requestContext.Packet.IsFromClient)
             {
-                FastTcpCommon.SetFastActionTaskResult(requestContext, this.taskSetActionTable);
+                FastTcpCommon.SetApiActionTaskResult(requestContext, this.taskSetActionTable);
                 return;
             }
 
-            var action = this.GetFastAction(requestContext);
+            var action = this.GetApiAction(requestContext);
             if (action == null)
             {
                 return;
@@ -140,13 +140,13 @@ namespace NetworkSocket.Fast
         }
 
         /// <summary>
-        /// 获取服务行为
+        /// 获取Api行为
         /// </summary>
         /// <param name="requestContext">请求上下文</param>
         /// <returns></returns>
-        private FastAction GetFastAction(RequestContext requestContext)
+        private ApiAction GetApiAction(RequestContext requestContext)
         {
-            var action = this.fastActionList.TryGet(requestContext.Packet.ApiName);
+            var action = this.apiActionList.TryGet(requestContext.Packet.ApiName);
             if (action != null)
             {
                 return action;
@@ -194,12 +194,12 @@ namespace NetworkSocket.Fast
 
 
         /// <summary>
-        /// 执行服务行为
+        /// 执行Api行为
         /// </summary>
         /// <param name="actionContext">上下文</param>   
         private void ExecuteAction(ActionContext actionContext)
         {
-            var parameters = FastTcpCommon.GetFastActionParameters(this.Serializer, actionContext);
+            var parameters = FastTcpCommon.GetApiActionParameters(this.Serializer, actionContext);
             var returnValue = actionContext.Action.Execute(this, parameters);
             if (actionContext.Action.IsVoidReturn == false && this.IsConnected)
             {
@@ -210,7 +210,7 @@ namespace NetworkSocket.Fast
         }
 
         /// <summary>
-        /// 处理服务行为执行过程中产生的异常
+        /// 处理Api行为执行过程中产生的异常
         /// </summary>
         /// <param name="actionContext">上下文</param>       
         /// <param name="exception">异常项</param>
@@ -237,7 +237,7 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 调用服务端实现的Api        
         /// </summary>       
-        /// <param name="api">服务行为的api</param>
+        /// <param name="api">Api行为的api</param>
         /// <param name="parameters">参数列表</param>   
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="SocketException"></exception> 
@@ -256,7 +256,7 @@ namespace NetworkSocket.Fast
         /// 并返回结果数据任务
         /// </summary>
         /// <typeparam name="T">返回值类型</typeparam>
-        /// <param name="api">服务行为的api</param>
+        /// <param name="api">Api行为的api</param>
         /// <param name="parameters">参数</param>          
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="SocketException"></exception> 
@@ -291,7 +291,7 @@ namespace NetworkSocket.Fast
             base.Dispose(disposing);
             if (disposing)
             {
-                this.fastActionList = null;
+                this.apiActionList = null;
 
                 this.taskSetActionTable.Clear();
                 this.taskSetActionTable = null;

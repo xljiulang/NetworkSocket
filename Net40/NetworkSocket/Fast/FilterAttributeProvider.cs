@@ -7,7 +7,7 @@ using System.Text;
 namespace NetworkSocket.Fast
 {
     /// <summary>
-    /// 服务行为特性过滤器提供者
+    /// Api行为特性过滤器提供者
     /// </summary>
     public class FilterAttributeProvider : IFilterAttributeProvider
     {
@@ -35,31 +35,31 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 服务方法过滤器缓存
         /// </summary>
-        private ConcurrentDictionary<FastAction, IEnumerable<IFilter>> filterCached = new ConcurrentDictionary<FastAction, IEnumerable<IFilter>>();
+        private ConcurrentDictionary<ApiAction, IEnumerable<IFilter>> filterCached = new ConcurrentDictionary<ApiAction, IEnumerable<IFilter>>();
 
         /// <summary>
-        /// 服务行为特性过滤器提供者
+        /// Api行为特性过滤器提供者
         /// </summary>
         public FilterAttributeProvider()
         {
         }
 
         /// <summary>
-        /// 获取服务行为的特性过滤器     
+        /// 获取Api行为的特性过滤器     
         /// </summary>
-        /// <param name="fastAction">服务行为</param>
+        /// <param name="apiAction">Api行为</param>
         /// <returns></returns>
-        public virtual IEnumerable<IFilter> GetActionFilters(FastAction fastAction)
+        public virtual IEnumerable<IFilter> GetActionFilters(ApiAction apiAction)
         {
-            return this.filterCached.GetOrAdd(fastAction, action => GetActionFiltersNoCached(action));
+            return this.filterCached.GetOrAdd(apiAction, action => GetActionFiltersNoCached(action));
         }
 
         /// <summary>
-        /// 获取服务行为的特性过滤器     
+        /// 获取Api行为的特性过滤器     
         /// </summary>
-        /// <param name="action">服务行为</param>
+        /// <param name="action">Api行为</param>
         /// <returns></returns>
-        private static IEnumerable<IFilter> GetActionFiltersNoCached(FastAction action)
+        private static IEnumerable<IFilter> GetActionFiltersNoCached(ApiAction action)
         {
             var methodAttributes = action.GetMethodFilterAttributes();
 

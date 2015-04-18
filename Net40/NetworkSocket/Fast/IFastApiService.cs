@@ -9,12 +9,12 @@ namespace NetworkSocket.Fast
     /// <summary>
     /// 定义快速服务的执行
     /// </summary>
-    public interface IFastService : IDisposable
+    public interface IFastApiService : IDisposable
     {
         /// <summary>
-        /// 执行服务行为
+        /// 执行Api行为
         /// </summary>              
-        /// <param name="actionContext">服务行为上下文</param>      
+        /// <param name="actionContext">Api行为上下文</param>      
         void Execute(ServerActionContext actionContext);
     }
 }

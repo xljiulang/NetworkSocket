@@ -18,7 +18,7 @@ namespace Server
         /// </summary>
         /// <param name="fastAction">服务行为</param>
         /// <returns></returns>
-        public override IEnumerable<IFilter> GetActionFilters(FastAction fastAction)
+        public override IEnumerable<IFilter> GetActionFilters(ApiAction fastAction)
         {
             var filters = base.GetActionFilters(fastAction);
             var lifetimeScope = ((AutofacResolver)DependencyResolver.Current).CurrentLifetimeScope;

@@ -17,7 +17,7 @@ namespace NetworkSocket.Fast
         ISerializer Serializer { get; set; }
 
         /// <summary>
-        /// 获取或设置服务行为特性过滤器提供者
+        /// 获取或设置Api行为特性过滤器提供者
         /// </summary>
         IFilterAttributeProvider FilterAttributeProvider { get; set; }
 

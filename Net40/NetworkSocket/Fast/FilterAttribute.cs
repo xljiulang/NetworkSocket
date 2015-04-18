@@ -7,7 +7,7 @@ using System.Text;
 namespace NetworkSocket.Fast
 {
     /// <summary>
-    /// 表示服务或服务行为过滤器基础特性
+    /// 表示服务或Api行为过滤器基础特性
     /// </summary>
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
     public abstract class FilterAttribute : Attribute, IFilter
@@ -23,14 +23,14 @@ namespace NetworkSocket.Fast
         private static readonly ConcurrentDictionary<Type, bool> multiuseAttributeCache = new ConcurrentDictionary<Type, bool>();
 
         /// <summary>
-        /// 表示服务或服务行为过滤器基础特性
+        /// 表示服务或Api行为过滤器基础特性
         /// </summary>
         public FilterAttribute()
         {
         }
 
         /// <summary>
-        /// 表示服务或服务行为过滤器基础特性
+        /// 表示服务或Api行为过滤器基础特性
         /// </summary>
         /// <param name="order">执行顺序 越小最优先</param>
         /// <exception cref="ArgumentOutOfRangeException"></exception>

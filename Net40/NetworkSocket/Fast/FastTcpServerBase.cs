@@ -18,9 +18,9 @@ namespace NetworkSocket.Fast
     public abstract class FastTcpServerBase : TcpServerBase<FastPacket, FastPacket>, IFastTcpServer
     {
         /// <summary>
-        /// 所有服务行为
+        /// 所有Api行为
         /// </summary>
-        private FastActionList fastActionList;
+        private ApiActionList apiActionList;
 
         /// <summary>
         /// 数据包哈希码提供者
@@ -56,7 +56,7 @@ namespace NetworkSocket.Fast
         public ISerializer Serializer { get; set; }
 
         /// <summary>
-        /// 获取或设置服务行为特性过滤器提供者
+        /// 获取或设置Api行为特性过滤器提供者
         /// </summary>
         public IFilterAttributeProvider FilterAttributeProvider { get; set; }
 
@@ -65,7 +65,7 @@ namespace NetworkSocket.Fast
         /// </summary>
         public FastTcpServerBase()
         {
-            this.fastActionList = new FastActionList();
+            this.apiActionList = new ApiActionList();
             this.packetIdProvider = new PacketIdProvider();
             this.taskSetActionTable = new TaskSetActionTable();
 
@@ -74,13 +74,13 @@ namespace NetworkSocket.Fast
         }
 
         /// <summary>
-        /// 绑定本程序集所有实现IFastService的服务
+        /// 绑定本程序集所有实现IFastApiService的服务
         /// </summary>
         /// <returns></returns>       
         /// <exception cref="ArgumentException"></exception>
         public FastTcpServerBase BindService()
         {
-            var allServices = this.GetType().Assembly.GetTypes().Where(item => typeof(IFastService).IsAssignableFrom(item));
+            var allServices = this.GetType().Assembly.GetTypes().Where(item => typeof(IFastApiService).IsAssignableFrom(item));
             return this.BindService(allServices);
         }
 
@@ -90,7 +90,7 @@ namespace NetworkSocket.Fast
         /// <typeparam name="T">服务类型</typeparam>
         /// <returns></returns>       
         /// <exception cref="ArgumentException"></exception>
-        public FastTcpServerBase BindService<T>() where T : IFastService
+        public FastTcpServerBase BindService<T>() where T : IFastApiService
         {
             return this.BindService(typeof(T));
         }
@@ -126,15 +126,15 @@ namespace NetworkSocket.Fast
                 throw new ArgumentException("serivceType不能含null值");
             }
 
-            if (serivceType.Any(item => typeof(IFastService).IsAssignableFrom(item) == false))
+            if (serivceType.Any(item => typeof(IFastApiService).IsAssignableFrom(item) == false))
             {
-                throw new ArgumentException("serivceType必须派生于IFastService");
+                throw new ArgumentException("serivceType必须派生于IFastApiService");
             }
 
             foreach (var type in serivceType)
             {
-                var actions = FastTcpCommon.GetServiceFastActions(type);
-                this.fastActionList.AddRange(actions);
+                var actions = FastTcpCommon.GetServiceApiActions(type);
+                this.apiActionList.AddRange(actions);
             }
             return this;
         }
@@ -219,7 +219,7 @@ namespace NetworkSocket.Fast
         /// <param name="requestContext">请求上下文</param>
         private void ProcessRemoteException(ServerRequestContext requestContext)
         {
-            var remoteException = FastTcpCommon.SetFastActionTaskException(this.Serializer, this.taskSetActionTable, requestContext);
+            var remoteException = FastTcpCommon.SetApiActionTaskException(this.Serializer, this.taskSetActionTable, requestContext);
             if (remoteException == null)
             {
                 return;
@@ -241,11 +241,11 @@ namespace NetworkSocket.Fast
         {
             if (requestContext.Packet.IsFromClient == false)
             {
-                FastTcpCommon.SetFastActionTaskResult(requestContext, this.taskSetActionTable);
+                FastTcpCommon.SetApiActionTaskResult(requestContext, this.taskSetActionTable);
                 return;
             }
 
-            var action = this.GetFastAction(requestContext);
+            var action = this.GetApiAction(requestContext);
             if (action == null)
             {
                 return;
@@ -258,7 +258,7 @@ namespace NetworkSocket.Fast
                 return;
             }
 
-            // 执行服务行为           
+            // 执行Api行为           
             fastService.Execute(actionContext);
 
             // 释放资源
@@ -266,13 +266,13 @@ namespace NetworkSocket.Fast
         }
 
         /// <summary>
-        /// 获取服务行为
+        /// 获取Api行为
         /// </summary>
         /// <param name="requestContext">请求上下文</param>
         /// <returns></returns>
-        private FastAction GetFastAction(ServerRequestContext requestContext)
+        private ApiAction GetApiAction(ServerRequestContext requestContext)
         {
-            var action = this.fastActionList.TryGet(requestContext.Packet.ApiName);
+            var action = this.apiActionList.TryGet(requestContext.Packet.ApiName);
             if (action != null)
             {
                 return action;
@@ -295,12 +295,12 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 获取FastService实例
         /// </summary>
-        /// <param name="actionContext">服务行为上下文</param>
+        /// <param name="actionContext">Api行为上下文</param>
         /// <returns></returns>
-        private IFastService GetFastService(ServerActionContext actionContext)
+        private IFastApiService GetFastService(ServerActionContext actionContext)
         {
             // 获取服务实例
-            var fastService = (IFastService)DependencyResolver.Current.GetService(actionContext.Action.DeclaringService);
+            var fastService = (IFastApiService)DependencyResolver.Current.GetService(actionContext.Action.DeclaringService);
             if (fastService != null)
             {
                 return fastService;
@@ -345,7 +345,7 @@ namespace NetworkSocket.Fast
             base.Dispose(disposing);
             if (disposing)
             {
-                this.fastActionList = null;
+                this.apiActionList = null;
 
                 this.taskSetActionTable.Clear();
                 this.taskSetActionTable = null;

@@ -14,25 +14,25 @@ namespace NetworkSocket.WebSocket.Json
     internal static class JsonWebSocketCommon
     {
         /// <summary>
-        /// 获取服务类型的服务行为
+        /// 获取服务类型的Api行为
         /// </summary>
         /// <param name="seviceType">服务类型</param>
         /// <exception cref="ArgumentException"></exception>
         /// <returns></returns>
-        public static IEnumerable<JsonAction> GetServiceJsonActions(Type seviceType)
+        public static IEnumerable<ApiAction> GetServiceApiActions(Type seviceType)
         {
             return seviceType
                 .GetMethods()
                 .Where(item => Attribute.IsDefined(item, typeof(ApiAttribute)))
-                .Select(method => new JsonAction(method));
+                .Select(method => new ApiAction(method));
         }
 
         /// <summary>
-        /// 设置服务行为返回的任务结果
+        /// 设置Api行为返回的任务结果
         /// </summary>
         /// <param name="requestContext">上下文</param>
         /// <param name="taskSetActionTable">任务行为表</param>
-        public static void SetJsonActionTaskResult(RequestContext requestContext, TaskSetActionTable taskSetActionTable)
+        public static void SetApiActionTaskResult(RequestContext requestContext, TaskSetActionTable taskSetActionTable)
         {
             var taskSetAction = taskSetActionTable.Take(requestContext.Packet.id);
             if (taskSetAction != null)
@@ -48,14 +48,14 @@ namespace NetworkSocket.WebSocket.Json
 
 
         /// <summary>
-        /// 设置服务行为返回的任务异常 
+        /// 设置Api行为返回的任务异常 
         /// 设置失败则返远程异常对象
         /// </summary>          
         /// <param name="serializer">序列化工具</param>
         /// <param name="taskSetActionTable">任务行为表</param>
         /// <param name="requestContext">请求上下文</param>
         /// <returns></returns>
-        public static RemoteException SetJsonActionTaskException(IJsonSerializer serializer, TaskSetActionTable taskSetActionTable, RequestContext requestContext)
+        public static RemoteException SetApiActionTaskException(IJsonSerializer serializer, TaskSetActionTable taskSetActionTable, RequestContext requestContext)
         {
             var message = ((object)requestContext.Packet.body).ToString();
             var taskSetAction = taskSetActionTable.Take(requestContext.Packet.id);
@@ -85,12 +85,12 @@ namespace NetworkSocket.WebSocket.Json
         }
 
         /// <summary>
-        /// 生成服务行为的调用参数
+        /// 生成Api行为的调用参数
         /// </summary>        
         /// <param name="serializer">序列化工具</param>
         /// <param name="context">上下文</param> 
         /// <returns></returns>
-        public static object[] GetJsonActionParameters(IJsonSerializer serializer, ActionContext context)
+        public static object[] GetApiActionParameters(IJsonSerializer serializer, ActionContext context)
         {
             if (context.Packet.body == null)
             {

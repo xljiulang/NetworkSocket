@@ -6,14 +6,14 @@ using System.Text;
 namespace NetworkSocket.WebSocket.Json
 {
     /// <summary>
-    /// 定义Json服务的执行
+    /// 定义Api服务的执行
     /// </summary>
-    public interface IJsonService : IDisposable
+    public interface IJsonApiService : IDisposable
     {
         /// <summary>
-        /// 执行服务行为
+        /// 执行Api行为
         /// </summary>              
-        /// <param name="actionContext">服务行为上下文</param>      
+        /// <param name="actionContext">Api行为上下文</param>      
         void Execute(ActionContext actionContext);
     }
 }

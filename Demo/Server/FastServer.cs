@@ -29,7 +29,7 @@ namespace Server
 
             // 注册服务            
             builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
-                .Where(type => (typeof(IFastService).IsAssignableFrom(type)))
+                .Where(type => (typeof(IFastApiService).IsAssignableFrom(type)))
                 .PropertiesAutowired();
 
             // 注册DbContext           

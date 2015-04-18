@@ -7,7 +7,7 @@ using System.Text;
 namespace NetworkSocket.Fast.Context
 {
     /// <summary>
-    /// 服务端服务行为上下文
+    /// 服务端Api行为上下文
     /// </summary>
     [DebuggerDisplay("Action = {Action}")]
     public class ServerActionContext : ActionContext
@@ -18,18 +18,18 @@ namespace NetworkSocket.Fast.Context
         public IFastTcpServer FastTcpServer { get; set; }
 
         /// <summary>
-        /// 服务端服务行为上下文
+        /// 服务端Api行为上下文
         /// </summary>
         public ServerActionContext()
         {
         }
 
         /// <summary>
-        ///  服务端服务行为上下文
+        ///  服务端Api行为上下文
         /// </summary>
         /// <param name="requestContext">请求上下文</param>
-        /// <param name="action">服务行为</param>
-        public ServerActionContext(ServerRequestContext requestContext, FastAction action)
+        /// <param name="action">Api行为</param>
+        public ServerActionContext(ServerRequestContext requestContext, ApiAction action)
             : base(requestContext, action)
         {
             this.FastTcpServer = requestContext.FastTcpServer;

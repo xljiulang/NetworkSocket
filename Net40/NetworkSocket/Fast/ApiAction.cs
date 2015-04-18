@@ -9,38 +9,38 @@ using System.Text;
 namespace NetworkSocket.Fast
 {
     /// <summary>
-    /// 服务行为    
+    /// Api行为    
     /// </summary>
-    [DebuggerDisplay("Name = {Name}")]
-    public class FastAction
+    [DebuggerDisplay("ApiName = {ApiName}")]
+    public class ApiAction
     {
         /// <summary>
-        /// 服务行为的方法成员信息
+        /// Api行为的方法成员信息
         /// </summary>
         private MethodInfo method;
 
         /// <summary>
-        /// 服务行为的方法成员调用委托
+        /// Api行为的方法成员调用委托
         /// </summary>
         private Func<object, object[], object> methodInvoker;
 
         /// <summary>
-        /// 获取服务行为的Api名称
+        /// 获取Api行为的Api名称
         /// </summary>
         public string ApiName { get; private set; }
 
         /// <summary>
-        /// 获取服务行为的方法成员返回类型是否为void
+        /// 获取Api行为的方法成员返回类型是否为void
         /// </summary>
         public bool IsVoidReturn { get; private set; }
 
         /// <summary>
-        /// 服务行为的方法成员返回类型
+        /// Api行为的方法成员返回类型
         /// </summary>
         public Type ReturnType { get; private set; }
 
         /// <summary>
-        /// 获取服务行为的方法成员参数类型
+        /// 获取Api行为的方法成员参数类型
         /// </summary>
         public Type[] ParameterTypes { get; private set; }
 
@@ -51,14 +51,14 @@ namespace NetworkSocket.Fast
 
 
         /// <summary>
-        /// 服务行为
+        /// Api行为
         /// </summary>
         /// <param name="method">方法信息</param>
         /// <exception cref="ArgumentException"></exception>
-        public FastAction(MethodInfo method)
+        public ApiAction(MethodInfo method)
         {
             this.method = method;
-            this.methodInvoker = FastAction.CreateMethodInvoker(method);
+            this.methodInvoker = ApiAction.CreateMethodInvoker(method);
 
             this.DeclaringService = method.DeclaringType;
 
@@ -108,7 +108,7 @@ namespace NetworkSocket.Fast
 
 
         /// <summary>
-        /// 获取服务行为或服务行为的声明类型是否声明了特性
+        /// 获取Api行为或Api行为的声明类型是否声明了特性
         /// </summary>
         /// <param name="type">特性类型</param>
         /// <param name="inherit">是否继承</param>
@@ -137,7 +137,7 @@ namespace NetworkSocket.Fast
         }
 
         /// <summary>
-        /// 执行服务行为
+        /// 执行Api行为
         /// </summary>
         /// <param name="service">服务实例</param>
         /// <param name="parameters">参数实例</param>

@@ -11,11 +11,11 @@ namespace NetworkSocket.Fast
     public interface IFilterAttributeProvider
     {
         /// <summary>
-        /// 获取服务行为的过滤器
+        /// 获取Api行为的过滤器
         /// 不包括全局过滤器
         /// </summary>
-        /// <param name="fastAction">服务行为</param>
+        /// <param name="apiAction">Api行为</param>
         /// <returns></returns>
-        IEnumerable<IFilter> GetActionFilters(FastAction fastAction);
+        IEnumerable<IFilter> GetActionFilters(ApiAction apiAction);
     }
 }
