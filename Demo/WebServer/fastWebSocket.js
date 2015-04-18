@@ -1,5 +1,5 @@
-﻿// jsonWebsocket客户端
-function jsonWebsocket(url) {
+﻿// fastWebsocket客户端
+function fastWebSocket(url) {
     var ws;
     var packetId = 0;
     var callbackTable = [];

@@ -12,7 +12,7 @@ namespace NetworkSocket.WebSocket.Fast
     /// <summary>
     /// 表示基于Json文本协议通讯的WebSocket服务
     /// </summary>
-    public class JsonWebSocketServer : WebSocketServerBase, IFastWebSocketServer
+    public class FastWebSocketServer : WebSocketServerBase, IFastWebSocketServer
     {
         /// <summary>
         /// 所有Api行为
@@ -60,7 +60,7 @@ namespace NetworkSocket.WebSocket.Fast
         /// <summary>
         /// 快速构建Tcp服务端
         /// </summary>
-        public JsonWebSocketServer()
+        public FastWebSocketServer()
         {
             this.apiActionList = new ApiActionList();
             this.packetIdProvider = new PacketIdProvider();
@@ -75,7 +75,7 @@ namespace NetworkSocket.WebSocket.Fast
         /// </summary>
         /// <returns></returns>       
         /// <exception cref="ArgumentException"></exception>
-        public JsonWebSocketServer BindService()
+        public FastWebSocketServer BindService()
         {
             var allServices = this.GetType().Assembly.GetTypes().Where(item => typeof(IFastApiService).IsAssignableFrom(item));
             return this.BindService(allServices);
@@ -87,7 +87,7 @@ namespace NetworkSocket.WebSocket.Fast
         /// <typeparam name="T">服务类型</typeparam>
         /// <returns></returns>       
         /// <exception cref="ArgumentException"></exception>
-        public JsonWebSocketServer BindService<T>() where T : IFastApiService
+        public FastWebSocketServer BindService<T>() where T : IFastApiService
         {
             return this.BindService(typeof(T));
         }
@@ -99,7 +99,7 @@ namespace NetworkSocket.WebSocket.Fast
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public JsonWebSocketServer BindService(params Type[] serviceType)
+        public FastWebSocketServer BindService(params Type[] serviceType)
         {
             return this.BindService((IEnumerable<Type>)serviceType);
         }
@@ -111,7 +111,7 @@ namespace NetworkSocket.WebSocket.Fast
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public JsonWebSocketServer BindService(IEnumerable<Type> serivceType)
+        public FastWebSocketServer BindService(IEnumerable<Type> serivceType)
         {
             if (serivceType == null)
             {

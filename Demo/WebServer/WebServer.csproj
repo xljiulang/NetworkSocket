@@ -67,9 +67,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="bootstrap.min.css" />
-    <Content Include="WebSocketClient.html" />
+    <Content Include="FastWebSocke.html" />
     <Content Include="jquery-1.7.2.min.js" />
-    <Content Include="jsonWebsocket.js" />
+    <Content Include="fastWebSocket.js" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
