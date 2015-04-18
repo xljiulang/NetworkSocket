@@ -18,7 +18,7 @@
     </style>
 
     <script type="text/javascript">
-       
+
         document.title = '正在连接到服务器 ..';
         var ws = new jsonWebsocket('ws://localhost:8282/');
 
@@ -36,19 +36,19 @@
         };
 
         ws.onopen = function () {
-            ws.invkeApi('getVersion', [], function (apiResult) {
-                document.title = '服务器版本号：' + apiResult.value;
+            ws.invkeApi('getVersion', [], function (version) {
+                document.title = '服务器版本号：' + version;
+            }, function (ex) {
+                alert('异常：' + ex);
             });
         };
 
         function login() {
             var user = { account: $("[name='account']").val(), password: $("[name='password']").val() };
-            ws.invkeApi('login', [user, true], function (apiResult) {
-                if (apiResult.state) {
-                    alert(apiResult.value);
-                } else {
-                    alert('服务器异常：' + apiResult.value);
-                }
+            ws.invkeApi('login', [user, true], function (r) {
+                alert(r);
+            }, function (ex) {
+                alert('异常：' + ex);
             });
         }
     </script>

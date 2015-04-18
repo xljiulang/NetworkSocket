@@ -2,7 +2,7 @@
 function jsonWebsocket(url) {
     var ws;
     var packetId = 0;
-    var callbackTable = [];
+    var callbackTable = [];    
 
     // 是否连接
     this.connected = false;
@@ -20,29 +20,38 @@ function jsonWebsocket(url) {
         this[name] = func;
     }
 
-    // 调用服务器实现api  {api名，[参数1，参数2，参数n],返回数据回调}
-    this.invkeApi = function (api, parameters, callback) {
+    function isFunction(func) {
+        return !!func && typeof func == "function";
+    }
+
+    // 调用服务器实现api，返回是否可以正常调用
+    // api：远程端api名，不区分大小写
+    // parameters：参数值数组，注意参数顺序(可选)
+    // doneFunc：服务端返回api结果后触发的回调(可选)
+    // exFunc：服务端返回异常信息后触发的回调(可选)    
+    this.invkeApi = function (api, parameters, doneFunc, exFunc) {
         if (this.connected == false) {
-            return;
+            return false;
         }
 
         packetId = packetId + 1;
         var packet = { api: api, id: packetId, body: parameters || [] };
         var json = JSON.stringify(packet);
 
-        if (callback) {
-            callbackTable.push({ id: packetId, call: callback });
+        if (isFunction(doneFunc) || isFunction(exFunc)) {
+            callbackTable.push({ id: packetId, callback: { doneFunc: doneFunc, exFunc: exFunc } });
         }
         ws.send(json);
+        return true;
     };
 
     // 获取回调
     function getCallback(id) {
         for (var i = 0; i < callbackTable.length; i++) {
-            var callBack = callbackTable[i];
-            if (callBack.id == id) {
+            var item = callbackTable[i];
+            if (item.id == id) {
                 callbackTable.splice(i, 1);
-                return callBack.call;
+                return item.callback;
             }
         }
     }
@@ -56,9 +65,13 @@ function jsonWebsocket(url) {
         }
 
         var callback = getCallback(packet.id);
-        if (callback) {
-            var apiResult = { state: packet.state, value: packet.body };
-            callback(apiResult);
+        if (!callback) {
+            return;
+        }
+
+        var func = packet.state ? callback.doneFunc : callback.exFunc;
+        if (isFunction(func)) {
+            func(packet.body);
         }
     }
 
