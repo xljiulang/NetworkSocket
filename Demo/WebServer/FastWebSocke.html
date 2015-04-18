@@ -19,7 +19,6 @@
     </style>
 
     <script type="text/javascript">
-
         document.title = '正在连接到服务器 ..';
         var ws = new fastWebSocket('ws://localhost:8282/');
 
@@ -32,11 +31,11 @@
             alert('收到通知：' + message);
         });
 
-        ws.onclose = function () {
-            document.title = '连接已断开 ..';
+        ws.onclose = function (e) {
+            document.title = '连接已断开：' + e.code;
         };
 
-        ws.onopen = function () {
+        ws.onopen = function (e) {
             ws.invkeApi('getVersion', [], function (version) {
                 document.title = '服务器版本号：' + version;
             }, function (ex) {

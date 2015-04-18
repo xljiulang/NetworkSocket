@@ -8,9 +8,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using WebServer.Filters;
+using WebSocket.Filters;
 
-namespace WebServer
+namespace WebSocket
 {
     /// <summary>
     /// 系统

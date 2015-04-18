@@ -13,7 +13,7 @@ namespace NetworkSocket.WebSocket
         /// <summary>
         /// 获取帧类型
         /// </summary>
-        public Frames Frame { get; private set; }
+        public FrameCodes Frame { get; private set; }
 
         /// <summary>
         /// 回复对象
@@ -21,7 +21,7 @@ namespace NetworkSocket.WebSocket
         /// <param name="frame">帧类型</param>
         /// <param name="content">内容</param>
         /// <exception cref="ArgumentNullException"></exception>
-        public FrameResponse(Frames frame, byte[] content)
+        public FrameResponse(FrameCodes frame, byte[] content)
             : base(content)
         {
             this.Frame = frame;

@@ -251,7 +251,7 @@ namespace NetworkSocket.WebSocket.Fast
             }
             catch (Exception)
             {
-                client.NormalClose(CloseCodes.ProtocolError);
+                client.NormalClose(StatusCodes.ProtocolError);
                 return null;
             }
         }

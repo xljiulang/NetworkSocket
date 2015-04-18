@@ -48,12 +48,12 @@ namespace NetworkSocket.WebSocket
             var request = HandshakeRequest.From(builder);
             if (request == null)
             {
-                client.NormalClose(CloseCodes.ProtocolError);
+                client.NormalClose(StatusCodes.ProtocolError);
                 return false;
             }
 
-            var reason = CloseCodes.NormalClosure;
-            if (this.OnCheckHandshake(client, request, out reason) == false)
+            var reason = StatusCodes.NormalClosure;
+            if (this.OnHandshake(client, request, out reason) == false)
             {
                 client.NormalClose(reason);
                 return false;
@@ -90,32 +90,32 @@ namespace NetworkSocket.WebSocket
         {
             switch (tRecv.Frame)
             {
-                case Frames.Close:
-                    var reason = CloseCodes.NormalClosure;
+                case FrameCodes.Close:
+                    var reason = StatusCodes.NormalClosure;
                     if (tRecv.Content.Length > 1)
                     {
                         var status = ByteConverter.ToUInt16(tRecv.Content, 0, Endians.Big);
-                        reason = (CloseCodes)status;
+                        reason = (StatusCodes)status;
                     }
                     this.OnClose(client, reason);
                     client.Close();
                     break;
 
-                case Frames.Binary:
+                case FrameCodes.Binary:
                     this.OnBinary(client, tRecv.Content);
                     break;
 
-                case Frames.Text:
+                case FrameCodes.Text:
                     var content = Encoding.UTF8.GetString(tRecv.Content);
                     this.OnText(client, content);
                     break;
 
-                case Frames.Ping:
-                    client.Send(new FrameResponse(Frames.Pong, tRecv.Content));
+                case FrameCodes.Ping:
+                    client.Send(new FrameResponse(FrameCodes.Pong, tRecv.Content));
                     this.OnPing(client, tRecv.Content);
                     break;
 
-                case Frames.Pong:
+                case FrameCodes.Pong:
                     this.OnPong(client, tRecv.Content);
                     break;
 
@@ -131,11 +131,11 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="client">客户端</param>
         /// <param name="request">握手请求</param>
-        /// <param name="reason">不通过原因</param>
+        /// <param name="code">不通过原因</param>
         /// <returns></returns>
-        protected virtual bool OnCheckHandshake(IClient<Response> client, HandshakeRequest request, out CloseCodes reason)
+        protected virtual bool OnHandshake(IClient<Response> client, HandshakeRequest request, out StatusCodes code)
         {
-            reason = CloseCodes.NormalClosure;
+            code = StatusCodes.NormalClosure;
             return true;
         }
 
@@ -182,7 +182,7 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="client">客户端</param>
         /// <param name="code">关闭码</param>
-        protected virtual void OnClose(IClient<Response> client, CloseCodes code)
+        protected virtual void OnClose(IClient<Response> client, StatusCodes code)
         {
         }
     }

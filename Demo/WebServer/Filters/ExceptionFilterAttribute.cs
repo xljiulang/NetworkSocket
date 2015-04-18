@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace WebServer.Filters
+namespace WebSocket.Filters
 {
     /// <summary>
     /// 异常处理过滤器

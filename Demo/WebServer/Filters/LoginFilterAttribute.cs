@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace WebServer.Filters
+namespace WebSocket.Filters
 {
     /// <summary>
     /// 登录过滤器

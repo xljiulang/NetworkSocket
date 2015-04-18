@@ -9,11 +9,11 @@ function fastWebSocket(url) {
     this.connected = false;
 
     // 关闭时触发
-    this.onclose = function (code, reason) {
+    this.onclose = function (e) {
     };
 
     // 握手成功后触发
-    this.onopen = function () {
+    this.onopen = function (e) {
     };
 
     // 绑定给服务器来调用的api
@@ -87,8 +87,8 @@ function fastWebSocket(url) {
         try {
             var result = api.apply(this, packet.body);
             setApiResult(packet, result);
-        } catch (e) {
-            setRemoteException(packet, e.message);
+        } catch (ex) {
+            setRemoteException(packet, ex.message);
         }
     }
 
@@ -111,13 +111,13 @@ function fastWebSocket(url) {
     function init() {
         var $this = this;
         ws = new (window.WebSocket || window.MozWebSocket)(url);
-        ws.onclose = function (code, reason) {
+        ws.onclose = function (e) {
             $this.connected = false;
-            $this.onclose(code, reason);
+            $this.onclose(e);
         };
-        ws.onopen = function () {
+        ws.onopen = function (e) {
             $this.connected = true;
-            $this.onopen();
+            $this.onopen(e);
         };
         ws.onmessage = function (e) {
             onmessage.apply($this, [e]);

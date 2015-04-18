@@ -15,7 +15,7 @@ namespace NetworkSocket.WebSocket
         /// <summary>
         /// 获取帧类型
         /// </summary>
-        public Frames Frame { get; private set; }
+        public FrameCodes Frame { get; private set; }
 
         /// <summary>
         /// 获取请求帧的内容
@@ -38,11 +38,11 @@ namespace NetworkSocket.WebSocket
 
             var isFinal = (builder.ToByte(0) & 128) != 0;
             var reservedBits = builder.ToByte(0) & 112;
-            var frameType = (Frames)(builder.ToByte(0) & 15);
+            var frameType = (FrameCodes)(builder.ToByte(0) & 15);
             var isMasked = (builder.ToByte(1) & 128) != 0;
             var length = builder.ToByte(1) & 127;
 
-            if (isMasked == false || Enum.IsDefined(typeof(Frames), frameType) == false || reservedBits != 0)
+            if (isMasked == false || Enum.IsDefined(typeof(FrameCodes), frameType) == false || reservedBits != 0)
             {
                 return null;
             }
@@ -93,7 +93,7 @@ namespace NetworkSocket.WebSocket
             builder.Remove(dataIndex + length);
 
             // 检查数据是否传输完成
-            if (isFinal == true && frameType != Frames.Continuation)
+            if (isFinal == true && frameType != FrameCodes.Continuation)
             {
                 var bytes = contentBuilder.ToArray();
                 contentBuilder.Clear();

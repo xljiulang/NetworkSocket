@@ -58,10 +58,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ClientExtend.cs" />
-    <Compile Include="CloseCodes.cs" />
+    <Compile Include="StatusCodes.cs" />
     <Compile Include="HandshakeRequest.cs" />
     <Compile Include="HandshakeResponse.cs" />
-    <Compile Include="Frames.cs" />
+    <Compile Include="FrameCodes.cs" />
     <Compile Include="FrameRequest.cs" />
     <Compile Include="Fast\Context\ActionContext.cs" />
     <Compile Include="Fast\Exception\ApiExecuteException.cs" />

@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using NetworkSocket.WebSocket.Fast;
 
-namespace WebServer
+namespace WebSocket
 {
     class _Run
     {
