@@ -48,14 +48,14 @@ namespace NetworkSocket.WebSocket
             var request = HandshakeRequest.From(builder);
             if (request == null)
             {
-                client.NormalClose(StatusCodes.ProtocolError);
+                client.Close(StatusCodes.ProtocolError);
                 return false;
             }
 
-            var reason = StatusCodes.NormalClosure;
-            if (this.OnHandshake(client, request, out reason) == false)
+            var code = StatusCodes.NormalClosure;
+            if (this.OnHandshake(client, request, out code) == false)
             {
-                client.NormalClose(reason);
+                client.Close(code);
                 return false;
             }
 

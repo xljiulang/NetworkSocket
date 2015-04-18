@@ -16,9 +16,9 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="client">客户端</param>
         /// <param name="code">关闭码</param>
-        public static void NormalClose(this IClient<Response> client, StatusCodes code)
+        public static void Close(this IClient<Response> client, StatusCodes code)
         {
-            client.NormalClose(code, string.Empty);
+            client.Close(code, string.Empty);
         }
 
         /// <summary>
@@ -27,7 +27,7 @@ namespace NetworkSocket.WebSocket
         /// <param name="client">客户端</param>
         /// <param name="code">关闭码</param>
         /// <param name="reason">原因</param>
-        public static void NormalClose(this IClient<Response> client, StatusCodes code, string reason)
+        public static void Close(this IClient<Response> client, StatusCodes code, string reason)
         {
             var codeBytes = ByteConverter.ToBytes((ushort)(code), Endians.Big);
             var reasonBytes = Encoding.UTF8.GetBytes(reason ?? string.Empty);
