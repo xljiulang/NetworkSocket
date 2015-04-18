@@ -48,13 +48,17 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ByteBuilder.cs" />
-    <Compile Include="Fast\ActionException.cs" />
-    <Compile Include="Fast\ApiNotExistException.cs" />
-    <Compile Include="Fast\ContextNullException.cs" />
+    <Compile Include="Fast\Exception\ApiExecuteException.cs" />
+    <Compile Include="Fast\Exception\ApiNotExistException.cs" />
+    <Compile Include="Fast\Exception\ContextNullException.cs" />
     <Compile Include="Fast\IFastApiService.cs" />
     <Compile Include="Fast\IFastTcpClient.cs" />
     <Compile Include="Fast\IFastTcpServer.cs" />
@@ -77,16 +81,16 @@
     <Compile Include="Fast\Internal\FastTcpCommon.cs" />
     <Compile Include="Fast\FastTcpServerBase.cs" />
     <Compile Include="Fast\Context\ActionContext.cs" />
-    <Compile Include="Fast\FilterAttributeProvider.cs" />
-    <Compile Include="Fast\FilterAttribute.cs" />
-    <Compile Include="Fast\IActionFilter.cs" />
-    <Compile Include="Fast\IAuthorizationFilter.cs" />
-    <Compile Include="Fast\IExceptionFilter.cs" />
-    <Compile Include="Fast\GlobalFilters.cs" />
-    <Compile Include="Fast\IFilter.cs" />
-    <Compile Include="Fast\IFilterAttributeProvider.cs" />
+    <Compile Include="Fast\Filter\FilterAttributeProvider.cs" />
+    <Compile Include="Fast\Filter\FilterAttribute.cs" />
+    <Compile Include="Fast\Filter\IActionFilter.cs" />
+    <Compile Include="Fast\Filter\IAuthorizationFilter.cs" />
+    <Compile Include="Fast\Filter\IExceptionFilter.cs" />
+    <Compile Include="Fast\Filter\GlobalFilters.cs" />
+    <Compile Include="Fast\Filter\IFilter.cs" />
+    <Compile Include="Fast\Filter\IFilterAttributeProvider.cs" />
     <Compile Include="Fast\ISerializer.cs" />
-    <Compile Include="Fast\RemoteException.cs" />
+    <Compile Include="Fast\Exception\RemoteException.cs" />
     <Compile Include="Fast\Context\RequestContext.cs" />
     <Compile Include="Fast\IDependencyResolver.cs" />
     <Compile Include="Fast\Context\ServerRequestContext.cs" />

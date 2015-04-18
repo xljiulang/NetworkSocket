@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using NetworkSocket.WebSocket.Json;
+using NetworkSocket.WebSocket.Fast;
 
 namespace WebServer
 {
@@ -25,7 +25,7 @@ namespace WebServer
                 Console.WriteLine("按任务键调用客户端的Api ..");
                 Console.ReadLine();
 
-                var client = jwebServer.AliveClients.FirstOrDefault();
+                var client = jwebServer.Clients.FirstOrDefault();
                 if (client == null)
                 {
                     Console.WriteLine("没有连接的客户端 ..");

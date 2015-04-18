@@ -40,7 +40,7 @@ namespace NetworkSocket
         /// <summary>
         /// 获取所有连接的客户端对象   
         /// </summary>
-        public ClientCollection<T> AliveClients { get; private set; }
+        public ClientCollection<T> Clients { get; private set; }
 
         /// <summary>
         /// 获取所监听的本地IP和端口
@@ -58,7 +58,7 @@ namespace NetworkSocket
         /// </summary> 
         public TcpServerBase()
         {
-            this.AliveClients = new ClientCollection<T>();
+            this.Clients = new ClientCollection<T>();
         }
 
         /// <summary>
@@ -134,7 +134,7 @@ namespace NetworkSocket
                 // SocketAsync与socket绑定    
                 client.Bind(arg.AcceptSocket);
                 // 添加到活动列表
-                this.AliveClients.Add(client);
+                this.Clients.Add(client);
                 // 通知已连接
                 this.OnConnect(client);
                 // 开始接收数据
@@ -192,16 +192,13 @@ namespace NetworkSocket
         /// <param name="client">客户端对象</param>
         private void RecyceClient(SocketClient<T, TRecv> client)
         {
-            var recyced = this.AliveClients.Remove(client) == false;
-            if (recyced == true)
+            if (this.Clients.Remove(client))
             {
-                return;
+                this.OnDisconnect(client);
+                client.Close();
+                client.TagData.Clear();
+                this.clientBag.Add(client);
             }
-
-            this.OnDisconnect(client);
-            client.Close();
-            client.TagData.Clear();
-            this.clientBag.Add(client);
         }
 
         /// <summary>
@@ -252,30 +249,27 @@ namespace NetworkSocket
         /// <param name="disposing">是否也释放托管资源</param>
         protected virtual void Dispose(bool disposing)
         {
-            try
+            if (this.listenSocket != null)
             {
-                if (this.listenSocket != null) this.listenSocket.Dispose();
-            }
-            finally
-            {
-                this.listenSocket = null;
-            }
-
-            foreach (IDisposable client in this.AliveClients)
-            {
-                client.Dispose();
+                try
+                {
+                    this.listenSocket.Dispose();
+                }
+                finally
+                {
+                    this.listenSocket = null;
+                }
             }
 
+            this.Clients.Dispose();
             this.clientBag.Dispose();
             this.acceptArg.Dispose();
 
             if (disposing)
             {
-                this.AliveClients.Clear();
-                this.AliveClients = null;
-
+                this.Clients = null;
                 this.acceptArg = null;
-                this.clientBag = null;
+                this.clientBag = null;             
                 this.LocalEndPoint = null;
                 this.IsListening = false;
             }

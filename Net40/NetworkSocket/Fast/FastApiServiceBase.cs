@@ -5,7 +5,6 @@ using System.Reflection;
 using System.Text;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-using NetworkSocket.Fast.Context;
 
 namespace NetworkSocket.Fast
 {
@@ -73,7 +72,7 @@ namespace NetworkSocket.Fast
         /// <param name="exception">异常项</param>
         private void ProcessExecutingException(ServerActionContext actionContext, IEnumerable<IFilter> actionfilters, Exception exception)
         {
-            var exceptionContext = new ServerExceptionContext(actionContext, new ActionException(actionContext, exception));
+            var exceptionContext = new ServerExceptionContext(actionContext, new ApiExecuteException(actionContext, exception));
             FastTcpCommon.SetRemoteException(actionContext.FastTcpServer.Serializer, exceptionContext);
             this.ExecExceptionFilters(actionfilters, exceptionContext);
 

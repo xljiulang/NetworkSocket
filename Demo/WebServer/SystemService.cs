@@ -1,7 +1,7 @@
 ﻿using Models;
 using NetworkSocket;
 using NetworkSocket.WebSocket;
-using NetworkSocket.WebSocket.Json;
+using NetworkSocket.WebSocket.Fast;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -15,7 +15,7 @@ namespace WebServer
     /// <summary>
     /// 系统
     /// </summary>   
-    public class SystemService : JsonApiServiceBase
+    public class SystemService : FastApiServiceBase
     {
         /// <summary>
         /// 获取服务组件版本号

@@ -8,7 +8,6 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Net.Sockets;
-using NetworkSocket.Fast.Context;
 
 namespace NetworkSocket.Fast
 {
@@ -252,17 +251,16 @@ namespace NetworkSocket.Fast
             }
 
             var actionContext = new ServerActionContext(requestContext, action);
-            var fastService = this.GetFastService(actionContext);
-            if (fastService == null)
+            var fastApiService = this.GetFastApiService(actionContext);
+            if (fastApiService == null)
             {
                 return;
             }
 
             // 执行Api行为           
-            fastService.Execute(actionContext);
-
+            fastApiService.Execute(actionContext);
             // 释放资源
-            DependencyResolver.Current.TerminateService(fastService);
+            DependencyResolver.Current.TerminateService(fastApiService);
         }
 
         /// <summary>
@@ -293,17 +291,17 @@ namespace NetworkSocket.Fast
         }
 
         /// <summary>
-        /// 获取FastService实例
+        /// 获取FastApiService实例
         /// </summary>
         /// <param name="actionContext">Api行为上下文</param>
         /// <returns></returns>
-        private IFastApiService GetFastService(ServerActionContext actionContext)
+        private IFastApiService GetFastApiService(ServerActionContext actionContext)
         {
             // 获取服务实例
-            var fastService = (IFastApiService)DependencyResolver.Current.GetService(actionContext.Action.DeclaringService);
-            if (fastService != null)
+            var fastApiService = (IFastApiService)DependencyResolver.Current.GetService(actionContext.Action.DeclaringService);
+            if (fastApiService != null)
             {
-                return fastService;
+                return fastApiService;
             }
             var exception = new Exception(string.Format("无法获取类型{0}的实例", actionContext.Action.DeclaringService));
             var exceptionContext = new ServerExceptionContext(actionContext, exception);

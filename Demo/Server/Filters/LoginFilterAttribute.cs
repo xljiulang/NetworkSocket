@@ -13,7 +13,7 @@ namespace Server.Filters
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
     public class LoginFilterAttribute : FilterAttribute, IAuthorizationFilter
     {
-        public void OnAuthorization(NetworkSocket.Fast.Context.ServerActionContext filterContext)
+        public void OnAuthorization(NetworkSocket.Fast.ServerActionContext filterContext)
         {
             var valid = filterContext.Client.TagData.TryGet<bool>("Logined");
             if (valid == false)

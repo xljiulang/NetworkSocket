@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using NetworkSocket.Fast;
-using NetworkSocket.Fast.Context;
 
 namespace Server.Filters
 {
@@ -14,7 +13,7 @@ namespace Server.Filters
     {
         public void OnException(ServerExceptionContext filterContext)
         {
-            if (filterContext.Exception is ActionException)
+            if (filterContext.Exception is ApiExecuteException)
             {
             }
             else if (filterContext.Exception is RemoteException)

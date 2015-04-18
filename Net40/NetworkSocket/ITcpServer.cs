@@ -15,7 +15,7 @@ namespace NetworkSocket
         /// <summary>
         /// 获取所有连接的客户端对象   
         /// </summary>
-        ClientCollection<T> AliveClients { get; }
+        ClientCollection<T> Clients { get; }
 
         /// <summary>
         /// 开始启动监听       

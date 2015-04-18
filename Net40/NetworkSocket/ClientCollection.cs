@@ -14,7 +14,7 @@ namespace NetworkSocket
     /// </summary>   
     /// <typeparam name="T">发送数据包协议</typeparam>
     [DebuggerDisplay("Count = {Count}")]
-    public sealed class ClientCollection<T> : IEnumerable<IClient<T>> where T : PacketBase
+    public sealed class ClientCollection<T> : IDisposable, IEnumerable<IClient<T>> where T : PacketBase
     {
         /// <summary>
         /// 线程安全字典
@@ -70,14 +70,7 @@ namespace NetworkSocket
             var key = client.GetHashCode();
             return this.dic.TryRemove(key, out client);
         }
-
-        /// <summary>
-        /// 清空所有元素
-        /// </summary>
-        internal void Clear()
-        {
-            this.dic.Clear();
-        }
+          
 
         /// <summary>
         /// 将对象复制到数组中
@@ -86,15 +79,6 @@ namespace NetworkSocket
         public IClient<T>[] ToArray()
         {
             return this.dic.ToArray().Select(item => item.Value).ToArray();
-        }
-
-        /// <summary>
-        /// 将对象复制到列表中
-        /// </summary>
-        /// <returns></returns>
-        public List<IClient<T>> ToList()
-        {
-            return new List<IClient<T>>(this.dic.ToArray().Select(item => item.Value));
         }
 
         /// <summary>
@@ -127,6 +111,23 @@ namespace NetworkSocket
         IEnumerator IEnumerable.GetEnumerator()
         {
             return this.GetEnumerator();
+        }
+
+        /// <summary>
+        /// 释放资源
+        /// </summary>
+        public void Dispose()
+        {
+            var clients = this.dic.ToArray();
+            foreach (var client in clients)
+            {
+                var disposable = client as IDisposable;
+                if (disposable != null)
+                {
+                    disposable.Dispose();
+                }
+            }
+            this.dic.Clear();
         }
     }
 }

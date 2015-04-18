@@ -66,7 +66,7 @@ namespace Server
         /// <param name="client">客户端</param>
         protected override void OnConnect(IClient<FastPacket> client)
         {
-            var log = string.Format("Time:{0} Client:{1} Action:{2} Message:{3}", DateTime.Now.ToString("mm:ss"), client, "Connect", "ConnectCount(" + this.AliveClients.Count + ")");
+            var log = string.Format("Time:{0} Client:{1} Action:{2} Message:{3}", DateTime.Now.ToString("mm:ss"), client, "Connect", "ConnectCount(" + this.Clients.Count + ")");
             Console.WriteLine(log);
         }
 
@@ -76,7 +76,7 @@ namespace Server
         /// <param name="client">客户端</param>
         protected override void OnDisconnect(IClient<FastPacket> client)
         {
-            var log = string.Format("Time:{0} Client:{1} Action:{2} Message:{3}", DateTime.Now.ToString("mm:ss"), client, "Disconnect", "ConnectCount(" + this.AliveClients.Count + ")");
+            var log = string.Format("Time:{0} Client:{1} Action:{2} Message:{3}", DateTime.Now.ToString("mm:ss"), client, "Disconnect", "ConnectCount(" + this.Clients.Count + ")");
             Console.WriteLine(log);
         }
     }
