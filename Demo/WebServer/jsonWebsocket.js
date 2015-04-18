@@ -2,7 +2,8 @@
 function jsonWebsocket(url) {
     var ws;
     var packetId = 0;
-    var callbackTable = [];    
+    var callbackTable = [];
+    var selfApi = {};
 
     // 是否连接
     this.connected = false;
@@ -17,7 +18,7 @@ function jsonWebsocket(url) {
 
     // 绑定给服务器来调用的api
     this.bindApi = function (name, func) {
-        this[name] = func;
+        selfApi[name] = func;
     }
 
     function isFunction(func) {
@@ -77,15 +78,14 @@ function jsonWebsocket(url) {
 
     // 调用自身实现的api
     function callApi(packet) {
-        var api = packet.api;
-        var define = this[api] && typeof this[api] == "function";
-        if (!define) {
+        var api = selfApi[packet.api];
+        if (!isFunction(api)) {
             setRemoteException(packet, '请求的api不存在：' + api);
             return;
         }
 
         try {
-            var result = this[api].apply(this, packet.body);
+            var result = api.apply(this, packet.body);
             setApiResult(packet, result);
         } catch (e) {
             setRemoteException(packet, e.message);
