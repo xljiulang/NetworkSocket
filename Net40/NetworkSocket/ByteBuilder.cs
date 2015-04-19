@@ -15,6 +15,11 @@ namespace NetworkSocket
     public class ByteBuilder
     {
         /// <summary>
+        /// 当前所有所数据
+        /// </summary>
+        private byte[] buffer;
+
+        /// <summary>
         /// 获取字节存储次序枚举
         /// </summary>
         public Endians Endian { get; private set; }
@@ -40,10 +45,6 @@ namespace NetworkSocket
         /// </summary>
         public object SyncRoot { get; private set; }
 
-        /// <summary>
-        /// 获取原始数据
-        /// </summary>
-        public byte[] Source { get; private set; }
 
         /// <summary>
         /// 可变长byte集合
@@ -78,7 +79,7 @@ namespace NetworkSocket
             }
             this.Capacity = capacity;
             this.Endian = endian;
-            this.Source = new byte[capacity];
+            this.buffer = new byte[capacity];
             this.SyncRoot = new object();
         }
 
@@ -86,16 +87,16 @@ namespace NetworkSocket
         /// 可变长byte集合
         /// </summary>
         /// <param name="endian">字节存储次序</param>
-        /// <param name="source">数据源</param>
+        /// <param name="buffer">数据源</param>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public ByteBuilder(Endians endian, byte[] source)
+        public ByteBuilder(Endians endian, byte[] buffer)
         {
-            if (source == null)
+            if (buffer == null)
             {
                 throw new ArgumentNullException("source");
             }
-            if (source.Length == 0)
+            if (buffer.Length == 0)
             {
                 throw new ArgumentOutOfRangeException("source", "source的长度必须大于0");
             }
@@ -103,8 +104,8 @@ namespace NetworkSocket
             this.Endian = endian;
             this.SyncRoot = new object();
 
-            this.Length = this.Capacity = source.Length;
-            this.Source = source;
+            this.Length = this.Capacity = buffer.Length;
+            this.buffer = buffer;
         }
 
         /// <summary>
@@ -222,10 +223,10 @@ namespace NetworkSocket
                 }
 
                 byte[] newBuffer = new byte[this.Capacity];
-                Buffer.BlockCopy(this.Source, 0, newBuffer, 0, this.Source.Length);
-                this.Source = newBuffer;
+                Buffer.BlockCopy(this.buffer, 0, newBuffer, 0, this.buffer.Length);
+                this.buffer = newBuffer;
             }
-            Buffer.BlockCopy(value, index, this.Source, this.Length, length);
+            Buffer.BlockCopy(value, index, this.buffer, this.Length, length);
             this.Length = newLength;
         }
 
@@ -238,7 +239,7 @@ namespace NetworkSocket
         public void Remove(int length)
         {
             this.Length = this.Length - length;
-            Buffer.BlockCopy(this.Source, length, this.Source, 0, this.Length);
+            Buffer.BlockCopy(this.buffer, length, this.buffer, 0, this.Length);
         }
 
 
@@ -251,7 +252,7 @@ namespace NetworkSocket
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         public void CopyTo(byte[] destArray, int index, int length)
         {
-            Buffer.BlockCopy(this.Source, 0, destArray, index, length);
+            Buffer.BlockCopy(this.buffer, 0, destArray, index, length);
         }
 
 
@@ -276,7 +277,7 @@ namespace NetworkSocket
         /// <returns></returns>
         public bool ToBoolean(int index)
         {
-            return this.Source[index] != 0;
+            return this.buffer[index] != 0;
         }
 
         /// <summary>
@@ -292,14 +293,29 @@ namespace NetworkSocket
         }
 
         /// <summary>
-        /// 返回指定位置的字节
+        /// 获取或设置指定位置的字节
         /// </summary>
         /// <param name="index">索引位置</param>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <returns></returns>
-        public byte ToByte(int index)
+        public byte this[int index]
         {
-            return this.Source[index];
+            get
+            {
+                if (index < 0 || index >= this.Length)
+                {
+                    throw new ArgumentOutOfRangeException();
+                }
+                return this.buffer[index];
+            }
+            set
+            {
+                if (index < 0 || index >= this.Length)
+                {
+                    throw new ArgumentOutOfRangeException();
+                }
+                this.buffer[index] = value;
+            }
         }
 
         /// <summary>
@@ -309,7 +325,7 @@ namespace NetworkSocket
         /// <returns></returns>
         public byte ReadByte()
         {
-            var value = this.ToByte(this.Position);
+            var value = this[this.Position];
             this.Position = this.Position + 1;
             return value;
         }
@@ -322,7 +338,7 @@ namespace NetworkSocket
         /// <returns></returns>
         public short ToInt16(int index)
         {
-            return ByteConverter.ToInt16(this.Source, index, this.Endian);
+            return ByteConverter.ToInt16(this.buffer, index, this.Endian);
         }
 
         /// <summary>
@@ -345,7 +361,7 @@ namespace NetworkSocket
         /// <returns></returns>
         public uint ToUInt16(int index)
         {
-            return ByteConverter.ToUInt16(this.Source, index, this.Endian);
+            return ByteConverter.ToUInt16(this.buffer, index, this.Endian);
         }
 
         /// <summary>
@@ -368,7 +384,7 @@ namespace NetworkSocket
         /// <returns></returns>
         public int ToInt32(int index)
         {
-            return ByteConverter.ToInt32(this.Source, index, this.Endian);
+            return ByteConverter.ToInt32(this.buffer, index, this.Endian);
         }
 
         /// <summary>
@@ -391,7 +407,7 @@ namespace NetworkSocket
         /// <returns></returns>
         public uint ToUInt32(int index)
         {
-            return ByteConverter.ToUInt32(this.Source, index, this.Endian);
+            return ByteConverter.ToUInt32(this.buffer, index, this.Endian);
         }
 
         /// <summary>
@@ -414,7 +430,7 @@ namespace NetworkSocket
         /// <returns></returns>
         public long ToInt64(int index)
         {
-            return ByteConverter.ToInt64(this.Source, index, this.Endian);
+            return ByteConverter.ToInt64(this.buffer, index, this.Endian);
         }
 
         /// <summary>
@@ -437,7 +453,7 @@ namespace NetworkSocket
         /// <returns></returns>
         public ulong ToUInt64(int index)
         {
-            return ByteConverter.ToUInt64(this.Source, index, this.Endian);
+            return ByteConverter.ToUInt64(this.buffer, index, this.Endian);
         }
 
         /// <summary>
@@ -503,7 +519,7 @@ namespace NetworkSocket
         public byte[] ToArray(int index, int length)
         {
             byte[] buffer = new byte[length];
-            Buffer.BlockCopy(this.Source, index, buffer, 0, length);
+            Buffer.BlockCopy(this.buffer, index, buffer, 0, length);
             return buffer;
         }
 
@@ -516,6 +532,15 @@ namespace NetworkSocket
         {
             this.Position = 0;
             this.Length = 0;
+        }
+
+        /// <summary>
+        /// 获取当前缓冲区的数据
+        /// </summary>
+        /// <returns></returns>
+        public byte[] GetBuffer()
+        {
+            return this.buffer;
         }
     }
 }

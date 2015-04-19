@@ -36,11 +36,15 @@ namespace NetworkSocket.WebSocket
                 return null;
             }
 
-            var isFinal = (builder.ToByte(0) & 128) != 0;
-            var reservedBits = builder.ToByte(0) & 112;
-            var frameType = (FrameCodes)(builder.ToByte(0) & 15);
-            var isMasked = (builder.ToByte(1) & 128) != 0;
-            var length = builder.ToByte(1) & 127;
+            Bits byte0 = builder[0];
+            Bits byte1 = builder[1];
+
+            bool isFinal = byte0[0];
+            byte reservedBits = byte0.Take(1, 3);
+            byte opCode = byte0.Take(4, 4);
+            var frameType = (FrameCodes)opCode;
+            bool isMasked = byte1[0];
+            int length = byte1.Take(1, 7);
 
             if (isMasked == false || Enum.IsDefined(typeof(FrameCodes), frameType) == false || reservedBits != 0)
             {
@@ -78,7 +82,7 @@ namespace NetworkSocket.WebSocket
             var dataIndex = maskIndex + 4;
             if (length > 0)
             {
-                fixed (byte* pdata = &builder.Source[dataIndex], pmask = &builder.Source[maskIndex])
+                fixed (byte* pdata = &builder.GetBuffer()[dataIndex], pmask = &builder.GetBuffer()[maskIndex])
                 {
                     for (var i = 0; i < length; i++)
                     {
@@ -88,7 +92,7 @@ namespace NetworkSocket.WebSocket
             }
 
             // 将数据放到resultBuilder
-            contentBuilder.Add(builder.Source, dataIndex, length);
+            contentBuilder.Add(builder.GetBuffer(), dataIndex, length);
             // 清除已分析的数据
             builder.Remove(dataIndex + length);
 
