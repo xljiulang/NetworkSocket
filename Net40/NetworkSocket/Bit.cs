@@ -11,7 +11,7 @@ namespace NetworkSocket
     /// 值的0和1或false和true
     /// </summary>
     [DebuggerDisplay("{value}")]
-    public struct Bit : IConvertible, IComparable<Bit>
+    public struct Bit : IComparable<Bit>
     {
         /// <summary>
         /// 值
@@ -92,135 +92,6 @@ namespace NetworkSocket
             this.value = (byte)(value == 0 ? 0 : 1);
         }
 
-        /// <summary>
-        /// 获取对象类型
-        /// </summary>
-        /// <returns></returns>
-        public TypeCode GetTypeCode()
-        {
-            return TypeCode.Boolean;
-        }
-
-        /// <summary>
-        /// 转换为bool类型
-        /// </summary>
-        /// <param name="provider"></param>
-        /// <returns></returns>
-        public bool ToBoolean(IFormatProvider provider)
-        {
-            return Convert.ToBoolean(this.value);
-        }
-
-        /// <summary>
-        /// 转换为byte类型
-        /// </summary>
-        /// <param name="provider"></param>
-        /// <returns></returns>
-        public byte ToByte(IFormatProvider provider)
-        {
-            return Convert.ToByte(this.value);
-        }
-
-        /// <summary>
-        /// 转换为cahr类型
-        /// </summary>
-        /// <param name="provider"></param>
-        /// <returns></returns>
-        public char ToChar(IFormatProvider provider)
-        {
-            return Convert.ToChar(this.value);
-        }
-
-        /// <summary>
-        /// 转换为DateTime类型
-        /// </summary>
-        /// <param name="provider"></param>
-        /// <exception cref="NotImplementedException"></exception>
-        /// <returns></returns>
-        public DateTime ToDateTime(IFormatProvider provider)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// 转换为Decimal类型
-        /// </summary>
-        /// <param name="provider"></param>
-        /// <returns></returns>
-        public decimal ToDecimal(IFormatProvider provider)
-        {
-            return Convert.ToDecimal(this.value);
-        }
-
-        /// <summary>
-        /// 转换为Double类型
-        /// </summary>
-        /// <param name="provider"></param>
-        /// <returns></returns>
-        public double ToDouble(IFormatProvider provider)
-        {
-            return Convert.ToDouble(this.value);
-        }
-
-        /// <summary>
-        /// 转换为Int16类型
-        /// </summary>
-        /// <param name="provider"></param>
-        /// <returns></returns>
-        public short ToInt16(IFormatProvider provider)
-        {
-            return Convert.ToInt16(this.value);
-        }
-
-        /// <summary>
-        /// 转换为Int32类型
-        /// </summary>
-        /// <param name="provider"></param>
-        /// <returns></returns>
-        public int ToInt32(IFormatProvider provider)
-        {
-            return Convert.ToInt32(this.value);
-        }
-
-        /// <summary>
-        /// 转换为Int64类型
-        /// </summary>
-        /// <param name="provider"></param>
-        /// <returns></returns>
-        public long ToInt64(IFormatProvider provider)
-        {
-            return Convert.ToInt64(this.value);
-        }
-
-        /// <summary>
-        /// 转换为SByte类型
-        /// </summary>
-        /// <param name="provider"></param>
-        /// <returns></returns>
-        public sbyte ToSByte(IFormatProvider provider)
-        {
-            return Convert.ToSByte(this.value);
-        }
-
-        /// <summary>
-        /// 转换为Single类型
-        /// </summary>
-        /// <param name="provider"></param>
-        /// <returns></returns>
-        public float ToSingle(IFormatProvider provider)
-        {
-            return Convert.ToSingle(this.value);
-        }
-
-        /// <summary>
-        /// 转换为String类型
-        /// </summary>
-        /// <param name="provider"></param>
-        /// <returns></returns>
-        public string ToString(IFormatProvider provider)
-        {
-            return this.value.ToString(provider);
-        }
 
         /// <summary>
         /// 字符串显示
@@ -230,53 +101,6 @@ namespace NetworkSocket
         {
             return this.value.ToString();
         }
-
-        /// <summary>
-        /// 转换为指定类型
-        /// </summary>
-        /// <param name="conversionType"></param>
-        /// <param name="provider"></param>
-        /// <returns></returns>
-        public object ToType(Type conversionType, IFormatProvider provider)
-        {
-            var method = typeof(Bit).GetMethod("To" + conversionType.Name);
-            if (method == null)
-            {
-                return null;
-            }
-            return method.Invoke(null, null);
-        }
-
-        /// <summary>
-        /// 转换为UInt16类型
-        /// </summary>
-        /// <param name="provider"></param>
-        /// <returns></returns>
-        public ushort ToUInt16(IFormatProvider provider)
-        {
-            return Convert.ToUInt16(this.value);
-        }
-
-        /// <summary>
-        /// 转换为UInt32类型
-        /// </summary>
-        /// <param name="provider"></param>
-        /// <returns></returns>
-        public uint ToUInt32(IFormatProvider provider)
-        {
-            return Convert.ToUInt32(this.value);
-        }
-
-        /// <summary>
-        /// 转换为UInt64类型
-        /// </summary>
-        /// <param name="provider"></param>
-        /// <returns></returns>
-        public ulong ToUInt64(IFormatProvider provider)
-        {
-            return Convert.ToUInt64(this.value);
-        }
-
 
         /// <summary>
         /// 获取哈希码
@@ -323,7 +147,6 @@ namespace NetworkSocket
         {
             return bit1.value != bit2.value;
         }
-
 
 
 
@@ -410,7 +233,7 @@ namespace NetworkSocket
 
 
         /// <summary>
-        /// 隐式转换为short
+        /// 隐式转换为bool
         /// </summary>
         /// <param name="bit"></param>
         /// <returns></returns>
@@ -436,7 +259,7 @@ namespace NetworkSocket
         /// <returns></returns>
         public static implicit operator short(Bit bit)
         {
-            return bit.ToInt16(null);
+            return Convert.ToInt16(bit.value);
         }
 
         /// <summary>
@@ -446,7 +269,7 @@ namespace NetworkSocket
         /// <returns></returns>
         public static implicit operator ushort(Bit bit)
         {
-            return bit.ToUInt16(null);
+            return Convert.ToUInt16(bit.value);
         }
 
 
@@ -457,7 +280,7 @@ namespace NetworkSocket
         /// <returns></returns>
         public static implicit operator int(Bit bit)
         {
-            return bit.ToInt32(null);
+            return Convert.ToInt32(bit.value);
         }
 
         /// <summary>
@@ -467,7 +290,7 @@ namespace NetworkSocket
         /// <returns></returns>
         public static implicit operator uint(Bit bit)
         {
-            return bit.ToUInt32(null);
+            return Convert.ToUInt32(bit.value);
         }
 
         /// <summary>
@@ -477,7 +300,7 @@ namespace NetworkSocket
         /// <returns></returns>
         public static implicit operator long(Bit bit)
         {
-            return bit.ToInt64(null);
+            return Convert.ToInt64(bit.value);
         }
 
         /// <summary>
@@ -487,7 +310,7 @@ namespace NetworkSocket
         /// <returns></returns>
         public static implicit operator ulong(Bit bit)
         {
-            return bit.ToUInt64(null);
+            return Convert.ToUInt64(bit.value);
         }
 
         /// <summary>
