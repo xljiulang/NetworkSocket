@@ -23,16 +23,16 @@ namespace NetworkSocket.WebSocket
         /// <returns></returns>
         protected override IEnumerable<FrameRequest> OnReceive(IClient<Response> client, ByteBuilder builder)
         {
-            var contentBuilder = client.TagData.TryGet<ByteBuilder>("ContentBuilder");
-            if (contentBuilder != null)
+            var handshaked = client.TagData.TryGet<bool>("HANDSHAKED");
+            if (handshaked == true)
             {
-                return this.GetFrameRequests(builder, contentBuilder);
+                return this.GetFrameRequests(builder);
             }
 
             // 是握手请求
             if (this.ProcessHandshake(client, builder) == true)
             {
-                client.TagData.Set("ContentBuilder", new ByteBuilder());
+                client.TagData.Set("HANDSHAKED", true);
             }
             return Enumerable.Empty<FrameRequest>();
         }
@@ -70,12 +70,11 @@ namespace NetworkSocket.WebSocket
         /// 获取请求帧
         /// </summary>
         /// <param name="builder">接收到的数据</param>
-        /// <param name="contentBuilder">处理后的内容数据</param>
         /// <returns></returns>
-        private IEnumerable<FrameRequest> GetFrameRequests(ByteBuilder builder, ByteBuilder contentBuilder)
+        private IEnumerable<FrameRequest> GetFrameRequests(ByteBuilder builder)
         {
             FrameRequest request;
-            while ((request = FrameRequest.From(builder, contentBuilder)) != null)
+            while ((request = FrameRequest.From(builder)) != null)
             {
                 yield return request;
             }

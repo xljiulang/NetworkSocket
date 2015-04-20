@@ -7,13 +7,13 @@ using System.Text;
 namespace NetworkSocket
 {
     /// <summary>
-    /// 表示字节的位集合
-    /// 值为byte类型
+    /// byte的位集合
+    /// 位索引为高位到低位顺序
     /// </summary>
     [Serializable]
     [DebuggerDisplay("{value}")]
     [DebuggerTypeProxy(typeof(DebugView))]
-    public struct Bits : IComparable<Bits>
+    public struct ByteBits : IComparable<ByteBits>
     {
         /// <summary>
         /// 字节值
@@ -25,7 +25,7 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="count">移动位数</param>
         /// <returns></returns>
-        public Bits MoveRight(int count)
+        public ByteBits MoveRight(int count)
         {
             return (byte)(this.value >> count);
         }
@@ -35,40 +35,40 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="count">移动位数</param>
         /// <returns></returns>
-        public Bits MoveLeft(int count)
+        public ByteBits MoveLeft(int count)
         {
             return (byte)(this.value << count);
         }
 
         /// <summary>
-        /// 从高位取指定个位
+        /// 取高位
         /// 相当于右移8-count个单位
         /// </summary>
         /// <param name="count">位的数量</param>
         /// <returns></returns>
-        public Bits Take(int count)
+        public ByteBits Take(int count)
         {
             return this.MoveRight(8 - count);
         }
 
         /// <summary>
-        /// 从指定索引位置取指定个位
-        /// 相当于先或移index个单位再右移8-count个单位
+        /// 从指定索引位置取高位
+        /// 相当于先左移index个单位再右移8-count个单位
         /// </summary>
         /// <param name="index">索引</param>
         /// <param name="count">位的数量</param>
         /// <returns></returns>
-        public Bits Take(int index, int count)
+        public ByteBits Take(int index, int count)
         {
             return this.MoveLeft(index).MoveRight(8 - count);
         }
 
 
         /// <summary>
-        /// 字节的位集合
+        /// byte的位集合
         /// </summary>
         /// <param name="value">字节</param>
-        private Bits(byte value)
+        private ByteBits(byte value)
         {
             this.value = value;
         }
@@ -76,7 +76,7 @@ namespace NetworkSocket
         /// <summary>
         /// 获取或设置指定位的值
         /// </summary>
-        /// <param name="index">由高到低的位索引(左到右共8位)</param>
+        /// <param name="index">由高到低的位索引</param>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <returns></returns>
         public bool this[int index]
@@ -121,9 +121,9 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        public static implicit operator Bits(byte value)
+        public static implicit operator ByteBits(byte value)
         {
-            return new Bits(value);
+            return new ByteBits(value);
         }
 
         /// <summary>
@@ -131,7 +131,7 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="bits"></param>
         /// <returns></returns>
-        public static implicit operator byte(Bits bits)
+        public static implicit operator byte(ByteBits bits)
         {
             return bits.value;
         }
@@ -156,7 +156,7 @@ namespace NetworkSocket
             {
                 return false;
             }
-            return (obj is Bits) && obj.GetHashCode() == this.GetHashCode();
+            return (obj is ByteBits) && obj.GetHashCode() == this.GetHashCode();
         }
 
 
@@ -165,7 +165,7 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="other">目标</param>
         /// <returns></returns>
-        int IComparable<Bits>.CompareTo(Bits other)
+        int IComparable<ByteBits>.CompareTo(ByteBits other)
         {
             if (this == other)
             {
@@ -181,20 +181,20 @@ namespace NetworkSocket
         }
 
         /// <summary>
-        /// Bits类型调试视图
+        /// 调试视图
         /// </summary>
         private class DebugView
         {
             /// <summary>
-            /// Bits对象
+            /// 查看的对象
             /// </summary>
-            private Bits bits;
+            private ByteBits bits;
 
             /// <summary>
             /// 调试视图
             /// </summary>
-            /// <param name="bits">Bits对象</param>
-            public DebugView(Bits bits)
+            /// <param name="bits">查看的对象</param>
+            public DebugView(ByteBits bits)
             {
                 this.bits = bits;
             }

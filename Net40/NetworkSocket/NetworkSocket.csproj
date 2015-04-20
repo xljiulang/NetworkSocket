@@ -55,7 +55,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Bits.cs" />
+    <Compile Include="ByteBits.cs" />
     <Compile Include="ByteBuilder.cs" />
     <Compile Include="Fast\Exception\ApiExecuteException.cs" />
     <Compile Include="Fast\Exception\ApiNotExistException.cs" />
