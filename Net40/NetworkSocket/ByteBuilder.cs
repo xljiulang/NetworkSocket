@@ -229,19 +229,7 @@ namespace NetworkSocket
             Buffer.BlockCopy(value, index, this.buffer, this.Length, length);
             this.Length = newLength;
         }
-
-
-        /// <summary>
-        /// 从0位置删除指定长度的字节
-        /// </summary>
-        /// <param name="length">长度</param>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public void Remove(int length)
-        {
-            this.Length = this.Length - length;
-            Buffer.BlockCopy(this.buffer, length, this.buffer, 0, this.Length);
-        }
-
+              
 
         /// <summary>
         /// 从0位置将数据复制到指定数组
@@ -266,7 +254,7 @@ namespace NetworkSocket
         public void CutTo(byte[] destArray, int index, int length)
         {
             this.CopyTo(destArray, index, length);
-            this.Remove(length);
+            this.Clear(length);
         }
 
         /// <summary>
@@ -532,6 +520,17 @@ namespace NetworkSocket
         {
             this.Position = 0;
             this.Length = 0;
+        }
+
+        /// <summary>
+        /// 从0位置删除指定长度的字节
+        /// </summary>
+        /// <param name="length">长度</param>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        public void Clear(int length)
+        {
+            this.Length = this.Length - length;
+            Buffer.BlockCopy(this.buffer, length, this.buffer, 0, this.Length);
         }
 
         /// <summary>

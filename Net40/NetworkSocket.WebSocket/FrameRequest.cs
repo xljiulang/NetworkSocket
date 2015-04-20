@@ -100,7 +100,7 @@ namespace NetworkSocket.WebSocket
             }
 
             var content = builder.ReadArray(contentLength);
-            builder.Remove(packetLength);
+            builder.Clear(packetLength);
 
             fixed (byte* pcontent = &content[0], pmask = &maskingKey[0])
             {

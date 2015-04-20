@@ -179,7 +179,7 @@ namespace NetworkSocket.Fast
             var body = builder.ReadArray(totalBytes - builder.Position);
 
             // 清空本条数据
-            builder.Remove(totalBytes);
+            builder.Clear(totalBytes);
 
             var apiName = Encoding.UTF8.GetString(apiNameBytes);
             var packet = new FastPacket(apiName, id, isFromClient)
