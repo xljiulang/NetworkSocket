@@ -203,7 +203,7 @@ namespace NetworkSocket
             /// 查看的内容
             /// </summary>
             [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-            public int[] Keys
+            public int[] Values
             {
                 get
                 {

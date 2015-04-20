@@ -11,7 +11,8 @@ namespace NetworkSocket
     /// 非线程安全类型
     /// 多线程下请锁住自身的SyncRoot字段
     /// </summary>
-    [DebuggerDisplay("Length = {Length}")]
+    [DebuggerDisplay("Position = {Position}, Length = {Length}, Capacity = {Capacity}, Endian = {Endian}")]
+    [DebuggerTypeProxy(typeof(DebugView))]
     public class ByteBuilder
     {
         /// <summary>
@@ -229,7 +230,7 @@ namespace NetworkSocket
             Buffer.BlockCopy(value, index, this.buffer, this.Length, length);
             this.Length = newLength;
         }
-              
+
 
         /// <summary>
         /// 从0位置将数据复制到指定数组
@@ -456,14 +457,6 @@ namespace NetworkSocket
             return value;
         }
 
-        /// <summary>
-        /// 返回有效的数据
-        /// </summary>
-        /// <returns></returns>
-        public byte[] ToArray()
-        {
-            return this.ToArray(0, this.Length);
-        }
 
         /// <summary>
         /// 读取有效数据
@@ -487,6 +480,16 @@ namespace NetworkSocket
         }
 
         /// <summary>
+        /// 返回有效的数据
+        /// 数据全部有效则返回原始数据
+        /// </summary>
+        /// <returns></returns>
+        public byte[] ToArray()
+        {
+            return this.ToArray(0, this.Length);
+        }
+
+        /// <summary>
         /// 返回指定长度的数据
         /// </summary>
         /// <param name="index">索引</param>        
@@ -506,9 +509,13 @@ namespace NetworkSocket
         /// <returns></returns>
         public byte[] ToArray(int index, int length)
         {
-            byte[] buffer = new byte[length];
-            Buffer.BlockCopy(this.buffer, index, buffer, 0, length);
-            return buffer;
+            if (index == 0 && length == this.Capacity)
+            {
+                return this.buffer;
+            }
+            var bytes = new byte[length];
+            Buffer.BlockCopy(this.buffer, index, bytes, 0, length);
+            return bytes;
         }
 
         /// <summary>
@@ -534,12 +541,35 @@ namespace NetworkSocket
         }
 
         /// <summary>
-        /// 获取当前缓冲区的数据
+        /// 调试视图
         /// </summary>
-        /// <returns></returns>
-        public byte[] GetBuffer()
+        private class DebugView
         {
-            return this.buffer;
+            /// <summary>
+            /// 查看的对象
+            /// </summary>
+            private ByteBuilder buidler;
+
+            /// <summary>
+            /// 调试视图
+            /// </summary>
+            /// <param name="buidler">查看的对象</param>
+            public DebugView(ByteBuilder buidler)
+            {
+                this.buidler = buidler;
+            }
+
+            /// <summary>
+            /// 查看的内容
+            /// </summary>
+            [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+            public byte[] Values
+            {
+                get
+                {
+                    return this.buidler.ToArray();
+                }
+            }
         }
     }
 }
