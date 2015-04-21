@@ -46,5 +46,14 @@ namespace NetworkSocket.Fast
             var serializer = new JavaScriptSerializer();
             return serializer.Deserialize(json, type);
         }
+    
+        /// <summary>
+        /// 字符串显示
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return "JavaScriptSerializer";
+        }
     }
 }

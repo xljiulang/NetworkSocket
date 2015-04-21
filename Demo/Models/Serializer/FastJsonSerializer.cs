@@ -19,5 +19,14 @@ namespace Models.Serializer
             var json = Encoding.UTF8.GetString(bytes);
             return JSON.ToObject(json, type);
         }
+
+        /// <summary>
+        /// 字符串显示
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return "FastJsonSerializer";
+        }
     }
 }

@@ -10,6 +10,8 @@ namespace NetworkSocket
     /// <summary>
     /// 表示用户附加数据
     /// </summary>    
+    [DebuggerDisplay("Count = {Count}")]
+    [DebuggerTypeProxy(typeof(DebugView))]
     internal sealed class TagBag : DynamicObject
     {
         /// <summary>
@@ -62,6 +64,38 @@ namespace NetworkSocket
         {
             this.tagData.Set(binder.Name, value);
             return true;
+        }
+
+        /// <summary>
+        /// 调试视图
+        /// </summary>
+        private class DebugView
+        {
+            /// <summary>
+            /// 查看的对象
+            /// </summary>
+            private TagBag view;
+
+            /// <summary>
+            /// 调试视图
+            /// </summary>
+            /// <param name="view">查看的对象</param>
+            public DebugView(TagBag view)
+            {
+                this.view = view;
+            }
+
+            /// <summary>
+            /// 查看的内容
+            /// </summary>
+            [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+            public KeyValuePair<string, object>[] Values
+            {
+                get
+                {
+                    return this.view.tagData.KeyValues.ToArray();
+                }
+            }
         }
     }
 }

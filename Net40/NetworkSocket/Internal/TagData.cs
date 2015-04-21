@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -8,6 +9,8 @@ namespace NetworkSocket
     /// <summary>
     /// 表示用户附加数据
     /// </summary>
+    [DebuggerDisplay("Count = {dic.Count}")]
+    [DebuggerTypeProxy(typeof(DebugView))]
     internal class TagData : ITag
     {
         /// <summary>
@@ -23,6 +26,17 @@ namespace NetworkSocket
             get
             {
                 return this.dic.Keys;
+            }
+        }
+
+        /// <summary>
+        /// 所有键值
+        /// </summary>
+        public IEnumerable<KeyValuePair<string, object>> KeyValues
+        {
+            get
+            {
+                return this.dic;
             }
         }
 
@@ -111,6 +125,39 @@ namespace NetworkSocket
         public void Clear()
         {
             this.dic.Clear();
+        }
+
+
+        /// <summary>
+        /// 调试视图
+        /// </summary>
+        private class DebugView
+        {
+            /// <summary>
+            /// 查看的对象
+            /// </summary>
+            private TagData view;
+
+            /// <summary>
+            /// 调试视图
+            /// </summary>
+            /// <param name="view">查看的对象</param>
+            public DebugView(TagData view)
+            {
+                this.view = view;
+            }
+
+            /// <summary>
+            /// 查看的内容
+            /// </summary>
+            [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+            public KeyValuePair<string, object>[] Values
+            {
+                get
+                {
+                    return this.view.KeyValues.ToArray();
+                }
+            }
         }
     }
 }

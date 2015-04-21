@@ -25,5 +25,14 @@ namespace Models.Serializer
                 return ProtoBuf.Serializer.NonGeneric.Deserialize(type, stream);
             }
         }
+
+        /// <summary>
+        /// 字符串显示
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return "ProtoBufSerializer";
+        }
     }
 }

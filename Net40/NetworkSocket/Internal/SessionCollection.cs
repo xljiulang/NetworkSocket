@@ -14,6 +14,7 @@ namespace NetworkSocket
     /// </summary>   
     /// <typeparam name="T">会话</typeparam>
     [DebuggerDisplay("Count = {dic.Count}")]
+    [DebuggerTypeProxy(typeof(SessionCollectionDebugView<>))]
     internal class SessionCollection<T> : ICollection<T>, IDisposable where T : SessionBase
     {
         /// <summary>
@@ -88,7 +89,21 @@ namespace NetworkSocket
         /// <param name="arrayIndex"></param>
         void ICollection<T>.CopyTo(T[] array, int arrayIndex)
         {
-            throw new NotImplementedException();
+            var index = 0;
+            var kvs = this.dic.ToArray();
+
+            for (var i = arrayIndex; i < array.Length; i++)
+            {
+                if (index == kvs.Length)
+                {
+                    break;
+                }
+                else
+                {
+                    array[i] = kvs[index].Value;
+                    index++;
+                }
+            }
         }
 
         /// <summary>
@@ -141,6 +156,39 @@ namespace NetworkSocket
                 disposable.Dispose();
             }
             this.dic.Clear();
+        }
+    }
+
+
+    /// <summary>
+    /// 调试视图
+    /// </summary>
+    internal class SessionCollectionDebugView<T> where T : SessionBase
+    {
+        /// <summary>
+        /// 查看的对象
+        /// </summary>
+        private SessionCollection<T> view;
+
+        /// <summary>
+        /// 调试视图
+        /// </summary>
+        /// <param name="view">查看的对象</param>
+        public SessionCollectionDebugView(SessionCollection<T> view)
+        {
+            this.view = view;
+        }
+
+        /// <summary>
+        /// 查看的内容
+        /// </summary>
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public T[] Values
+        {
+            get
+            {
+                return this.view.ToArray();
+            }
         }
     }
 }
