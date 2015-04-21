@@ -41,11 +41,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FastServer.cs" />
+    <Compile Include="CpuCounter.cs" />
+    <Compile Include="Server.cs" />
     <Compile Include="Filters\ExceptionFilterAttribute.cs" />
     <Compile Include="Filters\LogFilterAttribute.cs" />
     <Compile Include="Filters\LoginFilterAttribute.cs" />
-    <Compile Include="SystemService.cs" />
+    <Compile Include="CpuCounterService.cs" />
     <Compile Include="_Run.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -67,9 +68,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="bootstrap.min.css" />
+    <Content Include="Chart.js" />
     <Content Include="FastWebSocke.html" />
-    <Content Include="jquery-1.7.2.min.js" />
     <Content Include="fastWebSocket.js" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

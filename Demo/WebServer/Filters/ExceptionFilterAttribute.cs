@@ -13,6 +13,7 @@ namespace WebSocket.Filters
     {
         public void OnException(ExceptionContext filterContext)
         {
+            Console.WriteLine(filterContext.Exception.Message);
             filterContext.ExceptionHandled = true;
         }
     }

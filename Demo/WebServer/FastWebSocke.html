@@ -3,32 +3,25 @@
 <head>
     <title>fastWebSocket客户端</title>
     <script src="fastWebSocket.js"></script>
+    <script src="Chart.js"></script>
+</head>
 
-    <link href="bootstrap.min.css" rel="stylesheet">
-    <script src="jquery-1.7.2.min.js"></script>
-    <style type="text/css">
-        body {
-            text-align: center;
-        }
-
-        form {
-            text-align: left;
-            margin: 20px auto;
-            width: 220px;
-        }
-    </style>
+<body>
+    <div>
+        <canvas id="canvas" style="height: 300px; width: 100%;"></canvas>
+    </div>
+    <p>
+        <button type="button" onclick="stopNotify();">取消CPU变化通知</button>
+        <button type="button" onclick="startNotify();">接收CPU变化通知</button>
+    </p>
 
     <script type="text/javascript">
         document.title = '正在连接到服务器 ..';
         var ws = new fastWebSocket('ws://localhost:8282/');
 
-        // 注册一个叫sum的api
-        ws.bindApi("sum", function (x, y, z) {
-            return x + y + z;
-        });
-
-        ws.bindApi("notify", function (message) {
-            alert('收到通知：' + message);
+        // 注册api
+        ws.bindApi("CpuTimeChanged", function (data) {
+            lineChart.addData(data);
         });
 
         ws.onclose = function (e) {
@@ -43,32 +36,46 @@
             });
         };
 
-        function login() {
-            var user = { account: $("[name='account']").val(), password: $("[name='password']").val() };
-            ws.invkeApi('login', [user, true], function (r) {
-                alert(r);
-            }, function (ex) {
-                alert('异常：' + ex);
-            });
+        function startNotify() {
+            ws.invkeApi('startNotify');
         }
-    </script>
-</head>
 
-<body>
-    <form>
-        <fieldset>
-            <legend>系统登录</legend>
-        </fieldset>
+        function stopNotify() {
+            ws.invkeApi('stopNotify');
+        }
 
-        <label>账号</label>
-        <input type="text" name="account" placeholder="xljiulang">
+        // 线图
+        var lineChart = new function () {
+            var myLine;
 
-        <label>密码</label>
-        <input type="text" name="password" placeholder="123456">
+            var lineChartData = {
+                labels: [],
+                datasets: [
+                    {
+                        label: "My Second dataset",
+                        fillColor: "rgba(151,187,205,0.2)",
+                        strokeColor: "rgba(151,187,205,1)",
+                        pointColor: "rgba(151,187,205,1)",
+                        pointStrokeColor: "#fff",
+                        pointHighlightFill: "#fff",
+                        pointHighlightStroke: "rgba(151,187,205,1)",
+                        data: []
+                    }
+                ]
+            }
 
-        <p>
-            <button type="button" class="btn" onclick="login();">提交</button>
-        </p>
-    </form>
+            window.onload = function () {
+                var ctx = document.getElementById("canvas").getContext("2d");
+                myLine = new Chart(ctx).Line(lineChartData, { responsive: true });
+            };
+
+            this.addData = function (data) {
+                if (myLine.datasets[0].points.length > 15) {
+                    myLine.removeData();
+                }
+                myLine.addData([data.value], data.time);
+            }
+        };
+	</script>
 </body>
 </html>
