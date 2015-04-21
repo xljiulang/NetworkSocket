@@ -14,7 +14,7 @@ namespace NetworkSocket.Fast
     /// <summary>
     /// 快速构建Tcp服务端
     /// </summary>
-    public abstract class FastTcpServer : TcpServerBase<FastSession>, IFastTcpServer
+    public class FastTcpServer : TcpServerBase<FastSession>, IFastTcpServer
     {
         /// <summary>
         /// 所有Api行为

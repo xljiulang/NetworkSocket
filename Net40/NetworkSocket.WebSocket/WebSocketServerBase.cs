@@ -9,7 +9,7 @@ using System.Text;
 namespace NetworkSocket.WebSocket
 {
     /// <summary>
-    /// 表示WebSocket服务基础类
+    /// WebSocket服务抽象类
     /// 只支持 RFC 6455 协议
     /// </summary>
     /// <typeparam name="T">会话类型</typeparam>
