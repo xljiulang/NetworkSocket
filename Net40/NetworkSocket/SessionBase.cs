@@ -12,6 +12,7 @@ namespace NetworkSocket
 {
     /// <summary>
     /// 会话对象基础类  
+    /// 所有会话对象和客户端都派生于此类
     /// </summary>        
     [DebuggerDisplay("{RemoteEndPoint}")]
     public class SessionBase : ISession, IDisposable

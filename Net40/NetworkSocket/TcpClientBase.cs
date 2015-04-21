@@ -18,7 +18,7 @@ namespace NetworkSocket
         /// </summary>
         public TcpClientBase()
         {
-            base.ReceiveHandler = (builder) => this.OnReceiveHandleWithTask(builder);
+            base.ReceiveHandler = this.OnReceiveHandleWithTask;
             base.DisconnectHandler = this.Disconnect;
         }
 
@@ -101,7 +101,7 @@ namespace NetworkSocket
         /// <summary>
         /// 使用Task来处理OnReceive业务方法
         /// 重写此方法，使用LimitedTask来代替系统默认的Task可以控制并发数
-        /// 例：myLimitedTask.Run(() => this.OnReceive( builder));
+        /// 例：myLimitedTask.Run(() => this.OnReceive(builder));
         /// </summary>       
         /// <param name="builder">接收到的历史数据</param>
         protected virtual void OnReceiveHandleWithTask(ByteBuilder builder)
