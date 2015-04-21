@@ -108,12 +108,13 @@ namespace NetworkSocket
         }
 
         /// <summary>
-        /// 字符串显示 
+        /// 字符串显示各个位的值
         /// </summary>
         /// <returns></returns>
         public override string ToString()
         {
-            return this.value.ToString();
+            ByteBits bits = this;
+            return string.Join(", ", Enumerable.Range(0, 8).Select(index => bits[index] ? "1" : "0"));
         }
 
         /// <summary>
