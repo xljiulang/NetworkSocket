@@ -12,9 +12,9 @@ using System.Net.Sockets;
 namespace NetworkSocket.Fast
 {
     /// <summary>
-    /// 快速构建Tcp服务端抽象类 
+    /// 快速构建Tcp服务端
     /// </summary>
-    public abstract class FastTcpServerBase : TcpServerBase<FastSession>, IFastTcpServer
+    public abstract class FastTcpServer : TcpServerBase<FastSession>, IFastTcpServer
     {
         /// <summary>
         /// 所有Api行为
@@ -62,7 +62,7 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 快速构建Tcp服务端
         /// </summary>
-        public FastTcpServerBase()
+        public FastTcpServer()
         {
             this.apiActionList = new ApiActionList();
             this.packetIdProvider = new PacketIdProvider();
@@ -77,7 +77,7 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <returns></returns>       
         /// <exception cref="ArgumentException"></exception>
-        public FastTcpServerBase BindService()
+        public FastTcpServer BindService()
         {
             var allServices = this.GetType().Assembly.GetTypes().Where(item => typeof(IFastApiService).IsAssignableFrom(item));
             return this.BindService(allServices);
@@ -89,7 +89,7 @@ namespace NetworkSocket.Fast
         /// <typeparam name="T">服务类型</typeparam>
         /// <returns></returns>       
         /// <exception cref="ArgumentException"></exception>
-        public FastTcpServerBase BindService<T>() where T : IFastApiService
+        public FastTcpServer BindService<T>() where T : IFastApiService
         {
             return this.BindService(typeof(T));
         }
@@ -101,7 +101,7 @@ namespace NetworkSocket.Fast
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public FastTcpServerBase BindService(params Type[] serviceType)
+        public FastTcpServer BindService(params Type[] serviceType)
         {
             return this.BindService((IEnumerable<Type>)serviceType);
         }
@@ -113,7 +113,7 @@ namespace NetworkSocket.Fast
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public FastTcpServerBase BindService(IEnumerable<Type> serivceType)
+        public FastTcpServer BindService(IEnumerable<Type> serivceType)
         {
             if (serivceType == null)
             {

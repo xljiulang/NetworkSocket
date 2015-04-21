@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 namespace NetworkSocket.WebSocket.Fast
 {
     /// <summary>
-    /// JsonWebSocket的Api服务抽象类   
+    /// JsonWebSocket的Api服务
     /// </summary>
-    public abstract class FastApiServiceBase : IFastApiService, IAuthorizationFilter, IActionFilter, IExceptionFilter
+    public class FastApiService : IFastApiService, IAuthorizationFilter, IActionFilter, IExceptionFilter
     {
         /// <summary>
         /// 线程唯一上下文
@@ -328,7 +328,7 @@ namespace NetworkSocket.WebSocket.Fast
         /// <summary>
         /// 析构函数
         /// </summary>
-        ~FastApiServiceBase()
+        ~FastApiService()
         {
             this.Dispose(false);
         }

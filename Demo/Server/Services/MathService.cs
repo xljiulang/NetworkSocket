@@ -17,7 +17,7 @@ namespace Server.Services
     /// 需要客户端登录才能访问
     /// </summary>
     [LoginFilter]
-    public class MathService : FastApiServiceBase
+    public class MathService : FastApiService
     {
         /// <summary>
         /// 求合操作

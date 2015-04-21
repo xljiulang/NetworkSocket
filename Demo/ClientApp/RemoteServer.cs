@@ -14,7 +14,7 @@ namespace ClientApp
     /// <summary>
     /// 客户端的实现
     /// </summary>
-    public class RemoteServer : FastTcpClientBase
+    public class RemoteServer : FastTcpClient
     {
         /// <summary>
         /// 唯一实例

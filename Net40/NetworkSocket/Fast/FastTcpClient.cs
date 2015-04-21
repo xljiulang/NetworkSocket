@@ -10,9 +10,9 @@ using System.Threading.Tasks;
 namespace NetworkSocket.Fast
 {
     /// <summary>
-    /// 快速构建Tcp客户端抽象类
+    /// 快速构建Tcp客户端
     /// </summary>
-    public abstract class FastTcpClientBase : TcpClientBase, IFastTcpClient
+    public class FastTcpClient : TcpClientBase, IFastTcpClient
     {
         /// <summary>
         /// 所有Api行为
@@ -55,7 +55,7 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 快速构建Tcp服务端
         /// </summary>
-        public FastTcpClientBase()
+        public FastTcpClient()
         {
             this.apiActionList = new ApiActionList(FastTcpCommon.GetServiceApiActions(this.GetType()));
             this.packetIdProvider = new PacketIdProvider();
@@ -82,7 +82,7 @@ namespace NetworkSocket.Fast
         /// <param name="packet">接收到的数据类型</param>
         private void OnRecvComplete(FastPacket packet)
         {
-            var requestContext = new RequestContext { Packet = packet};
+            var requestContext = new RequestContext { Packet = packet };
             if (packet.IsException == false)
             {
                 this.ProcessRequest(requestContext);

@@ -18,7 +18,7 @@ namespace Server
     /// <summary>
     /// FastServer服务 
     /// </summary>
-    public class FastServer : FastTcpServerBase
+    public class FastServer : FastTcpServer
     {
         /// <summary>
         /// 注册依赖注入

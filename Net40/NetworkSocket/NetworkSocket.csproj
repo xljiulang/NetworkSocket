@@ -69,11 +69,11 @@
     <Compile Include="Fast\Exception\ApiNotExistException.cs" />
     <Compile Include="Fast\Exception\ContextNullException.cs" />
     <Compile Include="Fast\Exception\RemoteException.cs" />
-    <Compile Include="Fast\FastApiServiceBase.cs" />
+    <Compile Include="Fast\FastApiService.cs" />
     <Compile Include="Fast\FastSession.cs" />
     <Compile Include="Fast\FastPacket.cs" />
-    <Compile Include="Fast\FastTcpClientBase.cs" />
-    <Compile Include="Fast\FastTcpServerBase.cs" />
+    <Compile Include="Fast\FastTcpClient.cs" />
+    <Compile Include="Fast\FastTcpServer.cs" />
     <Compile Include="Fast\Filter\FilterAttribute.cs" />
     <Compile Include="Fast\Filter\FilterAttributeProvider.cs" />
     <Compile Include="Fast\Filter\GlobalFilters.cs" />

@@ -87,7 +87,7 @@
     <Compile Include="Fast\Exception\RemoteException.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Fast\FastApiServiceBase.cs">
+    <Compile Include="Fast\FastApiService.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Fast\FastPacket.cs">

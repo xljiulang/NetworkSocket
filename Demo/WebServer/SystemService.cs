@@ -15,7 +15,7 @@ namespace WebSocket
     /// <summary>
     /// 系统
     /// </summary>   
-    public class SystemService : FastApiServiceBase
+    public class SystemService : FastApiService
     {
         /// <summary>
         /// 获取服务组件版本号

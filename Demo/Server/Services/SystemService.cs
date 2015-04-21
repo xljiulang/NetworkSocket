@@ -15,7 +15,7 @@ namespace Server.Services
     /// <summary>
     /// 系统
     /// </summary>   
-    public class SystemService : FastApiServiceBase
+    public class SystemService : FastApiService
     {
         public IUserDao UserDao { get; set; }
 
