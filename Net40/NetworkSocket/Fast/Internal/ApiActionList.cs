@@ -22,7 +22,7 @@ namespace NetworkSocket.Fast
         /// </summary>
         public ApiActionList()
         {
-            this.dictionary = new Dictionary<string, ApiAction>(StringComparer.CurrentCultureIgnoreCase);
+            this.dictionary = new Dictionary<string, ApiAction>(StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>

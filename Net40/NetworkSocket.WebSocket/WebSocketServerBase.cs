@@ -51,14 +51,13 @@ namespace NetworkSocket.WebSocket
             var request = HandshakeRequest.From(builder);
             if (request == null)
             {
-                session.Close(StatusCodes.ProtocolError);
+                session.Close();
                 return false;
             }
 
-            var code = StatusCodes.NormalClosure;
-            if (this.OnHandshake(session, request, out code) == false)
+            if (this.OnHandshake(session, request) == false)
             {
-                session.Close(code);
+                session.Close();
                 return false;
             }
 
@@ -118,12 +117,30 @@ namespace NetworkSocket.WebSocket
         /// 否则基础服务将自动安全关闭客户端对象
         /// </summary>
         /// <param name="session">会话对象</param>
-        /// <param name="request">握手请求</param>
-        /// <param name="code">不通过原因</param>
+        /// <param name="request">握手请求</param>     
         /// <returns></returns>
-        protected virtual bool OnHandshake(T session, HandshakeRequest request, out StatusCodes code)
+        protected virtual bool OnHandshake(T session, HandshakeRequest request)
         {
-            code = StatusCodes.NormalClosure;
+            if (string.Equals(request.Method, "GET", StringComparison.OrdinalIgnoreCase) == false)
+            {
+                return false;
+            }
+            if (request.ExistHeader("Connection", "Upgrade") == false)
+            {
+                return false;
+            }
+            if (request.ExistHeader("Upgrade", "websocket") == false)
+            {
+                return false;
+            }
+            if (request.ExistHeader("Sec-WebSocket-Version", "13") == false)
+            {
+                return false;
+            }
+            if (request["Sec-WebSocket-Key"] == null)
+            {
+                return false;
+            }
             return true;
         }
 

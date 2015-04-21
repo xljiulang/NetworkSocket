@@ -38,12 +38,42 @@ namespace NetworkSocket.WebSocket
         public string Scheme { get; private set; }
 
         /// <summary>
+        /// 获取头数据
+        /// </summary>
+        /// <param name="key">键</param>
+        /// <returns></returns>
+        public string this[string key]
+        {
+            get
+            {
+                string value = null;
+                if (this.Header.TryGetValue(key, out value))
+                {
+                    return value;
+                }
+                return null;
+            }
+        }
+
+        /// <summary>
         /// 握手请求信息
         /// </summary>
         private HandshakeRequest()
         {
-            this.Header = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
+            this.Header = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
+
+        /// <summary>
+        /// 获取头数据是否存在
+        /// </summary>
+        /// <param name="key">键</param>
+        /// <param name="value">值</param>
+        /// <returns></returns>
+        public bool ExistHeader(string key, string value)
+        {
+            return string.Equals(this[key], value, StringComparison.OrdinalIgnoreCase);
+        }
+
 
         /// <summary>
         /// 解析连接请求信息

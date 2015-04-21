@@ -16,7 +16,7 @@ namespace NetworkSocket
         /// <summary>
         /// 原始数据字典
         /// </summary>
-        private Dictionary<string, object> dic = new Dictionary<string, object>(StringComparer.InvariantCultureIgnoreCase);
+        private Dictionary<string, object> dic = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// 获取所有key

@@ -212,6 +212,7 @@ namespace NetworkSocket.WebSocket.Fast
             var packet = this.GetFastPacket(session, content);
             if (packet == null)
             {
+                session.Close(StatusCodes.UnsupportedDataType, "不支持的数据结构");
                 return;
             }
 
