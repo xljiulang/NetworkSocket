@@ -53,7 +53,7 @@ namespace NetworkSocket.WebSocket
         /// <param name="response">回复内容</param>
         public bool TrySendResponse(Response response)
         {
-            return this.TrySendBinary(response.ToBytes());
+            return this.TrySend(response.ToBytes());
         }
 
         /// <summary>

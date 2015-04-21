@@ -9,16 +9,16 @@ namespace WebSocket
 {
     class _Run
     {
-        static FastWebSocketServer fastServer = new FastWebSocketServer();
+        static FastServer fastServer = new FastServer();
 
         static void Main(string[] args)
         {
-            Console.Title = "WebSocketServer";
+            Console.Title = "FastWebSocketServer";
 
             GlobalFilters.Add(new Filters.ExceptionFilterAttribute());
             fastServer.BindService<SystemService>();
             fastServer.StartListen(8282);
-            Console.WriteLine("JsonWebServer服务已启动，端口：" + fastServer.LocalEndPoint.Port);
+            Console.WriteLine("FastWebSocketServer服务已启动，端口：" + fastServer.LocalEndPoint.Port);
 
             while (true)
             {
@@ -29,10 +29,10 @@ namespace WebSocket
                 var session = fastServer.AllSessions.FirstOrDefault();
                 if (session == null)
                 {
-                    Console.WriteLine("没有连接的客户端 ..");
+                    Console.WriteLine("没有连接的会话对象 ..");
                 }
                 else
-                {
+                {                  
                     // 调用客户端进行sum运算
                     try
                     {
