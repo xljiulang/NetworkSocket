@@ -10,7 +10,7 @@ namespace NetworkSocket.WebSocket
     /// <summary>
     /// 表示握手请求信息
     /// </summary>
-    public class HandshakeRequest : Request
+    public class HandshakeRequest
     {
         /// <summary>
         /// 头信息

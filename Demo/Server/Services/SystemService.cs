@@ -39,9 +39,9 @@ namespace Server.Services
         [Api("System.Login")]
         [LogFilter("登录操作")]
         public bool Login(User user, bool ifAdmin)
-        {
+        {          
             // 调用客户端的Sort
-            var sortResult = this.InvokeApi<List<int>>(this.CurrentContext.Client, "Sort", new List<int> { 3, 1, 2 }).Result;
+            var sortResult = this.CurrentContext.Session.InvokeApi<List<int>>("Sort", new List<int> { 3, 1, 2 }).Result;
 
             if (user == null)
             {
@@ -50,7 +50,7 @@ namespace Server.Services
 
             // 记录客户端的登录结果
             var state = this.UserDao.IsExist(user);
-            this.CurrentContext.Client.TagBag.Logined = state;
+            this.CurrentContext.Session.TagBag.Logined = state;
             return state;
         }
     }

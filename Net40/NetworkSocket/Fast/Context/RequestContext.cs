@@ -13,14 +13,19 @@ namespace NetworkSocket.Fast
     public class RequestContext
     {
         /// <summary>
-        /// 获取或设置客户端对象
+        /// 获取或设置当前会话对象
         /// </summary>
-        public IClient<FastPacket> Client { get; set; }
+        public FastSession Session { get; set; }
 
         /// <summary>
         /// 获取或设置数据包对象
         /// </summary>
         public FastPacket Packet { get; set; }
+
+        /// <summary>
+        /// 获取或设置客所有会话对象
+        /// </summary>
+        public IEnumerable<FastSession> AllSessions { get; set; }
 
         /// <summary>
         /// 字符串显示

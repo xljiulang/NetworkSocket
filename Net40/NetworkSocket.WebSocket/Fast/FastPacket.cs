@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -9,6 +10,7 @@ namespace NetworkSocket.WebSocket.Fast
     /// <summary>
     /// Json格式数据包
     /// </summary>    
+    [DebuggerDisplay("api = {api}")]
     public class FastPacket
     {
         /// <summary>

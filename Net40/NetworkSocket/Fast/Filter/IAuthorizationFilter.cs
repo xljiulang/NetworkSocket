@@ -15,6 +15,6 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="filterContext">上下文</param>       
         /// <returns></returns>
-        void OnAuthorization(ServerActionContext filterContext);
+        void OnAuthorization(ActionContext filterContext);
     }
 }

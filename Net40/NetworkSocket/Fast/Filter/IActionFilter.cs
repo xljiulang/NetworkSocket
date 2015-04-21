@@ -15,12 +15,12 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="filterContext">上下文</param>       
         /// <returns></returns>
-        void OnExecuting(ServerActionContext filterContext);
+        void OnExecuting(ActionContext filterContext);
 
         /// <summary>
         /// 在执行Api行为后触发
         /// </summary>
         /// <param name="filterContext">上下文</param>      
-        void OnExecuted(ServerActionContext filterContext);
+        void OnExecuted(ActionContext filterContext);
     }
 }

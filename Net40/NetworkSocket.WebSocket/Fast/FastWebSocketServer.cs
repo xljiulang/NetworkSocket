@@ -12,7 +12,7 @@ namespace NetworkSocket.WebSocket.Fast
     /// <summary>
     /// 表示基于Json文本协议通讯的WebSocket服务
     /// </summary>
-    public class FastWebSocketServer : WebSocketServerBase, IFastWebSocketServer
+    public class FastWebSocketServer : WebSocketServerBase<FastWebSocketSession>, IFastWebSocketServer
     {
         /// <summary>
         /// 所有Api行为
@@ -58,7 +58,7 @@ namespace NetworkSocket.WebSocket.Fast
         public IFilterAttributeProvider FilterAttributeProvider { get; set; }
 
         /// <summary>
-        /// 快速构建Tcp服务端
+        /// 快速构建WebSocket服务端
         /// </summary>
         public FastWebSocketServer()
         {
@@ -136,105 +136,13 @@ namespace NetworkSocket.WebSocket.Fast
             return this;
         }
 
-
-        /// <summary>
-        /// 调用客户端实现的服务方法        
-        /// </summary>
-        /// <param name="client">客户端</param>
-        /// <param name="api">api(区分大小写)</param>
-        /// <param name="parameters">参数列表</param>    
-        /// <exception cref="ArgumentException"></exception>
-        /// <exception cref="SocketException"></exception>         
-        public Task InvokeApi(IClient<Response> client, string api, params object[] parameters)
-        {
-            return Task.Factory.StartNew(() =>
-            {
-                var id = this.packetIdProvider.GetId();
-                var packet = new FastPacket
-                {
-                    api = api,
-                    id = id,
-                    state = true,
-                    fromClient = false,
-                    body = parameters
-                };
-                var packetJson = this.JsonSerializer.Serialize(packet);
-                client.Send(packetJson);
-            });
-        }
-
-        /// <summary>
-        /// 调用客户端实现的服务方法     
-        /// 并返回结果数据任务
-        /// </summary>
-        /// <typeparam name="T">返回值类型</typeparam>
-        /// <param name="client">客户端</param>
-        /// <param name="api">api(区分大小写)</param>
-        /// <param name="parameters">参数</param>     
-        /// <exception cref="ArgumentException"></exception>
-        /// <exception cref="SocketException"></exception> 
-        /// <exception cref="RemoteException"></exception>
-        /// <exception cref="TimeoutException"></exception>
-        /// <returns>远程数据任务</returns>  
-        public Task<T> InvokeApi<T>(IClient<Response> client, string api, params object[] parameters)
-        {
-            var id = this.packetIdProvider.GetId();
-            var taskSource = new TaskCompletionSource<T>();
-            var packet = new FastPacket
-            {
-                api = api,
-                id = id,
-                state = true,
-                fromClient = false,
-                body = parameters
-            };
-            var packetJson = this.JsonSerializer.Serialize(packet);
-
-            // 登记TaskSetAction           
-            Action<SetTypes, string> setAction = (setType, json) =>
-            {
-                if (setType == SetTypes.SetReturnReult)
-                {
-                    if (json == null || json.Length == 0)
-                    {
-                        taskSource.TrySetResult(default(T));
-                    }
-                    else
-                    {
-                        var result = (T)this.JsonSerializer.Deserialize(json, typeof(T));
-                        taskSource.TrySetResult(result);
-                    }
-                }
-                else if (setType == SetTypes.SetReturnException)
-                {
-                    var exception = new RemoteException(json);
-                    taskSource.TrySetException(exception);
-                }
-                else if (setType == SetTypes.SetTimeoutException)
-                {
-                    var exception = new TimeoutException();
-                    taskSource.TrySetException(exception);
-                }
-                else if (setType == SetTypes.SetShutdownException)
-                {
-                    var exception = new SocketException(SocketError.Shutdown.GetHashCode());
-                    taskSource.TrySetException(exception);
-                }
-            };
-            var taskSetAction = new TaskSetAction(setAction);
-            taskSetActionTable.Add(packet.id, taskSetAction);
-
-            client.Send(packetJson);
-            return taskSource.Task;
-        }
-
         /// <summary>
         /// 获取数据包
         /// </summary>
         /// <param name="client">客户端</param>
         /// <param name="content">内容</param>
         /// <returns></returns>
-        private FastPacket GetFastPacket(IClient<Response> client, string content)
+        private FastPacket GetFastPacket(FastWebSocketSession client, string content)
         {
             try
             {
@@ -257,13 +165,22 @@ namespace NetworkSocket.WebSocket.Fast
         }
 
         /// <summary>
+        /// 创建新的会话对象
+        /// </summary>
+        /// <returns></returns>
+        protected override FastWebSocketSession OnCreateSession()
+        {
+            return new FastWebSocketSession(this.packetIdProvider, this.taskSetActionTable, this.JsonSerializer, this.FilterAttributeProvider);
+        }
+
+        /// <summary>
         /// 接收到文本信息时
         /// </summary>
-        /// <param name="client">客户端</param>
+        /// <param name="session">会话对象</param>
         /// <param name="content">内容</param>
-        protected override void OnText(IClient<Response> client, string content)
+        protected override void OnText(FastWebSocketSession session, string content)
         {
-            var packet = this.GetFastPacket(client, content);
+            var packet = this.GetFastPacket(session, content);
             if (packet == null)
             {
                 return;
@@ -271,8 +188,8 @@ namespace NetworkSocket.WebSocket.Fast
 
             var requestContext = new RequestContext
             {
-                WebSocketServer = this,
-                Client = client,
+                AllSessions = this.AllSessions,
+                Session = session,
                 Packet = packet,
             };
 

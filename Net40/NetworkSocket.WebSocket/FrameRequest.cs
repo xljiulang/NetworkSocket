@@ -10,7 +10,7 @@ namespace NetworkSocket.WebSocket
     /// <summary>
     /// 表示请求帧
     /// </summary>
-    public class FrameRequest : Request
+    public class FrameRequest 
     {
         /// <summary>
         /// 获取是否已完成

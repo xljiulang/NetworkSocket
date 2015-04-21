@@ -12,7 +12,7 @@ namespace NetworkSocket.Fast
     /// <summary>
     /// 快速构建Tcp客户端抽象类
     /// </summary>
-    public abstract class FastTcpClientBase : TcpClientBase<FastPacket, FastPacket>, IFastTcpClient
+    public abstract class FastTcpClientBase : TcpClientBase, IFastTcpClient
     {
         /// <summary>
         /// 所有Api行为
@@ -20,7 +20,7 @@ namespace NetworkSocket.Fast
         private ApiActionList apiActionList;
 
         /// <summary>
-        /// 数据包哈希码提供者
+        /// 数据包id提供者
         /// </summary>
         private PacketIdProvider packetIdProvider;
 
@@ -64,28 +64,26 @@ namespace NetworkSocket.Fast
         }
 
         /// <summary>
-        /// 当接收到远程端的数据时，将触发此方法       
-        /// 返回的每个数据包，将触发一次OnRecvComplete方法       
+        /// 当接收到远程端的数据时，将触发此方法
         /// </summary>
-        /// <param name="builder">接收到的历史数据</param>
-        /// <returns>如果不够一个数据包，则请返回null</returns>
-        protected override IEnumerable<FastPacket> OnReceive(ByteBuilder builder)
+        /// <param name="builder">接收到的历史数据</param>        
+        protected override void OnReceive(ByteBuilder builder)
         {
             FastPacket packet;
             while ((packet = FastPacket.From(builder)) != null)
             {
-                yield return packet;
+                this.OnRecvComplete(packet);
             }
         }
 
         /// <summary>
         /// 当接收到服务发来的数据包时，将触发此方法
         /// </summary>
-        /// <param name="tRecv">接收到的数据类型</param>
-        protected override void OnRecvComplete(FastPacket tRecv)
+        /// <param name="packet">接收到的数据类型</param>
+        private void OnRecvComplete(FastPacket packet)
         {
-            var requestContext = new RequestContext { Client = this, Packet = tRecv };
-            if (tRecv.IsException == false)
+            var requestContext = new RequestContext { Packet = packet};
+            if (packet.IsException == false)
             {
                 this.ProcessRequest(requestContext);
             }
@@ -107,12 +105,12 @@ namespace NetworkSocket.Fast
                 return;
             }
 
-            var exceptionContext = new ExceptionContext(requestContext, remoteException);
-            this.OnException(exceptionContext);
+            var exceptionHandled = false;
+            this.OnException(requestContext.Packet, remoteException, out exceptionHandled);
 
-            if (exceptionContext.ExceptionHandled == false)
+            if (exceptionHandled == false)
             {
-                throw exceptionContext.Exception;
+                throw remoteException;
             }
         }
 
@@ -153,11 +151,11 @@ namespace NetworkSocket.Fast
 
             var exception = new ApiNotExistException(requestContext.Packet.ApiName);
             var exceptionContext = new ExceptionContext(requestContext, exception);
+            FastTcpCommon.SetRemoteException(this, this.Serializer, exceptionContext);
 
-            FastTcpCommon.SetRemoteException(this.Serializer, exceptionContext);
-            this.OnException(exceptionContext);
-
-            if (exceptionContext.ExceptionHandled == false)
+            var exceptionHandled = false;
+            this.OnException(requestContext.Packet, exception, out exceptionHandled);
+            if (exceptionHandled == false)
             {
                 throw exception;
             }
@@ -204,7 +202,7 @@ namespace NetworkSocket.Fast
             {
                 var returnByes = this.Serializer.Serialize(returnValue);
                 actionContext.Packet.Body = returnByes;
-                this.Send(actionContext.Packet);
+                ((ISession)this).Send(actionContext.Packet.ToBytes());
             }
         }
 
@@ -216,21 +214,25 @@ namespace NetworkSocket.Fast
         private void ProcessExecutingException(ActionContext actionContext, Exception exception)
         {
             var exceptionContext = new ExceptionContext(actionContext, new ApiExecuteException(actionContext, exception));
-            FastTcpCommon.SetRemoteException(this.Serializer, exceptionContext);
-            this.OnException(exceptionContext);
+            FastTcpCommon.SetRemoteException(this, this.Serializer, exceptionContext);
 
-            if (exceptionContext.ExceptionHandled == false)
+            var exceptionHandled = false;
+            this.OnException(actionContext.Packet, exception, out exceptionHandled);
+            if (exceptionHandled == false)
             {
                 throw exception;
             }
         }
 
         /// <summary>
-        /// 当操作中遇到处理异常时，将触发此方法
-        /// </summary>      
-        /// <param name="filterContext">上下文</param>
-        protected virtual void OnException(ExceptionContext filterContext)
+        ///  当操作中遇到处理异常时，将触发此方法
+        /// </summary>
+        /// <param name="packet">数据包对象</param>
+        /// <param name="pxception">异常对象</param>
+        /// <param name="exceptionHandled">异常是否已处理</param>
+        protected virtual void OnException(FastPacket packet, Exception pxception, out bool exceptionHandled)
         {
+            exceptionHandled = false;
         }
 
         /// <summary>
@@ -246,7 +248,7 @@ namespace NetworkSocket.Fast
             {
                 var packet = new FastPacket(api, this.packetIdProvider.GetId(), true);
                 packet.SetBodyParameters(this.Serializer, parameters);
-                this.Send(packet);
+                ((ISession)this).Send(packet.ToBytes());
             });
         }
 

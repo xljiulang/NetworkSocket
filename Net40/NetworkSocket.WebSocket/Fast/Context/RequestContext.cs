@@ -13,14 +13,14 @@ namespace NetworkSocket.WebSocket.Fast
     public class RequestContext
     {
         /// <summary>
-        /// 获取或设置服务器对象
+        /// 获取或设置当前所有会话对象
         /// </summary>
-        public IFastWebSocketServer WebSocketServer { get; set; }
+        public IEnumerable<FastWebSocketSession> AllSessions { get; set; }
 
         /// <summary>
-        /// 获取或设置客户端对象
+        /// 获取或设置会话对象
         /// </summary>
-        public IClient<Response> Client { get; set; }
+        public FastWebSocketSession Session { get; set; }
 
         /// <summary>
         /// 获取或设置接收到的数据包

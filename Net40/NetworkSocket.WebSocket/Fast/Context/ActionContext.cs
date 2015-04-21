@@ -31,8 +31,8 @@ namespace NetworkSocket.WebSocket.Fast
         /// <param name="action">Api行为</param>
         public ActionContext(RequestContext context, ApiAction action)
         {
-            this.WebSocketServer = context.WebSocketServer;
-            this.Client = context.Client;
+            this.AllSessions = context.AllSessions;
+            this.Session = context.Session;
             this.Packet = context.Packet;            
             this.Action = action;
         }

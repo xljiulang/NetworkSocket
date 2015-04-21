@@ -16,10 +16,9 @@ namespace NetworkSocket
     /// 提供客户端连接、断开通知功能
     /// 所有Tcp服务端都派生于此类
     /// </summary>
-    /// <typeparam name="T">发送数据包协议</typeparam>
-    /// <typeparam name="TRecv">接收到的数据包类型</typeparam>
+    /// <typeparam name="T">会话类型</typeparam>   
     [DebuggerDisplay("IsListening = {IsListening}")]
-    public abstract class TcpServerBase<T, TRecv> : ITcpServer<T> where T : PacketBase
+    public abstract class TcpServerBase<T> : ITcpServer<T> where T : SessionBase
     {
         /// <summary>
         /// 服务socket
@@ -34,13 +33,12 @@ namespace NetworkSocket
         /// <summary>
         /// 空闲客户端池
         /// </summary>
-        private SocketClientBag<T, TRecv> clientBag = new SocketClientBag<T, TRecv>();
-
+        private SessionBag<T> sessionBag = new SessionBag<T>();
 
         /// <summary>
-        /// 获取所有连接的客户端对象   
+        /// 获取当前所有会话对象   
         /// </summary>
-        public ClientCollection<T> Clients { get; private set; }
+        public IEnumerable<T> AllSessions { get; private set; }
 
         /// <summary>
         /// 获取所监听的本地IP和端口
@@ -58,7 +56,7 @@ namespace NetworkSocket
         /// </summary> 
         public TcpServerBase()
         {
-            this.Clients = new ClientCollection<T>();
+            this.AllSessions = new SessionCollection<T>();
         }
 
         /// <summary>
@@ -91,7 +89,7 @@ namespace NetworkSocket
 
             this.acceptArg = new SocketAsyncEventArgs();
             this.acceptArg.Completed += (sender, e) => { this.AcceptArgCompleted(e); };
-            this.AcceptClient(this.acceptArg);
+            this.AcceptSession(this.acceptArg);
 
             this.LocalEndPoint = localEndPoint;
             this.IsListening = true;
@@ -101,7 +99,7 @@ namespace NetworkSocket
         /// 开始一次接受连接请求操作
         /// </summary>
         /// <param name="arg">连接参数</param>     
-        private void AcceptClient(SocketAsyncEventArgs arg)
+        private void AcceptSession(SocketAsyncEventArgs arg)
         {
             if (this.listenSocket != null)
             {
@@ -122,98 +120,84 @@ namespace NetworkSocket
             if (arg.SocketError == SocketError.Success)
             {
                 // 从池中取出SocketAsync
-                var client = this.clientBag.Take();
+                var session = this.sessionBag.Take() ?? this.OnCreateSession();
 
-                // 绑定处理委托               
-                client.SendHandler = (packet) => this.OnSend(client, packet);
-                client.ReceiveHandler = (builder) => this.OnReceive(client, builder);
-                client.RecvCompleteHandler = (packet) => this.OnRecvCompleteHandleWithTask(client, packet);
-                client.DisconnectHandler = () => this.RecyceClient(client);
-                client.CloseHandler = () => this.RecyceClient(client);
+                // 绑定处理委托
+                session.ReceiveHandler = (builder) => this.OnReceiveHandleWithTask(session, builder);
+                session.DisconnectHandler = () => this.RecyceSession(session);
+                session.CloseHandler = () => this.RecyceSession(session);
 
                 // SocketAsync与socket绑定    
-                client.Bind(arg.AcceptSocket);
+                session.Bind(arg.AcceptSocket);
                 // 添加到活动列表
-                this.Clients.Add(client);
+                (this.AllSessions as ICollection<T>).Add(session);
                 // 通知已连接
-                this.OnConnect(client);
+                this.OnConnect(session);
                 // 开始接收数据
-                client.BeginReceive();
+                session.BeginReceive();
             }
 
             // 处理后继续接收
-            this.AcceptClient(arg);
+            this.AcceptSession(arg);
         }
 
         /// <summary>
-        /// 发送数据包后触发
+        /// 创建新的会话对象
         /// </summary>
-        /// <param name="client">客户端</param>
-        /// <param name="packet">数据包</param>
-        protected virtual void OnSend(IClient<T> client, T packet)
+        /// <returns></returns>
+        protected abstract T OnCreateSession();
+
+
+        /// <summary>
+        /// 使用Task来处理OnReceive业务方法
+        /// 重写此方法，使用LimitedTask来代替系统默认的Task可以控制并发数
+        /// 例：myLimitedTask.Run(() => this.OnReceive(session, builder));
+        /// </summary>
+        /// <param name="session">会话对象</param>
+        /// <param name="builder">接收到的历史数据</param>
+        protected virtual void OnReceiveHandleWithTask(T session, ByteBuilder builder)
         {
+            Task.Factory.StartNew(() => this.OnReceive(session, builder));
         }
 
+
         /// <summary>
-        /// 当接收到远程端的数据时，将触发此方法       
-        /// 返回的每个数据包将触发一次OnRecvComplete方法
+        /// 当接收到会话对象的数据时，将触发此方法             
         /// </summary>
-        /// <param name="client">客户端</param>
+        /// <param name="session">会话对象</param>
         /// <param name="builder">接收到的历史数据</param>
         /// <returns></returns>
-        protected abstract IEnumerable<TRecv> OnReceive(IClient<T> client, ByteBuilder builder);
+        protected abstract void OnReceive(T session, ByteBuilder builder);
 
         /// <summary>
-        /// 使用Task来处理OnRecvComplete业务方法
-        /// 重写此方法，使用LimitedTask来代替系统默认的Task可以控制并发数
-        /// 例：myLimitedTask.Run(() => this.OnRecvComplete(client, tRecv));
+        /// 回收复用会话对象
+        /// 关闭会话并通知连接断开
         /// </summary>
-        /// <param name="client">客户端</param>
-        /// <param name="tRecv">接收到的数据类型</param>
-        protected virtual void OnRecvCompleteHandleWithTask(IClient<T> client, TRecv tRecv)
+        /// <param name="session">会话对象</param>
+        private void RecyceSession(T session)
         {
-            Task.Factory.StartNew(() => this.OnRecvComplete(client, tRecv));
-        }
-
-        /// <summary>
-        /// 当收到到数据包时，将触发此方法
-        /// </summary>
-        /// <param name="client">客户端</param>
-        /// <param name="tRecv">接收到的数据类型</param>
-        protected virtual void OnRecvComplete(IClient<T> client, TRecv tRecv)
-        {
-        }
-
-
-        /// <summary>
-        /// 回收复用客户端对象
-        /// 关闭客户端并通知连接断开
-        /// </summary>
-        /// <param name="client">客户端对象</param>
-        private void RecyceClient(SocketClient<T, TRecv> client)
-        {
-            if (this.Clients.Remove(client))
+            if ((this.AllSessions as ICollection<T>).Remove(session) == true)
             {
-                this.OnDisconnect(client);
-                client.Close();
-                client.TagData.Clear();
-                this.clientBag.Add(client);
+                this.OnDisconnect(session);
+                session.Close();
+                session.TagData.Clear();
+                this.sessionBag.Add(session);
             }
         }
 
         /// <summary>
-        /// 当客户端断开连接时，将触发此方法
+        /// 当会话断开连接时，将触发此方法
         /// </summary>
-        /// <param name="client">客户端</param>     
-        protected virtual void OnDisconnect(IClient<T> client)
+        /// <param name="session">会话对象</param>     
+        protected virtual void OnDisconnect(T session)
         {
         }
 
         /// <summary>
-        /// 当客户端连接时，将触发此方法
+        /// 当会话连接时，将触发此方法
         /// </summary>
-        /// <param name="client">客户端</param>
-        protected virtual void OnConnect(IClient<T> client)
+        /// <param name="session">会话对象</param>
+        protected virtual void OnConnect(T session)
         {
         }
         #region IDisposable
@@ -261,15 +245,15 @@ namespace NetworkSocket
                 }
             }
 
-            this.Clients.Dispose();
-            this.clientBag.Dispose();
+            (this.AllSessions as IDisposable).Dispose();
+            this.sessionBag.Dispose();
             this.acceptArg.Dispose();
 
             if (disposing)
             {
-                this.Clients = null;
+                this.AllSessions = null;
                 this.acceptArg = null;
-                this.clientBag = null;             
+                this.sessionBag = null;
                 this.LocalEndPoint = null;
                 this.IsListening = false;
             }

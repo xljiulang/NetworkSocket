@@ -10,7 +10,7 @@ namespace NetworkSocket.Policies
     /// Flex通讯策略服务
     /// 不可继承
     /// </summary>
-    public sealed class FlexPolicyServer : TcpServerBase<BinaryPacket, byte[]>
+    public sealed class FlexPolicyServer : TcpServerBase<SessionBase>
     {
         /// <summary>
         /// 本地843端口
@@ -36,31 +36,23 @@ namespace NetworkSocket.Policies
         /// <summary>
         /// 接收到策略请求
         /// </summary>
-        /// <param name="client">客户端</param>
-        /// <param name="builder">数据</param>
-        /// <returns></returns>
-        protected override IEnumerable<byte[]> OnReceive(IClient<BinaryPacket> client, ByteBuilder builder)
-        {
-            if (builder.Length == 0)
-            {
-                yield break;
-            }
-            var bytes = builder.ToArray();
-            builder.Clear();
-            yield return bytes;
-        }
-
-        /// <summary>
-        /// 完成一次策略请求解析
-        /// </summary>
-        /// <param name="client">客户端</param>
-        /// <param name="tRecv">接收到的数据类型</param>
-        protected override void OnRecvComplete(IClient<BinaryPacket> client, byte[] tRecv)
+        /// <param name="session">会话对象</param>
+        /// <param name="builder">数据</param>      
+        protected override void OnReceive(SessionBase session, ByteBuilder builder)
         {
             string xml = "<cross-domain-policy><allow-access-from domain=\"*\" to-ports=\"*\"/></cross-domain-policy>\0";
             // 需要把字符串转为Char[]
             var bytes = Encoding.UTF8.GetBytes(xml.ToCharArray());
-            client.TrySend(bytes);
+            ((ISession)session).TrySend(bytes);
+        }
+
+        /// <summary>
+        /// 创建新的会话对象
+        /// </summary>
+        /// <returns></returns>
+        protected override SessionBase OnCreateSession()
+        {
+            return new SessionBase();
         }
     }
 }

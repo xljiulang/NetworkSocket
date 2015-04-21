@@ -20,20 +20,14 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// Api行为上下文
         /// </summary>
-        public ActionContext()
-        {
-        }
-
-        /// <summary>
-        /// Api行为上下文
-        /// </summary>
         /// <param name="context">请求上下文</param>
         /// <param name="action">Api行为</param>
         public ActionContext(RequestContext context, ApiAction action)
         {
-            this.Client = context.Client;
+            this.Session = context.Session;
             this.Packet = context.Packet;
-            this.Action = action;
+            this.AllSessions = context.AllSessions;
+            this.Action = action;          
         }
 
         /// <summary>

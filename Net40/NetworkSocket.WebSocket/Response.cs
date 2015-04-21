@@ -8,27 +8,12 @@ namespace NetworkSocket.WebSocket
     /// <summary>
     /// 表示回复对象抽象类
     /// </summary>
-    public abstract class Response : PacketBase
+    public abstract class Response
     {
         /// <summary>
-        /// 获取原始内容
+        /// 转换为二进制数据
         /// </summary>
-        protected byte[] Content { get; set; }
-
-        /// <summary>
-        /// 回复对象
-        /// </summary>
-        public Response()
-        {
-        }
-
-        /// <summary>
-        /// 回复对象
-        /// </summary>       
-        /// <param name="content">内容</param>       
-        public Response(byte[] content)
-        {
-            this.Content = content;
-        }
+        /// <returns></returns>
+        public abstract byte[] ToBytes();
     }
 }

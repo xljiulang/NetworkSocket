@@ -21,13 +21,13 @@ namespace Server.Filters
             this.message = message;
         }        
 
-        public void OnExecuting(ServerActionContext filterContext)
+        public void OnExecuting(ActionContext filterContext)
         {
-            var log = string.Format("Time:{0} Client:{1} Action:{2} Message:{3}", DateTime.Now.ToString("mm:ss"), filterContext.Client, filterContext.Action, this.message);
+            var log = string.Format("Time:{0} Client:{1} Action:{2} Message:{3}", DateTime.Now.ToString("mm:ss"), filterContext.Session, filterContext.Action, this.message);
             this.Loger.Write(log);
         }
 
-        public void OnExecuted(ServerActionContext filterContext)
+        public void OnExecuted(ActionContext filterContext)
         {           
         }
     }

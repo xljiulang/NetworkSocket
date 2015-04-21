@@ -14,6 +14,6 @@ namespace NetworkSocket.Fast
         /// 异常触发
         /// </summary>
         /// <param name="filterContext">上下文</param>
-        void OnException(ServerExceptionContext filterContext);
+        void OnException(ExceptionContext filterContext);
     }
 }

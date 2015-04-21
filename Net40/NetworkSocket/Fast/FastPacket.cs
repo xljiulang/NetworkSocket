@@ -10,7 +10,7 @@ namespace NetworkSocket.Fast
     /// 通讯协议的封包
     /// </summary>
     [DebuggerDisplay("ApiName = {ApiName}")]
-    public sealed class FastPacket : PacketBase
+    public sealed class FastPacket
     {
         /// <summary>
         /// 获取封包的字节长度
@@ -123,7 +123,7 @@ namespace NetworkSocket.Fast
         /// 转换为二进制数据
         /// </summary>
         /// <returns></returns>
-        public override byte[] ToBytes()
+        public byte[] ToBytes()
         {
             var apiNameBytes = Encoding.UTF8.GetBytes(this.ApiName);
             var headLength = apiNameBytes.Length + 15;

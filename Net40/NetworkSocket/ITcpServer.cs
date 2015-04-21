@@ -9,13 +9,13 @@ namespace NetworkSocket
     /// <summary>
     /// Tcp服务接口
     /// </summary>    
-    /// <typeparam name="T">发送数据包协议</typeparam>
-    public interface ITcpServer<T> : IDisposable where T : PacketBase
+    /// <typeparam name="T">会话类型</typeparam>
+    public interface ITcpServer<T> : IDisposable where T : ISession
     {
         /// <summary>
-        /// 获取所有连接的客户端对象   
+        /// 获取当前所有会话对象   
         /// </summary>
-        ClientCollection<T> Clients { get; }
+        IEnumerable<T> AllSessions { get; }
 
         /// <summary>
         /// 开始启动监听       

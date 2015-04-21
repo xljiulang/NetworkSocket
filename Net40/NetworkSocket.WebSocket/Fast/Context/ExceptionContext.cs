@@ -36,8 +36,8 @@ namespace NetworkSocket.WebSocket.Fast
         /// <param name="exception">异常</param>
         public ExceptionContext(ActionContext context, Exception exception)
         {
-            this.WebSocketServer = context.WebSocketServer;
-            this.Client = context.Client;
+            this.AllSessions = context.AllSessions;
+            this.Session = context.Session;
             this.Packet = context.Packet;
             this.Exception = exception;
         }
@@ -49,8 +49,8 @@ namespace NetworkSocket.WebSocket.Fast
         /// <param name="exception">异常</param>
         public ExceptionContext(RequestContext context, Exception exception)
         {
-            this.WebSocketServer = context.WebSocketServer;
-            this.Client = context.Client;
+            this.AllSessions = context.AllSessions;
+            this.Session = context.Session;
             this.Packet = context.Packet;
             this.Exception = exception;
         }

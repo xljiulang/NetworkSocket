@@ -37,7 +37,7 @@ namespace WebSocket
         [Api]
         [LogFilter("登录操作")]
         public string Login(User user, bool ifAdmin)
-        {           
+        {
             if (user == null)
             {
                 throw new ArgumentNullException("user");
@@ -49,7 +49,7 @@ namespace WebSocket
             }
 
             // 记录客户端的登录结果           
-            this.CurrentContext.Client.TagBag.Logined = true;
+            this.CurrentContext.Session.TagBag.Logined = true;
             return "登录系统成功";
         }
 

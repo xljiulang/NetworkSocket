@@ -17,12 +17,12 @@ namespace NetworkSocket.Fast
         /// 线程唯一上下文
         /// </summary>
         [ThreadStatic]
-        private static ServerActionContext currentContext;
+        private static ActionContext currentContext;
 
         /// <summary>
         /// 获取当前Api行为上下文
         /// </summary>
-        protected ServerActionContext CurrentContext
+        protected ActionContext CurrentContext
         {
             get
             {
@@ -32,15 +32,15 @@ namespace NetworkSocket.Fast
             {
                 currentContext = value;
             }
-        }      
+        }
 
         /// <summary>
         /// 执行Api行为
         /// </summary>   
         /// <param name="actionContext">上下文</param>      
-        void IFastApiService.Execute(ServerActionContext actionContext)
+        void IFastApiService.Execute(ActionContext actionContext)
         {
-            var filters = actionContext.FastTcpServer.FilterAttributeProvider.GetActionFilters(actionContext.Action);
+            var filters = actionContext.Session.FilterAttributeProvider.GetActionFilters(actionContext.Action);
 
             try
             {
@@ -70,10 +70,10 @@ namespace NetworkSocket.Fast
         /// <param name="actionContext">上下文</param>
         /// <param name="actionfilters">过滤器</param>
         /// <param name="exception">异常项</param>
-        private void ProcessExecutingException(ServerActionContext actionContext, IEnumerable<IFilter> actionfilters, Exception exception)
+        private void ProcessExecutingException(ActionContext actionContext, IEnumerable<IFilter> actionfilters, Exception exception)
         {
-            var exceptionContext = new ServerExceptionContext(actionContext, new ApiExecuteException(actionContext, exception));
-            FastTcpCommon.SetRemoteException(actionContext.FastTcpServer.Serializer, exceptionContext);
+            var exceptionContext = new ExceptionContext(actionContext, new ApiExecuteException(actionContext, exception));
+            FastTcpCommon.SetRemoteException(actionContext.Session, actionContext.Session.Serializer, exceptionContext);
             this.ExecExceptionFilters(actionfilters, exceptionContext);
 
             if (exceptionContext.ExceptionHandled == false)
@@ -88,67 +88,26 @@ namespace NetworkSocket.Fast
         /// </summary>       
         /// <param name="actionContext">上下文</param>       
         /// <param name="filters">过滤器</param>
-        private void ExecuteAction(ServerActionContext actionContext, IEnumerable<IFilter> filters)
+        private void ExecuteAction(ActionContext actionContext, IEnumerable<IFilter> filters)
         {
             // 执行Filter
             this.ExecFiltersBeforeAction(filters, actionContext);
 
-            var parameters = FastTcpCommon.GetApiActionParameters(actionContext.FastTcpServer.Serializer, actionContext);
+            var parameters = FastTcpCommon.GetApiActionParameters(actionContext.Session.Serializer, actionContext);
             var returnValue = actionContext.Action.Execute(this, parameters);
 
             // 执行Filter
             this.ExecFiltersAfterAction(filters, actionContext);
 
             // 返回数据
-            if (actionContext.Action.IsVoidReturn == false && actionContext.Client.IsConnected)
+            if (actionContext.Action.IsVoidReturn == false && actionContext.Session.IsConnected)
             {
-                var returnBytes = actionContext.FastTcpServer.Serializer.Serialize(returnValue);
+                var returnBytes = actionContext.Session.Serializer.Serialize(returnValue);
                 actionContext.Packet.Body = returnBytes;
-                actionContext.Client.Send(actionContext.Packet);
+                ISession session = actionContext.Session;
+                session.Send(actionContext.Packet.ToBytes());
             }
         }
-
-        /// <summary>
-        /// 调用客户端实现的Api        
-        /// </summary>
-        /// <param name="client">客户端</param>
-        /// <param name="api">api</param>
-        /// <param name="parameters">参数列表</param>    
-        /// <exception cref="ArgumentException"></exception>
-        /// <exception cref="ContextNullException"></exception>
-        /// <exception cref="SocketException"></exception>         
-        protected Task InvokeApi(IClient<FastPacket> client, string api, params object[] parameters)
-        {
-            if (this.CurrentContext == null)
-            {
-                throw new ContextNullException("CurrentContext上下文对象为空");
-            }
-            return this.CurrentContext.FastTcpServer.InvokeApi(client, api, parameters);
-        }
-
-        /// <summary>
-        /// 调用客户端实现的Api   
-        /// 并返回结果数据任务
-        /// </summary>
-        /// <typeparam name="T">返回值类型</typeparam>
-        /// <param name="client">客户端</param>
-        /// <param name="api">api</param>
-        /// <param name="parameters">参数</param>     
-        /// <exception cref="ArgumentException"></exception>
-        /// <exception cref="ContextNullException"></exception>
-        /// <exception cref="SocketException"></exception> 
-        /// <exception cref="RemoteException"></exception>
-        /// <exception cref="TimeoutException"></exception>
-        /// <returns>远程数据任务</returns>  
-        protected Task<T> InvokeApi<T>(IClient<FastPacket> client, string api, params object[] parameters)
-        {
-            if (this.CurrentContext == null)
-            {
-                throw new ContextNullException("CurrentContext上下文对象为空");
-            }
-            return this.CurrentContext.FastTcpServer.InvokeApi<T>(client, api, parameters);
-        }
-
 
         #region IFilter重写
         /// <summary>
@@ -156,7 +115,7 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="filterContext">上下文</param>       
         /// <returns></returns>
-        protected virtual void OnAuthorization(ServerActionContext filterContext)
+        protected virtual void OnAuthorization(ActionContext filterContext)
         {
         }
 
@@ -165,7 +124,7 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="filterContext">上下文</param>       
         /// <returns></returns>
-        protected virtual void OnExecuting(ServerActionContext filterContext)
+        protected virtual void OnExecuting(ActionContext filterContext)
         {
         }
 
@@ -173,7 +132,7 @@ namespace NetworkSocket.Fast
         /// 在执行Api行为后触发
         /// </summary>
         /// <param name="filterContext">上下文</param>      
-        protected virtual void OnExecuted(ServerActionContext filterContext)
+        protected virtual void OnExecuted(ActionContext filterContext)
         {
         }
 
@@ -181,7 +140,7 @@ namespace NetworkSocket.Fast
         /// 异常触发
         /// </summary>
         /// <param name="filterContext">上下文</param>
-        protected virtual void OnException(ServerExceptionContext filterContext)
+        protected virtual void OnException(ExceptionContext filterContext)
         {
         }
         #endregion
@@ -192,7 +151,7 @@ namespace NetworkSocket.Fast
         /// </summary>       
         /// <param name="actionFilters">Api行为过滤器</param>
         /// <param name="actionContext">上下文</param>   
-        private void ExecFiltersBeforeAction(IEnumerable<IFilter> actionFilters, ServerActionContext actionContext)
+        private void ExecFiltersBeforeAction(IEnumerable<IFilter> actionFilters, ActionContext actionContext)
         {
             // OnAuthorization
             foreach (var globalFilter in GlobalFilters.AuthorizationFilters)
@@ -232,7 +191,7 @@ namespace NetworkSocket.Fast
         /// </summary>       
         /// <param name="actionFilters">Api行为过滤器</param>
         /// <param name="actionContext">上下文</param>       
-        private void ExecFiltersAfterAction(IEnumerable<IFilter> actionFilters, ServerActionContext actionContext)
+        private void ExecFiltersAfterAction(IEnumerable<IFilter> actionFilters, ActionContext actionContext)
         {
             // 全局过滤器
             foreach (var globalFilter in GlobalFilters.ActionFilters)
@@ -259,7 +218,7 @@ namespace NetworkSocket.Fast
         /// </summary>       
         /// <param name="actionFilters">Api行为过滤器</param>
         /// <param name="exceptionContext">上下文</param>       
-        private void ExecExceptionFilters(IEnumerable<IFilter> actionFilters, ServerExceptionContext exceptionContext)
+        private void ExecExceptionFilters(IEnumerable<IFilter> actionFilters, ExceptionContext exceptionContext)
         {
             foreach (var filter in GlobalFilters.ExceptionFilters)
             {
@@ -313,7 +272,7 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="filterContext">上下文</param>       
         /// <returns></returns>
-        void IAuthorizationFilter.OnAuthorization(ServerActionContext filterContext)
+        void IAuthorizationFilter.OnAuthorization(ActionContext filterContext)
         {
             this.OnAuthorization(filterContext);
         }
@@ -323,7 +282,7 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="filterContext">上下文</param>       
         /// <returns></returns>
-        void IActionFilter.OnExecuting(ServerActionContext filterContext)
+        void IActionFilter.OnExecuting(ActionContext filterContext)
         {
             this.OnExecuting(filterContext);
         }
@@ -332,7 +291,7 @@ namespace NetworkSocket.Fast
         /// 在执行Api行为后触发
         /// </summary>
         /// <param name="filterContext">上下文</param>   
-        void IActionFilter.OnExecuted(ServerActionContext filterContext)
+        void IActionFilter.OnExecuted(ActionContext filterContext)
         {
             this.OnExecuted(filterContext);
         }
@@ -341,7 +300,7 @@ namespace NetworkSocket.Fast
         /// 异常触发
         /// </summary>
         /// <param name="filterContext">上下文</param>  
-        void IExceptionFilter.OnException(ServerExceptionContext filterContext)
+        void IExceptionFilter.OnException(ExceptionContext filterContext)
         {
             this.OnException(filterContext);
         }

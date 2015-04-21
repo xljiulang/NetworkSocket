@@ -64,9 +64,9 @@ namespace Server
         /// 接收到客户端连接
         /// </summary>
         /// <param name="client">客户端</param>
-        protected override void OnConnect(IClient<FastPacket> client)
+        protected override void OnConnect(FastSession client)
         {
-            var log = string.Format("Time:{0} Client:{1} Action:{2} Message:{3}", DateTime.Now.ToString("mm:ss"), client, "Connect", "ConnectCount(" + this.Clients.Count + ")");
+            var log = string.Format("Time:{0} Client:{1} Action:{2} Message:{3}", DateTime.Now.ToString("mm:ss"), client, "Connect", "ConnectCount(" + this.AllSessions.Count() + ")");
             Console.WriteLine(log);
         }
 
@@ -74,9 +74,9 @@ namespace Server
         /// 接收到客户端断开连接
         /// </summary>
         /// <param name="client">客户端</param>
-        protected override void OnDisconnect(IClient<FastPacket> client)
+        protected override void OnDisconnect(FastSession client)
         {
-            var log = string.Format("Time:{0} Client:{1} Action:{2} Message:{3}", DateTime.Now.ToString("mm:ss"), client, "Disconnect", "ConnectCount(" + this.Clients.Count + ")");
+            var log = string.Format("Time:{0} Client:{1} Action:{2} Message:{3}", DateTime.Now.ToString("mm:ss"), client, "Disconnect", "ConnectCount(" + this.AllSessions.Count() + ")");
             Console.WriteLine(log);
         }
     }

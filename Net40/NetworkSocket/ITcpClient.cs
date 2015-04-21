@@ -9,9 +9,8 @@ namespace NetworkSocket
 {
     /// <summary>
     /// Tcp客户端接口
-    /// </summary>
-    /// <typeparam name="T">发送数据包协议</typeparam>
-    public interface ITcpClient<T> : IClient<T>, IDisposable where T : PacketBase
+    /// </summary>    
+    public interface ITcpClient : ISession, IDisposable
     {
         /// <summary>
         /// 连接到远程终端       

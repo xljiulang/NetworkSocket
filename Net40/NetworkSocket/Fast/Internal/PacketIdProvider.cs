@@ -6,7 +6,7 @@ using System.Text;
 namespace NetworkSocket.Fast
 {
     /// <summary>
-    /// 数据包标签符提供者
+    /// 数据包id提供者
     /// </summary>
     internal class PacketIdProvider
     {

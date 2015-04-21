@@ -40,7 +40,7 @@ namespace NetworkSocket.WebSocket.Fast
         /// <param name="actionContext">上下文</param>      
         void IFastApiService.Execute(ActionContext actionContext)
         {
-            var filters = actionContext.WebSocketServer.FilterAttributeProvider.GetActionFilters(actionContext.Action);
+            var filters = actionContext.Session.FilterAttributeProvider.GetActionFilters(actionContext.Action);
 
             try
             {
@@ -73,7 +73,7 @@ namespace NetworkSocket.WebSocket.Fast
         private void ProcessExecutingException(ActionContext actionContext, IEnumerable<IFilter> actionfilters, Exception exception)
         {
             var exceptionContext = new ExceptionContext(actionContext, new ApiExecuteException(actionContext, exception));
-            FastWebSocketCommon.SetRemoteException(actionContext.WebSocketServer.JsonSerializer, exceptionContext);
+            FastWebSocketCommon.SetRemoteException(actionContext.Session.JsonSerializer, exceptionContext);
             this.ExecExceptionFilters(actionfilters, exceptionContext);
 
             if (exceptionContext.ExceptionHandled == false)
@@ -93,63 +93,21 @@ namespace NetworkSocket.WebSocket.Fast
             // 执行Filter
             this.ExecFiltersBeforeAction(filters, actionContext);
 
-            var parameters = FastWebSocketCommon.GetApiActionParameters(actionContext.WebSocketServer.JsonSerializer, actionContext);
+            var parameters = FastWebSocketCommon.GetApiActionParameters(actionContext.Session.JsonSerializer, actionContext);
             var returnValue = actionContext.Action.Execute(this, parameters);
 
             // 执行Filter
             this.ExecFiltersAfterAction(filters, actionContext);
 
             // 返回数据
-            if (actionContext.Action.IsVoidReturn == false && actionContext.Client.IsConnected)
+            if (actionContext.Action.IsVoidReturn == false && actionContext.Session.IsConnected)
             {
                 var packet = actionContext.Packet;
                 packet.body = returnValue;
-                var packetJson = actionContext.WebSocketServer.JsonSerializer.Serialize(packet);
-                actionContext.Client.Send(packetJson);
+                var packetJson = actionContext.Session.JsonSerializer.Serialize(packet);
+                actionContext.Session.SendText(packetJson);
             }
         }
-
-        /// <summary>
-        /// 调用客户端实现的Api        
-        /// </summary>
-        /// <param name="client">客户端</param>
-        /// <param name="api">api(区分大小写)</param>
-        /// <param name="parameters">参数列表</param>    
-        /// <exception cref="ArgumentException"></exception>
-        /// <exception cref="ContextNullException"></exception>
-        /// <exception cref="SocketException"></exception>         
-        protected Task InvokeApi(IClient<Response> client, string api, params object[] parameters)
-        {
-            if (this.CurrentContext == null)
-            {
-                throw new ContextNullException("CurrentContext上下文对象为空");
-            }
-            return this.CurrentContext.WebSocketServer.InvokeApi(client, api, parameters);
-        }
-
-        /// <summary>
-        /// 调用客户端实现的Api   
-        /// 并返回结果数据任务
-        /// </summary>
-        /// <typeparam name="T">返回值类型</typeparam>
-        /// <param name="client">客户端</param>
-        /// <param name="api">api(区分大小写)</param>
-        /// <param name="parameters">参数</param>     
-        /// <exception cref="ArgumentException"></exception>
-        /// <exception cref="ContextNullException"></exception>
-        /// <exception cref="SocketException"></exception> 
-        /// <exception cref="RemoteException"></exception>
-        /// <exception cref="TimeoutException"></exception>
-        /// <returns>远程数据任务</returns>  
-        protected Task<T> InvokeApi<T>(IClient<Response> client, string api, params object[] parameters)
-        {
-            if (this.CurrentContext == null)
-            {
-                throw new ContextNullException("CurrentContext上下文对象为空");
-            }
-            return this.CurrentContext.WebSocketServer.InvokeApi<T>(client, api, parameters);
-        }
-
 
         #region IFilter重写
         /// <summary>

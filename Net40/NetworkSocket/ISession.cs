@@ -8,10 +8,9 @@ using System.Text;
 namespace NetworkSocket
 {
     /// <summary>
-    /// 定义客户端接口
-    /// </summary>
-    /// <typeparam name="T">发送数据包协议</typeparam>
-    public interface IClient<T> where T : PacketBase
+    /// 定义会话接口
+    /// </summary>   
+    public interface ISession
     {
         /// <summary>
         /// 获取用户数据字典
@@ -33,18 +32,19 @@ namespace NetworkSocket
         /// </summary>
         bool IsConnected { get; }
 
+
         /// <summary>
         /// 尝试异步发送数据
         /// </summary>
-        /// <param name="packet">数据包</param>
+        /// <param name="bytes">数据</param>
         /// <returns></returns>
-        bool TrySend(T packet);
+        bool TrySend(byte[] bytes);
 
         /// <summary>
         /// 异步发送数据
         /// </summary>
-        /// <param name="packet">数据包</param>        
-        void Send(T packet);
+        /// <param name="bytes">数据包</param>        
+        void Send(byte[] bytes);
 
         /// <summary>      
         /// 断开和远程端的连接

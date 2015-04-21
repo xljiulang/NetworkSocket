@@ -10,22 +10,16 @@ namespace NetworkSocket
     /// <summary>
     /// Tcp客户端抽象类
     /// 所有Tcp客户端都派生于此类
-    /// </summary>
-    /// <typeparam name="T">发送数据包协议</typeparam>
-    /// <typeparam name="TRecv">接收到的数据包类型</typeparam>
-    public abstract class TcpClientBase<T, TRecv> : SocketClient<T, TRecv>, ITcpClient<T>
-        where T : PacketBase
-        where TRecv : class
+    /// </summary>   
+    public abstract class TcpClientBase : SessionBase, ITcpClient
     {
         /// <summary>
         /// Tcp客户端抽象类
         /// </summary>
         public TcpClientBase()
         {
-            base.ReceiveHandler = this.OnReceive;
-            base.RecvCompleteHandler = this.OnRecvCompleteHandleWithTask;
-            base.DisconnectHandler = this.CloseAndRaiseDisconnect;
-            base.SendHandler = this.OnSend;
+            base.ReceiveHandler = (builder) => this.OnReceiveHandleWithTask(builder);
+            base.DisconnectHandler = this.Disconnect;
         }
 
         /// <summary>
@@ -103,54 +97,40 @@ namespace NetworkSocket
             return this.Connect(this.RemoteEndPoint);
         }
 
-        /// <summary>
-        /// 当接收到远程端的数据时，将触发此方法       
-        /// 返回的每个数据包将触发一次OnRecvComplete方法
-        /// </summary>
-        /// <param name="builder">接收到的历史数据</param>
-        /// <returns></returns>
-        protected abstract IEnumerable<TRecv> OnReceive(ByteBuilder builder);
 
         /// <summary>
-        /// 使用Task来处理OnRecvComplete业务方法
+        /// 使用Task来处理OnReceive业务方法
         /// 重写此方法，使用LimitedTask来代替系统默认的Task可以控制并发数
-        /// 例：myLimitedTask.Run(() => this.OnRecvComplete(tRecv));
+        /// 例：myLimitedTask.Run(() => this.OnReceive( builder));
         /// </summary>       
-        /// <param name="tRecv">接收到的数据类型</param>
-        protected virtual void OnRecvCompleteHandleWithTask(TRecv tRecv)
+        /// <param name="builder">接收到的历史数据</param>
+        protected virtual void OnReceiveHandleWithTask(ByteBuilder builder)
         {
-            Task.Factory.StartNew(() => this.OnRecvComplete(tRecv));
+            Task.Factory.StartNew(() => this.OnReceive(builder));
         }
+
+
+        /// <summary>
+        /// 当接收到远程端的数据时，将触发此方法   
+        /// </summary>       
+        /// <param name="builder">接收到的历史数据</param>
+        /// <returns></returns>
+        protected abstract void OnReceive(ByteBuilder builder);
+
 
         /// <summary>
         /// 关闭连接并触发关闭事件
         /// </summary>
-        private void CloseAndRaiseDisconnect()
+        private void Disconnect()
         {
             this.Close();
             this.OnDisconnect();
         }
 
         /// <summary>
-        /// 当接收到数据包，将触发此方法
-        /// </summary>
-        /// <param name="tRecv">接收到的数据类型</param>
-        protected virtual void OnRecvComplete(TRecv tRecv)
-        {
-        }
-
-        /// <summary>
         /// 当与服务器断开连接时，将触发此方法
         /// </summary>       
         protected virtual void OnDisconnect()
-        {
-        }
-
-        /// <summary>
-        /// 发送数据包后触发
-        /// </summary>       
-        /// <param name="packet">数据包</param>
-        protected virtual void OnSend(T packet)
         {
         }
     }

@@ -67,6 +67,7 @@ namespace ClientApp
             base.OnDisconnect();
             this.ReConnect().ContinueWith(t => this.TryReConnect(t.Result));
         }
+             
 
         private void TryReConnect(bool result)
         {

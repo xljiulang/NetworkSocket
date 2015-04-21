@@ -68,15 +68,16 @@ namespace NetworkSocket.Fast
         /// <summary>       
         /// 设置远程异常
         /// </summary>
+        /// <param name="session">会话对象</param>
         /// <param name="serializer">序列化工具</param>
         /// <param name="exceptionContext">上下文</param> 
         /// <returns></returns>
-        public static bool SetRemoteException(ISerializer serializer, ExceptionContext exceptionContext)
+        public static bool SetRemoteException(ISession session, ISerializer serializer, ExceptionContext exceptionContext)
         {
             var packet = exceptionContext.Packet;
             packet.IsException = true;
             packet.Body = Encoding.UTF8.GetBytes(exceptionContext.Exception.Message);
-            return exceptionContext.Client.TrySend(packet);
+            return session.TrySend(packet.ToBytes());
         }
 
         /// <summary>
@@ -84,7 +85,7 @@ namespace NetworkSocket.Fast
         /// 并返回结果数据任务
         /// </summary>
         /// <typeparam name="T">返回值类型</typeparam>
-        /// <param name="client">客户端</param>
+        /// <param name="session">会话对象</param>
         /// <param name="taskSetActionTable">任务行为表</param>
         /// <param name="serializer">序列化工具</param>   
         /// <param name="api">api</param>
@@ -96,7 +97,7 @@ namespace NetworkSocket.Fast
         /// <exception cref="RemoteException"></exception>
         /// <exception cref="TimeoutException"></exception>
         /// <returns></returns>
-        public static Task<T> InvokeApi<T>(IClient<FastPacket> client, TaskSetActionTable taskSetActionTable, ISerializer serializer, string api, long id, bool fromClient, params object[] parameters)
+        public static Task<T> InvokeApi<T>(ISession session, TaskSetActionTable taskSetActionTable, ISerializer serializer, string api, long id, bool fromClient, params object[] parameters)
         {
             var taskSource = new TaskCompletionSource<T>();
             var packet = new FastPacket(api, id, fromClient);
@@ -137,7 +138,7 @@ namespace NetworkSocket.Fast
             var taskSetAction = new TaskSetAction(setAction);
             taskSetActionTable.Add(packet.Id, taskSetAction);
 
-            client.Send(packet);
+            session.Send(packet.ToBytes());
             return taskSource.Task;
         }
 

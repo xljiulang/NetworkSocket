@@ -27,7 +27,7 @@ namespace Server
             fastServer.Serializer = new FastJsonSerializer();
             fastServer.BindService();
             fastServer.RegisterResolver();
-            fastServer.StartListen(1330);
+            fastServer.StartListen(1350);
 
             Console.Title = "FastServer V" + new SystemService().GetVersion();
             Console.WriteLine("服务已启动，端口：" + fastServer.LocalEndPoint.Port);

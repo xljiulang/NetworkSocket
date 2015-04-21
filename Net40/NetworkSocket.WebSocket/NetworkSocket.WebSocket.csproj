@@ -57,48 +57,117 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ClientExtend.cs" />
+    <Compile Include="Fast\ApiAction.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Fast\ApiAttribute.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Fast\Context\ActionContext.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Fast\Context\ExceptionContext.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Fast\Context\RequestContext.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Fast\DependencyResolver.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Fast\Exception\ApiExecuteException.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Fast\Exception\ApiNotExistException.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Fast\Exception\ContextNullException.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Fast\Exception\RemoteException.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Fast\FastApiServiceBase.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Fast\FastPacket.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Fast\FastWebSocketSession.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Fast\FastWebSocketServer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Fast\Filter\FilterAttribute.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Fast\Filter\FilterAttributeProvider.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Fast\Filter\GlobalFilters.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Fast\Filter\IActionFilter.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Fast\Filter\IAuthorizationFilter.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Fast\Filter\IExceptionFilter.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Fast\Filter\IFilterAttributeProvider.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Fast\IDependencyResolver.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Fast\IFastApiService.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Fast\IFastWebSocketServer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Fast\IFastWebSocketSession.cs" />
+    <Compile Include="Fast\IFilter.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Fast\IJsonSerializer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Fast\Internal\ApiActionList.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Fast\Internal\DefaultDependencyResolver.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Fast\Internal\DefaultJsonSerializer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Fast\Internal\FastWebSocketCommon.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Fast\Internal\PacketIdProvider.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Fast\Internal\SetTypes.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Fast\Internal\TaskSetAction.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Fast\Internal\TaskSetActionTable.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="StatusCodes.cs" />
     <Compile Include="HandshakeRequest.cs" />
     <Compile Include="HandshakeResponse.cs" />
     <Compile Include="FrameCodes.cs" />
     <Compile Include="FrameRequest.cs" />
-    <Compile Include="Fast\Context\ActionContext.cs" />
-    <Compile Include="Fast\Exception\ApiExecuteException.cs" />
-    <Compile Include="Fast\ApiAttribute.cs" />
-    <Compile Include="Fast\Exception\ApiNotExistException.cs" />
-    <Compile Include="Fast\Exception\ContextNullException.cs" />
-    <Compile Include="Fast\DependencyResolver.cs" />
-    <Compile Include="Fast\Context\ExceptionContext.cs" />
-    <Compile Include="Fast\Filter\FilterAttribute.cs" />
-    <Compile Include="Fast\Filter\FilterAttributeProvider.cs" />
-    <Compile Include="Fast\Filter\GlobalFilters.cs" />
-    <Compile Include="Fast\Filter\IActionFilter.cs" />
-    <Compile Include="Fast\Filter\IAuthorizationFilter.cs" />
-    <Compile Include="Fast\IDependencyResolver.cs" />
-    <Compile Include="Fast\Filter\IExceptionFilter.cs" />
-    <Compile Include="Fast\IFilter.cs" />
-    <Compile Include="Fast\Filter\IFilterAttributeProvider.cs" />
-    <Compile Include="Fast\IJsonSerializer.cs" />
-    <Compile Include="Fast\IFastApiService.cs" />
-    <Compile Include="Fast\IFastWebSocketServer.cs" />
-    <Compile Include="Fast\Internal\DefaultDependencyResolver.cs" />
-    <Compile Include="Fast\Internal\DefaultJsonSerializer.cs" />
-    <Compile Include="Fast\Internal\ApiActionList.cs" />
-    <Compile Include="Fast\Internal\FastWebSocketCommon.cs" />
-    <Compile Include="Fast\Internal\PacketIdProvider.cs" />
-    <Compile Include="Fast\Internal\SetTypes.cs" />
-    <Compile Include="Fast\Internal\TaskSetAction.cs" />
-    <Compile Include="Fast\Internal\TaskSetActionTable.cs" />
-    <Compile Include="Fast\ApiAction.cs" />
-    <Compile Include="Fast\FastPacket.cs" />
-    <Compile Include="Fast\FastApiServiceBase.cs" />
-    <Compile Include="Fast\FastWebSocketServer.cs" />
-    <Compile Include="Fast\Exception\RemoteException.cs" />
-    <Compile Include="Fast\Context\RequestContext.cs" />
-    <Compile Include="Request.cs" />
     <Compile Include="Response.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WebSocketSession.cs" />
     <Compile Include="WebSocketServerBase.cs" />
     <Compile Include="FrameResponse.cs" />
   </ItemGroup>

@@ -16,15 +16,20 @@ namespace NetworkSocket.WebSocket
         public FrameCodes Frame { get; private set; }
 
         /// <summary>
+        /// 获取回复内容
+        /// </summary>
+        public byte[] Content { get; private set; }
+
+        /// <summary>
         /// 回复对象
         /// </summary>
         /// <param name="frame">帧类型</param>
         /// <param name="content">内容</param>
         /// <exception cref="ArgumentNullException"></exception>
         public FrameResponse(FrameCodes frame, byte[] content)
-            : base(content)
         {
             this.Frame = frame;
+            this.Content = content;
         }
 
         /// <summary>

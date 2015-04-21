@@ -14,7 +14,7 @@ namespace NetworkSocket.Fast
     /// <summary>
     /// 快速构建Tcp服务端抽象类 
     /// </summary>
-    public abstract class FastTcpServerBase : TcpServerBase<FastPacket, FastPacket>, IFastTcpServer
+    public abstract class FastTcpServerBase : TcpServerBase<FastSession>, IFastTcpServer
     {
         /// <summary>
         /// 所有Api行为
@@ -22,7 +22,7 @@ namespace NetworkSocket.Fast
         private ApiActionList apiActionList;
 
         /// <summary>
-        /// 数据包哈希码提供者
+        /// 数据包id提供者
         /// </summary>
         private PacketIdProvider packetIdProvider;
 
@@ -138,71 +138,40 @@ namespace NetworkSocket.Fast
             return this;
         }
 
-
         /// <summary>
-        /// 调用客户端实现的Api      
+        /// 创建新的会话对象
         /// </summary>
-        /// <param name="client">客户端</param>
-        /// <param name="api">api</param>
-        /// <param name="parameters">参数列表</param>    
-        /// <exception cref="ArgumentException"></exception>
-        /// <exception cref="SocketException"></exception>         
-        public Task InvokeApi(IClient<FastPacket> client, string api, params object[] parameters)
+        /// <returns></returns>
+        protected override FastSession OnCreateSession()
         {
-            return Task.Factory.StartNew(() =>
-            {
-                var id = this.packetIdProvider.GetId();
-                var packet = new FastPacket(api, id, false);
-                packet.SetBodyParameters(this.Serializer, parameters);
-                client.Send(packet);
-            });
+            return new FastSession(this.packetIdProvider, this.taskSetActionTable, this.Serializer, this.FilterAttributeProvider);
         }
 
         /// <summary>
-        /// 调用客户端实现的Api    
-        /// 并返回结果数据任务
+        /// 当接收到会话对象的数据时，将触发此方法  
         /// </summary>
-        /// <typeparam name="T">返回值类型</typeparam>
-        /// <param name="client">客户端</param>
-        /// <param name="api">Api</param>
-        /// <param name="parameters">参数</param>     
-        /// <exception cref="ArgumentException"></exception>
-        /// <exception cref="SocketException"></exception> 
-        /// <exception cref="RemoteException"></exception>
-        /// <exception cref="TimeoutException"></exception>
-        /// <returns>远程数据任务</returns>  
-        public Task<T> InvokeApi<T>(IClient<FastPacket> client, string api, params object[] parameters)
-        {
-            var id = this.packetIdProvider.GetId();
-            return FastTcpCommon.InvokeApi<T>(client, this.taskSetActionTable, this.Serializer, api, id, false, parameters);
-        }
-
-        /// <summary>
-        /// 当接收到远程端的数据时，将触发此方法        
-        /// 返回的每一个数据包，将触发一次OnRecvComplete方法       
-        /// </summary>
-        /// <param name="client">客户端</param>
+        /// <param name="session">会话对象</param>
         /// <param name="builder">接收到的历史数据</param>
         /// <returns></returns>
-        protected override IEnumerable<FastPacket> OnReceive(IClient<FastPacket> client, ByteBuilder builder)
+        protected override void OnReceive(FastSession session, ByteBuilder builder)
         {
             FastPacket packet;
             while ((packet = FastPacket.From(builder)) != null)
             {
-                yield return packet;
+                this.OnRecvComplete(session, packet);
             }
         }
 
         /// <summary>
-        /// 当接收到客户端数据包时，将触发此方法
+        /// 当接收到会话对象的数据包时
         /// </summary>
-        /// <param name="client">客户端</param>
-        /// <param name="tRecv">接收到的数据类型</param>
-        protected override void OnRecvComplete(IClient<FastPacket> client, FastPacket tRecv)
+        /// <param name="session">会话对象</param>
+        /// <param name="packet">接收到的数据类型</param>
+        private void OnRecvComplete(FastSession session, FastPacket packet)
         {
-            var requestContext = new ServerRequestContext { Client = client, Packet = tRecv, FastTcpServer = this };
+            var requestContext = new RequestContext { Session = session, Packet = packet, AllSessions = this.AllSessions };
 
-            if (tRecv.IsException)
+            if (packet.IsException)
             {
                 this.ProcessRemoteException(requestContext);
             }
@@ -216,14 +185,14 @@ namespace NetworkSocket.Fast
         /// 处理远返回的程异常
         /// </summary>
         /// <param name="requestContext">请求上下文</param>
-        private void ProcessRemoteException(ServerRequestContext requestContext)
+        private void ProcessRemoteException(RequestContext requestContext)
         {
             var remoteException = FastTcpCommon.SetApiActionTaskException(this.Serializer, this.taskSetActionTable, requestContext);
             if (remoteException == null)
             {
                 return;
             }
-            var exceptionContext = new ServerExceptionContext(requestContext, remoteException);
+            var exceptionContext = new ExceptionContext(requestContext, remoteException);
             this.ExecExceptionFilters(exceptionContext);
 
             if (exceptionContext.ExceptionHandled == false)
@@ -236,7 +205,7 @@ namespace NetworkSocket.Fast
         /// 处理正常的数据请求
         /// </summary>
         /// <param name="requestContext">请求上下文</param>       
-        private void ProcessRequest(ServerRequestContext requestContext)
+        private void ProcessRequest(RequestContext requestContext)
         {
             if (requestContext.Packet.IsFromClient == false)
             {
@@ -250,7 +219,7 @@ namespace NetworkSocket.Fast
                 return;
             }
 
-            var actionContext = new ServerActionContext(requestContext, action);
+            var actionContext = new ActionContext(requestContext, action);
             var fastApiService = this.GetFastApiService(actionContext);
             if (fastApiService == null)
             {
@@ -268,7 +237,7 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="requestContext">请求上下文</param>
         /// <returns></returns>
-        private ApiAction GetApiAction(ServerRequestContext requestContext)
+        private ApiAction GetApiAction(RequestContext requestContext)
         {
             var action = this.apiActionList.TryGet(requestContext.Packet.ApiName);
             if (action != null)
@@ -277,9 +246,9 @@ namespace NetworkSocket.Fast
             }
 
             var exception = new ApiNotExistException(requestContext.Packet.ApiName);
-            var exceptionContext = new ServerExceptionContext(requestContext, exception);
+            var exceptionContext = new ExceptionContext(requestContext, exception);
 
-            FastTcpCommon.SetRemoteException(this.Serializer, exceptionContext);
+            FastTcpCommon.SetRemoteException(requestContext.Session, requestContext.Session.Serializer, exceptionContext);
             this.ExecExceptionFilters(exceptionContext);
 
             if (exceptionContext.ExceptionHandled == false)
@@ -295,7 +264,7 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="actionContext">Api行为上下文</param>
         /// <returns></returns>
-        private IFastApiService GetFastApiService(ServerActionContext actionContext)
+        private IFastApiService GetFastApiService(ActionContext actionContext)
         {
             // 获取服务实例
             var fastApiService = (IFastApiService)DependencyResolver.Current.GetService(actionContext.Action.DeclaringService);
@@ -304,9 +273,9 @@ namespace NetworkSocket.Fast
                 return fastApiService;
             }
             var exception = new Exception(string.Format("无法获取类型{0}的实例", actionContext.Action.DeclaringService));
-            var exceptionContext = new ServerExceptionContext(actionContext, exception);
+            var exceptionContext = new ExceptionContext(actionContext, exception);
 
-            FastTcpCommon.SetRemoteException(this.Serializer, exceptionContext);
+            FastTcpCommon.SetRemoteException(actionContext.Session, actionContext.Session.Serializer, exceptionContext);
             this.ExecExceptionFilters(exceptionContext);
 
             if (exceptionContext.ExceptionHandled == false)
@@ -322,7 +291,7 @@ namespace NetworkSocket.Fast
         /// 执行异常过滤器
         /// </summary>         
         /// <param name="exceptionContext">上下文</param>       
-        private void ExecExceptionFilters(ServerExceptionContext exceptionContext)
+        private void ExecExceptionFilters(ExceptionContext exceptionContext)
         {
             foreach (var filter in GlobalFilters.ExceptionFilters)
             {

@@ -20,7 +20,7 @@ namespace WebSocket.Filters
 
         public void OnExecuting(ActionContext filterContext)
         {
-            var log = string.Format("Time:{0} Client:{1} Action:{2} Message:{3}", DateTime.Now.ToString("mm:ss"), filterContext.Client, filterContext.Action, this.message);
+            var log = string.Format("Time:{0} Client:{1} Action:{2} Message:{3}", DateTime.Now.ToString("mm:ss"), filterContext.Session, filterContext.Action, this.message);
             Console.WriteLine(log);
         }
 

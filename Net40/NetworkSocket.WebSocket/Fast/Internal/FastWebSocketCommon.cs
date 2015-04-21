@@ -81,7 +81,7 @@ namespace NetworkSocket.WebSocket.Fast
             packet.body = exceptionContext.Exception.Message;
 
             var json = serializer.Serialize(packet);
-            return exceptionContext.Client.TrySend(json);
+            return exceptionContext.Session.TrySendText(json);
         }
 
         /// <summary>

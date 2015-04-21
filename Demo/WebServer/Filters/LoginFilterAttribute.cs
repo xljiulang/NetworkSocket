@@ -15,11 +15,11 @@ namespace WebSocket.Filters
     {
         public void OnAuthorization(ActionContext filterContext)
         {
-            var valid = filterContext.Client.TagData.TryGet<bool>("Logined");
+            var valid = filterContext.Session.TagData.TryGet<bool>("Logined");
             if (valid == false)
             {
                 // 直接关闭客户端的连接
-                // filterContext.Client.NormalClose(CloseReasons.NormalClosure);
+                // filterContext.Session.Close(StatusCodes.NormalClosure);
 
                 // 以异常方式提示客户端
                 throw new Exception("未登录就尝试请求其它服务");

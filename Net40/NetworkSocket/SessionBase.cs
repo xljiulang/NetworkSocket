@@ -11,13 +11,10 @@ using System.Diagnostics;
 namespace NetworkSocket
 {
     /// <summary>
-    /// Socket客户端
-    /// 提供异步接收和发送方法
-    /// </summary>
-    /// <typeparam name="T">发送数据包协议</typeparam>
-    /// <typeparam name="TRecv">接收到的数据包类型</typeparam>
-    [DebuggerDisplay("RemoteEndPoint = {RemoteEndPoint}")]
-    public class SocketClient<T, TRecv> : IClient<T>, IDisposable where T : PacketBase
+    /// 会话对象基础类  
+    /// </summary>        
+    [DebuggerDisplay("{RemoteEndPoint}")]
+    public class SessionBase : ISession, IDisposable
     {
         /// <summary>
         /// socket
@@ -48,22 +45,12 @@ namespace NetworkSocket
         /// <summary>
         /// 处理和分析收到的数据的委托
         /// </summary>
-        internal Func<ByteBuilder, IEnumerable<TRecv>> ReceiveHandler;
-
-        /// <summary>
-        /// 接收一个数据包委托
-        /// </summary>
-        internal Action<TRecv> RecvCompleteHandler;
+        internal Action<ByteBuilder> ReceiveHandler;
 
         /// <summary>
         /// 连接断开委托   
         /// </summary>
         internal Action DisconnectHandler;
-
-        /// <summary>
-        /// 发送数据包的委托
-        /// </summary>
-        internal Action<T> SendHandler;
 
         /// <summary>
         /// 关闭时的委托
@@ -106,7 +93,7 @@ namespace NetworkSocket
         /// <summary>
         /// Socket客户端
         /// </summary>  
-        public SocketClient()
+        public SessionBase()
         {
             this.recvArg.Completed += new EventHandler<SocketAsyncEventArgs>(this.RecvCompleted);
             this.TagData = new TagData();
@@ -190,12 +177,7 @@ namespace NetworkSocket
             lock (this.recvBuilder.SyncRoot)
             {
                 this.recvBuilder.Add(eventArg.Buffer, eventArg.Offset, eventArg.BytesTransferred);
-                var recvs = this.ReceiveHandler(this.recvBuilder);
-
-                foreach (var recv in recvs)
-                {
-                    this.RecvCompleteHandler(recv);
-                }
+                this.ReceiveHandler(this.recvBuilder);
             }
 
             // 重新进行一次接收
@@ -205,13 +187,13 @@ namespace NetworkSocket
         /// <summary>
         /// 尝试异步发送数据
         /// </summary>
-        /// <param name="packet">数据包</param>
+        /// <param name="bytes">数据</param>
         /// <returns></returns>
-        public bool TrySend(T packet)
+        bool ISession.TrySend(byte[] bytes)
         {
             try
             {
-                this.Send(packet);
+                ((ISession)this).Send(bytes);
                 return true;
             }
             catch
@@ -223,41 +205,21 @@ namespace NetworkSocket
         /// <summary>
         /// 异步发送数据
         /// </summary>
-        /// <param name="packet">数据包</param>
+        /// <param name="bytes">数据</param>
         /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="ArgumentException"></exception>
-        /// <exception cref="SocketException"></exception>       
-        public void Send(T packet)
+        /// <exception cref="SocketException"></exception>
+        void ISession.Send(byte[] bytes)
         {
-            if (packet == null)
+            if (bytes == null)
             {
                 throw new ArgumentNullException("packet");
             }
 
             if (this.IsConnected == false)
             {
-                throw new SocketException(SocketError.NotConnected.GetHashCode());
+                throw new SocketException((int)SocketError.NotConnected);
             }
 
-            var bytes = packet.ToBytes();
-            if (bytes == null)
-            {
-                throw new ArgumentException("packet");
-            }
-
-            this.Send(bytes);
-            this.SendHandler(packet);
-        }
-
-
-        /// <summary>
-        /// 异步发送数据
-        /// </summary>
-        /// <param name="bytes">数据</param>
-        /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="SocketException"></exception>
-        private void Send(byte[] bytes)
-        {
             var sendArg = SendArgBag.Take();
             sendArg.SetBuffer(bytes, 0, bytes.Length);
 
@@ -268,10 +230,31 @@ namespace NetworkSocket
         }
 
         /// <summary>
+        /// 异步发送数据
+        /// </summary>
+        /// <param name="bytes">数据</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="SocketException"></exception>
+        protected void Send(byte[] bytes)
+        {
+            ((ISession)this).Send(bytes);
+        }
+
+        /// <summary>
+        /// 尝试异步发送数据
+        /// </summary>
+        /// <param name="bytes">数据</param>
+        /// <returns></returns>
+        protected bool TrySend(byte[] bytes)
+        {
+            return ((ISession)this).TrySend(bytes);
+        }
+
+        /// <summary>
         /// 断开和远程端的连接             
         /// </summary>
         /// <returns></returns>
-        public void Close()
+        public virtual void Close()
         {
             lock (this.socketRoot)
             {
@@ -317,7 +300,7 @@ namespace NetworkSocket
         /// <summary>
         /// 关闭和释放所有相关资源
         /// </summary>
-        public void Dispose()
+        void IDisposable.Dispose()
         {
             if (this.IsDisposed == false)
             {
@@ -330,7 +313,7 @@ namespace NetworkSocket
         /// <summary>
         /// 析构函数
         /// </summary>
-        ~SocketClient()
+        ~SessionBase()
         {
             this.Dispose(false);
         }

@@ -28,7 +28,7 @@ namespace ClientApp.Forms
         {
             RemoteServer.Instance.Serializer = new FastJsonSerializer();
 
-            var endPoint = new System.Net.IPEndPoint(System.Net.IPAddress.Loopback, 1330);
+            var endPoint = new System.Net.IPEndPoint(System.Net.IPAddress.Loopback, 1350);
             var state = await RemoteServer.Instance.Connect(endPoint);
             var version = state ? await RemoteServer.Instance.GetVersion() : "未知";
 

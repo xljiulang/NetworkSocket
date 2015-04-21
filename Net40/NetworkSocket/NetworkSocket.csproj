@@ -57,48 +57,47 @@
   <ItemGroup>
     <Compile Include="ByteBits.cs" />
     <Compile Include="ByteBuilder.cs" />
+    <Compile Include="ByteConverter.cs" />
+    <Compile Include="Endians.cs" />
+    <Compile Include="Fast\ApiAction.cs" />
+    <Compile Include="Fast\ApiAttribute.cs" />
+    <Compile Include="Fast\Context\ActionContext.cs" />
+    <Compile Include="Fast\Context\ExceptionContext.cs" />
+    <Compile Include="Fast\Context\RequestContext.cs" />
+    <Compile Include="Fast\DependencyResolver.cs" />
     <Compile Include="Fast\Exception\ApiExecuteException.cs" />
     <Compile Include="Fast\Exception\ApiNotExistException.cs" />
     <Compile Include="Fast\Exception\ContextNullException.cs" />
-    <Compile Include="Fast\IFastApiService.cs" />
-    <Compile Include="Fast\IFastTcpClient.cs" />
-    <Compile Include="Fast\IFastTcpServer.cs" />
-    <Compile Include="Fast\Internal\DefaultDependencyResolver.cs" />
-    <Compile Include="Fast\DependencyResolver.cs" />
-    <Compile Include="Fast\Context\ExceptionContext.cs" />
-    <Compile Include="Fast\ApiAction.cs" />
-    <Compile Include="ByteConverter.cs" />
-    <Compile Include="Endians.cs" />
-    <Compile Include="Fast\Internal\ApiActionList.cs" />
-    <Compile Include="Fast\Internal\PacketIdProvider.cs" />
-    <Compile Include="Fast\Internal\TaskSetAction.cs" />
-    <Compile Include="Fast\Internal\SetTypes.cs" />
-    <Compile Include="Fast\Internal\TaskSetActionTable.cs" />
-    <Compile Include="Fast\ApiAttribute.cs" />
-    <Compile Include="Fast\Internal\DefaultSerializer.cs" />
-    <Compile Include="Fast\FastPacket.cs" />
+    <Compile Include="Fast\Exception\RemoteException.cs" />
     <Compile Include="Fast\FastApiServiceBase.cs" />
+    <Compile Include="Fast\FastSession.cs" />
+    <Compile Include="Fast\FastPacket.cs" />
     <Compile Include="Fast\FastTcpClientBase.cs" />
-    <Compile Include="Fast\Internal\FastTcpCommon.cs" />
     <Compile Include="Fast\FastTcpServerBase.cs" />
-    <Compile Include="Fast\Context\ActionContext.cs" />
-    <Compile Include="Fast\Filter\FilterAttributeProvider.cs" />
     <Compile Include="Fast\Filter\FilterAttribute.cs" />
+    <Compile Include="Fast\Filter\FilterAttributeProvider.cs" />
+    <Compile Include="Fast\Filter\GlobalFilters.cs" />
     <Compile Include="Fast\Filter\IActionFilter.cs" />
     <Compile Include="Fast\Filter\IAuthorizationFilter.cs" />
     <Compile Include="Fast\Filter\IExceptionFilter.cs" />
-    <Compile Include="Fast\Filter\GlobalFilters.cs" />
     <Compile Include="Fast\Filter\IFilter.cs" />
     <Compile Include="Fast\Filter\IFilterAttributeProvider.cs" />
-    <Compile Include="Fast\ISerializer.cs" />
-    <Compile Include="Fast\Exception\RemoteException.cs" />
-    <Compile Include="Fast\Context\RequestContext.cs" />
     <Compile Include="Fast\IDependencyResolver.cs" />
-    <Compile Include="Fast\Context\ServerRequestContext.cs" />
-    <Compile Include="Fast\Context\ServerActionContext.cs" />
-    <Compile Include="Fast\Context\ServerExceptionContext.cs" />
+    <Compile Include="Fast\IFastApiService.cs" />
+    <Compile Include="Fast\IFastSession.cs" />
+    <Compile Include="Fast\IFastTcpClient.cs" />
+    <Compile Include="Fast\IFastTcpServer.cs" />
+    <Compile Include="Fast\Internal\ApiActionList.cs" />
+    <Compile Include="Fast\Internal\DefaultDependencyResolver.cs" />
+    <Compile Include="Fast\Internal\DefaultSerializer.cs" />
+    <Compile Include="Fast\Internal\FastTcpCommon.cs" />
+    <Compile Include="Fast\Internal\PacketIdProvider.cs" />
+    <Compile Include="Fast\Internal\SetTypes.cs" />
+    <Compile Include="Fast\Internal\TaskSetAction.cs" />
+    <Compile Include="Fast\Internal\TaskSetActionTable.cs" />
+    <Compile Include="Fast\ISerializer.cs" />
     <Compile Include="Internal\TagData.cs" />
-    <Compile Include="IClient.cs" />
+    <Compile Include="ISession.cs" />
     <Compile Include="ITag.cs" />
     <Compile Include="ITcpClient.cs" />
     <Compile Include="ITcpServer.cs" />
@@ -106,20 +105,22 @@
     <Compile Include="Internal\SendArgBag.cs" />
     <Compile Include="LimitedTask.cs" />
     <Compile Include="Internal\LimitedTaskScheduler.cs" />
-    <Compile Include="TcpTable.cs" />
-    <Compile Include="Policies\FlexPolicyServer.cs" />
-    <Compile Include="Policies\BinaryPacket.cs" />
-    <Compile Include="Policies\SilverlightPolicyServer.cs" />
-    <Compile Include="ClientCollection.cs" />
-    <Compile Include="PacketBase.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Internal\SocketClientBag.cs" />
-    <Compile Include="Internal\TagBag.cs" />
+    <Compile Include="Policies\FlexPolicyServer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Policies\SilverlightPolicyServer.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="TcpClientBase.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="TcpTable.cs" />
+    <Compile Include="Internal\SessionCollection.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Internal\SessionBag.cs" />
+    <Compile Include="Internal\TagBag.cs" />
     <Compile Include="TcpServerBase.cs" />
-    <Compile Include="SocketClient.cs" />
+    <Compile Include="SessionBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="_Sn.snk" />

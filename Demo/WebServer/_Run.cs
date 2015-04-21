@@ -26,8 +26,8 @@ namespace WebSocket
                 Console.WriteLine("按任务键调用客户端的Api ..");
                 Console.ReadLine();
 
-                var client = fastServer.Clients.FirstOrDefault();
-                if (client == null)
+                var session = fastServer.AllSessions.FirstOrDefault();
+                if (session == null)
                 {
                     Console.WriteLine("没有连接的客户端 ..");
                 }
@@ -36,9 +36,9 @@ namespace WebSocket
                     // 调用客户端进行sum运算
                     try
                     {
-                        var sum = fastServer.InvokeApi<int>(client, "sum", 1, 2, 3).Result;
+                        var sum = session.InvokeApi<int>("sum", 1, 2, 3).Result;
                         Console.WriteLine("InvokeApi(sum, 1, 2, 3) return {0}", sum);
-                        fastServer.InvokeApi(client, "notify", "这是服务器发来的通知");
+                        session.InvokeApi("notify", "这是服务器发来的通知");
                     }
                     catch (AggregateException ex)
                     {

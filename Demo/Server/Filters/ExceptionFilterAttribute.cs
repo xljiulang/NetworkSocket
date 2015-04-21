@@ -11,7 +11,7 @@ namespace Server.Filters
     /// </summary>
     public class ExceptionFilterAttribute : FilterAttribute, IExceptionFilter
     {
-        public void OnException(ServerExceptionContext filterContext)
+        public void OnException(ExceptionContext filterContext)
         {
             if (filterContext.Exception is ApiExecuteException)
             {
