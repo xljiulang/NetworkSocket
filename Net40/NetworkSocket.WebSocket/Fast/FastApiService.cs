@@ -11,7 +11,7 @@ namespace NetworkSocket.WebSocket.Fast
     /// <summary>
     /// JsonWebSocket的Api服务
     /// </summary>
-    public class FastApiService : IFastApiService, IAuthorizationFilter, IActionFilter, IExceptionFilter
+    public abstract class FastApiService : IFastApiService, IAuthorizationFilter, IActionFilter, IExceptionFilter
     {
         /// <summary>
         /// 线程唯一上下文

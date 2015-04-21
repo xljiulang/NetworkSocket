@@ -25,7 +25,7 @@ namespace Server
 
             var fastServer = new FastServer();
             fastServer.Serializer = new FastJsonSerializer();
-            fastServer.BindService();
+            fastServer.BindService(fastServer.GetType().Assembly);
             fastServer.RegisterResolver();
             fastServer.StartListen(1350);
 

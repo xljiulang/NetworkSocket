@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Net.Sockets;
+using System.Reflection;
 
 namespace NetworkSocket.WebSocket.Fast
 {
@@ -71,22 +72,38 @@ namespace NetworkSocket.WebSocket.Fast
         }
 
         /// <summary>
-        /// 绑定本程序集所有实现IJsonApiService的服务
+        /// 绑定程序集下所有实现IFastApiService的服务
         /// </summary>
-        /// <returns></returns>       
+        /// <param name="assembly">程序集</param>
+        /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public FastWebSocketServer BindService()
+        /// <returns></returns>
+        public FastWebSocketServer BindService(Assembly assembly)
         {
-            var allServices = this.GetType().Assembly.GetTypes().Where(item => typeof(IFastApiService).IsAssignableFrom(item));
-            return this.BindService(allServices);
+            if (assembly == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            var apiServices = assembly.GetTypes().Where(item =>
+                item.IsAbstract == false
+                && item.IsInterface == false
+                && typeof(IFastApiService).IsAssignableFrom(item));
+
+            if (apiServices.Count() == 0)
+            {
+                throw new ArgumentException(string.Format("程序集{0}不包含任何IFastApiService服务", assembly.GetName().Name));
+            }
+
+            return this.BindService(apiServices);
         }
 
         /// <summary>
         /// 绑定服务
         /// </summary>
-        /// <typeparam name="T">服务类型</typeparam>
-        /// <returns></returns>       
+        /// <typeparam name="T">Api服务类型</typeparam>             
         /// <exception cref="ArgumentException"></exception>
+        /// <returns></returns>  
         public FastWebSocketServer BindService<T>() where T : IFastApiService
         {
             return this.BindService(typeof(T));
@@ -95,40 +112,52 @@ namespace NetworkSocket.WebSocket.Fast
         /// <summary>
         /// 绑定服务
         /// </summary>
-        /// <param name="serviceType">服务类型</param>
-        /// <returns></returns>
+        /// <param name="apiServiceType">Api服务类型</param>       
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public FastWebSocketServer BindService(params Type[] serviceType)
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        /// <returns></returns>
+        public FastWebSocketServer BindService(params Type[] apiServiceType)
         {
-            return this.BindService((IEnumerable<Type>)serviceType);
+            return this.BindService((IEnumerable<Type>)apiServiceType);
         }
 
         /// <summary>
         /// 绑定服务
         /// </summary>
-        /// <param name="serivceType">服务类型</param>
-        /// <returns></returns>
+        /// <param name="apiServiceType">Api服务类型</param>       
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public FastWebSocketServer BindService(IEnumerable<Type> serivceType)
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        /// <returns></returns>
+        public FastWebSocketServer BindService(IEnumerable<Type> apiServiceType)
         {
-            if (serivceType == null)
+            if (apiServiceType == null)
             {
-                throw new ArgumentNullException("serivceType");
+                throw new ArgumentNullException("apiServiceType");
             }
 
-            if (serivceType.Any(item => item == null))
+            if (apiServiceType.Count() == 0)
             {
-                throw new ArgumentException("serivceType不能含null值");
+                throw new ArgumentOutOfRangeException("apiServiceType", "apiServiceType集合不能为空");
             }
 
-            if (serivceType.Any(item => typeof(IFastApiService).IsAssignableFrom(item) == false))
+            if (apiServiceType.Any(item => item == null))
             {
-                throw new ArgumentException("serivceType必须派生于IJsonApiService");
+                throw new ArgumentException("apiServiceType不能含null值");
             }
 
-            foreach (var type in serivceType)
+            if (apiServiceType.Any(item => item.IsInterface || item.IsAbstract))
+            {
+                throw new ArgumentException("apiServiceType不能是接口或抽象类");
+            }
+
+            if (apiServiceType.Any(item => typeof(IFastApiService).IsAssignableFrom(item) == false))
+            {
+                throw new ArgumentException("apiServiceType必须派生于IFastApiService");
+            }
+
+            foreach (var type in apiServiceType)
             {
                 var actions = FastWebSocketCommon.GetServiceApiActions(type);
                 this.apiActionList.AddRange(actions);
