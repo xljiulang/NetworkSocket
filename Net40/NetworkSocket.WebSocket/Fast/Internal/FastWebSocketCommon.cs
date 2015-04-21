@@ -105,7 +105,7 @@ namespace NetworkSocket.WebSocket.Fast
                 var parameterType = context.Action.ParameterTypes[index];
                 var parameterJson = bodyParameter.ToString();
 
-                if (parameterJson == "True" || parameterJson == "Flase")
+                if (parameterJson == "True" || parameterJson == "False")
                 {
                     parameterJson = parameterJson.ToLower();
                 }

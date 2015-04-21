@@ -10,7 +10,7 @@ namespace NetworkSocket.WebSocket
     /// <summary>
     /// 表示请求帧
     /// </summary>
-    public class FrameRequest 
+    public class FrameRequest
     {
         /// <summary>
         /// 获取是否已完成
@@ -102,11 +102,14 @@ namespace NetworkSocket.WebSocket
             var content = builder.ReadArray(contentLength);
             builder.Clear(packetLength);
 
-            fixed (byte* pcontent = &content[0], pmask = &maskingKey[0])
+            if (contentLength > 0)
             {
-                for (var i = 0; i < contentLength; i++)
+                fixed (byte* pcontent = &content[0], pmask = &maskingKey[0])
                 {
-                    *(pcontent + i) = (byte)(*(pcontent + i) ^ *(pmask + i % 4));
+                    for (var i = 0; i < contentLength; i++)
+                    {
+                        *(pcontent + i) = (byte)(*(pcontent + i) ^ *(pmask + i % 4));
+                    }
                 }
             }
 
