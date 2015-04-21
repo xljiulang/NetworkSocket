@@ -82,7 +82,7 @@ namespace NetworkSocket.Fast
         /// <param name="packet">接收到的数据类型</param>
         private void OnRecvComplete(FastPacket packet)
         {
-            var requestContext = new RequestContext { Packet = packet };
+            var requestContext = new RequestContext(null, packet, null);
             if (packet.IsException == false)
             {
                 this.ProcessRequest(requestContext);

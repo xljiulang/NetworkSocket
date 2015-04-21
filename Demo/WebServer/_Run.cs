@@ -23,22 +23,17 @@ namespace WebSocket
             while (true)
             {
                 Console.WriteLine();
-                Console.WriteLine("按任务键调用客户端的Api ..");
+                Console.WriteLine("按任意键调用客户端的Api ..");
                 Console.ReadLine();
 
-                var session = fastServer.AllSessions.FirstOrDefault();
-                if (session == null)
+                foreach (var session in fastServer.AllSessions)
                 {
-                    Console.WriteLine("没有连接的会话对象 ..");
-                }
-                else
-                {                  
-                    // 调用客户端进行sum运算
                     try
                     {
                         var sum = session.InvokeApi<int>("sum", 1, 2, 3).Result;
-                        Console.WriteLine("InvokeApi(sum, 1, 2, 3) return {0}", sum);
                         session.InvokeApi("notify", "这是服务器发来的通知");
+
+                        Console.WriteLine("{0} InvokeApi(sum, 1, 2, 3) return {1}", session, sum);
                     }
                     catch (AggregateException ex)
                     {

@@ -32,7 +32,7 @@
         });
 
         ws.onclose = function (e) {
-            document.title = '连接已断开：' + e.code;
+            document.title = '连接已断开：' + e.code + '' + e.reason;
         };
 
         ws.onopen = function (e) {

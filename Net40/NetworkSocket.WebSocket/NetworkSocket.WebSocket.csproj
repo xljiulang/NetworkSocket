@@ -64,13 +64,16 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Fast\Context\ActionContext.cs">
-      <SubType>Code</SubType>
+      <SubType>
+      </SubType>
     </Compile>
     <Compile Include="Fast\Context\ExceptionContext.cs">
-      <SubType>Code</SubType>
+      <SubType>
+      </SubType>
     </Compile>
     <Compile Include="Fast\Context\RequestContext.cs">
-      <SubType>Code</SubType>
+      <SubType>
+      </SubType>
     </Compile>
     <Compile Include="Fast\DependencyResolver.cs">
       <SubType>Code</SubType>

@@ -198,7 +198,7 @@ namespace NetworkSocket.Fast
         /// <param name="packet">接收到的数据类型</param>
         private void OnRecvComplete(FastSession session, FastPacket packet)
         {
-            var requestContext = new RequestContext { Session = session, Packet = packet, AllSessions = this.AllSessions };
+            var requestContext = new RequestContext(session, packet, this.AllSessions);
 
             if (packet.IsException)
             {

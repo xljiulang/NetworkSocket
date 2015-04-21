@@ -13,5 +13,15 @@ namespace WebSocket
         {
             base.OnText(session, content);
         }
+
+        protected override void OnConnect(FastWebSocketSession session)
+        {
+            Console.Title = "FastWebSocketServer 连接数：" + this.AllSessions.Count();
+        }
+
+        protected override void OnDisconnect(FastWebSocketSession session)
+        {
+            Console.Title = "FastWebSocketServer 连接数：" + this.AllSessions.Count();
+        }
     }
 }

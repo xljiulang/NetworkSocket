@@ -13,16 +13,9 @@ namespace NetworkSocket.WebSocket.Fast
     public class ActionContext : RequestContext
     {
         /// <summary>
-        /// 获取或设置Api行为对象
+        /// 获取Api行为对象
         /// </summary>
-        public ApiAction Action { get; set; }
-
-        /// <summary>
-        /// Api行为上下文
-        /// </summary>
-        public ActionContext()
-        {
-        }
+        public ApiAction Action { get; private set; }
 
         /// <summary>
         /// Api行为上下文
@@ -30,10 +23,8 @@ namespace NetworkSocket.WebSocket.Fast
         /// <param name="context">请求上下文</param>
         /// <param name="action">Api行为</param>
         public ActionContext(RequestContext context, ApiAction action)
+            : base(context.Session, context.Packet, context.AllSessions)
         {
-            this.AllSessions = context.AllSessions;
-            this.Session = context.Session;
-            this.Packet = context.Packet;            
             this.Action = action;
         }
 

@@ -215,13 +215,7 @@ namespace NetworkSocket.WebSocket.Fast
                 return;
             }
 
-            var requestContext = new RequestContext
-            {
-                AllSessions = this.AllSessions,
-                Session = session,
-                Packet = packet,
-            };
-
+            var requestContext = new RequestContext(session, packet, this.AllSessions);
             if (packet.state == false)
             {
                 this.ProcessRemoteException(requestContext);

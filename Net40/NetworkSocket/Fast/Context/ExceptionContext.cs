@@ -13,14 +13,14 @@ namespace NetworkSocket.Fast
     public class ExceptionContext : RequestContext
     {
         /// <summary>
-        /// 获取或设置异常对象
+        /// 获取异常对象
         /// </summary>
         public Exception Exception { get; set; }
 
         /// <summary>
         /// 获取或设置异常是否已处理
         /// </summary>
-        public bool ExceptionHandled { get; set; }           
+        public bool ExceptionHandled { get; set; }
 
         /// <summary>
         /// 异常上下文
@@ -28,10 +28,8 @@ namespace NetworkSocket.Fast
         /// <param name="context">请求上下文</param>
         /// <param name="exception">异常</param>
         public ExceptionContext(ActionContext context, Exception exception)
+            : base(context.Session, context.Packet, context.AllSessions)
         {
-            this.Session = context.Session;
-            this.Packet = context.Packet;
-            this.AllSessions = context.AllSessions;
             this.Exception = exception;
         }
 
@@ -41,9 +39,8 @@ namespace NetworkSocket.Fast
         /// <param name="context">请求上下文</param>
         /// <param name="exception">异常</param>
         public ExceptionContext(RequestContext context, Exception exception)
+            : base(context.Session, context.Packet, context.AllSessions)
         {
-            this.Session = context.Session;
-            this.Packet = context.Packet;
             this.Exception = exception;
         }
 

@@ -9,23 +9,36 @@ namespace NetworkSocket.WebSocket.Fast
     /// <summary>
     /// 请求上下文
     /// </summary>
-    [DebuggerDisplay("Content = {Content}")]
+    [DebuggerDisplay("Packet = {Packet}")]
     public class RequestContext
     {
         /// <summary>
-        /// 获取或设置当前所有会话对象
+        /// 获取当前会话对象
         /// </summary>
-        public IEnumerable<FastWebSocketSession> AllSessions { get; set; }
+        public FastWebSocketSession Session { get; private set; }
 
         /// <summary>
-        /// 获取或设置会话对象
+        /// 获取数据包对象
         /// </summary>
-        public FastWebSocketSession Session { get; set; }
+        public FastPacket Packet { get; private set; }
 
         /// <summary>
-        /// 获取或设置接收到的数据包
+        /// 获取所有会话对象
         /// </summary>
-        public FastPacket Packet { get; set; }
+        public IEnumerable<FastWebSocketSession> AllSessions { get; private set; }
+
+        /// <summary>
+        /// 请求上下文
+        /// </summary>
+        /// <param name="session">当前会话对象</param>
+        /// <param name="packet">数据包对象</param>
+        /// <param name="allSessions">所有会话对象</param>
+        internal RequestContext(FastWebSocketSession session, FastPacket packet, IEnumerable<FastWebSocketSession> allSessions)
+        {
+            this.Session = session;
+            this.Packet = packet;
+            this.AllSessions = allSessions;
+        }
 
         /// <summary>
         /// 字符串显示
