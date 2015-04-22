@@ -105,8 +105,15 @@ namespace NetworkSocket.WebSocket.Fast
             {
                 if (setType == SetTypes.SetReturnReult)
                 {
-                    var result = JObject.Cast<T>(value);
-                    taskSource.TrySetResult(result);
+                    try
+                    {
+                        var result = JObject.Cast<T>(value);
+                        taskSource.TrySetResult(result);
+                    }
+                    catch (Exception ex)
+                    {
+                        taskSource.TrySetException(ex);
+                    }
                 }
                 else if (setType == SetTypes.SetReturnException)
                 {
