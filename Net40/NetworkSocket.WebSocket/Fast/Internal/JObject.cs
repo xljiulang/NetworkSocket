@@ -190,7 +190,17 @@ namespace NetworkSocket.WebSocket.Fast
             {
                 return value;
             }
-            else if (value != null && value.GetType() == targetType)
+
+            if (value == null)
+            {
+                if (targetType.IsValueType)
+                {
+                    return Activator.CreateInstance(targetType);
+                }
+                return null;
+            }
+
+            if (targetType == value.GetType())
             {
                 return value;
             }
