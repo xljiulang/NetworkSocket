@@ -88,7 +88,7 @@ namespace NetworkSocket.WebSocket.Fast
         public static object[] GetApiActionParameters(IJsonSerializer serializer, ActionContext context)
         {
             var body = context.Packet.body as JObject;
-            if (body == null)
+            if (body == null || body.IsArray == false)
             {
                 throw new ArgumentException("body参数必须为数组");
             }
