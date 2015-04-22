@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Web.Script.Serialization;
 
 namespace NetworkSocket.WebSocket.Fast
 {
@@ -22,18 +23,9 @@ namespace NetworkSocket.WebSocket.Fast
             {
                 return null;
             }
-            return Newtonsoft.Json.JsonConvert.SerializeObject(model);
-        }
 
-        /// <summary>
-        /// 反序列化为实体
-        /// </summary>
-        /// <param name="json">Json数据</param>
-        /// <param name="type">实体类型</param>
-        /// <returns></returns>
-        public object Deserialize(string json, Type type)
-        {
-            return Newtonsoft.Json.JsonConvert.DeserializeObject(json, type);
-        }
+            var serializer = new JavaScriptSerializer();
+            return serializer.Serialize(model);
+        }        
     }
 }

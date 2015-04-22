@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
@@ -37,12 +36,8 @@ namespace NetworkSocket.WebSocket.Fast
             var taskSetAction = taskSetActionTable.Take(requestContext.Packet.id);
             if (taskSetAction != null)
             {
-                var returnJson = ((object)requestContext.Packet.body).ToString();
-                if (returnJson == "True" || returnJson == "False")
-                {
-                    returnJson = returnJson.ToLower();
-                }
-                taskSetAction.SetAction(SetTypes.SetReturnReult, returnJson);
+                var returnValue = requestContext.Packet.body;
+                taskSetAction.SetAction(SetTypes.SetReturnReult, returnValue);
             }
         }
 
@@ -103,21 +98,7 @@ namespace NetworkSocket.WebSocket.Fast
             foreach (object bodyParameter in context.Packet.body)
             {
                 var parameterType = context.Action.ParameterTypes[index];
-                var parameterJson = bodyParameter.ToString();
-
-                if (parameterJson == "True" || parameterJson == "False")
-                {
-                    parameterJson = parameterJson.ToLower();
-                }
-
-                if (parameterJson == null || parameterJson.Length == 0)
-                {
-                    parameters[index] = Activator.CreateInstance(parameterType);
-                }
-                else
-                {
-                    parameters[index] = serializer.Deserialize(parameterJson, parameterType);
-                }
+                parameters[index] = JObject.Cast(bodyParameter, parameterType);
                 index++;
             }
             return parameters;

@@ -20,13 +20,13 @@ namespace NetworkSocket.WebSocket.Fast
         /// <summary>
         /// 获取设置行为
         /// </summary>
-        public Action<SetTypes, string> SetAction { get; private set; }
+        public Action<SetTypes, object> SetAction { get; private set; }
 
         /// <summary>
         /// 任务设置行为
         /// </summary>
         /// <param name="setAction">设置行为</param>
-        public TaskSetAction(Action<SetTypes, string> setAction)
+        public TaskSetAction(Action<SetTypes, object> setAction)
         {
             this.InitTime = Environment.TickCount;
             this.SetAction = setAction;

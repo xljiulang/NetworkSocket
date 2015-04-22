@@ -16,13 +16,5 @@ namespace NetworkSocket.WebSocket.Fast
         /// <param name="model">实体</param>
         /// <returns></returns>
         string Serialize(object model);
-
-        /// <summary>
-        /// 反序列化为实体
-        /// </summary>
-        /// <param name="json">json数据</param>
-        /// <param name="type">实体类型</param>
-        /// <returns></returns>
-        object Deserialize(string json, Type type);
     }
 }

@@ -101,23 +101,16 @@ namespace NetworkSocket.WebSocket.Fast
             var packetJson = this.JsonSerializer.Serialize(packet);
 
             // 登记TaskSetAction           
-            Action<SetTypes, string> setAction = (setType, json) =>
+            Action<SetTypes, object> setAction = (setType, value) =>
             {
                 if (setType == SetTypes.SetReturnReult)
                 {
-                    if (json == null || json.Length == 0)
-                    {
-                        taskSource.TrySetResult(default(T));
-                    }
-                    else
-                    {
-                        var result = (T)this.JsonSerializer.Deserialize(json, typeof(T));
-                        taskSource.TrySetResult(result);
-                    }
+                    var result = JObject.Cast<T>(value);
+                    taskSource.TrySetResult(result);
                 }
                 else if (setType == SetTypes.SetReturnException)
                 {
-                    var exception = new RemoteException(json);
+                    var exception = new RemoteException((string)value);
                     taskSource.TrySetException(exception);
                 }
                 else if (setType == SetTypes.SetTimeoutException)
