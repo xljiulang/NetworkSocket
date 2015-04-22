@@ -36,7 +36,7 @@ function fastWebSocket(url) {
         }
 
         packetId = packetId + 1;
-        var packet = { api: api, id: packetId, body: parameters || [] };
+        var packet = { api: api, id: packetId, body: parameters };
         var json = JSON.stringify(packet);
 
         if (isFunction(doneFunc) || isFunction(exFunc)) {

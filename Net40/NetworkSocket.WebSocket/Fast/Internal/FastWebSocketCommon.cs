@@ -87,15 +87,21 @@ namespace NetworkSocket.WebSocket.Fast
         /// <returns></returns>
         public static object[] GetApiActionParameters(IJsonSerializer serializer, ActionContext context)
         {
-            if (context.Packet.body == null)
+            var body = context.Packet.body;
+            if (body == null)
             {
                 return new object[0];
+            }
+
+            if ((body is Array) == false)
+            {
+                body = new object[] { body };
             }
 
             var index = 0;
             var parameters = new object[context.Action.ParameterTypes.Length];
 
-            foreach (object bodyParameter in context.Packet.body)
+            foreach (object bodyParameter in body)
             {
                 var parameterType = context.Action.ParameterTypes[index];
                 parameters[index] = JObject.Cast(bodyParameter, parameterType);
