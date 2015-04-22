@@ -192,12 +192,13 @@ namespace NetworkSocket.WebSocket.Fast
             }
 
             var serializer = new JavaScriptSerializer();
-            if (value == null || (value is JObject) == false)
+            var jObjectValue = value as JObject;
+
+            if (jObjectValue == null)
             {
                 return serializer.ConvertToType(value, targetType);
             }
 
-            var jObjectValue = value as JObject;
             if (jObjectValue.IsArray == false)
             {
                 value = jObjectValue._sourceData;
