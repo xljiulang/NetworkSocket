@@ -93,7 +93,7 @@ namespace NetworkSocket.WebSocket.Fast
                 return new object[0];
             }
 
-            if ((body is Array) == false)
+            if ((body is JObject.JArray) == false)
             {
                 body = new object[] { body };
             }

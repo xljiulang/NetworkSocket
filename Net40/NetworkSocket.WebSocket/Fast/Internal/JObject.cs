@@ -17,28 +17,20 @@ namespace NetworkSocket.WebSocket.Fast
         /// <summary>
         /// 键值内容字典
         /// </summary>
-        private IDictionary<string, object> dictionary;
+        private IDictionary<string, object> data;
+
+        /// <summary>
+        /// 缓存
+        /// </summary>
+        private Lazy<IDictionary<string, object>> cached = new Lazy<IDictionary<string, object>>(() => new Dictionary<string, object>());
 
         /// <summary>
         /// 表示动态Json对象
         /// </summary>
-        /// <param name="dic">内容字典</param>
-        private JObject(IDictionary<string, object> dic)
+        /// <param name="data">内容字典</param>
+        private JObject(IDictionary<string, object> data)
         {
-            this.dictionary = dic;
-        }
-
-        /// <summary>
-        /// 获取成员的值
-        /// </summary>
-        /// <param name="binder"></param>
-        /// <param name="result"></param>
-        /// <returns></returns>
-        public override bool TryGetMember(GetMemberBinder binder, out object result)
-        {
-            this.dictionary.TryGetValue(binder.Name, out result);
-            result = this.CastResult(result);
-            return true;
+            this.data = data;
         }
 
         /// <summary>
@@ -54,7 +46,27 @@ namespace NetworkSocket.WebSocket.Fast
         }
 
         /// <summary>
-        /// 转换结果为JObject结构或JObject[]结构
+        /// 获取成员的值
+        /// </summary>
+        /// <param name="binder"></param>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        public override bool TryGetMember(GetMemberBinder binder, out object result)
+        {
+            var key = binder.Name;
+            if (this.cached.Value.TryGetValue(key, out result))
+            {
+                return true;
+            }
+
+            this.data.TryGetValue(key, out result);
+            result = this.CastResult(result);
+            this.cached.Value[key] = result;
+            return true;
+        }
+
+        /// <summary>
+        /// 转换结果为JObject结构或JArray结构
         /// </summary>
         /// <param name="result"></param>
         /// <returns></returns>
@@ -74,9 +86,64 @@ namespace NetworkSocket.WebSocket.Fast
             var arrayResult = result as ArrayList;
             if (arrayResult != null)
             {
-                return arrayResult.Cast<object>().Select(item => CastResult(item)).ToArray();
+                var objectArray = arrayResult.Cast<object>().Select(item => CastResult(item)).ToArray();
+                return new JArray(objectArray);
             }
             return result;
+        }
+
+        /// <summary>
+        /// 表示json对象数组
+        /// </summary>
+        internal class JArray : IEnumerable<object>
+        {
+            /// <summary>
+            /// json对象数组
+            /// </summary>
+            private object[] array;
+
+            /// <summary>
+            /// 索引器
+            /// </summary>
+            /// <param name="index"></param>
+            /// <returns></returns>
+            public object this[int index]
+            {
+                get
+                {
+                    return array[index];
+                }
+            }
+
+            /// <summary>
+            /// 表示json对象数组
+            /// </summary>
+            /// <param name="objectArray">json对象数组</param>
+            public JArray(object[] objectArray)
+            {
+                this.array = objectArray;
+            }
+
+            /// <summary>
+            /// 获取迭代器
+            /// </summary>
+            /// <returns></returns>
+            public IEnumerator<object> GetEnumerator()
+            {
+                foreach (var item in this.array)
+                {
+                    yield return item;
+                }
+            }
+
+            /// <summary>
+            /// 获取迭代器
+            /// </summary>
+            /// <returns></returns>
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return this.GetEnumerator();
+            }
         }
 
         /// <summary>
@@ -115,11 +182,7 @@ namespace NetworkSocket.WebSocket.Fast
             /// <returns></returns>
             public override object Deserialize(IDictionary<string, object> dictionary, Type type, JavaScriptSerializer serializer)
             {
-                if (type == typeof(object))
-                {
-                    return new JObject(dictionary);
-                }
-                return null;
+                return new JObject(dictionary);
             }
         }
 
@@ -178,11 +241,21 @@ namespace NetworkSocket.WebSocket.Fast
                 return null;
             }
 
-            var serializer = new JavaScriptSerializer();
-            if (value is JObject)
+            var valueType = value.GetType();
+            if (valueType == typeof(JObject))
             {
-                value = ((JObject)value).dictionary;
+                value = ((JObject)value).data;
             }
+            else if (valueType == typeof(JArray))
+            {
+                value = (value as JArray).Select(item => ((JObject)item).data).ToArray();
+            }
+            else
+            {
+                return Convert.ChangeType(value, targetType);
+            }
+
+            var serializer = new JavaScriptSerializer();
             return serializer.ConvertToType(value, targetType);
         }
     }
