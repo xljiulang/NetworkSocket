@@ -190,6 +190,10 @@ namespace NetworkSocket.WebSocket.Fast
             {
                 return value;
             }
+            else if (value != null && value.GetType() == targetType)
+            {
+                return value;
+            }
 
             var serializer = new JavaScriptSerializer();
             var jObjectValue = value as JObject;
