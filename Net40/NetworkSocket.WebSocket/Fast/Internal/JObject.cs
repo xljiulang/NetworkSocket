@@ -12,17 +12,59 @@ namespace NetworkSocket.WebSocket.Fast
     /// <summary>
     /// 表示动态Json对象
     /// </summary>
-    internal class JObject : DynamicObject
+    internal class JObject : DynamicObject, IEnumerable<object>
     {
         /// <summary>
-        /// 键值内容字典
+        /// 数组的数据
         /// </summary>
-        private IDictionary<string, object> data;
+        private object[] _array;
 
         /// <summary>
-        /// 缓存
+        /// 原始数据
         /// </summary>
-        private Lazy<IDictionary<string, object>> cached = new Lazy<IDictionary<string, object>>(() => new Dictionary<string, object>());
+        private IDictionary<string, object> _sourceData;
+
+        /// <summary>
+        /// 获取是否为数组
+        /// </summary>
+        public bool IsArray
+        {
+            get
+            {
+                return this._array != null;
+            }
+        }
+
+        /// <summary>
+        /// 索引器
+        /// </summary>
+        /// <param name="index">索引</param>
+        /// <returns></returns>
+        public object this[int index]
+        {
+            get
+            {
+                if (this.IsArray)
+                {
+                    return this._array[index];
+                }
+                return this;
+            }
+        }
+
+        /// <summary>
+        /// 创建动态Json数组对象
+        /// </summary>
+        /// <param name="array">Object对象或JObject对象</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        private JObject(params object[] array)
+        {
+            if (array == null)
+            {
+                throw new ArgumentNullException();
+            }
+            this._array = array;
+        }
 
         /// <summary>
         /// 表示动态Json对象
@@ -30,7 +72,7 @@ namespace NetworkSocket.WebSocket.Fast
         /// <param name="data">内容字典</param>
         private JObject(IDictionary<string, object> data)
         {
-            this.data = data;
+            this._sourceData = data;
         }
 
         /// <summary>
@@ -45,6 +87,7 @@ namespace NetworkSocket.WebSocket.Fast
             return true;
         }
 
+
         /// <summary>
         /// 获取成员的值
         /// </summary>
@@ -54,14 +97,8 @@ namespace NetworkSocket.WebSocket.Fast
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
             var key = binder.Name;
-            if (this.cached.Value.TryGetValue(key, out result))
-            {
-                return true;
-            }
-
-            this.data.TryGetValue(key, out result);
+            this._sourceData.TryGetValue(key, out result);
             result = this.CastResult(result);
-            this.cached.Value[key] = result;
             return true;
         }
 
@@ -87,104 +124,11 @@ namespace NetworkSocket.WebSocket.Fast
             if (arrayResult != null)
             {
                 var objectArray = arrayResult.Cast<object>().Select(item => CastResult(item)).ToArray();
-                return new JArray(objectArray);
+                return new JObject(objectArray);
             }
             return result;
         }
 
-        /// <summary>
-        /// 表示json对象数组
-        /// </summary>
-        internal class JArray : IEnumerable<object>
-        {
-            /// <summary>
-            /// json对象数组
-            /// </summary>
-            private object[] array;
-
-            /// <summary>
-            /// 索引器
-            /// </summary>
-            /// <param name="index"></param>
-            /// <returns></returns>
-            public object this[int index]
-            {
-                get
-                {
-                    return array[index];
-                }
-            }
-
-            /// <summary>
-            /// 表示json对象数组
-            /// </summary>
-            /// <param name="objectArray">json对象数组</param>
-            public JArray(object[] objectArray)
-            {
-                this.array = objectArray;
-            }
-
-            /// <summary>
-            /// 获取迭代器
-            /// </summary>
-            /// <returns></returns>
-            public IEnumerator<object> GetEnumerator()
-            {
-                foreach (var item in this.array)
-                {
-                    yield return item;
-                }
-            }
-
-            /// <summary>
-            /// 获取迭代器
-            /// </summary>
-            /// <returns></returns>
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return this.GetEnumerator();
-            }
-        }
-
-        /// <summary>
-        /// Json转换器
-        /// </summary>
-        private class DynamicJsonConverter : JavaScriptConverter
-        {
-            /// <summary>
-            /// 获取支持的类型
-            /// </summary>
-            public override IEnumerable<Type> SupportedTypes
-            {
-                get
-                {
-                    yield return typeof(object);
-                }
-            }
-
-            /// <summary>
-            /// 不作序列化
-            /// </summary>
-            /// <param name="obj"></param>
-            /// <param name="serializer"></param>
-            /// <returns></returns>
-            public override IDictionary<string, object> Serialize(object obj, JavaScriptSerializer serializer)
-            {
-                throw new NotImplementedException();
-            }
-
-            /// <summary>
-            /// 反序列化
-            /// </summary>
-            /// <param name="dictionary"></param>
-            /// <param name="type"></param>
-            /// <param name="serializer"></param>
-            /// <returns></returns>
-            public override object Deserialize(IDictionary<string, object> dictionary, Type type, JavaScriptSerializer serializer)
-            {
-                return new JObject(dictionary);
-            }
-        }
 
         /// <summary>
         /// 解析Json
@@ -241,22 +185,91 @@ namespace NetworkSocket.WebSocket.Fast
                 return null;
             }
 
-            var valueType = value.GetType();
-            if (valueType == typeof(JObject))
-            {
-                value = ((JObject)value).data;
-            }
-            else if (valueType == typeof(JArray))
-            {
-                value = (value as JArray).Select(item => ((JObject)item).data).ToArray();
-            }
-            else
+            var jObjectValue = value as JObject;
+            if (jObjectValue == null)
             {
                 return Convert.ChangeType(value, targetType);
             }
 
+            if (jObjectValue.IsArray == false)
+            {
+                value = jObjectValue._sourceData;
+            }
+            else
+            {
+                value = jObjectValue.Select(item => ((JObject)item)._sourceData).ToArray();
+            }
             var serializer = new JavaScriptSerializer();
             return serializer.ConvertToType(value, targetType);
+        }
+
+
+        /// <summary>
+        /// 获取迭代器
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerator<object> GetEnumerator()
+        {
+            if (this.IsArray)
+            {
+                foreach (var item in this._array)
+                {
+                    yield return item;
+                }
+            }
+            else
+            {
+                yield return this;
+            }
+        }
+
+        /// <summary>
+        /// 获取迭代器
+        /// </summary>
+        /// <returns></returns>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return this.GetEnumerator();
+        }
+
+        /// <summary>
+        /// Json转换器
+        /// </summary>
+        private class DynamicJsonConverter : JavaScriptConverter
+        {
+            /// <summary>
+            /// 获取支持的类型
+            /// </summary>
+            public override IEnumerable<Type> SupportedTypes
+            {
+                get
+                {
+                    yield return typeof(object);
+                }
+            }
+
+            /// <summary>
+            /// 不作序列化
+            /// </summary>
+            /// <param name="obj"></param>
+            /// <param name="serializer"></param>
+            /// <returns></returns>
+            public override IDictionary<string, object> Serialize(object obj, JavaScriptSerializer serializer)
+            {
+                throw new NotImplementedException();
+            }
+
+            /// <summary>
+            /// 反序列化
+            /// </summary>
+            /// <param name="dictionary"></param>
+            /// <param name="type"></param>
+            /// <param name="serializer"></param>
+            /// <returns></returns>
+            public override object Deserialize(IDictionary<string, object> dictionary, Type type, JavaScriptSerializer serializer)
+            {
+                return new JObject(dictionary);
+            }
         }
     }
 }
