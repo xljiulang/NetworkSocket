@@ -36,6 +36,21 @@ namespace NetworkSocket.WebSocket.Fast
         }
 
         /// <summary>
+        /// 获取元素数量
+        /// </summary>
+        public int Length
+        {
+            get
+            {
+                if (this.IsArray)
+                {
+                    return this._array.Length;
+                }
+                return 1;
+            }
+        }
+
+        /// <summary>
         /// 索引器
         /// </summary>
         /// <param name="index">索引</param>

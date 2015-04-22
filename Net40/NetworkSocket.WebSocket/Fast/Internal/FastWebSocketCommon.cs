@@ -87,20 +87,23 @@ namespace NetworkSocket.WebSocket.Fast
         /// <returns></returns>
         public static object[] GetApiActionParameters(IJsonSerializer serializer, ActionContext context)
         {
-            var parameters = new object[context.Action.ParameterTypes.Length];
-
             var body = context.Packet.body as JObject;
             if (body == null)
             {
-                return parameters;
+                throw new ArgumentException("body参数必须为数组");
             }
 
-            var index = 0;
-            foreach (var bodyParameter in body)
+            if (body.Length != context.Action.ParameterTypes.Length)
             {
-                var parameterType = context.Action.ParameterTypes[index];
-                parameters[index] = JObject.Cast(bodyParameter, parameterType);
-                index++;
+                throw new ArgumentException("body参数数量不正确");
+            }
+
+            var parameters = new object[body.Length];
+            for (var i = 0; i < body.Length; i++)
+            {
+                var bodyParameter = body[i];
+                var parameterType = context.Action.ParameterTypes[i];
+                parameters[i] = JObject.Cast(bodyParameter, parameterType);
             }
             return parameters;
         }
