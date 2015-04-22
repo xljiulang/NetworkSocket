@@ -1,5 +1,4 @@
-﻿using Models;
-using NetworkSocket;
+﻿using NetworkSocket;
 using NetworkSocket.WebSocket;
 using NetworkSocket.WebSocket.Fast;
 using System;

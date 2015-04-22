@@ -15,7 +15,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetworkSocket", "Net40\Netw
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetworkSocket.WebSocket", "Net40\NetworkSocket.WebSocket\NetworkSocket.WebSocket.csproj", "{63D2DED9-1A63-4209-ADEE-9A67A8D3257E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebSocket", "Demo\WebServer\WebSocket.csproj", "{59BA5D2B-2363-465E-B7BA-FAE990BDB5AE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebSocket", "Demo\WebSocket\WebSocket.csproj", "{59BA5D2B-2363-465E-B7BA-FAE990BDB5AE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

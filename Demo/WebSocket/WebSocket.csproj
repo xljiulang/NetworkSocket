@@ -62,10 +62,6 @@
       <Project>{80d0fa44-523b-4e68-bdc2-b12901d5855b}</Project>
       <Name>NetworkSocket</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Models\Models.csproj">
-      <Project>{f9b37780-6345-4e6f-8523-687f56895625}</Project>
-      <Name>Models</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Chart.js" />
