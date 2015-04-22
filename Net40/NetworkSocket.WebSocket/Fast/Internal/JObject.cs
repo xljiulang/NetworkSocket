@@ -191,21 +191,13 @@ namespace NetworkSocket.WebSocket.Fast
                 return value;
             }
 
-            if (value == null)
+            var serializer = new JavaScriptSerializer();
+            if (value == null || (value is JObject) == false)
             {
-                if (targetType.IsValueType)
-                {
-                    return Activator.CreateInstance(targetType);
-                }
-                return null;
+                return serializer.ConvertToType(value, targetType);
             }
 
             var jObjectValue = value as JObject;
-            if (jObjectValue == null)
-            {
-                return Convert.ChangeType(value, targetType);
-            }
-
             if (jObjectValue.IsArray == false)
             {
                 value = jObjectValue._sourceData;
@@ -214,7 +206,6 @@ namespace NetworkSocket.WebSocket.Fast
             {
                 value = jObjectValue.Select(item => ((JObject)item)._sourceData).ToArray();
             }
-            var serializer = new JavaScriptSerializer();
             return serializer.ConvertToType(value, targetType);
         }
 
