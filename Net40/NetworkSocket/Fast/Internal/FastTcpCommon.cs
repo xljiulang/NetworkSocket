@@ -108,15 +108,7 @@ namespace NetworkSocket.Fast
             {
                 if (setType == SetTypes.SetReturnReult)
                 {
-                    if (bytes == null || bytes.Length == 0)
-                    {
-                        taskSource.TrySetResult(default(T));
-                    }
-                    else
-                    {
-                        var result = (T)serializer.Deserialize(bytes, typeof(T));
-                        taskSource.TrySetResult(result);
-                    }
+                    TrySetResult<T>(taskSource, bytes, serializer);
                 }
                 else if (setType == SetTypes.SetReturnException)
                 {
@@ -140,6 +132,32 @@ namespace NetworkSocket.Fast
 
             session.Send(packet.ToBytes());
             return taskSource.Task;
+        }
+
+        /// <summary>
+        /// 尝试设置结果值
+        /// </summary>
+        /// <typeparam name="T">结果类型</typeparam>
+        /// <param name="taskSource">任务源</param>
+        /// <param name="bytes">数据</param>
+        /// <param name="serializer">序列化工具</param>
+        private static void TrySetResult<T>(TaskCompletionSource<T> taskSource, byte[] bytes, ISerializer serializer)
+        {
+            if (bytes == null || bytes.Length == 0)
+            {
+                taskSource.TrySetResult(default(T));
+                return;
+            }
+
+            try
+            {
+                var result = (T)serializer.Deserialize(bytes, typeof(T));
+                taskSource.TrySetResult(result);
+            }
+            catch (Exception ex)
+            {
+                taskSource.TrySetException(ex);
+            }
         }
 
 
