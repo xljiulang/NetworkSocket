@@ -17,6 +17,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetworkSocket.WebSocket", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebSocket", "Demo\WebSocket\WebSocket.csproj", "{59BA5D2B-2363-465E-B7BA-FAE990BDB5AE}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{CC0392B3-93ED-4341-9D14-4EE4F9EBFE30}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTest.NetworkSocket", "Test\UnitTest.NetworkSocket\UnitTest.NetworkSocket.csproj", "{2EF57D67-04C8-477B-948F-1C18227472E0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -87,6 +91,16 @@ Global
 		{59BA5D2B-2363-465E-B7BA-FAE990BDB5AE}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{59BA5D2B-2363-465E-B7BA-FAE990BDB5AE}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{59BA5D2B-2363-465E-B7BA-FAE990BDB5AE}.Release|x86.ActiveCfg = Release|Any CPU
+		{2EF57D67-04C8-477B-948F-1C18227472E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2EF57D67-04C8-477B-948F-1C18227472E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2EF57D67-04C8-477B-948F-1C18227472E0}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{2EF57D67-04C8-477B-948F-1C18227472E0}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{2EF57D67-04C8-477B-948F-1C18227472E0}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2EF57D67-04C8-477B-948F-1C18227472E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2EF57D67-04C8-477B-948F-1C18227472E0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2EF57D67-04C8-477B-948F-1C18227472E0}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{2EF57D67-04C8-477B-948F-1C18227472E0}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{2EF57D67-04C8-477B-948F-1C18227472E0}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -98,6 +112,7 @@ Global
 		{59BA5D2B-2363-465E-B7BA-FAE990BDB5AE} = {1AD64CA4-4550-4D5F-A56D-46DFCFD480A9}
 		{80D0FA44-523B-4E68-BDC2-B12901D5855B} = {89ABE2CB-D89C-438D-B88A-1FA91E98CF0A}
 		{63D2DED9-1A63-4209-ADEE-9A67A8D3257E} = {89ABE2CB-D89C-438D-B88A-1FA91E98CF0A}
+		{2EF57D67-04C8-477B-948F-1C18227472E0} = {CC0392B3-93ED-4341-9D14-4EE4F9EBFE30}
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = Demo\Server\Server.csproj
