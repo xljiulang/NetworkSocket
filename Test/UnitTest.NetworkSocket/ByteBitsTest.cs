@@ -75,8 +75,7 @@ namespace UnitTest.NetworkSocket
             bool expected = false; // TODO: 初始化为适当的值
             bool actual;
             actual = target.Equals(obj);
-            Assert.AreEqual(expected, actual);
-            Assert.Inconclusive("验证此测试方法的正确性。");
+            Assert.AreEqual(expected, actual);           
         }
 
         /// <summary>
@@ -89,8 +88,7 @@ namespace UnitTest.NetworkSocket
             int expected = 6; // TODO: 初始化为适当的值
             int actual;
             actual = target.GetHashCode();
-            Assert.AreEqual(expected, actual);
-            Assert.Inconclusive("验证此测试方法的正确性。");
+            Assert.AreEqual(expected, actual);           
         }
 
         /// <summary>
@@ -104,8 +102,7 @@ namespace UnitTest.NetworkSocket
             ByteBits expected = byte.MaxValue - 1; // TODO: 初始化为适当的值
             ByteBits actual;
             actual = target.MoveLeft(count);
-            Assert.AreEqual(expected, actual);
-            Assert.Inconclusive("验证此测试方法的正确性。");
+            Assert.AreEqual(expected, actual);            
         }
 
 
@@ -120,8 +117,7 @@ namespace UnitTest.NetworkSocket
             ByteBits expected = 3; // TODO: 初始化为适当的值
             ByteBits actual;
             actual = target.MoveRight(count);
-            Assert.AreEqual(expected, actual);
-            Assert.Inconclusive("验证此测试方法的正确性。");
+            Assert.AreEqual(expected, actual);          
         }
 
         /// <summary>
@@ -135,8 +131,7 @@ namespace UnitTest.NetworkSocket
             ByteBits expected = 15; // TODO: 初始化为适当的值
             ByteBits actual;
             actual = target.Take(count);
-            Assert.AreEqual(expected, actual);
-            Assert.Inconclusive("验证此测试方法的正确性。");
+            Assert.AreEqual(expected, actual);            
         }
 
         /// <summary>
@@ -151,8 +146,7 @@ namespace UnitTest.NetworkSocket
             ByteBits expected = 2; // TODO: 初始化为适当的值
             ByteBits actual;
             actual = target.Take(index, count);
-            Assert.AreEqual(expected, actual);
-            Assert.Inconclusive("验证此测试方法的正确性。");
+            Assert.AreEqual(expected, actual);           
         }
 
 
@@ -167,8 +161,7 @@ namespace UnitTest.NetworkSocket
             ByteBits expected = new ByteBits(); // TODO: 初始化为适当的值
             ByteBits actual;
             actual = value;
-            Assert.AreEqual(expected, actual);
-            Assert.Inconclusive("验证此测试方法的正确性。");
+            Assert.AreEqual(expected, actual);           
         }
 
         /// <summary>
@@ -181,8 +174,7 @@ namespace UnitTest.NetworkSocket
             byte expected = 0; // TODO: 初始化为适当的值
             byte actual;
             actual = bits;
-            Assert.AreEqual(expected, actual);
-            Assert.Inconclusive("验证此测试方法的正确性。");
+            Assert.AreEqual(expected, actual);            
         }
 
         /// <summary>
@@ -197,8 +189,7 @@ namespace UnitTest.NetworkSocket
             bool actual;
             target[index] = expected;
             actual = target[index];
-            Assert.AreEqual(expected, actual);
-            Assert.Inconclusive("验证此测试方法的正确性。");
+            Assert.AreEqual(expected, actual);            
         }
     }
 }

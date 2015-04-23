@@ -164,9 +164,9 @@ namespace UnitTest.NetworkSocket
         public void AddTest4()
         {
             ByteBuilder target = new ByteBuilder(); // TODO: 初始化为适当的值
-            int value = 0; // TODO: 初始化为适当的值
+            int value = 66; // TODO: 初始化为适当的值
             target.Add(value);
-            Assert.Inconclusive("无法验证不返回值的方法。");
+            Assert.IsTrue(target.ReadInt32() == value);
         }
 
         /// <summary>
@@ -176,9 +176,9 @@ namespace UnitTest.NetworkSocket
         public void AddTest5()
         {
             ByteBuilder target = new ByteBuilder(); // TODO: 初始化为适当的值
-            uint value = 0; // TODO: 初始化为适当的值
+            uint value = 88; // TODO: 初始化为适当的值
             target.Add(value);
-            Assert.Inconclusive("无法验证不返回值的方法。");
+            Assert.IsTrue(target.ReadUInt32() == value);
         }
 
         /// <summary>
@@ -188,9 +188,9 @@ namespace UnitTest.NetworkSocket
         public void AddTest6()
         {
             ByteBuilder target = new ByteBuilder(); // TODO: 初始化为适当的值
-            long value = 0; // TODO: 初始化为适当的值
+            long value = 99; // TODO: 初始化为适当的值
             target.Add(value);
-            Assert.Inconclusive("无法验证不返回值的方法。");
+            Assert.IsTrue(target.ReadInt64() == value);
         }
 
         /// <summary>
@@ -200,9 +200,9 @@ namespace UnitTest.NetworkSocket
         public void AddTest7()
         {
             ByteBuilder target = new ByteBuilder(); // TODO: 初始化为适当的值
-            ulong value = 0; // TODO: 初始化为适当的值
+            ulong value = 99; // TODO: 初始化为适当的值
             target.Add(value);
-            Assert.Inconclusive("无法验证不返回值的方法。");
+            Assert.IsTrue(target.ReadUInt64() == value);
         }
 
         /// <summary>
@@ -212,9 +212,9 @@ namespace UnitTest.NetworkSocket
         public void AddTest8()
         {
             ByteBuilder target = new ByteBuilder(); // TODO: 初始化为适当的值
-            byte[] value = null; // TODO: 初始化为适当的值
+            byte[] value = new byte[] { 1 }; // TODO: 初始化为适当的值
             target.Add(value);
-            Assert.Inconclusive("无法验证不返回值的方法。");
+            Assert.IsTrue(target[0] == value[0] && target.Length == 1);
         }
 
         /// <summary>
@@ -224,11 +224,11 @@ namespace UnitTest.NetworkSocket
         public void AddTest9()
         {
             ByteBuilder target = new ByteBuilder(); // TODO: 初始化为适当的值
-            byte[] value = null; // TODO: 初始化为适当的值
-            int index = 0; // TODO: 初始化为适当的值
-            int length = 0; // TODO: 初始化为适当的值
+            byte[] value = new byte[] { 1, 2 }; // TODO: 初始化为适当的值
+            int index = 1; // TODO: 初始化为适当的值
+            int length = 1; // TODO: 初始化为适当的值
             target.Add(value, index, length);
-            Assert.Inconclusive("无法验证不返回值的方法。");
+            Assert.IsTrue(target[0] == value[1] && target.Length == 1);
         }
 
         /// <summary>
@@ -239,7 +239,7 @@ namespace UnitTest.NetworkSocket
         {
             ByteBuilder target = new ByteBuilder(); // TODO: 初始化为适当的值
             target.Clear();
-            Assert.Inconclusive("无法验证不返回值的方法。");
+            Assert.IsTrue(target.Length == 0);
         }
 
         /// <summary>
@@ -249,9 +249,10 @@ namespace UnitTest.NetworkSocket
         public void ClearTest1()
         {
             ByteBuilder target = new ByteBuilder(); // TODO: 初始化为适当的值
-            int length = 0; // TODO: 初始化为适当的值
+            target.Add(new byte[] { 1, 2 });
+            int length = 1; // TODO: 初始化为适当的值
             target.Clear(length);
-            Assert.Inconclusive("无法验证不返回值的方法。");
+            Assert.IsTrue(target.Length == 1 && target[0] == 2);
         }
 
         /// <summary>
@@ -483,12 +484,12 @@ namespace UnitTest.NetworkSocket
         public void ToBooleanTest()
         {
             ByteBuilder target = new ByteBuilder(); // TODO: 初始化为适当的值
+            target.Add(true);
             int index = 0; // TODO: 初始化为适当的值
-            bool expected = false; // TODO: 初始化为适当的值
+            bool expected = true; // TODO: 初始化为适当的值
             bool actual;
             actual = target.ToBoolean(index);
-            Assert.AreEqual(expected, actual);
-            Assert.Inconclusive("验证此测试方法的正确性。");
+            Assert.AreEqual(expected, actual); ;
         }
 
         /// <summary>
@@ -498,12 +499,12 @@ namespace UnitTest.NetworkSocket
         public void ToInt16Test()
         {
             ByteBuilder target = new ByteBuilder(); // TODO: 初始化为适当的值
+            target.Add((short)2);
             int index = 0; // TODO: 初始化为适当的值
-            short expected = 0; // TODO: 初始化为适当的值
+            short expected = 2; // TODO: 初始化为适当的值
             short actual;
             actual = target.ToInt16(index);
             Assert.AreEqual(expected, actual);
-            Assert.Inconclusive("验证此测试方法的正确性。");
         }
 
         /// <summary>
@@ -513,12 +514,12 @@ namespace UnitTest.NetworkSocket
         public void ToInt32Test()
         {
             ByteBuilder target = new ByteBuilder(); // TODO: 初始化为适当的值
+            target.Add(int.MaxValue);
             int index = 0; // TODO: 初始化为适当的值
-            int expected = 0; // TODO: 初始化为适当的值
+            int expected = int.MaxValue; // TODO: 初始化为适当的值
             int actual;
             actual = target.ToInt32(index);
             Assert.AreEqual(expected, actual);
-            Assert.Inconclusive("验证此测试方法的正确性。");
         }
 
         /// <summary>
@@ -528,12 +529,12 @@ namespace UnitTest.NetworkSocket
         public void ToInt64Test()
         {
             ByteBuilder target = new ByteBuilder(); // TODO: 初始化为适当的值
+            target.Add(long.MaxValue);
             int index = 0; // TODO: 初始化为适当的值
-            long expected = 0; // TODO: 初始化为适当的值
+            long expected = long.MaxValue; // TODO: 初始化为适当的值
             long actual;
             actual = target.ToInt64(index);
             Assert.AreEqual(expected, actual);
-            Assert.Inconclusive("验证此测试方法的正确性。");
         }
 
         /// <summary>
@@ -543,12 +544,12 @@ namespace UnitTest.NetworkSocket
         public void ToUInt16Test()
         {
             ByteBuilder target = new ByteBuilder(); // TODO: 初始化为适当的值
+            target.Add(ushort.MaxValue);
             int index = 0; // TODO: 初始化为适当的值
-            uint expected = 0; // TODO: 初始化为适当的值
+            uint expected = ushort.MaxValue; // TODO: 初始化为适当的值
             uint actual;
             actual = target.ToUInt16(index);
             Assert.AreEqual(expected, actual);
-            Assert.Inconclusive("验证此测试方法的正确性。");
         }
 
         /// <summary>
@@ -558,12 +559,12 @@ namespace UnitTest.NetworkSocket
         public void ToUInt32Test()
         {
             ByteBuilder target = new ByteBuilder(); // TODO: 初始化为适当的值
+            target.Add(uint.MaxValue);
             int index = 0; // TODO: 初始化为适当的值
-            uint expected = 0; // TODO: 初始化为适当的值
+            uint expected = uint.MaxValue; // TODO: 初始化为适当的值
             uint actual;
             actual = target.ToUInt32(index);
             Assert.AreEqual(expected, actual);
-            Assert.Inconclusive("验证此测试方法的正确性。");
         }
 
         /// <summary>
@@ -573,12 +574,12 @@ namespace UnitTest.NetworkSocket
         public void ToUInt64Test()
         {
             ByteBuilder target = new ByteBuilder(); // TODO: 初始化为适当的值
+            target.Add(ulong.MaxValue);
             int index = 0; // TODO: 初始化为适当的值
-            ulong expected = 0; // TODO: 初始化为适当的值
+            ulong expected = ulong.MaxValue; // TODO: 初始化为适当的值
             ulong actual;
             actual = target.ToUInt64(index);
-            Assert.AreEqual(expected, actual);
-            Assert.Inconclusive("验证此测试方法的正确性。");
+            Assert.AreEqual(expected, actual); ;
         }
 
         /// <summary>
