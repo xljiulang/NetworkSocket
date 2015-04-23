@@ -59,6 +59,7 @@
   <ItemGroup>
     <Compile Include="ByteBitsTest.cs" />
     <Compile Include="ByteBuilderTest.cs" />
+    <Compile Include="ByteConverterTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
