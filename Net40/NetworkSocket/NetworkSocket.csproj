@@ -67,7 +67,6 @@
     <Compile Include="Fast\DependencyResolver.cs" />
     <Compile Include="Fast\Exception\ApiExecuteException.cs" />
     <Compile Include="Fast\Exception\ApiNotExistException.cs" />
-    <Compile Include="Fast\Exception\ContextNullException.cs" />
     <Compile Include="Fast\Exception\RemoteException.cs" />
     <Compile Include="Fast\FastApiService.cs" />
     <Compile Include="Fast\FastSession.cs" />

@@ -82,9 +82,6 @@
     <Compile Include="Fast\Exception\ApiNotExistException.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Fast\Exception\ContextNullException.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Fast\Exception\RemoteException.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -131,7 +128,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Fast\IFastWebSocketSession.cs" />
-    <Compile Include="Fast\IFilter.cs">
+    <Compile Include="Fast\Filter\IFilter.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Fast\IJsonSerializer.cs">
