@@ -70,6 +70,7 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="serializer">序列化工具</param>
         /// <param name="parameters">参数</param>
+        /// <exception cref="SerializerException"></exception>
         public void SetBodyParameters(ISerializer serializer, params object[] parameters)
         {
             if (parameters == null || parameters.Length == 0)

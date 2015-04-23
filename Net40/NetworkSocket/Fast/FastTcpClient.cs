@@ -99,7 +99,7 @@ namespace NetworkSocket.Fast
         /// <param name="requestContext">请求上下文</param>
         private void ProcessRemoteException(RequestContext requestContext)
         {
-            var remoteException = FastTcpCommon.SetApiActionTaskException(this.Serializer, this.taskSetActionTable, requestContext);
+            var remoteException = FastTcpCommon.SetApiActionTaskException(this.taskSetActionTable, requestContext);
             if (remoteException == null)
             {
                 return;
@@ -151,7 +151,7 @@ namespace NetworkSocket.Fast
 
             var exception = new ApiNotExistException(requestContext.Packet.ApiName);
             var exceptionContext = new ExceptionContext(requestContext, exception);
-            FastTcpCommon.SetRemoteException(this, this.Serializer, exceptionContext);
+            FastTcpCommon.SetRemoteException(this, exceptionContext);
 
             var exceptionHandled = false;
             this.OnException(requestContext.Packet, exception, out exceptionHandled);
@@ -194,6 +194,7 @@ namespace NetworkSocket.Fast
         /// 执行Api行为
         /// </summary>
         /// <param name="actionContext">上下文</param>   
+        /// <exception cref="SerializerException"></exception>
         private void ExecuteAction(ActionContext actionContext)
         {
             var parameters = FastTcpCommon.GetApiActionParameters(this.Serializer, actionContext);
@@ -214,7 +215,7 @@ namespace NetworkSocket.Fast
         private void ProcessExecutingException(ActionContext actionContext, Exception exception)
         {
             var exceptionContext = new ExceptionContext(actionContext, new ApiExecuteException(actionContext, exception));
-            FastTcpCommon.SetRemoteException(this, this.Serializer, exceptionContext);
+            FastTcpCommon.SetRemoteException(this, exceptionContext);
 
             var exceptionHandled = false;
             this.OnException(actionContext.Packet, exception, out exceptionHandled);
@@ -242,6 +243,8 @@ namespace NetworkSocket.Fast
         /// <param name="parameters">参数列表</param>   
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="SocketException"></exception> 
+        /// <exception cref="SerializerException"></exception>
+        /// <returns></returns>
         public Task InvokeApi(string api, params object[] parameters)
         {
             return Task.Factory.StartNew(() =>
@@ -263,6 +266,7 @@ namespace NetworkSocket.Fast
         /// <exception cref="SocketException"></exception> 
         /// <exception cref="RemoteException"></exception>
         /// <exception cref="TimeoutException"></exception>
+        /// <exception cref="SerializerException"></exception>
         /// <returns>远程数据任务</returns>    
         public Task<T> InvokeApi<T>(string api, params object[] parameters)
         {

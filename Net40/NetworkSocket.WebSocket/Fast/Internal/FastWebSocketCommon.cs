@@ -36,7 +36,7 @@ namespace NetworkSocket.WebSocket.Fast
             var taskSetAction = taskSetActionTable.Take(requestContext.Packet.id);
             if (taskSetAction != null)
             {
-                var returnValue = requestContext.Packet.body;
+                var returnValue = (object)requestContext.Packet.body;
                 taskSetAction.SetAction(SetTypes.SetReturnReult, returnValue);
             }
         }
@@ -45,14 +45,13 @@ namespace NetworkSocket.WebSocket.Fast
         /// <summary>
         /// 设置Api行为返回的任务异常 
         /// 设置失败则返远程异常对象
-        /// </summary>          
-        /// <param name="serializer">序列化工具</param>
+        /// </summary>   
         /// <param name="taskSetActionTable">任务行为表</param>
-        /// <param name="requestContext">请求上下文</param>
+        /// <param name="requestContext">请求上下文</param>     
         /// <returns></returns>
-        public static RemoteException SetApiActionTaskException(IJsonSerializer serializer, TaskSetActionTable taskSetActionTable, RequestContext requestContext)
+        public static RemoteException SetApiActionTaskException(TaskSetActionTable taskSetActionTable, RequestContext requestContext)
         {
-            var message = ((object)requestContext.Packet.body).ToString();
+            string message = JObject.TryCast<string>(requestContext.Packet.body);
             var taskSetAction = taskSetActionTable.Take(requestContext.Packet.id);
 
             if (taskSetAction != null)
@@ -67,7 +66,7 @@ namespace NetworkSocket.WebSocket.Fast
         /// 设置远程异常
         /// </summary>
         /// <param name="serializer">序列化工具</param>
-        /// <param name="exceptionContext">上下文</param> 
+        /// <param name="exceptionContext">上下文</param>       
         /// <returns></returns>
         public static bool SetRemoteException(IJsonSerializer serializer, ExceptionContext exceptionContext)
         {
@@ -84,6 +83,8 @@ namespace NetworkSocket.WebSocket.Fast
         /// </summary>        
         /// <param name="serializer">序列化工具</param>
         /// <param name="context">上下文</param> 
+        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="SerializerException"></exception>
         /// <returns></returns>
         public static object[] GetApiActionParameters(IJsonSerializer serializer, ActionContext context)
         {

@@ -3,26 +3,41 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using NetworkSocket.Fast;
 
 namespace Models.Serializer
 {
-    public class GoogleProtobuf : NetworkSocket.Fast.ISerializer
+    public class GoogleProtobuf : ISerializer
     {
         public byte[] Serialize(object model)
         {
-            using (var stream = new MemoryStream())
+            try
             {
-                ProtoBuf.Serializer.NonGeneric.Serialize(stream, model);
-                return stream.ToArray();
+                using (var stream = new MemoryStream())
+                {
+                    ProtoBuf.Serializer.NonGeneric.Serialize(stream, model);
+                    return stream.ToArray();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new SerializerException(ex);
             }
         }
 
         public object Deserialize(byte[] bytes, Type type)
         {
-            using (var stream = new MemoryStream(bytes))
+            try
             {
-                stream.Position = 0;
-                return ProtoBuf.Serializer.NonGeneric.Deserialize(type, stream);
+                using (var stream = new MemoryStream(bytes))
+                {
+                    stream.Position = 0;
+                    return ProtoBuf.Serializer.NonGeneric.Deserialize(type, stream);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new SerializerException(ex);
             }
         }
 

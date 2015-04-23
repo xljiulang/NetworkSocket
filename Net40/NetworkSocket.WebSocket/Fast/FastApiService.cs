@@ -88,6 +88,7 @@ namespace NetworkSocket.WebSocket.Fast
         /// </summary>       
         /// <param name="actionContext">上下文</param>       
         /// <param name="filters">过滤器</param>
+        /// <exception cref="SerializerException"></exception>
         private void ExecuteAction(ActionContext actionContext, IEnumerable<IFilter> filters)
         {
             // 执行Filter

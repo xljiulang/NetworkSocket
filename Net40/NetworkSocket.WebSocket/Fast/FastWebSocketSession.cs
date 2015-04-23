@@ -55,16 +55,17 @@ namespace NetworkSocket.WebSocket.Fast
         /// <param name="api">api(区分大小写)</param>
         /// <param name="parameters">参数列表</param>    
         /// <exception cref="ArgumentException"></exception>
-        /// <exception cref="SocketException"></exception>         
+        /// <exception cref="SocketException"></exception>      
+        /// <exception cref="SerializerException"></exception>
+        /// <returns></returns>
         public Task InvokeApi(string api, params object[] parameters)
         {
             return Task.Factory.StartNew(() =>
             {
-                var id = this.packetIdProvider.GetId();
                 var packet = new FastPacket
                 {
                     api = api,
-                    id = id,
+                    id = this.packetIdProvider.GetId(),
                     state = true,
                     fromClient = false,
                     body = parameters
@@ -85,22 +86,39 @@ namespace NetworkSocket.WebSocket.Fast
         /// <exception cref="SocketException"></exception> 
         /// <exception cref="RemoteException"></exception>
         /// <exception cref="TimeoutException"></exception>
+        /// <exception cref="SerializerException"></exception>
         /// <returns>远程数据任务</returns>  
         public Task<T> InvokeApi<T>(string api, params object[] parameters)
         {
-            var id = this.packetIdProvider.GetId();
-            var taskSource = new TaskCompletionSource<T>();
             var packet = new FastPacket
             {
                 api = api,
-                id = id,
+                id = this.packetIdProvider.GetId(),
                 state = true,
                 fromClient = false,
                 body = parameters
             };
-            var packetJson = this.JsonSerializer.Serialize(packet);
 
-            // 登记TaskSetAction           
+            // 登记TaskSetAction       
+            var taskSource = new TaskCompletionSource<T>();
+            var setAction = this.NewSetAction<T>(taskSource);
+            var taskSetAction = new TaskSetAction(setAction);
+            taskSetActionTable.Add(packet.id, taskSetAction);
+
+            var packetJson = this.JsonSerializer.Serialize(packet);
+            this.SendText(packetJson);
+            return taskSource.Task;
+        }
+
+        /// <summary>
+        /// 创建新的SetAction
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="taskSource">任务源</param>
+        /// <exception cref="SerializerException"></exception>
+        /// <returns></returns>
+        private Action<SetTypes, object> NewSetAction<T>(TaskCompletionSource<T> taskSource)
+        {
             Action<SetTypes, object> setAction = (setType, value) =>
             {
                 if (setType == SetTypes.SetReturnReult)
@@ -110,7 +128,7 @@ namespace NetworkSocket.WebSocket.Fast
                         var result = JObject.Cast<T>(value);
                         taskSource.TrySetResult(result);
                     }
-                    catch (Exception ex)
+                    catch (SerializerException ex)
                     {
                         taskSource.TrySetException(ex);
                     }
@@ -131,11 +149,8 @@ namespace NetworkSocket.WebSocket.Fast
                     taskSource.TrySetException(exception);
                 }
             };
-            var taskSetAction = new TaskSetAction(setAction);
-            taskSetActionTable.Add(packet.id, taskSetAction);
 
-            this.SendText(packetJson);
-            return taskSource.Task;
+            return setAction;
         }
     }
 }

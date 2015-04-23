@@ -228,10 +228,10 @@ namespace NetworkSocket.WebSocket.Fast
         /// <summary>
         /// 处理远返回的程异常
         /// </summary>
-        /// <param name="requestContext">请求上下文</param>
+        /// <param name="requestContext">请求上下文</param>     
         private void ProcessRemoteException(RequestContext requestContext)
         {
-            var remoteException = FastWebSocketCommon.SetApiActionTaskException(this.JsonSerializer, this.taskSetActionTable, requestContext);
+            var remoteException = FastWebSocketCommon.SetApiActionTaskException(this.taskSetActionTable, requestContext);
             if (remoteException == null)
             {
                 return;

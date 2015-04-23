@@ -53,8 +53,9 @@ namespace NetworkSocket.Fast
         /// </summary>        
         /// <param name="api">数据包Api名</param>
         /// <param name="parameters">参数列表</param>  
-        ///  <exception cref="ArgumentException"></exception>
-        /// <exception cref="SocketException"></exception>        
+        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="SocketException"></exception>     
+        /// <exception cref="SerializerException"></exception>
         /// <returns></returns>         
         public Task InvokeApi(string api, params object[] parameters)
         {
@@ -78,6 +79,7 @@ namespace NetworkSocket.Fast
         /// <exception cref="SocketException"></exception> 
         /// <exception cref="RemoteException"></exception>
         /// <exception cref="TimeoutException"></exception>
+        /// <exception cref="SerializerException"></exception>
         /// <returns>远程数据任务</returns>         
         public Task<T> InvokeApi<T>(string api, params object[] parameters)
         {

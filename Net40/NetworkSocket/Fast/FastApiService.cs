@@ -73,7 +73,7 @@ namespace NetworkSocket.Fast
         private void ProcessExecutingException(ActionContext actionContext, IEnumerable<IFilter> actionfilters, Exception exception)
         {
             var exceptionContext = new ExceptionContext(actionContext, new ApiExecuteException(actionContext, exception));
-            FastTcpCommon.SetRemoteException(actionContext.Session, actionContext.Session.Serializer, exceptionContext);
+            FastTcpCommon.SetRemoteException(actionContext.Session, exceptionContext);
             this.ExecExceptionFilters(actionfilters, exceptionContext);
 
             if (exceptionContext.ExceptionHandled == false)

@@ -16,6 +16,7 @@ namespace NetworkSocket.WebSocket.Fast
         /// 序列化为Json
         /// </summary>
         /// <param name="model">实体</param>
+        /// <exception cref="SerializerException"></exception>
         /// <returns></returns>
         public string Serialize(object model)
         {
@@ -24,8 +25,15 @@ namespace NetworkSocket.WebSocket.Fast
                 return null;
             }
 
-            var serializer = new JavaScriptSerializer();
-            return serializer.Serialize(model);
-        }        
+            try
+            {
+                var serializer = new JavaScriptSerializer();
+                return serializer.Serialize(model);
+            }
+            catch (Exception ex)
+            {
+                throw new SerializerException(ex);
+            }
+        }
     }
 }

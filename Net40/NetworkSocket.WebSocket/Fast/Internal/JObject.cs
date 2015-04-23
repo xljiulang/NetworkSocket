@@ -160,12 +160,30 @@ namespace NetworkSocket.WebSocket.Fast
             return serializer.Deserialize(json, typeof(object));
         }
 
+        /// <summary>
+        /// 尝试将解析出来的动态值转换为目标类型
+        /// </summary>
+        /// <typeparam name="T">目标类型</typeparam>
+        /// <param name="value">值</param>
+        /// <returns></returns>
+        public static object TryCast<T>(object value)
+        {
+            try
+            {
+                return JObject.Cast<T>(value);
+            }
+            catch (Exception)
+            {
+                return default(T);
+            }
+        }
 
         /// <summary>
         /// 将解析出来的动态值转换为目标类型
         /// </summary>
         /// <typeparam name="T">目标类型</typeparam>
         /// <param name="value">动态值</param>
+        /// <exception cref="SerializerException"></exception>
         /// <returns></returns>
         public static T Cast<T>(object value)
         {
@@ -178,6 +196,7 @@ namespace NetworkSocket.WebSocket.Fast
         /// <param name="value">动态值</param>
         /// <param name="targetType">目标类型</param>
         /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="SerializerException"></exception>
         /// <returns></returns>
         public static object Cast(object value, Type targetType)
         {
@@ -205,6 +224,24 @@ namespace NetworkSocket.WebSocket.Fast
                 return value;
             }
 
+            try
+            {
+                return JObject.CastByJavaScriptSerializer(value, targetType);
+            }
+            catch (Exception ex)
+            {
+                throw new SerializerException(ex);
+            }
+        }
+
+        /// <summary>
+        /// 调用JavaScriptSerializer进行类型转换
+        /// </summary>
+        /// <param name="value">动态值</param>
+        /// <param name="targetType">目标类型</param>     
+        /// <returns></returns>
+        private static object CastByJavaScriptSerializer(object value, Type targetType)
+        {
             var serializer = new JavaScriptSerializer();
             var jObjectValue = value as JObject;
 
@@ -223,7 +260,6 @@ namespace NetworkSocket.WebSocket.Fast
             }
             return serializer.ConvertToType(value, targetType);
         }
-
 
         /// <summary>
         /// 获取迭代器

@@ -16,6 +16,7 @@ namespace NetworkSocket.Fast
         /// 序列化为二进制
         /// </summary>
         /// <param name="model">实体</param>
+        /// <exception cref="SerializerException"></exception>
         /// <returns></returns>
         public byte[] Serialize(object model)
         {
@@ -24,9 +25,16 @@ namespace NetworkSocket.Fast
                 return null;
             }
 
-            var serializer = new JavaScriptSerializer();
-            var json = serializer.Serialize(model);
-            return Encoding.UTF8.GetBytes(json);
+            try
+            {
+                var serializer = new JavaScriptSerializer();
+                var json = serializer.Serialize(model);
+                return Encoding.UTF8.GetBytes(json);
+            }
+            catch (Exception ex)
+            {
+                throw new NetworkSocket.Fast.SerializerException(ex);
+            }
         }
 
         /// <summary>
@@ -34,6 +42,7 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="bytes">数据</param>
         /// <param name="type">实体类型</param>
+        /// <exception cref="SerializerException"></exception>
         /// <returns></returns>
         public object Deserialize(byte[] bytes, Type type)
         {
@@ -42,11 +51,18 @@ namespace NetworkSocket.Fast
                 return null;
             }
 
-            var json = Encoding.UTF8.GetString(bytes);
-            var serializer = new JavaScriptSerializer();
-            return serializer.Deserialize(json, type);
+            try
+            {
+                var json = Encoding.UTF8.GetString(bytes);
+                var serializer = new JavaScriptSerializer();
+                return serializer.Deserialize(json, type);
+            }
+            catch (Exception ex)
+            {
+                throw new NetworkSocket.Fast.SerializerException(ex);
+            }
         }
-    
+
         /// <summary>
         /// 字符串显示
         /// </summary>

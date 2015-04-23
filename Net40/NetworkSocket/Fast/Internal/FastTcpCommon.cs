@@ -45,12 +45,11 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 设置Api行为返回的任务异常 
         /// 设置失败则返远程异常对象
-        /// </summary>          
-        /// <param name="serializer">序列化工具</param>
+        /// </summary>
         /// <param name="taskSetActionTable">任务行为表</param>
         /// <param name="requestContext">请求上下文</param>
         /// <returns></returns>
-        public static RemoteException SetApiActionTaskException(ISerializer serializer, TaskSetActionTable taskSetActionTable, RequestContext requestContext)
+        public static RemoteException SetApiActionTaskException(TaskSetActionTable taskSetActionTable, RequestContext requestContext)
         {
             var exceptionBytes = requestContext.Packet.Body;
             var taskSetAction = taskSetActionTable.Take(requestContext.Packet.Id);
@@ -61,18 +60,17 @@ namespace NetworkSocket.Fast
                 return null;
             }
 
-            var message = (string)serializer.Deserialize(exceptionBytes, typeof(string));
+            var message = Encoding.UTF8.GetString(exceptionBytes);
             return new RemoteException(message);
         }
 
         /// <summary>       
         /// 设置远程异常
         /// </summary>
-        /// <param name="session">会话对象</param>
-        /// <param name="serializer">序列化工具</param>
-        /// <param name="exceptionContext">上下文</param> 
+        /// <param name="session">会话对象</param>       
+        /// <param name="exceptionContext">上下文</param>  
         /// <returns></returns>
-        public static bool SetRemoteException(ISession session, ISerializer serializer, ExceptionContext exceptionContext)
+        public static bool SetRemoteException(ISession session, ExceptionContext exceptionContext)
         {
             var packet = exceptionContext.Packet;
             packet.IsException = true;
@@ -96,6 +94,7 @@ namespace NetworkSocket.Fast
         /// <exception cref="SocketException"></exception> 
         /// <exception cref="RemoteException"></exception>
         /// <exception cref="TimeoutException"></exception>
+        /// <exception cref="SerializerException"></exception>
         /// <returns></returns>
         public static Task<T> InvokeApi<T>(ISession session, TaskSetActionTable taskSetActionTable, ISerializer serializer, string api, long id, bool fromClient, params object[] parameters)
         {
@@ -104,11 +103,41 @@ namespace NetworkSocket.Fast
             packet.SetBodyParameters(serializer, parameters);
 
             // 登记TaskSetAction           
+            var setAction = FastTcpCommon.NewSetAction<T>(taskSource, serializer);
+            var taskSetAction = new TaskSetAction(setAction);
+            taskSetActionTable.Add(packet.Id, taskSetAction);
+
+            session.Send(packet.ToBytes());
+            return taskSource.Task;
+        }
+
+        /// <summary>
+        /// 创建新的SetAction
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="taskSource">任务源</param>       
+        /// <param name="serializer">序列化工具</param>      
+        /// <returns></returns>
+        private static Action<SetTypes, byte[]> NewSetAction<T>(TaskCompletionSource<T> taskSource, ISerializer serializer)
+        {
             Action<SetTypes, byte[]> setAction = (setType, bytes) =>
             {
                 if (setType == SetTypes.SetReturnReult)
                 {
-                    TrySetResult<T>(taskSource, bytes, serializer);
+                    if (bytes == null || bytes.Length == 0)
+                    {
+                        taskSource.TrySetResult(default(T));
+                        return;
+                    }
+                    try
+                    {
+                        var result = (T)serializer.Deserialize(bytes, typeof(T));
+                        taskSource.TrySetResult(result);
+                    }
+                    catch (SerializerException ex)
+                    {
+                        taskSource.TrySetException(ex);
+                    }
                 }
                 else if (setType == SetTypes.SetReturnException)
                 {
@@ -127,37 +156,7 @@ namespace NetworkSocket.Fast
                     taskSource.TrySetException(exception);
                 }
             };
-            var taskSetAction = new TaskSetAction(setAction);
-            taskSetActionTable.Add(packet.Id, taskSetAction);
-
-            session.Send(packet.ToBytes());
-            return taskSource.Task;
-        }
-
-        /// <summary>
-        /// 尝试设置结果值
-        /// </summary>
-        /// <typeparam name="T">结果类型</typeparam>
-        /// <param name="taskSource">任务源</param>
-        /// <param name="bytes">数据</param>
-        /// <param name="serializer">序列化工具</param>
-        private static void TrySetResult<T>(TaskCompletionSource<T> taskSource, byte[] bytes, ISerializer serializer)
-        {
-            if (bytes == null || bytes.Length == 0)
-            {
-                taskSource.TrySetResult(default(T));
-                return;
-            }
-
-            try
-            {
-                var result = (T)serializer.Deserialize(bytes, typeof(T));
-                taskSource.TrySetResult(result);
-            }
-            catch (Exception ex)
-            {
-                taskSource.TrySetException(ex);
-            }
+            return setAction;
         }
 
 
@@ -166,6 +165,7 @@ namespace NetworkSocket.Fast
         /// </summary>        
         /// <param name="serializer">序列化工具</param>
         /// <param name="context">上下文</param> 
+        /// <exception cref="SerializerException"></exception>
         /// <returns></returns>
         public static object[] GetApiActionParameters(ISerializer serializer, ActionContext context)
         {

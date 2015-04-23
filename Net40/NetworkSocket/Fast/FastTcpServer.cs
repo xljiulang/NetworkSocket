@@ -216,7 +216,7 @@ namespace NetworkSocket.Fast
         /// <param name="requestContext">请求上下文</param>
         private void ProcessRemoteException(RequestContext requestContext)
         {
-            var remoteException = FastTcpCommon.SetApiActionTaskException(this.Serializer, this.taskSetActionTable, requestContext);
+            var remoteException = FastTcpCommon.SetApiActionTaskException(this.taskSetActionTable, requestContext);
             if (remoteException == null)
             {
                 return;
@@ -277,7 +277,7 @@ namespace NetworkSocket.Fast
             var exception = new ApiNotExistException(requestContext.Packet.ApiName);
             var exceptionContext = new ExceptionContext(requestContext, exception);
 
-            FastTcpCommon.SetRemoteException(requestContext.Session, requestContext.Session.Serializer, exceptionContext);
+            FastTcpCommon.SetRemoteException(requestContext.Session, exceptionContext);
             this.ExecExceptionFilters(exceptionContext);
 
             if (exceptionContext.ExceptionHandled == false)
@@ -304,7 +304,7 @@ namespace NetworkSocket.Fast
             var exception = new Exception(string.Format("无法获取类型{0}的实例", actionContext.Action.DeclaringService));
             var exceptionContext = new ExceptionContext(actionContext, exception);
 
-            FastTcpCommon.SetRemoteException(actionContext.Session, actionContext.Session.Serializer, exceptionContext);
+            FastTcpCommon.SetRemoteException(actionContext.Session, exceptionContext);
             this.ExecExceptionFilters(exceptionContext);
 
             if (exceptionContext.ExceptionHandled == false)
