@@ -13,11 +13,7 @@ namespace WebSocket
     class _Run
     {
         static void Main(string[] args)
-        {
-            ByteBits b1 = 6;
-            ByteBits b2 = 5;
-            var list = new List<ByteBits> { b1, b2 };
-            list.Sort();            
+        {                      
             var server = new Server();
             while (true)
             {
