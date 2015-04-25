@@ -86,7 +86,9 @@ function fastWebSocket(url) {
 
         try {
             var result = api.apply(this, packet.body);
-            setApiResult(packet, result);
+            if (result !== undefined) {
+                setApiResult(packet, result);
+            }
         } catch (ex) {
             setRemoteException(packet, ex.message);
         }
