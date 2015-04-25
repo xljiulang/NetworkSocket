@@ -20,21 +20,25 @@ namespace NetworkSocket
         /// <summary>
         /// socket
         /// </summary>
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private volatile Socket socket;
 
         /// <summary>
         /// socket同步锁
         /// </summary>
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private object socketRoot = new object();
 
         /// <summary>
         /// 是否已关闭
         /// </summary>
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private bool closed = true;
 
         /// <summary>
         /// 接收到的未处理数据
         /// </summary>
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private ReceiveBuffer recvBuffer = new ReceiveBuffer(Endians.Big);
 
         /// <summary>
@@ -76,6 +80,10 @@ namespace NetworkSocket
         /// </summary>
         public ITag TagData { get; private set; }
 
+        /// <summary>
+        /// 获取有外的状态信息
+        /// </summary>
+        public SessionExtraState ExtraState { get; private set; }
 
         /// <summary>
         /// 获取是否已连接到远程端
@@ -99,6 +107,7 @@ namespace NetworkSocket
             this.recvArg.Completed += new EventHandler<SocketAsyncEventArgs>(this.RecvCompleted);
             this.TagData = new TagData();
             this.TagBag = new TagBag((TagData)this.TagData);
+            this.ExtraState = new SessionExtraState();
 
             RecvArgBuffer.SetBuffer(this.recvArg);
         }
@@ -113,6 +122,7 @@ namespace NetworkSocket
             this.recvArg.SocketError = SocketError.Success;
             this.recvBuffer.Clear();
             this.TagData.Clear();
+            this.ExtraState.SetBinded();
             this.RemoteEndPoint = (IPEndPoint)socket.RemoteEndPoint;
             this.SetKeepAlive(socket);
             this.closed = false;
@@ -175,6 +185,8 @@ namespace NetworkSocket
                 return;
             }
 
+            this.ExtraState.SetRecved(arg.BytesTransferred);
+
             lock (this.recvBuffer.SyncRoot)
             {
                 this.recvBuffer.Add(arg.Buffer, arg.Offset, arg.BytesTransferred);
@@ -209,13 +221,15 @@ namespace NetworkSocket
             {
                 SendArgBag.Add(sendArg);
             }
+
+            this.ExtraState.SetSended(byteRange.Count);
         }
 
         /// <summary>
         /// 断开和远程端的连接             
         /// </summary>
         /// <returns></returns>
-        public virtual void Close()
+        public void Close()
         {
             lock (this.socketRoot)
             {

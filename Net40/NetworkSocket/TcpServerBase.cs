@@ -23,17 +23,22 @@ namespace NetworkSocket
         /// <summary>
         /// 服务socket
         /// </summary>
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private volatile Socket listenSocket;
 
         /// <summary>
         /// 请求参数
         /// </summary>
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private SocketAsyncEventArgs acceptArg = new SocketAsyncEventArgs();
 
         /// <summary>
         /// 空闲客户端池
         /// </summary>
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private SessionBag<T> sessionBag = new SessionBag<T>();
+
+
 
         /// <summary>
         /// 获取当前所有会话对象   
