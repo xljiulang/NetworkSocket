@@ -18,11 +18,11 @@ function fastWebSocket(url) {
 
     // 绑定给服务器来调用的api
     this.bindApi = function (name, func) {
-        selfApi[name] = func;
+        selfApi[name.toLowerCase()] = func;
     }
 
     function isFunction(func) {
-        return !!func && typeof func == "function";
+        return !!func && typeof func === "function";
     }
 
     // 调用服务器实现api，返回是否可以正常调用
@@ -31,7 +31,7 @@ function fastWebSocket(url) {
     // doneFunc：服务端返回api结果后触发的回调(可选)
     // exFunc：服务端返回异常信息后触发的回调(可选)    
     this.invkeApi = function (api, parameters, doneFunc, exFunc) {
-        if (this.connected == false) {
+        if (this.connected === false) {
             return false;
         }
 
@@ -50,7 +50,7 @@ function fastWebSocket(url) {
     function getCallback(id) {
         for (var i = 0; i < callbackTable.length; i++) {
             var item = callbackTable[i];
-            if (item.id == id) {
+            if (item.id === id) {
                 callbackTable.splice(i, 1);
                 return item.callback;
             }
@@ -78,7 +78,7 @@ function fastWebSocket(url) {
 
     // 调用自身实现的api
     function callApi(packet) {
-        var api = selfApi[packet.api];
+        var api = selfApi[packet.api.toLowerCase()];
         if (!isFunction(api)) {
             setRemoteException(packet, '请求的api不存在：' + api);
             return;

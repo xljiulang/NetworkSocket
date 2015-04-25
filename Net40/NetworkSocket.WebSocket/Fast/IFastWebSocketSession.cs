@@ -14,7 +14,7 @@ namespace NetworkSocket.WebSocket.Fast
         /// <summary>
         /// 调用远程端实现的服务方法        
         /// </summary>       
-        /// <param name="api">api(区分大小写)</param>
+        /// <param name="api">api</param>
         /// <param name="parameters">参数列表</param> 
         Task InvokeApi(string api, params object[] parameters);
 
@@ -23,7 +23,7 @@ namespace NetworkSocket.WebSocket.Fast
         /// 并返回结果数据任务
         /// </summary>
         /// <typeparam name="T">返回值类型</typeparam>        
-        /// <param name="api">api(区分大小写)</param>
+        /// <param name="api">api</param>
         /// <param name="parameters">参数</param>
         /// <returns>远程数据任务</returns>  
         Task<T> InvokeApi<T>(string api, params object[] parameters);
