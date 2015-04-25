@@ -34,8 +34,7 @@ namespace NetworkSocket
 
         /// <summary>
         /// 空闲客户端池
-        /// </summary>
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        /// </summary>        
         private SessionBag<T> sessionBag = new SessionBag<T>();
 
 

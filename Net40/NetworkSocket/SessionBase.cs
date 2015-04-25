@@ -19,8 +19,7 @@ namespace NetworkSocket
     {
         /// <summary>
         /// socket
-        /// </summary>
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        /// </summary>        
         private volatile Socket socket;
 
         /// <summary>
@@ -34,17 +33,17 @@ namespace NetworkSocket
         /// </summary>
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private bool closed = true;
-
-        /// <summary>
-        /// 接收到的未处理数据
-        /// </summary>
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private ReceiveBuffer recvBuffer = new ReceiveBuffer(Endians.Big);
-
+      
         /// <summary>
         /// 接收参数
         /// </summary>
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private SocketAsyncEventArgs recvArg = new SocketAsyncEventArgs();
+
+        /// <summary>
+        /// 接收到的未处理数据
+        /// </summary>      
+        private ReceiveBuffer recvBuffer = new ReceiveBuffer(Endians.Big);
 
 
         /// <summary>
@@ -190,8 +189,8 @@ namespace NetworkSocket
             lock (this.recvBuffer.SyncRoot)
             {
                 this.recvBuffer.Add(arg.Buffer, arg.Offset, arg.BytesTransferred);
+                this.ReceiveHandler(this.recvBuffer);
             }
-            this.ReceiveHandler(this.recvBuffer);
             // 重新进行一次接收
             this.BeginReceive();
         }
