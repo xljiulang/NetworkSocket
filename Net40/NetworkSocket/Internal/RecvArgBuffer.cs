@@ -19,22 +19,33 @@ namespace NetworkSocket
         /// <summary>
         /// 缓冲区块
         /// </summary>
-        private static List<byte[]> blockList = new List<byte[]>();
+        private static List<byte[]> bufferBlockList = new List<byte[]>();
 
         /// <summary>
-        /// 获取每项缓存区大小(8k)
+        /// 获取BufferBlock的Item的缓存区大小(8k)
         /// </summary>
-        public static readonly int BlockItemBufferSize = 8 * 1024;
+        public static readonly int ItemBufferSize = 8 * 1024;
 
         /// <summary>
-        /// 获取每块最大项数(1024项)     
+        /// 获取BufferBlock最大Item数(1024项)     
         /// </summary>
-        public static readonly int BlockItemMaxCount = 1024;
+        public static readonly int ItemMaxCount = 1024;
 
         /// <summary>
-        /// 获取当前块的项数
+        /// 获取当前BufferBlock的项数
         /// </summary>
-        public static int BlockItemCount { get; private set; }
+        public static int CurrentBufferBlockItemCount { get; private set; }
+
+        /// <summary>
+        /// 获取缓冲区内存块的数量 
+        /// </summary>
+        public static int BufferBlockCount
+        {
+            get
+            {
+                return bufferBlockList.Count;
+            }
+        }
 
 
         /// <summary>
@@ -45,20 +56,20 @@ namespace NetworkSocket
         {
             lock (RecvArgBuffer.syncRoot)
             {
-                if (RecvArgBuffer.BlockItemCount == RecvArgBuffer.BlockItemMaxCount)
+                if (RecvArgBuffer.CurrentBufferBlockItemCount == RecvArgBuffer.ItemMaxCount)
                 {
-                    RecvArgBuffer.BlockItemCount = 0;
+                    RecvArgBuffer.CurrentBufferBlockItemCount = 0;
                 }
 
-                if (RecvArgBuffer.BlockItemCount == 0)
+                if (RecvArgBuffer.CurrentBufferBlockItemCount == 0)
                 {
-                    var block = new byte[RecvArgBuffer.BlockItemBufferSize * RecvArgBuffer.BlockItemMaxCount];
-                    RecvArgBuffer.blockList.Add(block);
+                    var block = new byte[RecvArgBuffer.ItemBufferSize * RecvArgBuffer.ItemMaxCount];
+                    RecvArgBuffer.bufferBlockList.Add(block);
                 }
 
-                var offset = RecvArgBuffer.BlockItemCount * RecvArgBuffer.BlockItemBufferSize;
-                eventArg.SetBuffer(RecvArgBuffer.blockList[RecvArgBuffer.blockList.Count - 1], offset, RecvArgBuffer.BlockItemBufferSize);
-                RecvArgBuffer.BlockItemCount++;
+                var offset = RecvArgBuffer.CurrentBufferBlockItemCount * RecvArgBuffer.ItemBufferSize;
+                eventArg.SetBuffer(RecvArgBuffer.bufferBlockList[RecvArgBuffer.bufferBlockList.Count - 1], offset, RecvArgBuffer.ItemBufferSize);
+                RecvArgBuffer.CurrentBufferBlockItemCount++;
             }
         }
     }

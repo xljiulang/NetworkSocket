@@ -38,6 +38,11 @@ namespace NetworkSocket
                 return this.Port.GetHashCode() ^ this.OwerPid.GetHashCode();
             }
 
+            /// <summary>
+            /// 比较是否相等
+            /// </summary>
+            /// <param name="obj">目标对象</param>
+            /// <returns></returns>
             public override bool Equals(object obj)
             {
                 return obj != null && this.GetHashCode() == obj.GetHashCode();

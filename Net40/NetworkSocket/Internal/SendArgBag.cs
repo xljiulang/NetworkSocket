@@ -5,18 +5,35 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 
 namespace NetworkSocket
 {
     /// <summary>
-    /// SocketAsyncEventArgs无序集合
+    /// 用于发送的SocketAsyncEventArgs无序集合
     /// </summary>      
     internal static class SendArgBag
     {
         /// <summary>
-        /// 无序集合
+        /// SocketAsyncEventArgs无序集合
         /// </summary>
         private static readonly ConcurrentBag<SocketAsyncEventArgs> concurrentBag = new ConcurrentBag<SocketAsyncEventArgs>();
+
+        /// <summary>
+        /// 所有初始化过的数量
+        /// </summary>
+        private static int totalInitCount = 0;
+
+        /// <summary>
+        /// 获取所有初始化过的数量
+        /// </summary>
+        public static int TotalInitCount
+        {
+            get
+            {
+                return SendArgBag.totalInitCount;
+            }
+        }
 
         /// <summary>
         /// 元素数量
@@ -49,6 +66,7 @@ namespace NetworkSocket
             SocketAsyncEventArgs eventArg;
             if (concurrentBag.TryTake(out eventArg) == false)
             {
+                Interlocked.Increment(ref SendArgBag.totalInitCount);
                 eventArg = new SocketAsyncEventArgs();
                 eventArg.Completed += (sender, e) => SendArgBag.Add(e);
             }

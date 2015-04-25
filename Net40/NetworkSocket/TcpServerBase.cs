@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Linq;
+using System.Threading;
 
 
 namespace NetworkSocket
@@ -20,6 +21,11 @@ namespace NetworkSocket
     [DebuggerDisplay("IsListening = {IsListening}")]
     public abstract class TcpServerBase<T> : ITcpServer<T> where T : SessionBase
     {
+        /// <summary>
+        /// 所有会话的数量
+        /// </summary>
+        private int totalSessionCount;
+
         /// <summary>
         /// 服务socket
         /// </summary>
@@ -54,6 +60,10 @@ namespace NetworkSocket
         /// </summary>
         public bool IsListening { get; private set; }
 
+        /// <summary>
+        /// 获取额外信息
+        /// </summary>
+        public ServerExtraState ExtraState { get; private set; }
 
         /// <summary>
         /// Tcp服务端抽象类
@@ -61,6 +71,7 @@ namespace NetworkSocket
         public TcpServerBase()
         {
             this.AllSessions = new SessionCollection<T>();
+            this.ExtraState = new ServerExtraState(() => this.sessionBag.Count, () => this.totalSessionCount);
         }
 
         /// <summary>
@@ -124,7 +135,12 @@ namespace NetworkSocket
             if (arg.SocketError == SocketError.Success)
             {
                 // 从池中取出SocketAsync
-                var session = this.sessionBag.Take() ?? this.OnCreateSession();
+                var session = this.sessionBag.Take();
+                if (session == null)
+                {
+                    Interlocked.Increment(ref this.totalSessionCount);
+                    session = this.OnCreateSession();
+                }
 
                 // 绑定处理委托
                 session.ReceiveHandler = (buffer) => this.OnReceive(session, buffer);
