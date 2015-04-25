@@ -32,19 +32,11 @@ namespace NetworkSocket
         /// </summary>
         bool IsConnected { get; }
 
-
-        /// <summary>
-        /// 尝试异步发送数据
-        /// </summary>
-        /// <param name="bytes">数据</param>
-        /// <returns></returns>
-        bool TrySend(byte[] bytes);
-
         /// <summary>
         /// 异步发送数据
         /// </summary>
-        /// <param name="bytes">数据包</param>        
-        void Send(byte[] bytes);
+        /// <param name="byteRange">数据范围</param>  
+        void Send(ByteRange byteRange);
 
         /// <summary>      
         /// 断开和远程端的连接

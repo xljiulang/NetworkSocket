@@ -77,7 +77,7 @@ namespace NetworkSocket.Fast
             {
                 return;
             }
-            var builder = new ByteBuilder(Endians.Big, 8);
+            var builder = new ByteBuilder(Endians.Big);
             foreach (var item in parameters)
             {
                 // 序列化参数为二进制内容
@@ -121,10 +121,10 @@ namespace NetworkSocket.Fast
 
 
         /// <summary>
-        /// 转换为二进制数据
+        /// 转换为ByteRange
         /// </summary>
         /// <returns></returns>
-        public byte[] ToBytes()
+        public ByteRange ToByteRange()
         {
             var apiNameBytes = Encoding.UTF8.GetBytes(this.ApiName);
             var headLength = apiNameBytes.Length + 15;
@@ -132,7 +132,7 @@ namespace NetworkSocket.Fast
             this.ApiNameLength = (byte)apiNameBytes.Length;
             this.TotalBytes = this.Body == null ? headLength : headLength + this.Body.Length;
 
-            var builder = new ByteBuilder(Endians.Big, this.TotalBytes);
+            var builder = new ByteBuilder(Endians.Big);
             builder.Add(this.TotalBytes);
             builder.Add(this.ApiNameLength);
             builder.Add(apiNameBytes);
@@ -140,7 +140,7 @@ namespace NetworkSocket.Fast
             builder.Add(this.IsFromClient);
             builder.Add(this.IsException);
             builder.Add(this.Body);
-            return builder.ToArray();
+            return builder.ToByteRange();
         }
 
 
@@ -148,39 +148,39 @@ namespace NetworkSocket.Fast
         /// 解析一个数据包       
         /// 不足一个封包时返回null
         /// </summary>
-        /// <param name="builder">接收到的历史数据</param>
+        /// <param name="buffer">接收到的历史数据</param>
         /// <returns></returns>
-        public static FastPacket From(ByteBuilder builder)
+        public static FastPacket From(ReceiveBuffer buffer)
         {
-            if (builder.Length < 4)
+            if (buffer.Length < 4)
             {
                 return null;
             }
 
             // 包长
-            builder.Position = 0;
-            var totalBytes = builder.ReadInt32();
+            buffer.Position = 0;
+            var totalBytes = buffer.ReadInt32();
 
-            if (builder.Length < totalBytes)
+            if (buffer.Length < totalBytes)
             {
                 return null;
             }
 
             // api名称数据长度
-            var apiNameLength = builder.ReadByte();
+            var apiNameLength = buffer.ReadByte();
             // api名称数据
-            var apiNameBytes = builder.ReadArray(apiNameLength);
+            var apiNameBytes = buffer.ReadArray(apiNameLength);
             // 标识符
-            var id = builder.ReadInt64();
+            var id = buffer.ReadInt64();
             // 是否为客户端封包
-            var isFromClient = builder.ReadBoolean();
+            var isFromClient = buffer.ReadBoolean();
             // 是否异常
-            var isException = builder.ReadBoolean();
+            var isException = buffer.ReadBoolean();
             // 实体数据
-            var body = builder.ReadArray(totalBytes - builder.Position);
+            var body = buffer.ReadArray(totalBytes - buffer.Position);
 
             // 清空本条数据
-            builder.Clear(totalBytes);
+            buffer.Clear(totalBytes);
 
             var apiName = Encoding.UTF8.GetString(apiNameBytes);
             var packet = new FastPacket(apiName, id, isFromClient)

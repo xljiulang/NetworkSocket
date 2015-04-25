@@ -37,13 +37,21 @@ namespace NetworkSocket.Policies
         /// 接收到策略请求
         /// </summary>
         /// <param name="session">会话对象</param>
-        /// <param name="builder">数据</param>      
-        protected override void OnReceive(SessionBase session, ByteBuilder builder)
+        /// <param name="buffer">数据</param>      
+        protected override void OnReceive(SessionBase session, ReceiveBuffer buffer)
         {
-            string xml = "<cross-domain-policy><allow-access-from domain=\"*\" to-ports=\"*\"/></cross-domain-policy>\0";
-            // 需要把字符串转为Char[]
-            var bytes = Encoding.UTF8.GetBytes(xml.ToCharArray());
-            ((ISession)session).TrySend(bytes);
+            var xml = "<cross-domain-policy><allow-access-from domain=\"*\" to-ports=\"*\"/></cross-domain-policy>\0";
+            var bytes = Encoding.UTF8.GetBytes(xml.ToCharArray()); // 需要把字符串转为Char[]
+            var byteRange = new ByteRange(bytes);
+
+            try
+            {
+                session.Send(byteRange);
+            }
+            finally
+            {
+                session.Close();
+            }
         }
 
         /// <summary>

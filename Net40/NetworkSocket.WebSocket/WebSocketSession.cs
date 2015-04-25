@@ -15,12 +15,12 @@ namespace NetworkSocket.WebSocket
         /// 发送回复数据
         /// </summary>
         /// <exception cref="SocketException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>   
         /// <param name="response">回复内容</param>
         public void SendResponse(Response response)
         {
-            this.Send(response.ToBytes());
+            this.Send(response.ToByteRange());
         }
-
 
         /// <summary>
         /// 发送文本消息
@@ -46,51 +46,6 @@ namespace NetworkSocket.WebSocket
         }
 
 
-
-        /// <summary>
-        /// 尝试发送回复数据
-        /// </summary>        
-        /// <param name="response">回复内容</param>
-        public bool TrySendResponse(Response response)
-        {
-            return this.TrySend(response.ToBytes());
-        }
-
-        /// <summary>
-        /// 尝试发送文本消息
-        /// </summary>       
-        /// <param name="content">文本内容</param>
-        public bool TrySendText(string content)
-        {
-            try
-            {
-                this.SendText(content);
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// 尝试发送二进制数据
-        /// </summary>       
-        /// <param name="content">二进制数据</param>     
-        public bool TrySendBinary(byte[] content)
-        {
-            try
-            {
-                this.SendBinary(content);
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
-
-
         /// <summary>
         /// 正常关闭客户端
         /// </summary>       
@@ -113,10 +68,16 @@ namespace NetworkSocket.WebSocket
 
             Array.Copy(codeBytes, 0, content, 0, codeBytes.Length);
             Array.Copy(reasonBytes, 0, content, codeBytes.Length, reasonBytes.Length);
-
             var response = new FrameResponse(FrameCodes.Close, content);
-            this.TrySendResponse(response);
-            this.Close();
+
+            try
+            {
+                this.SendResponse(response);
+            }
+            finally
+            {
+                this.Close();
+            }
         }
     }
 }

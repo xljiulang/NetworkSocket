@@ -66,21 +66,36 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 当接收到远程端的数据时，将触发此方法
         /// </summary>
-        /// <param name="builder">接收到的历史数据</param>        
-        protected override void OnReceive(ByteBuilder builder)
+        /// <param name="buffer">接收到的历史数据</param>        
+        protected override void OnReceive(ReceiveBuffer buffer)
         {
-            FastPacket packet;
-            while ((packet = FastPacket.From(builder)) != null)
+            var packets = this.GetPacketsFromBuffer(buffer);
+            foreach (var packet in packets)
             {
-                this.OnRecvComplete(packet);
+                // 新线程处理业务内容
+                Task.Factory.StartNew(() => this.OnRecvPacket(packet));
             }
         }
 
         /// <summary>
-        /// 当接收到服务发来的数据包时，将触发此方法
+        /// 获取数据包
         /// </summary>
-        /// <param name="packet">接收到的数据类型</param>
-        private void OnRecvComplete(FastPacket packet)
+        /// <param name="buffer">接收到的历史数据</param>
+        /// <returns></returns>
+        private IEnumerable<FastPacket> GetPacketsFromBuffer(ReceiveBuffer buffer)
+        {
+            FastPacket packet;
+            while ((packet = FastPacket.From(buffer)) != null)
+            {
+                yield return packet;
+            }
+        }
+
+        /// <summary>
+        /// 接收到服务发来的数据包
+        /// </summary>
+        /// <param name="packet">数据包</param>
+        private void OnRecvPacket(FastPacket packet)
         {
             var requestContext = new RequestContext(null, packet, null);
             if (packet.IsException == false)
@@ -203,7 +218,7 @@ namespace NetworkSocket.Fast
             {
                 var returnByes = this.Serializer.Serialize(returnValue);
                 actionContext.Packet.Body = returnByes;
-                ((ISession)this).Send(actionContext.Packet.ToBytes());
+                this.Send(actionContext.Packet.ToByteRange());
             }
         }
 
@@ -251,7 +266,7 @@ namespace NetworkSocket.Fast
             {
                 var packet = new FastPacket(api, this.packetIdProvider.GetId(), true);
                 packet.SetBodyParameters(this.Serializer, parameters);
-                ((ISession)this).Send(packet.ToBytes());
+                this.Send(packet.ToByteRange());
             });
         }
 

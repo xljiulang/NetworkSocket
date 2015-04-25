@@ -3,110 +3,46 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace NetworkSocket
 {
     /// <summary>
-    /// 可变长byte集合 
-    /// 非线程安全类型
-    /// 多线程下请锁住自身的SyncRoot字段
+    /// 提供二进制数据生成支持      
+    /// 非线程安全类型  
     /// </summary>
-    [DebuggerDisplay("Position = {Position}, Length = {Length}, Capacity = {Capacity}, Endian = {Endian}")]
+    [DebuggerDisplay("Length = {Length}, Endian = {Endian}")]
     [DebuggerTypeProxy(typeof(DebugView))]
     public class ByteBuilder
     {
         /// <summary>
-        /// 当前所有所数据
+        /// 容量
         /// </summary>
-        private byte[] buffer;
+        private int _capacity;
 
         /// <summary>
-        /// 获取字节存储次序枚举
+        /// 当前数据
         /// </summary>
-        public Endians Endian { get; private set; }
+        private byte[] _buffer;
 
         /// <summary>
-        /// 获取容量
-        /// </summary>
-        public int Capacity { get; private set; }
-
-        /// <summary>
-        /// 获取有效数量长度
+        /// 获取数据长度
         /// </summary>
         public int Length { get; private set; }
 
         /// <summary>
-        /// 获取或设置指针位置
-        /// Read相关操作时变化
+        /// 获取字节存储次序
         /// </summary>
-        public int Position { get; set; }
-
-        /// <summary>
-        /// 获取同步锁
-        /// </summary>
-        public object SyncRoot { get; private set; }
+        public Endians Endian { get; private set; }
 
 
         /// <summary>
-        /// 可变长byte集合
-        /// 默认容量是1024byte，高位在前低位在后
+        /// 提供二进制数据读取和操作支持
         /// </summary>
-        public ByteBuilder()
-            : this(Endians.Big)
-        {
-        }
-
-        /// <summary>
-        /// 可变长byte集合
-        /// 默认容量是1024byte
-        /// </summary>
-        /// <param name="endian">字节存储次序</param>
+        /// <param name="endian">字节存储次序</param>       
         public ByteBuilder(Endians endian)
-            : this(endian, 1024)
         {
-        }
-
-        /// <summary>
-        /// 可变长byte集合
-        /// </summary>
-        /// <param name="endian">字节存储次序</param>
-        /// <param name="capacity">容量[乘2倍数增长]</param>  
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public ByteBuilder(Endians endian, int capacity)
-        {
-            if (capacity <= 0)
-            {
-                throw new ArgumentOutOfRangeException("capacity", "capacity必须大于0");
-            }
-            this.Capacity = capacity;
             this.Endian = endian;
-            this.buffer = new byte[capacity];
-            this.SyncRoot = new object();
-        }
-
-        /// <summary>
-        /// 可变长byte集合
-        /// </summary>
-        /// <param name="endian">字节存储次序</param>
-        /// <param name="buffer">数据源</param>
-        /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public ByteBuilder(Endians endian, byte[] buffer)
-        {
-            if (buffer == null)
-            {
-                throw new ArgumentNullException("source");
-            }
-            if (buffer.Length == 0)
-            {
-                throw new ArgumentOutOfRangeException("source", "source的长度必须大于0");
-            }
-
-            this.Endian = endian;
-            this.SyncRoot = new object();
-
-            this.Length = this.Capacity = buffer.Length;
-            this.buffer = buffer;
         }
 
         /// <summary>
@@ -188,103 +124,85 @@ namespace NetworkSocket
         }
 
         /// <summary>
-        /// 将指定数据源的数据添加到集合
+        /// 添加指定数据数组
         /// </summary>
-        /// <param name="value">数据源</param>
+        /// <param name="array">数组</param>
+        /// <exception cref="ArgumentNullException"></exception>
         /// <returns></returns>
-        public void Add(byte[] value)
+        public void Add(byte[] array)
         {
-            if (value == null || value.Length == 0)
+            if (array == null || array.Length == 0)
             {
                 return;
             }
-            this.Add(value, 0, value.Length);
+            this.Add(array, 0, array.Length);
         }
 
         /// <summary>
-        /// 将指定数据源的数据添加到集合
+        /// 添加指定数据数组
         /// </summary>
-        /// <param name="value">数据源</param>
-        /// <param name="index">数据源的起始位置</param>
-        /// <param name="length">复制的长度</param>
+        /// <param name="array">数组</param>
+        /// <param name="offset">数组的偏移量</param>
+        /// <param name="count">字节数</param>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public void Add(byte[] value, int index, int length)
+        public void Add(byte[] array, int offset, int count)
         {
-            if (value == null || value.Length == 0)
+            if (array == null || array.Length == 0)
             {
                 return;
             }
 
-            int newLength = this.Length + length;
-            if (newLength > this.Capacity)
+            if (offset < 0 || offset > array.Length)
             {
-                while (newLength > this.Capacity)
-                {
-                    this.Capacity = this.Capacity * 2;
-                }
-
-                byte[] newBuffer = new byte[this.Capacity];
-                Buffer.BlockCopy(this.buffer, 0, newBuffer, 0, this.buffer.Length);
-                this.buffer = newBuffer;
+                throw new ArgumentOutOfRangeException("offset", "offset值无效");
             }
-            Buffer.BlockCopy(value, index, this.buffer, this.Length, length);
+
+            if (count < 0 || (offset + count) > array.Length)
+            {
+                throw new ArgumentOutOfRangeException("count", "count值无效");
+            }
+            int newLength = this.Length + count;
+            this.ExpandCapacity(newLength);
+
+            Buffer.BlockCopy(array, offset, this._buffer, this.Length, count);
             this.Length = newLength;
         }
 
 
         /// <summary>
-        /// 从0位置将数据复制到指定数组
+        /// 扩容
         /// </summary>
-        /// <param name="destArray">目标数组</param>
-        /// <param name="index">目标数据索引</param>
-        /// <param name="length">复制长度</param>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public void CopyTo(byte[] destArray, int index, int length)
+        /// <param name="newLength">满足的新大小</param>
+        private void ExpandCapacity(int newLength)
         {
-            Buffer.BlockCopy(this.buffer, 0, destArray, index, length);
+            if (newLength <= this._capacity)
+            {
+                return;
+            }
+
+            if (this._capacity == 0)
+            {
+                this._capacity = 64;
+            }
+
+            while (newLength > this._capacity)
+            {
+                this._capacity = this._capacity * 2;
+            }
+
+            var newBuffer = new byte[this._capacity];
+            if (this.Length > 0)
+            {
+                Buffer.BlockCopy(this._buffer, 0, newBuffer, 0, this.Length);
+            }
+            this._buffer = newBuffer;
         }
 
-
-        /// <summary>
-        /// 从0位置将数据剪切到指定数组
-        /// </summary>
-        /// <param name="destArray">目标数组</param>
-        /// <param name="index">目标数据索引</param>
-        /// <param name="length">剪切长度</param>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public void CutTo(byte[] destArray, int index, int length)
-        {
-            this.CopyTo(destArray, index, length);
-            this.Clear(length);
-        }
-
-        /// <summary>
-        /// 返回指定位置的一个字节并转换为bool类型
-        /// </summary>
-        /// <param name="index">索引</param>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        /// <returns></returns>
-        public bool ToBoolean(int index)
-        {
-            return this.buffer[index] != 0;
-        }
-
-        /// <summary>
-        /// 返回一个字节并转换为bool类型
-        /// </summary>       
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        /// <returns></returns>
-        public bool ReadBoolean()
-        {
-            var value = this.ToBoolean(this.Position);
-            this.Position = this.Position + 1;
-            return value;
-        }
 
         /// <summary>
         /// 获取或设置指定位置的字节
         /// </summary>
-        /// <param name="index">索引位置</param>
+        /// <param name="index">索引</param>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <returns></returns>
         public byte this[int index]
@@ -295,7 +213,7 @@ namespace NetworkSocket
                 {
                     throw new ArgumentOutOfRangeException();
                 }
-                return this.buffer[index];
+                return this._buffer[index];
             }
             set
             {
@@ -303,241 +221,67 @@ namespace NetworkSocket
                 {
                     throw new ArgumentOutOfRangeException();
                 }
-                this.buffer[index] = value;
+                this._buffer[index] = value;
             }
         }
 
         /// <summary>
-        /// 返回一个字节
-        /// </summary>      
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        /// <returns></returns>
-        public byte ReadByte()
-        {
-            var value = this[this.Position];
-            this.Position = this.Position + 1;
-            return value;
-        }
-
-        /// <summary>
-        /// 读取指定位置2个字节，返回其Int16表示类型
+        /// 将指定长度的数据复制到目标数组
         /// </summary>
-        /// <param name="index">字节所在索引</param>   
+        /// <param name="detArray">目标数组</param>     
+        /// <param name="count">要复制的字节数</param>
+        /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        /// <returns></returns>
-        public short ToInt16(int index)
+        public void CopyTo(byte[] detArray, int count)
         {
-            return ByteConverter.ToInt16(this.buffer, index, this.Endian);
+            this.CopyTo(detArray, 0, count);
         }
 
         /// <summary>
-        /// 读取2个字节，返回其Int16表示类型
-        /// </summary>     
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        /// <returns></returns>
-        public short ReadInt16()
-        {
-            var value = this.ToInt16(this.Position);
-            this.Position = this.Position + 2;
-            return value;
-        }
-
-        /// <summary>
-        /// 读取指定位置2个字节，返回其UInt16表示类型
+        /// 将指定长度的数据复制到目标数组
         /// </summary>
-        /// <param name="index">字节所在索引</param> 
+        /// <param name="destArray">目标数组</param>
+        /// <param name="dstOffset">目标数组偏移量</param>
+        /// <param name="count">要复制的字节数</param>
+        /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        /// <returns></returns>
-        public uint ToUInt16(int index)
+        public void CopyTo(byte[] destArray, int dstOffset, int count)
         {
-            return ByteConverter.ToUInt16(this.buffer, index, this.Endian);
+            this.CopyTo(0, destArray, dstOffset, count);
         }
 
         /// <summary>
-        /// 读取2个字节，返回其UInt16表示类型
-        /// </summary>      
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        /// <returns></returns>
-        public uint ReadUInt16()
-        {
-            var value = this.ToUInt16(this.Position);
-            this.Position = this.Position + 2;
-            return value;
-        }
-
-        /// <summary>
-        /// 读取指定位置4个字节，返回其Int32表示类型
+        /// 从指定偏移位置将数据复制到目标数组
         /// </summary>
-        /// <param name="index">字节所在索引</param>  
+        /// <param name="srcOffset">偏移量</param>
+        /// <param name="dstArray">目标数组</param>
+        /// <param name="dstOffset">目标数组偏移量</param>
+        /// <param name="count">要复制的字节数</param>
+        /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        /// <returns></returns>
-        public int ToInt32(int index)
+        public void CopyTo(int srcOffset, byte[] dstArray, int dstOffset, int count)
         {
-            return ByteConverter.ToInt32(this.buffer, index, this.Endian);
-        }
+            Buffer.BlockCopy(this._buffer, srcOffset, dstArray, dstOffset, count);
+        }             
 
         /// <summary>
-        /// 读取4个字节，返回其Int32表示类型
-        /// </summary>          
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        /// <returns></returns>
-        public int ReadInt32()
-        {
-            var value = this.ToInt32(this.Position);
-            this.Position = this.Position + 4;
-            return value;
-        }
-
-        /// <summary>
-        /// 读取指定位置4个字节，返回其UInt32表示类型
-        /// </summary>
-        /// <param name="index">字节所在索引</param>   
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        /// <returns></returns>
-        public uint ToUInt32(int index)
-        {
-            return ByteConverter.ToUInt32(this.buffer, index, this.Endian);
-        }
-
-        /// <summary>
-        /// 读取4个字节，返回其UInt32表示类型
-        /// </summary>     
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        /// <returns></returns>
-        public uint ReadUInt32()
-        {
-            var value = this.ToUInt32(this.Position);
-            this.Position = this.Position + 4;
-            return value;
-        }
-
-        /// <summary>
-        /// 读取指定位置8个字节，返回其Int64表示类型
-        /// </summary>
-        /// <param name="index">字节所在索引</param>   
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        /// <returns></returns>
-        public long ToInt64(int index)
-        {
-            return ByteConverter.ToInt64(this.buffer, index, this.Endian);
-        }
-
-        /// <summary>
-        /// 读取8个字节，返回其Int64表示类型
-        /// </summary>         
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        /// <returns></returns>
-        public long ReadInt64()
-        {
-            var value = this.ToInt64(this.Position);
-            this.Position = this.Position + 8;
-            return value;
-        }
-
-        /// <summary>
-        /// 读取指定位置8个字节，返回其UInt64表示类型
-        /// </summary>
-        /// <param name="index">字节所在索引</param>    
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        /// <returns></returns>
-        public ulong ToUInt64(int index)
-        {
-            return ByteConverter.ToUInt64(this.buffer, index, this.Endian);
-        }
-
-        /// <summary>
-        /// 读取8个字节，返回其UInt64表示类型
-        /// </summary>        
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        /// <returns></returns>
-        public ulong ReadUInt64()
-        {
-            var value = this.ToUInt64(this.Position);
-            this.Position = this.Position + 8;
-            return value;
-        }
-
-
-        /// <summary>
-        /// 读取有效数据
-        /// </summary>
-        /// <returns></returns>
-        public byte[] ReadArray()
-        {
-            return this.ReadArray(this.Length - this.Position);
-        }
-
-        /// <summary>
-        /// 读取有效数据
-        /// </summary>
-        /// <param name="length">读取长度</param>
-        /// <returns></returns>
-        public byte[] ReadArray(int length)
-        {
-            var value = this.ToArray(this.Position, length);
-            this.Position = this.Position + length;
-            return value;
-        }
-
-        /// <summary>
-        /// 返回有效的数据
-        /// 数据全部有效则返回原始数据
+        /// 转换为byte数组
         /// </summary>
         /// <returns></returns>
         public byte[] ToArray()
         {
-            return this.ToArray(0, this.Length);
+            var array = new byte[this.Length];
+            this.CopyTo(array, array.Length);
+            return array;
         }
 
         /// <summary>
-        /// 返回指定长度的数据
-        /// </summary>
-        /// <param name="index">索引</param>        
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        /// <returns></returns>
-        public byte[] ToArray(int index)
+        /// 转换为ByteRange类型
+        /// </summary>      
+        /// <returns></returns>        
+        public ByteRange ToByteRange()
         {
-            return this.ToArray(index, this.Length - index);
-        }
-
-        /// <summary>
-        /// 返回指定长度的数据
-        /// </summary>
-        /// <param name="index">索引</param>
-        /// <param name="length">长度</param>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        /// <returns></returns>
-        public byte[] ToArray(int index, int length)
-        {
-            if (index == 0 && length == this.Capacity)
-            {
-                return this.buffer;
-            }
-            var bytes = new byte[length];
-            Buffer.BlockCopy(this.buffer, index, bytes, 0, length);
-            return bytes;
-        }
-
-        /// <summary>
-        /// 清空数据 
-        /// 容量不受到影响
-        /// </summary>
-        /// <returns></returns>
-        public void Clear()
-        {
-            this.Position = 0;
-            this.Length = 0;
-        }
-
-        /// <summary>
-        /// 从0位置删除指定长度的字节
-        /// </summary>
-        /// <param name="length">长度</param>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public void Clear(int length)
-        {
-            this.Length = this.Length - length;
-            Buffer.BlockCopy(this.buffer, length, this.buffer, 0, this.Length);
+            return new ByteRange(this._buffer, 0, this.Length);
         }
 
         /// <summary>
@@ -567,7 +311,9 @@ namespace NetworkSocket
             {
                 get
                 {
-                    return this.buidler.ToArray();
+                    var array = new byte[buidler.Length];
+                    buidler.CopyTo(array, buidler.Length);
+                    return array;
                 }
             }
         }

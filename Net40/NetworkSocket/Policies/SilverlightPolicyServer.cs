@@ -37,8 +37,8 @@ namespace NetworkSocket.Policies
         /// 接收到策略请求
         /// </summary>
         /// <param name="session">会话对象</param>
-        /// <param name="builder">数据</param>      
-        protected override void OnReceive(SessionBase session, ByteBuilder builder)
+        /// <param name="buffer">数据</param>      
+        protected override void OnReceive(SessionBase session, ReceiveBuffer buffer)
         {
             var xml = new StringBuilder();
             xml.AppendLine("<?xml version=\"1.0\" encoding=\"utf-8\" ?>");
@@ -56,9 +56,16 @@ namespace NetworkSocket.Policies
             xml.AppendLine("</access-policy>");
 
             var bytes = Encoding.UTF8.GetBytes(xml.ToString());
-            ((ISession)session).TrySend(bytes);
-            // 一定要关闭才生效
-            session.Close();
+            var byteRange = new ByteRange(bytes);
+
+            try
+            {
+                session.Send(byteRange);
+            }
+            finally
+            {
+                session.Close();
+            }
         }
 
         /// <summary>

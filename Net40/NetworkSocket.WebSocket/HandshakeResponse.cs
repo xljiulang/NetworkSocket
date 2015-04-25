@@ -47,7 +47,7 @@ namespace NetworkSocket.WebSocket
         /// 转换为二进制数据
         /// </summary>
         /// <returns></returns>
-        public override byte[] ToBytes()
+        public override ByteRange ToByteRange()
         {
             var builder = new StringBuilder();
             builder.AppendLine("HTTP/1.1 101 Switching Protocols");
@@ -56,7 +56,7 @@ namespace NetworkSocket.WebSocket
             builder.AppendLine("Sec-WebSocket-Accept: " + this.CreateResponseKey());
             builder.AppendLine("Server: NetworkSocket.WebSocket");
             builder.AppendLine();
-            return Encoding.UTF8.GetBytes(builder.ToString());
+            return new ByteRange(Encoding.UTF8.GetBytes(builder.ToString()));
         }
     }
 }

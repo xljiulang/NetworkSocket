@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace NetworkSocket.WebSocket
 {
@@ -19,61 +20,89 @@ namespace NetworkSocket.WebSocket
         /// 当接收到会话对象的数据时，将触发此方法  
         /// </summary>
         /// <param name="session">会话对象</param>
-        /// <param name="builder">接收到的历史数据</param>   
-        protected override void OnReceive(T session, ByteBuilder builder)
+        /// <param name="buffer">接收到的历史数据</param>   
+        protected override void OnReceive(T session, ReceiveBuffer buffer)
         {
             var handshaked = session.TagData.TryGet<bool>("HANDSHAKED");
             if (handshaked == false)
             {
-                // 是握手请求
-                if (this.ProcessHandshake(session, builder) == true)
-                {
-                    session.TagData.Set("HANDSHAKED", true);
-                }
-                return;
+                this.ProcessHandshake(session, buffer);
             }
-
-            FrameRequest request;
-            while ((request = FrameRequest.From(builder)) != null)
+            else
             {
-                this.OnRecvComplete(session, request);
+                this.ProcessRequest(session, buffer);
             }
         }
 
         /// <summary>
-        /// 处理握手
-        /// 通过则返回true
+        /// 处理握手        
         /// </summary>
         /// <param name="session">会话对象</param>
-        /// <param name="builder">接收到的数据</param>
-        private bool ProcessHandshake(T session, ByteBuilder builder)
+        /// <param name="buffer">接收到的数据</param>
+        private void ProcessHandshake(T session, ReceiveBuffer buffer)
         {
-            var request = HandshakeRequest.From(builder);
+            var request = HandshakeRequest.From(buffer);
             if (request == null)
             {
                 session.Close();
-                return false;
+                return;
             }
 
             if (this.OnHandshake(session, request) == false)
             {
                 session.Close();
-                return false;
+                return;
             }
 
-            // 握手成功
-            var response = new HandshakeResponse(request);
-            session.SendResponse(response);
-            return true;
+            // 握手成功          
+            try
+            {
+                var response = new HandshakeResponse(request);
+                session.SendResponse(response);
+            }
+            finally
+            {
+                session.TagData.Set("HANDSHAKED", true);
+            }
+        }
+
+        /// <summary>
+        /// 处理请求
+        /// </summary>
+        /// <param name="session">会话对象</param>
+        /// <param name="buffer">接收到的历史数据</param>
+        private void ProcessRequest(T session, ReceiveBuffer buffer)
+        {
+            var requests = this.GetFrameRequestsFromBuffer(buffer);
+            foreach (var request in requests)
+            {
+                // 新线程处理业务内容
+                Task.Factory.StartNew(() => this.OnRecvRequest(session, request));
+            }
         }
 
 
         /// <summary>
-        /// 当收到到数据包时，将触发此方法
+        /// 解析请求帧
+        /// </summary>
+        /// <param name="buffer">接收到的历史数据</param>
+        /// <returns></returns>
+        private IEnumerable<FrameRequest> GetFrameRequestsFromBuffer(ReceiveBuffer buffer)
+        {
+            FrameRequest request;
+            while ((request = FrameRequest.From(buffer)) != null)
+            {
+                yield return request;
+            }
+        }
+
+
+        /// <summary>
+        /// 收到到数据帧请求
         /// </summary>
         /// <param name="session">会话对象</param>
-        /// <param name="request">接收到的请求</param>
-        private void OnRecvComplete(T session, FrameRequest request)
+        /// <param name="request">数据帧</param>
+        private void OnRecvRequest(T session, FrameRequest request)
         {
             switch (request.Frame)
             {
@@ -98,8 +127,14 @@ namespace NetworkSocket.WebSocket
                     break;
 
                 case FrameCodes.Ping:
-                    session.SendResponse(new FrameResponse(FrameCodes.Pong, request.Content));
-                    this.OnPing(session, request.Content);
+                    try
+                    {
+                        session.SendResponse(new FrameResponse(FrameCodes.Pong, request.Content));
+                    }
+                    finally
+                    {
+                        this.OnPing(session, request.Content);
+                    }
                     break;
 
                 case FrameCodes.Pong:

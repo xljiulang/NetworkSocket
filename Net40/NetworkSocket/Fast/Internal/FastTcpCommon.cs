@@ -75,7 +75,15 @@ namespace NetworkSocket.Fast
             var packet = exceptionContext.Packet;
             packet.IsException = true;
             packet.Body = Encoding.UTF8.GetBytes(exceptionContext.Exception.Message);
-            return session.TrySend(packet.ToBytes());
+            try
+            {
+                session.Send(packet.ToByteRange());
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -89,8 +97,7 @@ namespace NetworkSocket.Fast
         /// <param name="api">api</param>
         /// <param name="id">标识符</param>
         /// <param name="fromClient">是否为客户端封包</param>
-        /// <param name="parameters">参数</param>
-        /// <exception cref="ArgumentException"></exception>
+        /// <param name="parameters">参数</param>      
         /// <exception cref="SocketException"></exception> 
         /// <exception cref="RemoteException"></exception>
         /// <exception cref="TimeoutException"></exception>
@@ -106,8 +113,7 @@ namespace NetworkSocket.Fast
             var setAction = FastTcpCommon.NewSetAction<T>(taskSource, serializer);
             var taskSetAction = new TaskSetAction(setAction);
             taskSetActionTable.Add(packet.Id, taskSetAction);
-
-            session.Send(packet.ToBytes());
+            session.Send(packet.ToByteRange());
             return taskSource.Task;
         }
 
@@ -129,6 +135,7 @@ namespace NetworkSocket.Fast
                         taskSource.TrySetResult(default(T));
                         return;
                     }
+
                     try
                     {
                         var result = (T)serializer.Deserialize(bytes, typeof(T));
@@ -138,10 +145,14 @@ namespace NetworkSocket.Fast
                     {
                         taskSource.TrySetException(ex);
                     }
+                    catch (Exception ex)
+                    {
+                        taskSource.TrySetException(new SerializerException(ex));
+                    }
                 }
                 else if (setType == SetTypes.SetReturnException)
                 {
-                    var message = Encoding.UTF8.GetString(bytes);
+                    var message = bytes == null ? string.Empty : Encoding.UTF8.GetString(bytes);
                     var exception = new RemoteException(message);
                     taskSource.TrySetException(exception);
                 }

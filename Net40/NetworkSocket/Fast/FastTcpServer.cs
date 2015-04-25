@@ -180,23 +180,38 @@ namespace NetworkSocket.Fast
         /// 当接收到会话对象的数据时，将触发此方法  
         /// </summary>
         /// <param name="session">会话对象</param>
-        /// <param name="builder">接收到的历史数据</param>
+        /// <param name="buffer">接收到的历史数据</param>
         /// <returns></returns>
-        protected override void OnReceive(FastSession session, ByteBuilder builder)
+        protected override void OnReceive(FastSession session, ReceiveBuffer buffer)
         {
-            FastPacket packet;
-            while ((packet = FastPacket.From(builder)) != null)
+            var packets = this.GetPacketsFromBuffer(buffer);
+            foreach (var packet in packets)
             {
-                this.OnRecvComplete(session, packet);
+                // 新线程处理业务内容
+                Task.Factory.StartNew(() => this.OnRecvPacket(session, packet));
             }
         }
 
         /// <summary>
-        /// 当接收到会话对象的数据包时
+        /// 获取数据包
+        /// </summary>
+        /// <param name="buffer">接收到的历史数据</param>
+        /// <returns></returns>
+        private IEnumerable<FastPacket> GetPacketsFromBuffer(ReceiveBuffer buffer)
+        {
+            FastPacket packet;
+            while ((packet = FastPacket.From(buffer)) != null)
+            {
+                yield return packet;
+            }
+        }
+
+        /// <summary>
+        /// 接收到会话对象的数据包
         /// </summary>
         /// <param name="session">会话对象</param>
-        /// <param name="packet">接收到的数据类型</param>
-        private void OnRecvComplete(FastSession session, FastPacket packet)
+        /// <param name="packet">数据包</param>
+        private void OnRecvPacket(FastSession session, FastPacket packet)
         {
             var requestContext = new RequestContext(session, packet, this.AllSessions);
 

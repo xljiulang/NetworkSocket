@@ -33,12 +33,12 @@ namespace NetworkSocket.WebSocket
         }
 
         /// <summary>
-        /// 转换为二进制数据
+        /// 转换为ByteRange
         /// </summary>
         /// <returns></returns>
-        public override byte[] ToBytes()
+        public override ByteRange ToByteRange()
         {
-            var builder = new ByteBuilder();
+            var builder = new ByteBuilder(Endians.Big);
 
             builder.Add((byte)((byte)this.Frame + 128));
 
@@ -57,7 +57,7 @@ namespace NetworkSocket.WebSocket
                 builder.Add((byte)this.Content.Length);
             }
             builder.Add(this.Content);
-            return builder.ToArray();
+            return builder.ToByteRange();
         }
     }
 }

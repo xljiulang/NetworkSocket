@@ -32,16 +32,6 @@ namespace NetworkSocket
             }
             this.tagData = tagData;
         }
-
-        /// <summary>
-        /// 获取成员名称
-        /// </summary>
-        /// <returns></returns>
-        public override IEnumerable<string> GetDynamicMemberNames()
-        {
-            return this.tagData.Keys;
-        }
-
         /// <summary>
         /// 获取成员的值
         /// </summary>

@@ -11,9 +11,9 @@ namespace NetworkSocket.WebSocket
     public abstract class Response
     {
         /// <summary>
-        /// 转换为二进制数据
+        /// 转换ByteArray类型
         /// </summary>
         /// <returns></returns>
-        public abstract byte[] ToBytes();
+        public abstract ByteRange ToByteRange();
     }
 }

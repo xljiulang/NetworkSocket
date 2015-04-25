@@ -74,8 +74,16 @@ namespace NetworkSocket.WebSocket.Fast
             packet.state = false;
             packet.body = exceptionContext.Exception.Message;
 
-            var json = serializer.Serialize(packet);
-            return exceptionContext.Session.TrySendText(json);
+            try
+            {
+                var json = serializer.Serialize(packet);
+                exceptionContext.Session.SendText(json);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         /// <summary>

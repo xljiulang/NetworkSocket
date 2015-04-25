@@ -78,12 +78,13 @@ namespace NetworkSocket.WebSocket
         /// <summary>
         /// 解析连接请求信息
         /// </summary>
-        /// <param name="builder">接收到的原始数量</param>
+        /// <param name="buffer">接收到的原始数量</param>
         /// <returns></returns>
-        public static HandshakeRequest From(ByteBuilder builder)
+        public static HandshakeRequest From(ReceiveBuffer buffer)
         {
-            var bytes = builder.ToArray();
-            builder.Clear();
+            buffer.Position = 0;
+            var bytes = buffer.ReadArray();
+            buffer.Clear();
             return HandshakeRequest.From(bytes, "ws");
         }
 

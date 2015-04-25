@@ -52,16 +52,16 @@ namespace NetworkSocket.WebSocket
         /// 解析请求的数据
         /// 返回请求数据包
         /// </summary>
-        /// <param name="builder">所有收到的数据</param>  
+        /// <param name="buffer">所有收到的数据</param>  
         /// <returns></returns>
-        public unsafe static FrameRequest From(ByteBuilder builder)
+        public unsafe static FrameRequest From(ReceiveBuffer buffer)
         {
-            if (builder.Length < 2)
+            if (buffer.Length < 2)
             {
                 return null;
             }
 
-            ByteBits byte0 = builder[0];
+            ByteBits byte0 = buffer[0];
             var fin = byte0[0];
             var frameCode = (FrameCodes)(byte)byte0.Take(4, 4);
 
@@ -71,7 +71,7 @@ namespace NetworkSocket.WebSocket
             }
 
             var rsv = byte0.Take(1, 3);
-            ByteBits byte1 = builder[1];
+            ByteBits byte1 = buffer[1];
             var mask = byte1[0];
 
             if (mask == false || Enum.IsDefined(typeof(FrameCodes), frameCode) == false || rsv != 0)
@@ -80,27 +80,27 @@ namespace NetworkSocket.WebSocket
             }
 
             var contentLength = (int)byte1.Take(1, 7);
-            builder.Position = 2;
+            buffer.Position = 2;
 
             if (contentLength == 127)
             {
-                contentLength = (int)builder.ReadUInt64();
+                contentLength = (int)buffer.ReadUInt64();
             }
             else if (contentLength == 126)
             {
-                contentLength = (int)builder.ReadUInt16();
+                contentLength = (int)buffer.ReadUInt16();
             }
 
-            var maskingKey = builder.ReadArray(4);
-            var packetLength = builder.Position + contentLength;
+            var maskingKey = buffer.ReadArray(4);
+            var packetLength = buffer.Position + contentLength;
 
-            if (builder.Length < packetLength)
+            if (buffer.Length < packetLength)
             {
                 return null;
             }
 
-            var content = builder.ReadArray(contentLength);
-            builder.Clear(packetLength);
+            var content = buffer.ReadArray(contentLength);
+            buffer.Clear(packetLength);
 
             if (contentLength > 0)
             {

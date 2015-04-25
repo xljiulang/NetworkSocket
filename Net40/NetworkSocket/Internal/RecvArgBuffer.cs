@@ -22,14 +22,14 @@ namespace NetworkSocket
         private static List<byte[]> blockList = new List<byte[]>();
 
         /// <summary>
-        /// 获取每项缓存区大小(1024byte)
+        /// 获取每项缓存区大小(8k)
         /// </summary>
-        public static readonly int BlockItemBufferSize = 1024;
+        public static readonly int BlockItemBufferSize = 8 * 1024;
 
         /// <summary>
-        /// 获取每块最大项数(1000项)     
+        /// 获取每块最大项数(1024项)     
         /// </summary>
-        public static readonly int BlockItemMaxCount = 1000;
+        public static readonly int BlockItemMaxCount = 1024;
 
         /// <summary>
         /// 获取当前块的项数

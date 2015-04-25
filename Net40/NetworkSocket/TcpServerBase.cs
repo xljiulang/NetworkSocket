@@ -123,7 +123,7 @@ namespace NetworkSocket
                 var session = this.sessionBag.Take() ?? this.OnCreateSession();
 
                 // 绑定处理委托
-                session.ReceiveHandler = (builder) => this.OnReceiveHandleWithTask(session, builder);
+                session.ReceiveHandler = (buffer) => this.OnReceive(session, buffer);
                 session.DisconnectHandler = () => this.RecyceSession(session);
                 session.CloseHandler = () => this.RecyceSession(session);
 
@@ -147,27 +147,13 @@ namespace NetworkSocket
         /// <returns></returns>
         protected abstract T OnCreateSession();
 
-
-        /// <summary>
-        /// 使用Task来处理OnReceive业务方法
-        /// 重写此方法，使用LimitedTask来代替系统默认的Task可以控制并发数
-        /// 例：myLimitedTask.Run(() => this.OnReceive(session, builder));
-        /// </summary>
-        /// <param name="session">会话对象</param>
-        /// <param name="builder">接收到的历史数据</param>
-        protected virtual void OnReceiveHandleWithTask(T session, ByteBuilder builder)
-        {
-            Task.Factory.StartNew(() => this.OnReceive(session, builder));
-        }
-
-
         /// <summary>
         /// 当接收到会话对象的数据时，将触发此方法             
         /// </summary>
         /// <param name="session">会话对象</param>
-        /// <param name="builder">接收到的历史数据</param>
+        /// <param name="buffer">接收到的历史数据</param>
         /// <returns></returns>
-        protected abstract void OnReceive(T session, ByteBuilder builder);
+        protected abstract void OnReceive(T session, ReceiveBuffer buffer);
 
         /// <summary>
         /// 回收复用会话对象

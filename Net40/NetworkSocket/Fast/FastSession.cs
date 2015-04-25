@@ -52,8 +52,7 @@ namespace NetworkSocket.Fast
         /// 调用远程端实现的Api        
         /// </summary>        
         /// <param name="api">数据包Api名</param>
-        /// <param name="parameters">参数列表</param>  
-        /// <exception cref="ArgumentException"></exception>
+        /// <param name="parameters">参数列表</param>      
         /// <exception cref="SocketException"></exception>     
         /// <exception cref="SerializerException"></exception>
         /// <returns></returns>         
@@ -64,7 +63,7 @@ namespace NetworkSocket.Fast
                 var id = this.packetIdProvider.GetId();
                 var packet = new FastPacket(api, id, false);
                 packet.SetBodyParameters(this.Serializer, parameters);
-                ((ISession)this).Send(packet.ToBytes());
+                this.Send(packet.ToByteRange());
             });
         }
 
@@ -74,8 +73,7 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <typeparam name="T">返回值类型</typeparam>        
         /// <param name="api">数据包Api名</param>
-        /// <param name="parameters">参数</param> 
-        /// <exception cref="ArgumentException"></exception>
+        /// <param name="parameters">参数</param>       
         /// <exception cref="SocketException"></exception> 
         /// <exception cref="RemoteException"></exception>
         /// <exception cref="TimeoutException"></exception>

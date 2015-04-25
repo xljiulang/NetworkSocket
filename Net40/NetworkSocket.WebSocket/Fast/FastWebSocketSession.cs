@@ -53,8 +53,7 @@ namespace NetworkSocket.WebSocket.Fast
         /// 调用远程端实现的服务方法        
         /// </summary>       
         /// <param name="api">api(区分大小写)</param>
-        /// <param name="parameters">参数列表</param>    
-        /// <exception cref="ArgumentException"></exception>
+        /// <param name="parameters">参数列表</param>  
         /// <exception cref="SocketException"></exception>      
         /// <exception cref="SerializerException"></exception>
         /// <returns></returns>
@@ -81,8 +80,7 @@ namespace NetworkSocket.WebSocket.Fast
         /// </summary>
         /// <typeparam name="T">返回值类型</typeparam>        
         /// <param name="api">api(区分大小写)</param>
-        /// <param name="parameters">参数</param>     
-        /// <exception cref="ArgumentException"></exception>
+        /// <param name="parameters">参数</param> 
         /// <exception cref="SocketException"></exception> 
         /// <exception cref="RemoteException"></exception>
         /// <exception cref="TimeoutException"></exception>
@@ -114,8 +112,7 @@ namespace NetworkSocket.WebSocket.Fast
         /// 创建新的SetAction
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="taskSource">任务源</param>
-        /// <exception cref="SerializerException"></exception>
+        /// <param name="taskSource">任务源</param>       
         /// <returns></returns>
         private Action<SetTypes, object> NewSetAction<T>(TaskCompletionSource<T> taskSource)
         {
@@ -131,6 +128,10 @@ namespace NetworkSocket.WebSocket.Fast
                     catch (SerializerException ex)
                     {
                         taskSource.TrySetException(ex);
+                    }
+                    catch (Exception ex)
+                    {
+                        taskSource.TrySetException(new SerializerException(ex));
                     }
                 }
                 else if (setType == SetTypes.SetReturnException)

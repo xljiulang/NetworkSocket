@@ -35,7 +35,7 @@ namespace NetworkSocket
         /// <summary>
         /// 接收到的未处理数据
         /// </summary>
-        private ByteBuilder recvBuilder = new ByteBuilder();
+        private ReceiveBuffer recvBuffer = new ReceiveBuffer(Endians.Big);
 
         /// <summary>
         /// 接收参数
@@ -46,7 +46,7 @@ namespace NetworkSocket
         /// <summary>
         /// 处理和分析收到的数据的委托
         /// </summary>
-        internal Action<ByteBuilder> ReceiveHandler;
+        internal Action<ReceiveBuffer> ReceiveHandler;
 
         /// <summary>
         /// 连接断开委托   
@@ -111,7 +111,7 @@ namespace NetworkSocket
         {
             this.socket = socket;
             this.recvArg.SocketError = SocketError.Success;
-            this.recvBuilder.Clear();
+            this.recvBuffer.Clear();
             this.TagData.Clear();
             this.RemoteEndPoint = (IPEndPoint)socket.RemoteEndPoint;
             this.SetKeepAlive(socket);
@@ -166,54 +166,35 @@ namespace NetworkSocket
         /// 接收到数据事件
         /// </summary>
         /// <param name="sender">事件源</param>
-        /// <param name="eventArg">参数</param>
-        private void RecvCompleted(object sender, SocketAsyncEventArgs eventArg)
+        /// <param name="arg">参数</param>
+        private void RecvCompleted(object sender, SocketAsyncEventArgs arg)
         {
-            if (eventArg.BytesTransferred == 0 || eventArg.SocketError != SocketError.Success)
+            if (arg.BytesTransferred == 0 || arg.SocketError != SocketError.Success)
             {
                 this.DisconnectHandler();
                 return;
             }
 
-            lock (this.recvBuilder.SyncRoot)
+            lock (this.recvBuffer.SyncRoot)
             {
-                this.recvBuilder.Add(eventArg.Buffer, eventArg.Offset, eventArg.BytesTransferred);
-                this.ReceiveHandler(this.recvBuilder);
+                this.recvBuffer.Add(arg.Buffer, arg.Offset, arg.BytesTransferred);
             }
-
+            this.ReceiveHandler(this.recvBuffer);
             // 重新进行一次接收
             this.BeginReceive();
         }
 
         /// <summary>
-        /// 尝试异步发送数据
-        /// </summary>
-        /// <param name="bytes">数据</param>
-        /// <returns></returns>
-        bool ISession.TrySend(byte[] bytes)
-        {
-            try
-            {
-                ((ISession)this).Send(bytes);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
         /// 异步发送数据
         /// </summary>
-        /// <param name="bytes">数据</param>
-        /// <exception cref="ArgumentNullException"></exception>
+        /// <param name="byteRange">数据范围</param>  
+        /// <exception cref="ArgumentNullException"></exception>        
         /// <exception cref="SocketException"></exception>
-        void ISession.Send(byte[] bytes)
+        public void Send(ByteRange byteRange)
         {
-            if (bytes == null)
+            if (byteRange == null)
             {
-                throw new ArgumentNullException("packet");
+                throw new ArgumentNullException();
             }
 
             if (this.IsConnected == false)
@@ -222,33 +203,12 @@ namespace NetworkSocket
             }
 
             var sendArg = SendArgBag.Take();
-            sendArg.SetBuffer(bytes, 0, bytes.Length);
+            sendArg.SetBuffer(byteRange.Buffer, byteRange.Offset, byteRange.Count);
 
             if (this.socket.SendAsync(sendArg) == false)
             {
                 SendArgBag.Add(sendArg);
             }
-        }
-
-        /// <summary>
-        /// 异步发送数据
-        /// </summary>
-        /// <param name="bytes">数据</param>
-        /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="SocketException"></exception>
-        protected void Send(byte[] bytes)
-        {
-            ((ISession)this).Send(bytes);
-        }
-
-        /// <summary>
-        /// 尝试异步发送数据
-        /// </summary>
-        /// <param name="bytes">数据</param>
-        /// <returns></returns>
-        protected bool TrySend(byte[] bytes)
-        {
-            return ((ISession)this).TrySend(bytes);
         }
 
         /// <summary>
@@ -330,7 +290,7 @@ namespace NetworkSocket
 
             if (disposing)
             {
-                this.recvBuilder = null;
+                this.recvBuffer = null;
                 this.recvArg = null;
                 this.socket = null;
                 this.socketRoot = null;

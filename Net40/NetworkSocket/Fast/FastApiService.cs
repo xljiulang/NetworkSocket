@@ -104,8 +104,8 @@ namespace NetworkSocket.Fast
             {
                 var returnBytes = actionContext.Session.Serializer.Serialize(returnValue);
                 actionContext.Packet.Body = returnBytes;
-                ISession session = actionContext.Session;
-                session.Send(actionContext.Packet.ToBytes());
+                var session = actionContext.Session;               
+                session.Send(actionContext.Packet.ToByteRange());
             }
         }
 

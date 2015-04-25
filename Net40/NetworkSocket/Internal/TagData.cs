@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -16,18 +17,7 @@ namespace NetworkSocket
         /// <summary>
         /// 原始数据字典
         /// </summary>
-        private Dictionary<string, object> dic = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-
-        /// <summary>
-        /// 获取所有key
-        /// </summary>
-        public IEnumerable<string> Keys
-        {
-            get
-            {
-                return this.dic.Keys;
-            }
-        }
+        private ConcurrentDictionary<string, object> dic = new ConcurrentDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// 所有键值
@@ -113,10 +103,8 @@ namespace NetworkSocket
         /// <param name="key">键(不区分大小写)</param>
         public void Remove(string key)
         {
-            if (this.IsExist(key))
-            {
-                this.dic.Remove(key);
-            }
+            object value;
+            this.dic.TryRemove(key, out value);
         }
 
         /// <summary>
