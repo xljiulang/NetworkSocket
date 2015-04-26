@@ -50,13 +50,19 @@ namespace NetworkSocket
         /// <returns></returns>
         T TryGet<T>(string key, T defaultValue);
 
+        /// <summary>
+        /// 尝试获取值
+        /// </summary>
+        /// <param name="key">键(不区分大小写)</param>
+        /// <param name="value">值</param>
+        /// <returns></returns>
+        bool TryGet(string key, out object value);
 
         /// <summary>
         /// 删除用户数据
         /// </summary>
         /// <param name="key">键(不区分大小写)</param>
-        void Remove(string key);
-
+        bool Remove(string key);
 
         /// <summary>
         /// 清除所有用户数据

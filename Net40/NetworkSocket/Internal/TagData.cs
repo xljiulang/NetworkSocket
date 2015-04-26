@@ -37,7 +37,7 @@ namespace NetworkSocket
         /// <param name="value">用户数据</param>
         public void Set(string key, object value)
         {
-            this.dic[key] = value;
+            this.dic.AddOrUpdate(key, value, (k, v) => value);
         }
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace NetworkSocket
         public object TryGet(string key)
         {
             object value;
-            this.dic.TryGetValue(key, out value);
+            this.TryGet(key, out value);
             return value;
         }
 
@@ -73,11 +73,19 @@ namespace NetworkSocket
         public T TryGet<T>(string key)
         {
             object value;
-            if (this.dic.TryGetValue(key, out value))
+            if (this.TryGet(key, out value) == false)
+            {
+                return default(T);
+            }
+
+            try
             {
                 return (T)value;
             }
-            return default(T);
+            catch (Exception)
+            {
+                return default(T);
+            }
         }
 
         /// <summary>
@@ -90,7 +98,7 @@ namespace NetworkSocket
         public T TryGet<T>(string key, T defaultValue)
         {
             object value;
-            if (this.dic.TryGetValue(key, out value))
+            if (this.TryGet(key, out value))
             {
                 return (T)value;
             }
@@ -98,13 +106,25 @@ namespace NetworkSocket
         }
 
         /// <summary>
+        /// 尝试获取值
+        /// </summary>
+        /// <param name="key">键</param>
+        /// <param name="value">值</param>
+        /// <returns></returns>
+        public bool TryGet(string key, out object value)
+        {
+            return this.dic.TryGetValue(key, out value);
+        }
+
+        /// <summary>
         /// 删除用户数据
         /// </summary>
         /// <param name="key">键(不区分大小写)</param>
-        public void Remove(string key)
+        /// <returns></returns>
+        public bool Remove(string key)
         {
             object value;
-            this.dic.TryRemove(key, out value);
+            return this.dic.TryRemove(key, out value);
         }
 
         /// <summary>
@@ -147,5 +167,6 @@ namespace NetworkSocket
                 }
             }
         }
+
     }
 }
