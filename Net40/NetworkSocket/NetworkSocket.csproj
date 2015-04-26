@@ -104,8 +104,6 @@
     <Compile Include="ITcpServer.cs" />
     <Compile Include="Internal\RecvArgBuffer.cs" />
     <Compile Include="Internal\SendArgBag.cs" />
-    <Compile Include="LimitedTask.cs" />
-    <Compile Include="Internal\LimitedTaskScheduler.cs" />
     <Compile Include="Policies\FlexPolicyServer.cs">
       <SubType>Code</SubType>
     </Compile>
