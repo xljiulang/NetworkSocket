@@ -54,17 +54,13 @@ namespace NetworkSocket.Fast
         /// <param name="api">数据包Api名</param>
         /// <param name="parameters">参数列表</param>      
         /// <exception cref="SocketException"></exception>     
-        /// <exception cref="SerializerException"></exception>
-        /// <returns></returns>         
-        public Task InvokeApi(string api, params object[] parameters)
+        /// <exception cref="SerializerException"></exception>          
+        public void InvokeApi(string api, params object[] parameters)
         {
-            return Task.Factory.StartNew(() =>
-            {
-                var id = this.packetIdProvider.GetId();
-                var packet = new FastPacket(api, id, false);
-                packet.SetBodyParameters(this.Serializer, parameters);
-                this.Send(packet.ToByteRange());
-            });
+            var id = this.packetIdProvider.GetId();
+            var packet = new FastPacket(api, id, false);
+            packet.SetBodyParameters(this.Serializer, parameters);
+            this.Send(packet.ToByteRange());
         }
 
         /// <summary>
@@ -74,9 +70,7 @@ namespace NetworkSocket.Fast
         /// <typeparam name="T">返回值类型</typeparam>        
         /// <param name="api">数据包Api名</param>
         /// <param name="parameters">参数</param>       
-        /// <exception cref="SocketException"></exception> 
-        /// <exception cref="RemoteException"></exception>
-        /// <exception cref="TimeoutException"></exception>
+        /// <exception cref="SocketException"></exception>      
         /// <exception cref="SerializerException"></exception>
         /// <returns>远程数据任务</returns>         
         public Task<T> InvokeApi<T>(string api, params object[] parameters)

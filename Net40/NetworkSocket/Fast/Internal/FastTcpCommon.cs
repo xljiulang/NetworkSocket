@@ -98,9 +98,7 @@ namespace NetworkSocket.Fast
         /// <param name="id">标识符</param>
         /// <param name="fromClient">是否为客户端封包</param>
         /// <param name="parameters">参数</param>      
-        /// <exception cref="SocketException"></exception> 
-        /// <exception cref="RemoteException"></exception>
-        /// <exception cref="TimeoutException"></exception>
+        /// <exception cref="SocketException"></exception>   
         /// <exception cref="SerializerException"></exception>
         /// <returns></returns>
         public static Task<T> InvokeApi<T>(ISession session, TaskSetActionTable taskSetActionTable, ISerializer serializer, string api, long id, bool fromClient, params object[] parameters)
@@ -113,6 +111,7 @@ namespace NetworkSocket.Fast
             var setAction = FastTcpCommon.NewSetAction<T>(taskSource, serializer);
             var taskSetAction = new TaskSetAction(setAction);
             taskSetActionTable.Add(packet.Id, taskSetAction);
+
             session.Send(packet.ToByteRange());
             return taskSource.Task;
         }

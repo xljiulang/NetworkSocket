@@ -15,9 +15,8 @@ namespace NetworkSocket.Fast
         /// 调用远程端实现的Api        
         /// </summary>        
         /// <param name="api">数据包Api名</param>
-        /// <param name="parameters">参数列表</param>           
-        /// <returns></returns>         
-        Task InvokeApi(string api, params object[] parameters);
+        /// <param name="parameters">参数列表</param> 
+        void InvokeApi(string api, params object[] parameters);
 
         /// <summary>
         /// 调用远程端实现的Api      

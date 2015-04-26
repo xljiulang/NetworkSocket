@@ -16,7 +16,7 @@ namespace NetworkSocket.WebSocket.Fast
         /// </summary>       
         /// <param name="api">api</param>
         /// <param name="parameters">参数列表</param> 
-        Task InvokeApi(string api, params object[] parameters);
+        void InvokeApi(string api, params object[] parameters);
 
         /// <summary>
         /// 调用客户端实现的服务方法     

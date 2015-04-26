@@ -55,23 +55,19 @@ namespace NetworkSocket.WebSocket.Fast
         /// <param name="api">api</param>
         /// <param name="parameters">参数列表</param>  
         /// <exception cref="SocketException"></exception>      
-        /// <exception cref="SerializerException"></exception>
-        /// <returns></returns>
-        public Task InvokeApi(string api, params object[] parameters)
+        /// <exception cref="SerializerException"></exception>       
+        public void InvokeApi(string api, params object[] parameters)
         {
-            return Task.Factory.StartNew(() =>
+            var packet = new FastPacket
             {
-                var packet = new FastPacket
-                {
-                    api = api,
-                    id = this.packetIdProvider.GetId(),
-                    state = true,
-                    fromClient = false,
-                    body = parameters
-                };
-                var packetJson = this.JsonSerializer.Serialize(packet);
-                this.SendText(packetJson);
-            });
+                api = api,
+                id = this.packetIdProvider.GetId(),
+                state = true,
+                fromClient = false,
+                body = parameters
+            };
+            var packetJson = this.JsonSerializer.Serialize(packet);
+            this.SendText(packetJson);
         }
 
         /// <summary>
@@ -81,9 +77,7 @@ namespace NetworkSocket.WebSocket.Fast
         /// <typeparam name="T">返回值类型</typeparam>        
         /// <param name="api">api</param>
         /// <param name="parameters">参数</param> 
-        /// <exception cref="SocketException"></exception> 
-        /// <exception cref="RemoteException"></exception>
-        /// <exception cref="TimeoutException"></exception>
+        /// <exception cref="SocketException"></exception>         
         /// <exception cref="SerializerException"></exception>
         /// <returns>远程数据任务</returns>  
         public Task<T> InvokeApi<T>(string api, params object[] parameters)
