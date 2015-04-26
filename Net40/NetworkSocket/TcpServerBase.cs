@@ -134,32 +134,68 @@ namespace NetworkSocket
         {
             if (arg.SocketError == SocketError.Success)
             {
-                // 从池中取出SocketAsync
-                var session = this.sessionBag.Take();
-                if (session == null)
+                var socket = arg.AcceptSocket;
+                var session = this.TakeOrCreateSession();
+
+                if (session != null)
                 {
-                    Interlocked.Increment(ref this.totalSessionCount);
-                    session = this.OnCreateSession();
+                    this.InitSession(session, socket);
                 }
-
-                // 绑定处理委托
-                session.ReceiveHandler = (buffer) => this.OnReceive(session, buffer);
-                session.DisconnectHandler = () => this.RecyceSession(session);
-                session.CloseHandler = () => this.RecyceSession(session);
-
-                // SocketAsync与socket绑定    
-                session.Bind(arg.AcceptSocket);
-                // 添加到活动列表
-                (this.AllSessions as ICollection<T>).Add(session);
-                // 通知已连接
-                this.OnConnect(session);
-                // 开始接收数据
-                session.BeginReceive();
+                else
+                {
+                    socket.Close();
+                    socket.Dispose();
+                }
             }
 
             // 处理后继续接收
             this.AcceptSession(arg);
         }
+
+
+        /// <summary>
+        /// 从空闲池中取出或创建Session会话对象
+        /// </summary>
+        /// <returns></returns>
+        private T TakeOrCreateSession()
+        {
+            // 从池中取出SocketAsync
+            var session = this.sessionBag.Take();
+            if (session != null)
+            {
+                return session;
+            }
+
+            session = this.OnCreateSession();
+            if (session != null)
+            {
+                Interlocked.Increment(ref this.totalSessionCount);
+            }
+            return session;
+        }
+
+        /// <summary>
+        /// 初始化Session会话
+        /// </summary>
+        /// <param name="session">会话</param>
+        /// <param name="socket">要绑定的socket</param>
+        private void InitSession(T session, Socket socket)
+        {
+            // 绑定处理委托
+            session.ReceiveHandler = (buffer) => this.OnReceive(session, buffer);
+            session.DisconnectHandler = () => this.RecyceSession(session);
+            session.CloseHandler = () => this.RecyceSession(session);
+
+            // SocketAsync与socket绑定    
+            session.Bind(socket);
+            // 添加到活动列表
+            (this.AllSessions as ICollection<T>).Add(session);
+            // 通知已连接
+            this.OnConnect(session);
+            // 开始接收数据
+            session.BeginReceive();
+        }
+
 
         /// <summary>
         /// 创建新的会话对象
