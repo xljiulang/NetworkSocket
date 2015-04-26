@@ -68,6 +68,7 @@
   <ItemGroup>
     <Compile Include="ByteBitsTest.cs" />
     <Compile Include="ByteConverterTest.cs" />
+    <Compile Include="FlexPolicyServerTest.cs" />
     <Compile Include="TcpServerBaseTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReceiveBufferTest.cs" />

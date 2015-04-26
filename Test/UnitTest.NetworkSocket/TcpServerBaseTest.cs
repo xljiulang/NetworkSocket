@@ -117,37 +117,37 @@ namespace UnitTest.NetworkSocket
         public void OnConnectTest()
         {
             MyTcpServerBase target = new MyTcpServerBase(); // TODO: 初始化为适当的值
-            target.StartListen(6600);
+            target.StartListen(6611);
 
             var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            socket.Connect(new System.Net.IPEndPoint(IPAddress.Loopback, 6600));
-            Thread.Sleep(100);
+            socket.Connect(new System.Net.IPEndPoint(IPAddress.Loopback, 6611));
+            Thread.Sleep(50);
             Assert.IsTrue(target.ConnectTimes == 1);
             Assert.IsTrue(target.AllSessions.Count() == 1);
             Assert.IsTrue(target.ExtraState.FreeSessionCount == 0);
 
 
             var socket2 = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            socket2.Connect(new System.Net.IPEndPoint(IPAddress.Loopback, 6600));
-            Thread.Sleep(100);
+            socket2.Connect(new System.Net.IPEndPoint(IPAddress.Loopback, 6611));
+            Thread.Sleep(50);
             Assert.IsTrue(target.ConnectTimes == 2);
             Assert.IsTrue(target.AllSessions.Count() == 2);
             Assert.IsTrue(target.ExtraState.FreeSessionCount == 0);
 
 
             socket.Dispose();
-            Thread.Sleep(100);
+            Thread.Sleep(50);
             Assert.IsTrue(target.DisConnectTimes == 1);
             Assert.IsTrue(target.AllSessions.Count() == 1);
             Assert.IsTrue(target.ExtraState.FreeSessionCount == 1);
 
             socket2.Dispose();
-            Thread.Sleep(100);
+            Thread.Sleep(50);
             Assert.IsTrue(target.DisConnectTimes == 2);
             Assert.IsTrue(target.AllSessions.Count() == 0);
             Assert.IsTrue(target.ExtraState.FreeSessionCount == 2);
-
-            Assert.IsTrue(target.ExtraState.TotalSendArgCount == 0);
+           
+            target.Dispose();
         }
     }
 }
