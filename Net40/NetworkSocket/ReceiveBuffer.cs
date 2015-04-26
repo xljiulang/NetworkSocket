@@ -270,26 +270,26 @@ namespace NetworkSocket
         /// <summary>
         /// 将指定长度的数据复制到目标数组
         /// </summary>
-        /// <param name="detArray">目标数组</param>     
+        /// <param name="dstArray">目标数组</param>     
         /// <param name="count">要复制的字节数</param>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public void CopyTo(byte[] detArray, int count)
+        public void CopyTo(byte[] dstArray, int count)
         {
-            this.CopyTo(detArray, 0, count);
+            this.CopyTo(dstArray, 0, count);
         }
 
         /// <summary>
         /// 将指定长度的数据复制到目标数组
         /// </summary>
-        /// <param name="destArray">目标数组</param>
+        /// <param name="dstArray">目标数组</param>
         /// <param name="dstOffset">目标数组偏移量</param>
         /// <param name="count">要复制的字节数</param>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public void CopyTo(byte[] destArray, int dstOffset, int count)
+        public void CopyTo(byte[] dstArray, int dstOffset, int count)
         {
-            this.CopyTo(0, destArray, dstOffset, count);
+            this.CopyTo(0, dstArray, dstOffset, count);
         }
 
         /// <summary>
