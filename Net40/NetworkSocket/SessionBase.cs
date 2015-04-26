@@ -43,7 +43,7 @@ namespace NetworkSocket
         /// <summary>
         /// 接收到的未处理数据
         /// </summary>      
-        private ReceiveBuffer recvBuffer = new ReceiveBuffer(Endians.Big);
+        private ReceiveBuffer recvBuffer = new ReceiveBuffer();
 
 
         /// <summary>

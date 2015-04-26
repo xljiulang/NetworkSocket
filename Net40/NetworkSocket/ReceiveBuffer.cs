@@ -41,9 +41,9 @@ namespace NetworkSocket
         public int Length { get; private set; }
 
         /// <summary>
-        /// 获取字节存储次序
+        /// 获取或设置字节存储次序
         /// </summary>
-        public Endians Endian { get; private set; }
+        public Endians Endian { get; set; }
 
         /// <summary>
         /// 获取或设置指针位置    
@@ -64,16 +64,15 @@ namespace NetworkSocket
                 }
                 this._position = value;
             }
-        } 
+        }
 
 
         /// <summary>
         /// 提供二进制数据读取和操作支持
-        /// </summary>
-        /// <param name="endian">字节存储次序</param>       
-        internal ReceiveBuffer(Endians endian)
+        /// </summary>             
+        internal ReceiveBuffer()
         {
-            this.Endian = endian;
+            this.Endian = Endians.Big;
             this._capacity = 1024;
             this._buffer = new byte[this._capacity];
         }
@@ -330,7 +329,7 @@ namespace NetworkSocket
             Buffer.BlockCopy(this._buffer, count, this._buffer, 0, newLength);
             this.Length = newLength;
         }
-        
+
         /// <summary>
         /// 调试视图
         /// </summary>

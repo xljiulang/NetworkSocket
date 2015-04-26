@@ -69,9 +69,8 @@ namespace UnitTest.NetworkSocket
         ///</summary>
         [TestMethod()]
         public void ClearTest()
-        {
-            Endians endian = new Endians(); // TODO: 初始化为适当的值
-            ReceiveBuffer target = new ReceiveBuffer(endian); // TODO: 初始化为适当的值
+        {           
+            ReceiveBuffer target = new ReceiveBuffer(); // TODO: 初始化为适当的值
             target.Add(new byte[] { 1, 2 }, 0, 2);
             target.Clear();
             Assert.IsTrue(target.Length == 0);
@@ -82,9 +81,8 @@ namespace UnitTest.NetworkSocket
         ///</summary>
         [TestMethod()]
         public void ClearTest1()
-        {
-            Endians endian = new Endians(); // TODO: 初始化为适当的值
-            ReceiveBuffer target = new ReceiveBuffer(endian); // TODO: 初始化为适当的值
+        {            
+            ReceiveBuffer target = new ReceiveBuffer(); // TODO: 初始化为适当的值
             target.Add(new byte[] { 1, 2 }, 0, 2);
             int count = 1; // TODO: 初始化为适当的值
             target.Clear(count);
@@ -96,9 +94,8 @@ namespace UnitTest.NetworkSocket
         ///</summary>
         [TestMethod()]
         public void CopyToTest()
-        {
-            Endians endian = new Endians(); // TODO: 初始化为适当的值
-            ReceiveBuffer target = new ReceiveBuffer(endian); // TODO: 初始化为适当的值
+        {          
+            ReceiveBuffer target = new ReceiveBuffer(); // TODO: 初始化为适当的值
             target.Add(new byte[] { 1, 2, 3, 4 }, 0, 4);
             byte[] dstArray = new byte[2]; // TODO: 初始化为适当的值
             int count = 2; // TODO: 初始化为适当的值
@@ -111,9 +108,8 @@ namespace UnitTest.NetworkSocket
         ///</summary>
         [TestMethod()]
         public void CopyToTest1()
-        {
-            Endians endian = new Endians(); // TODO: 初始化为适当的值
-            ReceiveBuffer target = new ReceiveBuffer(endian); // TODO: 初始化为适当的值
+        {           
+            ReceiveBuffer target = new ReceiveBuffer(); // TODO: 初始化为适当的值
             target.Add(new byte[] { 1, 2, 3, 4 }, 0, 4);
             byte[] dstArray = new byte[3]; // TODO: 初始化为适当的值
             int dstOffset = 1; // TODO: 初始化为适当的值
@@ -127,9 +123,8 @@ namespace UnitTest.NetworkSocket
         ///</summary>
         [TestMethod()]
         public void CopyToTest2()
-        {
-            Endians endian = new Endians(); // TODO: 初始化为适当的值
-            ReceiveBuffer target = new ReceiveBuffer(endian); // TODO: 初始化为适当的值
+        {            
+            ReceiveBuffer target = new ReceiveBuffer(); // TODO: 初始化为适当的值
             target.Add(new byte[] { 1, 2, 3, 4 }, 0, 4);
             int srcOffset = 2; // TODO: 初始化为适当的值
             byte[] dstArray = new byte[3]; ; // TODO: 初始化为适当的值
@@ -144,9 +139,8 @@ namespace UnitTest.NetworkSocket
         ///</summary>
         [TestMethod()]
         public void ReadAndPositionTest()
-        {
-            Endians endian = new Endians(); // TODO: 初始化为适当的值
-            ReceiveBuffer target = new ReceiveBuffer(endian); // TODO: 初始化为适当的值
+        {            
+            ReceiveBuffer target = new ReceiveBuffer(); // TODO: 初始化为适当的值
             var bytes = new byte[]{
                 1,
                 3,
@@ -173,9 +167,8 @@ namespace UnitTest.NetworkSocket
         ///</summary>
         [TestMethod()]
         public void ItemTest()
-        {
-            Endians endian = new Endians(); // TODO: 初始化为适当的值
-            ReceiveBuffer target = new ReceiveBuffer(endian); // TODO: 初始化为适当的值
+        {           
+            ReceiveBuffer target = new ReceiveBuffer(); // TODO: 初始化为适当的值
             target.Add(new byte[] { 234 }, 0, 1);
             int index = 0; // TODO: 初始化为适当的值
             byte actual;
