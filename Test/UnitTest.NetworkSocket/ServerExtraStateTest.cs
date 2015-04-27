@@ -74,7 +74,7 @@ namespace UnitTest.NetworkSocket
         {
             Func<int> getFreeSessionCountFunc = () => 2; // TODO: 初始化为适当的值
             Func<int> getTotalSessionCountFunc = null; // TODO: 初始化为适当的值
-            ServerExtraState target = new ServerExtraState(getFreeSessionCountFunc, getTotalSessionCountFunc); // TODO: 初始化为适当的值
+            ServerExtraState target = new ServerExtraState(getFreeSessionCountFunc, getTotalSessionCountFunc, null); // TODO: 初始化为适当的值
             int actual;
             actual = target.FreeSessionCount;
             Assert.IsTrue(actual == 2);
@@ -92,7 +92,7 @@ namespace UnitTest.NetworkSocket
         {
             Func<int> getFreeSessionCountFunc = null; // TODO: 初始化为适当的值
             Func<int> getTotalSessionCountFunc = () => 2; // TODO: 初始化为适当的值
-            ServerExtraState target = new ServerExtraState(getFreeSessionCountFunc, getTotalSessionCountFunc); // TODO: 初始化为适当的值
+            ServerExtraState target = new ServerExtraState(getFreeSessionCountFunc, getTotalSessionCountFunc, null); // TODO: 初始化为适当的值
             int actual;
             actual = target.TotalSessionCount;
             Assert.IsTrue(actual == 2);

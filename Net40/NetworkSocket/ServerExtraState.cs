@@ -24,14 +24,25 @@ namespace NetworkSocket
         private Func<int> getTotalSessionCountFunc;
 
         /// <summary>
+        /// 获取接受会话失败的次数
+        /// </summary>
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private Func<int> getAcceptFailureTimesFunc { get; set; }
+
+        /// <summary>
         /// 表示服务器额外信息
         /// </summary>
         /// <param name="getFreeSessionCountFunc">获取空闲的会话对象数量</param>
         /// <param name="getTotalSessionCountFunc">获取所有的会话数量</param>
-        internal ServerExtraState(Func<int> getFreeSessionCountFunc, Func<int> getTotalSessionCountFunc)
+        /// <param name="getAcceptFailureTimesFunc">获取接受会话失败的次数</param>
+        internal ServerExtraState(
+            Func<int> getFreeSessionCountFunc,
+            Func<int> getTotalSessionCountFunc,
+            Func<int> getAcceptFailureTimesFunc)
         {
             this.getFreeSessionCountFunc = getFreeSessionCountFunc;
             this.getTotalSessionCountFunc = getTotalSessionCountFunc;
+            this.getAcceptFailureTimesFunc = getAcceptFailureTimesFunc;
         }
 
         /// <summary>
@@ -110,6 +121,17 @@ namespace NetworkSocket
             get
             {
                 return this.getTotalSessionCountFunc();
+            }
+        }
+
+        /// <summary>
+        /// 获取接受会话失败的次数
+        /// </summary>
+        public int AcceptFailureTimes
+        {
+            get
+            {
+                return this.getAcceptFailureTimesFunc();
             }
         }
     }

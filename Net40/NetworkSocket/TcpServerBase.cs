@@ -24,7 +24,14 @@ namespace NetworkSocket
         /// <summary>
         /// 所有会话的数量
         /// </summary>
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private int totalSessionCount;
+
+        /// <summary>
+        /// 接受会话失败的次数
+        /// </summary>
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private int acceptFailureTimes;
 
         /// <summary>
         /// 服务socket
@@ -71,7 +78,10 @@ namespace NetworkSocket
         public TcpServerBase()
         {
             this.AllSessions = new SessionCollection<T>();
-            this.ExtraState = new ServerExtraState(() => this.sessionBag.Count, () => this.totalSessionCount);
+            this.ExtraState = new ServerExtraState(
+                () => this.sessionBag.Count,
+                () => this.totalSessionCount,
+                () => this.acceptFailureTimes);
         }
 
         /// <summary>
@@ -103,7 +113,7 @@ namespace NetworkSocket
             this.listenSocket.Listen(100);
 
             this.acceptArg = new SocketAsyncEventArgs();
-            this.acceptArg.Completed += (sender, e) => { this.AcceptArgCompleted(e); };
+            this.acceptArg.Completed += (sender, e) => this.AcceptArgCompleted(e);
             this.AcceptSession(this.acceptArg);
 
             this.LocalEndPoint = localEndPoint;
@@ -132,11 +142,11 @@ namespace NetworkSocket
         /// <param name="arg">连接参数</param>
         private void AcceptArgCompleted(SocketAsyncEventArgs arg)
         {
+            var socket = arg.AcceptSocket;
+
             if (arg.SocketError == SocketError.Success)
             {
-                var socket = arg.AcceptSocket;
                 var session = this.TakeOrCreateSession();
-
                 if (session != null)
                 {
                     this.InitSession(session, socket);
@@ -146,6 +156,12 @@ namespace NetworkSocket
                     socket.Close();
                     socket.Dispose();
                 }
+            }
+            else
+            {
+                Interlocked.Increment(ref this.acceptFailureTimes);
+                var remoteEndPoint = socket == null ? null : (IPEndPoint)socket.RemoteEndPoint;
+                this.OnAcceptFailure(arg.SocketError, remoteEndPoint);
             }
 
             // 处理后继续接收
@@ -196,21 +212,6 @@ namespace NetworkSocket
             session.BeginReceive();
         }
 
-
-        /// <summary>
-        /// 创建新的会话对象
-        /// </summary>
-        /// <returns></returns>
-        protected abstract T OnCreateSession();
-
-        /// <summary>
-        /// 当接收到会话对象的数据时，将触发此方法             
-        /// </summary>
-        /// <param name="session">会话对象</param>
-        /// <param name="buffer">接收到的历史数据</param>
-        /// <returns></returns>
-        protected abstract void OnReceive(T session, ReceiveBuffer buffer);
-
         /// <summary>
         /// 回收复用会话对象
         /// 关闭会话并通知连接断开
@@ -228,6 +229,30 @@ namespace NetworkSocket
         }
 
         /// <summary>
+        /// 接受会话失败时触发
+        /// </summary>
+        /// <param name="socketError">失败原因</param>
+        /// <param name="remoteEndPoint">远程终结点</param>       
+        protected virtual void OnAcceptFailure(SocketError socketError, IPEndPoint remoteEndPoint)
+        {
+        }
+
+        /// <summary>
+        /// 创建新的会话对象
+        /// </summary>
+        /// <returns></returns>
+        protected abstract T OnCreateSession();
+
+        /// <summary>
+        /// 当接收到会话对象的数据时，将触发此方法             
+        /// </summary>
+        /// <param name="session">会话对象</param>
+        /// <param name="buffer">接收到的历史数据</param>
+        /// <returns></returns>
+        protected abstract void OnReceive(T session, ReceiveBuffer buffer);
+
+
+        /// <summary>
         /// 当会话断开连接时，将触发此方法
         /// </summary>
         /// <param name="session">会话对象</param>     
@@ -242,6 +267,7 @@ namespace NetworkSocket
         protected virtual void OnConnect(T session)
         {
         }
+
         #region IDisposable
         /// <summary>
         /// 获取对象是否已释放
