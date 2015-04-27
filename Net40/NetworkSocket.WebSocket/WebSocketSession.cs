@@ -79,5 +79,15 @@ namespace NetworkSocket.WebSocket
                 this.Close();
             }
         }
+
+        /// <summary>
+        /// ping指令
+        /// 远程将回复pong
+        /// </summary>
+        /// <param name="contents">内容</param>
+        public void Ping(byte[] contents)
+        {
+            this.SendResponse(new FrameResponse(FrameCodes.Ping, contents));
+        }
     }
 }

@@ -29,7 +29,7 @@ namespace NetworkSocket.WebSocket
         public FrameResponse(FrameCodes frame, byte[] content)
         {
             this.Frame = frame;
-            this.Content = content;
+            this.Content = content ?? new byte[0];
         }
 
         /// <summary>
