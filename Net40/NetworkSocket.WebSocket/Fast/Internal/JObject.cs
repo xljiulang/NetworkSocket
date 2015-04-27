@@ -119,6 +119,16 @@ namespace NetworkSocket.WebSocket.Fast
         }
 
         /// <summary>
+        /// 迭代自身的元素
+        /// 而不是字典的元素
+        /// </summary>
+        /// <returns></returns>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return this.GetEnumerator();
+        }
+
+        /// <summary>
         /// 转换为目标类型
         /// </summary>
         /// <param name="binder"></param>
@@ -381,11 +391,6 @@ namespace NetworkSocket.WebSocket.Fast
         }
 
         IEnumerator<KeyValuePair<string, object>> IEnumerable<KeyValuePair<string, object>>.GetEnumerator()
-        {
-            return this.dataDic.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
         {
             return this.dataDic.GetEnumerator();
         }
