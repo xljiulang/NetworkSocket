@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Dynamic;
 using System.Linq;
 using System.Text;
@@ -12,17 +13,19 @@ namespace NetworkSocket.WebSocket.Fast
     /// <summary>
     /// 表示动态Json对象
     /// </summary>
-    internal class JObject : DynamicObject, IEnumerable<object>
+    [DebuggerDisplay("IsArray = {IsArray}")]
+    [DebuggerTypeProxy(typeof(DebugView))]
+    internal class JObject : DynamicObject, IDictionary<string, object>, IEnumerable<object>
     {
         /// <summary>
-        /// 数组的数据
+        /// 数据数组
         /// </summary>
-        private object[] _array;
+        private object[] dataArray;
 
         /// <summary>
-        /// 原始数据
+        /// 数据字典
         /// </summary>
-        private IDictionary<string, object> _sourceData;
+        private IDictionary<string, object> dataDic;
 
         /// <summary>
         /// 获取是否为数组
@@ -31,12 +34,12 @@ namespace NetworkSocket.WebSocket.Fast
         {
             get
             {
-                return this._array != null;
+                return this.dataArray != null;
             }
         }
 
         /// <summary>
-        /// 获取元素数量
+        /// 获取数组长度
         /// </summary>
         public int Length
         {
@@ -44,14 +47,14 @@ namespace NetworkSocket.WebSocket.Fast
             {
                 if (this.IsArray)
                 {
-                    return this._array.Length;
+                    return this.dataArray.Length;
                 }
                 return 1;
             }
         }
 
         /// <summary>
-        /// 索引器
+        /// 获取指定索引内容
         /// </summary>
         /// <param name="index">索引</param>
         /// <returns></returns>
@@ -59,35 +62,60 @@ namespace NetworkSocket.WebSocket.Fast
         {
             get
             {
-                if (this.IsArray)
-                {
-                    return this._array[index];
-                }
-                return this;
+                return this.ToArray()[index];
             }
         }
 
         /// <summary>
         /// 创建动态Json数组对象
         /// </summary>
-        /// <param name="array">Object对象或JObject对象</param>
+        /// <param name="dataArray">Object对象或JObject对象</param>
         /// <exception cref="ArgumentNullException"></exception>
-        private JObject(params object[] array)
+        private JObject(params object[] dataArray)
         {
-            if (array == null)
+            if (dataArray == null)
             {
                 throw new ArgumentNullException();
             }
-            this._array = array;
+            this.dataArray = dataArray;
         }
 
         /// <summary>
         /// 表示动态Json对象
         /// </summary>
-        /// <param name="data">内容字典</param>
-        private JObject(IDictionary<string, object> data)
+        /// <param name="dataDic">内容字典</param>
+        private JObject(IDictionary<string, object> dataDic)
         {
-            this._sourceData = data;
+            this.dataDic = dataDic;
+        }
+
+        /// <summary>
+        /// 转换为数组
+        /// </summary>
+        /// <returns></returns>
+        public object[] ToArray()
+        {
+            if (this.IsArray)
+            {
+                return this.dataArray;
+            }
+            else
+            {
+                return new object[] { this };
+            }
+        }
+
+        /// <summary>
+        /// 获取迭代器
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerator<object> GetEnumerator()
+        {
+            var array = this.ToArray();
+            foreach (var item in array)
+            {
+                yield return item;
+            }
         }
 
         /// <summary>
@@ -112,7 +140,7 @@ namespace NetworkSocket.WebSocket.Fast
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
             var key = binder.Name;
-            this._sourceData.TryGetValue(key, out result);
+            this.dataDic.TryGetValue(key, out result);
             result = this.CastResult(result);
             return true;
         }
@@ -230,7 +258,7 @@ namespace NetworkSocket.WebSocket.Fast
             }
             catch (Exception ex)
             {
-                throw new SerializerException(ex);
+                throw ex;
             }
         }
 
@@ -252,43 +280,118 @@ namespace NetworkSocket.WebSocket.Fast
 
             if (jObjectValue.IsArray == false)
             {
-                value = jObjectValue._sourceData;
+                value = jObjectValue;
             }
             else
             {
-                value = jObjectValue.Select(item => ((JObject)item)._sourceData).ToArray();
+                value = jObjectValue.ToArray();
             }
             return serializer.ConvertToType(value, targetType);
         }
 
-        /// <summary>
-        /// 获取迭代器
-        /// </summary>
-        /// <returns></returns>
-        public IEnumerator<object> GetEnumerator()
+        #region IDictionary
+
+        void IDictionary<string, object>.Add(string key, object value)
         {
-            if (this.IsArray)
+            this.dataDic.Add(key, value);
+        }
+
+        bool IDictionary<string, object>.ContainsKey(string key)
+        {
+            return this.dataDic.ContainsKey(key);
+        }
+
+        ICollection<string> IDictionary<string, object>.Keys
+        {
+            get
             {
-                foreach (var item in this._array)
-                {
-                    yield return item;
-                }
-            }
-            else
-            {
-                yield return this;
+                return this.dataDic.Keys;
             }
         }
 
-        /// <summary>
-        /// 获取迭代器
-        /// </summary>
-        /// <returns></returns>
+        bool IDictionary<string, object>.Remove(string key)
+        {
+            return this.dataDic.Remove(key);
+        }
+
+        bool IDictionary<string, object>.TryGetValue(string key, out object value)
+        {
+            return this.dataDic.TryGetValue(key, out value);
+        }
+
+        ICollection<object> IDictionary<string, object>.Values
+        {
+            get
+            {
+                return this.dataDic.Values;
+            }
+        }
+
+        object IDictionary<string, object>.this[string key]
+        {
+            get
+            {
+                return this.dataDic[key];
+            }
+            set
+            {
+                this.dataDic[key] = value;
+            }
+        }
+
+        void ICollection<KeyValuePair<string, object>>.Add(KeyValuePair<string, object> item)
+        {
+            this.dataDic.Add(item);
+        }
+
+        void ICollection<KeyValuePair<string, object>>.Clear()
+        {
+            this.dataDic.Clear();
+        }
+
+        bool ICollection<KeyValuePair<string, object>>.Contains(KeyValuePair<string, object> item)
+        {
+            return this.dataDic.Contains(item);
+        }
+
+        void ICollection<KeyValuePair<string, object>>.CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
+        {
+            this.dataDic.CopyTo(array, arrayIndex);
+        }
+
+        int ICollection<KeyValuePair<string, object>>.Count
+        {
+            get
+            {
+                return this.dataDic.Count;
+            }
+        }
+
+        bool ICollection<KeyValuePair<string, object>>.IsReadOnly
+        {
+            get
+            {
+                return this.dataDic.IsReadOnly;
+            }
+        }
+
+        bool ICollection<KeyValuePair<string, object>>.Remove(KeyValuePair<string, object> item)
+        {
+            return this.dataDic.Remove(item);
+        }
+
+        IEnumerator<KeyValuePair<string, object>> IEnumerable<KeyValuePair<string, object>>.GetEnumerator()
+        {
+            return this.dataDic.GetEnumerator();
+        }
+
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return this.GetEnumerator();
+            return this.dataDic.GetEnumerator();
         }
+        #endregion
 
+        #region DynamicJsonConverter
         /// <summary>
         /// Json转换器
         /// </summary>
@@ -328,5 +431,41 @@ namespace NetworkSocket.WebSocket.Fast
                 return new JObject(dictionary);
             }
         }
+        #endregion
+
+        #region DebugView
+        /// <summary>
+        /// 调试视图
+        /// </summary>
+        private class DebugView
+        {
+            /// <summary>
+            /// 查看的对象
+            /// </summary>
+            private JObject view;
+
+            /// <summary>
+            /// 调试视图
+            /// </summary>
+            /// <param name="view">查看的对象</param>
+            public DebugView(JObject view)
+            {
+                this.view = view;
+            }
+
+            /// <summary>
+            /// 查看的内容
+            /// </summary>
+            [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+            public object[] Values
+            {
+                get
+                {
+                    return view.ToArray();
+                }
+            }
+        }
+
+        #endregion
     }
 }
