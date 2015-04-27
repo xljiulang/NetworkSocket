@@ -258,7 +258,7 @@ namespace NetworkSocket.WebSocket.Fast
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw new SerializerException(ex);
             }
         }
 
