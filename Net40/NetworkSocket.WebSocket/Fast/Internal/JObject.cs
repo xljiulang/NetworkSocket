@@ -279,23 +279,14 @@ namespace NetworkSocket.WebSocket.Fast
         /// <param name="targetType">目标类型</param>     
         /// <returns></returns>
         private static object CastByJavaScriptSerializer(object value, Type targetType)
-        {
-            var serializer = new JavaScriptSerializer();
+        {           
             var jObjectValue = value as JObject;
-
-            if (jObjectValue == null)
-            {
-                return serializer.ConvertToType(value, targetType);
-            }
-
-            if (jObjectValue.IsArray == false)
-            {
-                value = jObjectValue;
-            }
-            else
+            if (jObjectValue != null && jObjectValue.IsArray)
             {
                 value = jObjectValue.ToArray();
             }
+
+            var serializer = new JavaScriptSerializer();
             return serializer.ConvertToType(value, targetType);
         }
 

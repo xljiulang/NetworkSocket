@@ -61,22 +61,22 @@ namespace Server
 
 
         /// <summary>
-        /// 接收到客户端连接
+        /// 接收到会话连接
         /// </summary>
-        /// <param name="client">客户端</param>
-        protected override void OnConnect(FastSession client)
+        /// <param name="session">会话</param>
+        protected override void OnConnect(FastSession session)
         {
-            var log = string.Format("Time:{0} Client:{1} Action:{2} Message:{3}", DateTime.Now.ToString("mm:ss"), client, "Connect", "ConnectCount(" + this.AllSessions.Count() + ")");
+            var log = string.Format("Time:{0} Client:{1} Action:{2} Message:{3}", DateTime.Now.ToString("mm:ss"), session, "Connect", "ConnectCount(" + this.AllSessions.Count() + ")");
             Console.WriteLine(log);
         }
 
         /// <summary>
-        /// 接收到客户端断开连接
+        /// 接收到会话断开连接
         /// </summary>
-        /// <param name="client">客户端</param>
-        protected override void OnDisconnect(FastSession client)
+        /// <param name="session">会话</param>
+        protected override void OnDisconnect(FastSession session)
         {
-            var log = string.Format("Time:{0} Client:{1} Action:{2} Message:{3}", DateTime.Now.ToString("mm:ss"), client, "Disconnect", "ConnectCount(" + this.AllSessions.Count() + ")");
+            var log = string.Format("Time:{0} Client:{1} Action:{2} Message:{3}", DateTime.Now.ToString("mm:ss"), session, "Disconnect", "ConnectCount(" + this.AllSessions.Count() + ")");
             Console.WriteLine(log);
         }
     }

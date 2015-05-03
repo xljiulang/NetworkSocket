@@ -180,6 +180,11 @@
   <ItemGroup>
     <None Include="_Sn.snk" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Fast\fastWebSocket.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>mkdir $(SolutionDir)\Release\Net40
