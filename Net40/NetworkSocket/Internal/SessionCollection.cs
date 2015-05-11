@@ -9,7 +9,7 @@ using System.Text;
 namespace NetworkSocket
 {
     /// <summary>
-    /// 有效会话对象集合 
+    /// 表示会话对象集合 
     /// 线程安全类型
     /// </summary>   
     /// <typeparam name="T">会话</typeparam>

@@ -7,12 +7,12 @@ using System.Text;
 namespace NetworkSocket
 {
     /// <summary>
-    /// 无效的会话对象无序集合
+    /// 空闲的会话对象无序集合
     /// 线程安全类型
     /// </summary>
     /// <typeparam name="T">会话</typeparam>   
     [DebuggerDisplay("Count = {Count}")]
-    internal sealed class SessionBag<T> : IDisposable where T : SessionBase
+    internal sealed class FreeSessionBag<T> : IDisposable where T : SessionBase
     {
         /// <summary>
         /// 集合

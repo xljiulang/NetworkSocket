@@ -10,9 +10,10 @@ using System.Threading;
 namespace NetworkSocket
 {
     /// <summary>
-    /// 用于发送的SocketAsyncEventArgs无序集合
+    /// 空闲的用于发送的SocketAsyncEventArgs
     /// </summary>      
-    internal static class SendArgBag
+    [DebuggerDisplay("Count = {Count}")]
+    internal static class FreeSendArgBag
     {
         /// <summary>
         /// SocketAsyncEventArgs无序集合
@@ -31,12 +32,12 @@ namespace NetworkSocket
         {
             get
             {
-                return SendArgBag.totalInitCount;
+                return FreeSendArgBag.totalInitCount;
             }
         }
 
         /// <summary>
-        /// 元素数量
+        /// 获取当前空闲的元素数量
         /// </summary>
         public static int Count
         {
@@ -47,12 +48,12 @@ namespace NetworkSocket
         }
 
         /// <summary>
-        /// 添加SocketAsync
+        /// 添加SocketAsyncEventArgs
         /// </summary>
-        /// <param name="eventArg">SocketAsyncEventArgs对象</param>
-        public static void Add(SocketAsyncEventArgs eventArg)
+        /// <param name="arg">SocketAsyncEventArgs对象</param>
+        public static void Add(SocketAsyncEventArgs arg)
         {
-            concurrentBag.Add(eventArg);
+            concurrentBag.Add(arg);
         }
 
         /// <summary>
@@ -63,14 +64,14 @@ namespace NetworkSocket
         /// <returns></returns>
         public static SocketAsyncEventArgs Take()
         {
-            SocketAsyncEventArgs eventArg;
-            if (concurrentBag.TryTake(out eventArg) == false)
+            SocketAsyncEventArgs arg;
+            if (concurrentBag.TryTake(out arg) == false)
             {
-                Interlocked.Increment(ref SendArgBag.totalInitCount);
-                eventArg = new SocketAsyncEventArgs();
-                eventArg.Completed += (sender, e) => SendArgBag.Add(e);
+                Interlocked.Increment(ref FreeSendArgBag.totalInitCount);
+                arg = new SocketAsyncEventArgs();
+                arg.Completed += (sender, e) => FreeSendArgBag.Add(e);
             }
-            return eventArg;
+            return arg;
         }
     }
 }

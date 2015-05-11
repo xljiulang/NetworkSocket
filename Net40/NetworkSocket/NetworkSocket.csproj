@@ -103,7 +103,7 @@
     <Compile Include="ITcpClient.cs" />
     <Compile Include="ITcpServer.cs" />
     <Compile Include="Internal\RecvArgBuffer.cs" />
-    <Compile Include="Internal\SendArgBag.cs" />
+    <Compile Include="Internal\FreeSendArgBag.cs" />
     <Compile Include="Policies\FlexPolicyServer.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -119,7 +119,7 @@
     <Compile Include="TcpSnapshot.cs" />
     <Compile Include="Internal\SessionCollection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Internal\SessionBag.cs" />
+    <Compile Include="Internal\FreeSessionBag.cs" />
     <Compile Include="Internal\TagBag.cs" />
     <Compile Include="TcpServerBase.cs" />
     <Compile Include="SessionBase.cs" />
