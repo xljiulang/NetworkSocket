@@ -182,10 +182,17 @@ namespace NetworkSocket
                 return session;
             }
 
-            session = this.OnCreateSession();
-            if (session != null)
+            try
             {
-                Interlocked.Increment(ref this.totalSessionCount);
+                session = this.OnCreateSession();
+                if (session != null)
+                {
+                    Interlocked.Increment(ref this.totalSessionCount);
+                }
+            }
+            catch (Exception ex)
+            {
+                this.OnCreateSessionException(ex);
             }
             return session;
         }
@@ -242,6 +249,14 @@ namespace NetworkSocket
         /// </summary>
         /// <returns></returns>
         protected abstract T OnCreateSession();
+
+        /// <summary>
+        /// 创建会话异常时触发
+        /// </summary>
+        /// <param name="exception">异常</param>
+        protected virtual void OnCreateSessionException(Exception exception)
+        {
+        }
 
         /// <summary>
         /// 当接收到会话对象的数据时，将触发此方法             

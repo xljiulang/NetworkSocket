@@ -52,7 +52,7 @@ namespace NetworkSocket
         {
             get
             {
-                return RecvArgBuffer.ItemBufferSize;
+                return RecvArgBufferSetter.ARG_BUFFER_SIZE;
             }
         }
 
@@ -63,7 +63,7 @@ namespace NetworkSocket
         {
             get
             {
-                return RecvArgBuffer.ItemBufferSize * RecvArgBuffer.ItemMaxCount;
+                return RecvArgBufferSetter.BUFFER_BLOCK_SIZE;
             }
         }
 
@@ -74,7 +74,7 @@ namespace NetworkSocket
         {
             get
             {
-                return RecvArgBuffer.BufferBlockCount;
+                return RecvArgBufferSetter.BufferBlockCount;
             }
         }
 
@@ -97,7 +97,7 @@ namespace NetworkSocket
         {
             get
             {
-                return FreeSendArgBag.TotalInitCount;
+                return FreeSendArgBag.InitedCount;
             }
         }
 

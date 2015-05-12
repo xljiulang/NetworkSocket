@@ -41,7 +41,7 @@ namespace NetworkSocket
 
         /// <summary>
         /// 取出会话对象
-        /// 如果取出失败，则返回T的默认值
+        /// 如果取出失败则返回null
         /// </summary>
         /// <returns></returns>
         public T Take()
@@ -51,7 +51,7 @@ namespace NetworkSocket
             {
                 return session;
             }
-            return default(T);
+            return null;
         }
 
         /// <summary>

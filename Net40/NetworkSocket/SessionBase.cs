@@ -33,7 +33,7 @@ namespace NetworkSocket
         /// </summary>
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private bool closed = true;
-      
+
         /// <summary>
         /// 接收参数
         /// </summary>
@@ -99,8 +99,9 @@ namespace NetworkSocket
         }
 
         /// <summary>
-        /// Socket客户端
+        /// 表示会话对象
         /// </summary>  
+        /// <exception cref="OutOfMemoryException"></exception>
         public SessionBase()
         {
             this.recvArg.Completed += new EventHandler<SocketAsyncEventArgs>(this.RecvCompleted);
@@ -108,7 +109,7 @@ namespace NetworkSocket
             this.TagBag = new TagBag((TagData)this.TagData);
             this.ExtraState = new SessionExtraState();
 
-            RecvArgBuffer.SetBuffer(this.recvArg);
+            RecvArgBufferSetter.SetBuffer(this.recvArg);
         }
 
         /// <summary>
@@ -213,7 +214,7 @@ namespace NetworkSocket
                 throw new SocketException((int)SocketError.NotConnected);
             }
 
-            var sendArg = FreeSendArgBag.Take();
+            var sendArg = FreeSendArgBag.TakeOrCreate();
             sendArg.SetBuffer(byteRange.Buffer, byteRange.Offset, byteRange.Count);
 
             if (this.socket.SendAsync(sendArg) == false)

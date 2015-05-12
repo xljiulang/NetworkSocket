@@ -16,23 +16,24 @@ namespace NetworkSocket
     internal static class FreeSendArgBag
     {
         /// <summary>
-        /// SocketAsyncEventArgs无序集合
-        /// </summary>
-        private static readonly ConcurrentBag<SocketAsyncEventArgs> concurrentBag = new ConcurrentBag<SocketAsyncEventArgs>();
-
-        /// <summary>
         /// 所有初始化过的数量
         /// </summary>
-        private static int totalInitCount = 0;
+        private static int initedCount = 0;
+
+        /// <summary>
+        /// SocketAsyncEventArgs无序集合
+        /// </summary>
+        private static readonly ConcurrentBag<SocketAsyncEventArgs> bag = new ConcurrentBag<SocketAsyncEventArgs>();
+
 
         /// <summary>
         /// 获取所有初始化过的数量
         /// </summary>
-        public static int TotalInitCount
+        public static int InitedCount
         {
             get
             {
-                return FreeSendArgBag.totalInitCount;
+                return FreeSendArgBag.initedCount;
             }
         }
 
@@ -43,7 +44,7 @@ namespace NetworkSocket
         {
             get
             {
-                return concurrentBag.Count;
+                return FreeSendArgBag.bag.Count;
             }
         }
 
@@ -53,7 +54,7 @@ namespace NetworkSocket
         /// <param name="arg">SocketAsyncEventArgs对象</param>
         public static void Add(SocketAsyncEventArgs arg)
         {
-            concurrentBag.Add(arg);
+            FreeSendArgBag.bag.Add(arg);
         }
 
         /// <summary>
@@ -62,12 +63,12 @@ namespace NetworkSocket
         /// 当触发Completed事件后将自动回收
         /// </summary>
         /// <returns></returns>
-        public static SocketAsyncEventArgs Take()
+        public static SocketAsyncEventArgs TakeOrCreate()
         {
             SocketAsyncEventArgs arg;
-            if (concurrentBag.TryTake(out arg) == false)
+            if (bag.TryTake(out arg) == false)
             {
-                Interlocked.Increment(ref FreeSendArgBag.totalInitCount);
+                Interlocked.Increment(ref FreeSendArgBag.initedCount);
                 arg = new SocketAsyncEventArgs();
                 arg.Completed += (sender, e) => FreeSendArgBag.Add(e);
             }
