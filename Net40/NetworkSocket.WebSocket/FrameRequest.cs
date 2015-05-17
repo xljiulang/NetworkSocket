@@ -91,14 +91,13 @@ namespace NetworkSocket.WebSocket
                 contentLength = (int)buffer.ReadUInt16();
             }
 
-            var maskingKey = buffer.ReadArray(4);
-            var packetLength = buffer.Position + contentLength;
-
+            var packetLength = 6 + contentLength;
             if (buffer.Length < packetLength)
             {
                 return null;
             }
 
+            var maskingKey = buffer.ReadArray(4);
             var content = buffer.ReadArray(contentLength);
             buffer.Clear(packetLength);
 
