@@ -7,17 +7,17 @@ using System.Text;
 namespace NetworkSocket
 {
     /// <summary>
-    /// 空闲的会话对象无序集合
+    /// 空闲的会话对象集合
     /// 线程安全类型
     /// </summary>
     /// <typeparam name="T">会话</typeparam>   
     [DebuggerDisplay("Count = {Count}")]
-    internal sealed class FreeSessionBag<T> : IDisposable where T : SessionBase
+    internal sealed class FreeSessionStack<T> : IDisposable where T : SessionBase
     {
         /// <summary>
         /// 集合
         /// </summary>
-        private ConcurrentBag<T> bag = new ConcurrentBag<T>();
+        private ConcurrentStack<T> stack = new ConcurrentStack<T>();
 
         /// <summary>
         /// 获取会话对象数量
@@ -26,7 +26,7 @@ namespace NetworkSocket
         {
             get
             {
-                return this.bag.Count;
+                return this.stack.Count;
             }
         }
 
@@ -36,7 +36,7 @@ namespace NetworkSocket
         /// <param name="session">会话对象</param>
         public void Add(T session)
         {
-            this.bag.Add(session);
+            this.stack.Push(session);
         }
 
         /// <summary>
@@ -47,7 +47,7 @@ namespace NetworkSocket
         public T Take()
         {
             T session;
-            if (this.bag.TryTake(out session))
+            if (this.stack.TryPop(out session))
             {
                 return session;
             }
@@ -59,7 +59,7 @@ namespace NetworkSocket
         /// </summary>
         public void Dispose()
         {
-            var sessions = this.bag.ToArray();
+            var sessions = this.stack.ToArray();
             foreach (var session in sessions)
             {
                 IDisposable disposable = session;

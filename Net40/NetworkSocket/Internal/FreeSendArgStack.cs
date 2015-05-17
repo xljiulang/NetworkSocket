@@ -13,7 +13,7 @@ namespace NetworkSocket
     /// 空闲的用于发送的SocketAsyncEventArgs
     /// </summary>      
     [DebuggerDisplay("Count = {Count}")]
-    internal static class FreeSendArgBag
+    internal static class FreeSendArgStack
     {
         /// <summary>
         /// 所有初始化过的数量
@@ -21,9 +21,9 @@ namespace NetworkSocket
         private static int initedCount = 0;
 
         /// <summary>
-        /// SocketAsyncEventArgs无序集合
+        /// SocketAsyncEventArgs集合
         /// </summary>
-        private static readonly ConcurrentBag<SocketAsyncEventArgs> bag = new ConcurrentBag<SocketAsyncEventArgs>();
+        private static readonly ConcurrentStack<SocketAsyncEventArgs> stack = new ConcurrentStack<SocketAsyncEventArgs>();
 
 
         /// <summary>
@@ -33,7 +33,7 @@ namespace NetworkSocket
         {
             get
             {
-                return FreeSendArgBag.initedCount;
+                return initedCount;
             }
         }
 
@@ -44,7 +44,7 @@ namespace NetworkSocket
         {
             get
             {
-                return FreeSendArgBag.bag.Count;
+                return stack.Count;
             }
         }
 
@@ -54,7 +54,7 @@ namespace NetworkSocket
         /// <param name="arg">SocketAsyncEventArgs对象</param>
         public static void Add(SocketAsyncEventArgs arg)
         {
-            FreeSendArgBag.bag.Add(arg);
+            stack.Push(arg);
         }
 
         /// <summary>
@@ -66,11 +66,11 @@ namespace NetworkSocket
         public static SocketAsyncEventArgs TakeOrCreate()
         {
             SocketAsyncEventArgs arg;
-            if (bag.TryTake(out arg) == false)
+            if (stack.TryPop(out arg) == false)
             {
-                Interlocked.Increment(ref FreeSendArgBag.initedCount);
+                Interlocked.Increment(ref FreeSendArgStack.initedCount);
                 arg = new SocketAsyncEventArgs();
-                arg.Completed += (sender, e) => FreeSendArgBag.Add(e);
+                arg.Completed += (sender, e) => FreeSendArgStack.Add(e);
             }
             return arg;
         }

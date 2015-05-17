@@ -48,7 +48,7 @@ namespace NetworkSocket
         /// <summary>
         /// 空闲客户端池
         /// </summary>        
-        private FreeSessionBag<T> freeSessionBag = new FreeSessionBag<T>();
+        private FreeSessionStack<T> freeSessionStack = new FreeSessionStack<T>();
 
 
 
@@ -79,7 +79,7 @@ namespace NetworkSocket
         {
             this.AllSessions = new SessionCollection<T>();
             this.ExtraState = new ServerExtraState(
-                () => this.freeSessionBag.Count,
+                () => this.freeSessionStack.Count,
                 () => this.totalSessionCount,
                 () => this.acceptFailureTimes);
         }
@@ -176,7 +176,7 @@ namespace NetworkSocket
         private T TakeOrCreateSession()
         {
             // 从池中取出SocketAsync
-            var session = this.freeSessionBag.Take();
+            var session = this.freeSessionStack.Take();
             if (session != null)
             {
                 return session;
@@ -231,7 +231,7 @@ namespace NetworkSocket
                 this.OnDisconnect(session);
                 session.Close();
                 session.TagData.Clear();
-                this.freeSessionBag.Add(session);
+                this.freeSessionStack.Add(session);
             }
         }
 
@@ -329,14 +329,14 @@ namespace NetworkSocket
             }
 
             (this.AllSessions as IDisposable).Dispose();
-            this.freeSessionBag.Dispose();
+            this.freeSessionStack.Dispose();
             this.acceptArg.Dispose();
 
             if (disposing)
             {
                 this.AllSessions = null;
                 this.acceptArg = null;
-                this.freeSessionBag = null;
+                this.freeSessionStack = null;
                 this.LocalEndPoint = null;
                 this.IsListening = false;
             }

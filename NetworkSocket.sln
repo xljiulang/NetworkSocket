@@ -114,9 +114,6 @@ Global
 		{63D2DED9-1A63-4209-ADEE-9A67A8D3257E} = {89ABE2CB-D89C-438D-B88A-1FA91E98CF0A}
 		{2EF57D67-04C8-477B-948F-1C18227472E0} = {CC0392B3-93ED-4341-9D14-4EE4F9EBFE30}
 	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = Demo\Server\Server.csproj
 	EndGlobalSection

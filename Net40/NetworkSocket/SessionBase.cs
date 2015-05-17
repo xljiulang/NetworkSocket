@@ -214,12 +214,12 @@ namespace NetworkSocket
                 throw new SocketException((int)SocketError.NotConnected);
             }
 
-            var sendArg = FreeSendArgBag.TakeOrCreate();
+            var sendArg = FreeSendArgStack.TakeOrCreate();
             sendArg.SetBuffer(byteRange.Buffer, byteRange.Offset, byteRange.Count);
 
             if (this.socket.SendAsync(sendArg) == false)
             {
-                FreeSendArgBag.Add(sendArg);
+                FreeSendArgStack.Add(sendArg);
             }
 
             this.ExtraState.SetSended(byteRange.Count);

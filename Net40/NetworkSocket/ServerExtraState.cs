@@ -85,7 +85,7 @@ namespace NetworkSocket
         {
             get
             {
-                return FreeSendArgBag.Count;
+                return FreeSendArgStack.Count;
             }
         }
 
@@ -97,7 +97,7 @@ namespace NetworkSocket
         {
             get
             {
-                return FreeSendArgBag.InitedCount;
+                return FreeSendArgStack.InitedCount;
             }
         }
 
