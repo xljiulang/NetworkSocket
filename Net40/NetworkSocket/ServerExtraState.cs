@@ -52,7 +52,7 @@ namespace NetworkSocket
         {
             get
             {
-                return RecvArgBufferSetter.ARG_BUFFER_SIZE;
+                return EventArgBufferSetter.ARG_BUFFER_SIZE;
             }
         }
 
@@ -63,7 +63,7 @@ namespace NetworkSocket
         {
             get
             {
-                return RecvArgBufferSetter.BUFFER_BLOCK_SIZE;
+                return EventArgBufferSetter.BUFFER_BLOCK_SIZE;
             }
         }
 
@@ -74,32 +74,9 @@ namespace NetworkSocket
         {
             get
             {
-                return RecvArgBufferSetter.BufferBlockCount;
+                return EventArgBufferSetter.BufferBlockCount;
             }
-        }
-
-        /// <summary>
-        /// 获取当前空闲的用于发送的SocketAsyncEventArgs对象的数量
-        /// </summary>
-        public int FreeSendArgCount
-        {
-            get
-            {
-                return FreeSendArgStack.Count;
-            }
-        }
-
-        /// <summary>
-        /// 获取所有用于发送的SocketAsyncEventArgs对象的数量
-        /// 含FreeSendArg
-        /// </summary>
-        public int TotalSendArgCount
-        {
-            get
-            {
-                return FreeSendArgStack.InitedCount;
-            }
-        }
+        }    
 
         /// <summary>
         /// 获取已回收的会话对象的数量

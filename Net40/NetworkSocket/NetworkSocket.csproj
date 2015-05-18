@@ -102,8 +102,7 @@
     <Compile Include="ITag.cs" />
     <Compile Include="ITcpClient.cs" />
     <Compile Include="ITcpServer.cs" />
-    <Compile Include="Internal\RecvArgBufferSetter.cs" />
-    <Compile Include="Internal\FreeSendArgStack.cs" />
+    <Compile Include="Internal\EventArgBufferSetter.cs" />
     <Compile Include="Policies\FlexPolicyServer.cs">
       <SubType>Code</SubType>
     </Compile>

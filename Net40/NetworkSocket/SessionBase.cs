@@ -7,6 +7,7 @@ using System.Text;
 using System.IO;
 using System.Threading;
 using System.Diagnostics;
+using System.Collections.Concurrent;
 
 namespace NetworkSocket
 {
@@ -20,7 +21,7 @@ namespace NetworkSocket
         /// <summary>
         /// socket
         /// </summary>        
-        private volatile Socket socket;
+        private Socket socket;
 
         /// <summary>
         /// socket同步锁
@@ -32,10 +33,34 @@ namespace NetworkSocket
         /// 是否已关闭
         /// </summary>
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private bool closed = true;
+        private bool socketClosed = true;
 
         /// <summary>
-        /// 接收参数
+        /// 是否正在发送中
+        /// </summary>
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private int isSending = 0;
+
+        /// <summary>
+        /// 用于发送的SocketAsyncEventArgs
+        /// </summary>
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private SocketAsyncEventArgs sendArg = new SocketAsyncEventArgs();
+
+        /// <summary>
+        /// byteRangeQueue添加数据的锁
+        /// </summary>
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private object queueSync = new object();
+
+        /// <summary>
+        /// 待发送的ByeRange集合
+        /// </summary>
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private ConcurrentQueue<ByteRange> byteRangeQueue = new ConcurrentQueue<ByteRange>();
+
+        /// <summary>
+        /// 用于接收的SocketAsyncEventArgs
         /// </summary>
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private SocketAsyncEventArgs recvArg = new SocketAsyncEventArgs();
@@ -91,10 +116,7 @@ namespace NetworkSocket
         {
             get
             {
-                lock (this.socketRoot)
-                {
-                    return this.socket != null && this.socket.Connected;
-                }
+                return this.socket != null && this.socket.Connected;
             }
         }
 
@@ -104,13 +126,17 @@ namespace NetworkSocket
         /// <exception cref="OutOfMemoryException"></exception>
         public SessionBase()
         {
-            this.recvArg.Completed += new EventHandler<SocketAsyncEventArgs>(this.RecvCompleted);
+            this.sendArg.Completed += this.SendCompleted;
+            this.recvArg.Completed += this.RecvCompleted;
+
             this.TagData = new TagData();
             this.TagBag = new TagBag((TagData)this.TagData);
             this.ExtraState = new SessionExtraState();
 
-            RecvArgBufferSetter.SetBuffer(this.recvArg);
+            EventArgBufferSetter.SetBuffer(this.sendArg);
+            EventArgBufferSetter.SetBuffer(this.recvArg);
         }
+
 
         /// <summary>
         /// 绑定一个Socket对象
@@ -119,13 +145,23 @@ namespace NetworkSocket
         internal void Bind(Socket socket)
         {
             this.socket = socket;
+            this.socketClosed = false;
+
             this.recvArg.SocketError = SocketError.Success;
             this.recvBuffer.Clear();
+
+            this.isSending = 0;
+            this.sendArg.SocketError = SocketError.Success;
+
+            if (this.byteRangeQueue.Count > 0)
+            {
+                this.byteRangeQueue = new ConcurrentQueue<ByteRange>();
+            }
+
             this.TagData.Clear();
             this.ExtraState.SetBinded();
             this.RemoteEndPoint = (IPEndPoint)socket.RemoteEndPoint;
             this.SetKeepAlive(socket);
-            this.closed = false;
         }
 
         /// <summary>
@@ -159,17 +195,40 @@ namespace NetworkSocket
         }
 
         /// <summary>
-        /// 开始接收数据
+        /// 尝试执行方法
         /// </summary>
-        internal void BeginReceive()
+        /// <param name="action">方法</param>
+        /// <returns></returns>
+        private bool TryInvoke(Action action)
         {
-            lock (this.socketRoot)
+            try
             {
-                if (this.socket != null && this.socket.ReceiveAsync(this.recvArg) == false)
-                {
-                    this.RecvCompleted(null, this.recvArg);
-                }
+                action();
+                return true;
             }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 尝试开始接收数据
+        /// </summary>
+        internal bool TryReceive()
+        {
+            if (this.IsConnected == false)
+            {
+                return false;
+            }
+
+            return this.TryInvoke(() =>
+            {
+                if (this.socket.ReceiveAsync(this.recvArg) == false)
+                {
+                    this.RecvCompleted(this.socket, this.recvArg);
+                }
+            });
         }
 
         /// <summary>
@@ -192,9 +251,11 @@ namespace NetworkSocket
                 this.recvBuffer.Add(arg.Buffer, arg.Offset, arg.BytesTransferred);
                 this.ReceiveHandler(this.recvBuffer);
             }
+
             // 重新进行一次接收
-            this.BeginReceive();
+            this.TryReceive();
         }
+
 
         /// <summary>
         /// 异步发送数据
@@ -214,16 +275,61 @@ namespace NetworkSocket
                 throw new SocketException((int)SocketError.NotConnected);
             }
 
-            var sendArg = FreeSendArgStack.TakeOrCreate();
-            sendArg.SetBuffer(byteRange.Buffer, byteRange.Offset, byteRange.Count);
+            // 拆分数据
+            this.SplitByteRangeToQueue(byteRange);
 
-            if (this.socket.SendAsync(sendArg) == false)
+            // 启动发送
+            if (Interlocked.CompareExchange(ref this.isSending, 1, 0) == 0)
             {
-                FreeSendArgStack.Add(sendArg);
+                this.SendCompleted(this.socket, this.sendArg);
             }
-
-            this.ExtraState.SetSended(byteRange.Count);
         }
+
+        /// <summary>
+        /// 分割数据并顺序添加到待发送数据集合
+        /// </summary>
+        /// <param name="byteRange">数据</param>
+        private void SplitByteRangeToQueue(ByteRange byteRange)
+        {
+            var byteRanges = byteRange.Split(EventArgBufferSetter.ARG_BUFFER_SIZE);
+            lock (this.queueSync)
+            {
+                foreach (var range in byteRanges)
+                {
+                    this.byteRangeQueue.Enqueue(range);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 发送完成一个ByteRange
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="arg">关联的SocketAsyncEventArgs</param>
+        private void SendCompleted(object sender, SocketAsyncEventArgs arg)
+        {
+            ByteRange byteRange;
+            if (this.byteRangeQueue.TryDequeue(out byteRange) == false || this.IsConnected == false)
+            {
+                Interlocked.Exchange(ref this.isSending, 0);
+                return;
+            }                     
+
+            Buffer.BlockCopy(byteRange.Buffer, byteRange.Offset, arg.Buffer, arg.Offset, byteRange.Count);
+            arg.SetBuffer(arg.Offset, byteRange.Count);
+
+            this.TryInvoke(() =>
+            {
+                if (this.socket.SendAsync(arg) == false)
+                {
+                    this.SendCompleted(sender, arg);
+                }
+
+                // 信息统计
+                this.ExtraState.SetSended(byteRange.Count);
+            });
+        }
+
 
         /// <summary>
         /// 断开和远程端的连接             
@@ -233,7 +339,7 @@ namespace NetworkSocket
         {
             lock (this.socketRoot)
             {
-                if (this.closed == true)
+                if (this.socketClosed == true)
                 {
                     return;
                 }
@@ -245,8 +351,7 @@ namespace NetworkSocket
                 }
                 finally
                 {
-                    socket = null;
-                    this.closed = true;
+                    this.socketClosed = true;
                 }
 
                 if (this.CloseHandler != null)
@@ -300,12 +405,18 @@ namespace NetworkSocket
         protected virtual void Dispose(bool disposing)
         {
             this.Close();
+
+            this.sendArg.Dispose();
             this.recvArg.Dispose();
 
             if (disposing)
             {
                 this.recvBuffer = null;
                 this.recvArg = null;
+
+                this.byteRangeQueue = null;
+                this.sendArg = null;
+
                 this.socket = null;
                 this.socketRoot = null;
 

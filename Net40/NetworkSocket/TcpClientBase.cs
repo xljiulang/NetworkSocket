@@ -72,7 +72,7 @@ namespace NetworkSocket
             if (result == true)
             {
                 base.Bind(socket);
-                base.BeginReceive();
+                base.TryReceive();
             }
             else
             {

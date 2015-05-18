@@ -23,7 +23,7 @@ namespace NetworkSocket.WebSocket.Fast
         /// </summary>
         /// <param name="name">Api名称</param>
         public ApiNotExistException(string name)
-            : base(string.Format("请求的Api{0}不存在", name))
+            : base(string.Format("请求的{0}不存在", name))
         {
             this.Name = name;
         }

@@ -7,9 +7,9 @@ using System.Text;
 namespace NetworkSocket
 {
     /// <summary>
-    /// 提供设置用于接收的SocketAsyncEventArgs缓冲区
+    /// 提供设置SocketAsyncEventArgs缓冲区
     /// </summary>
-    internal static class RecvArgBufferSetter
+    internal static class EventArgBufferSetter
     {
         /// <summary>
         /// 同步锁
@@ -28,7 +28,7 @@ namespace NetworkSocket
         public const int ARG_BUFFER_SIZE = 8 * 1024;
 
         /// <summary>
-        /// 获取接收缓冲区连续内存块大小 
+        /// 获取接收或发送的缓冲区连续内存块大小 
         /// </summary>
         public const int BUFFER_BLOCK_SIZE = ARG_BUFFER_SIZE * 1024;
 
@@ -47,7 +47,7 @@ namespace NetworkSocket
         /// <summary>
         /// 静态构造器
         /// </summary>
-        static RecvArgBufferSetter()
+        static EventArgBufferSetter()
         {
             bufferBlockList.Add(new BufferBlock());
         }
@@ -67,7 +67,7 @@ namespace NetworkSocket
                     bufferBlockList.Add(new BufferBlock());
                     lastBlock = bufferBlockList[BufferBlockCount - 1];
                 }
-                lastBlock.SetBuffer(arg);              
+                lastBlock.SetBuffer(arg);
             }
         }
 

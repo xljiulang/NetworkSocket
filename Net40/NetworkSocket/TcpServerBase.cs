@@ -216,7 +216,7 @@ namespace NetworkSocket
             // 通知已连接
             this.OnConnect(session);
             // 开始接收数据
-            session.BeginReceive();
+            session.TryReceive();
         }
 
         /// <summary>
