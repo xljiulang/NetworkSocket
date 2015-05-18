@@ -36,10 +36,10 @@ namespace NetworkSocket
         private bool socketClosed = true;
 
         /// <summary>
-        /// 是否正在发送中
+        /// 等待发送的数量
         /// </summary>
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private int isSending = 0;
+        private int pendingSendCount = 0;
 
         /// <summary>
         /// 用于发送的SocketAsyncEventArgs
@@ -150,7 +150,7 @@ namespace NetworkSocket
             this.recvArg.SocketError = SocketError.Success;
             this.recvBuffer.Clear();
 
-            this.isSending = 0;
+            this.pendingSendCount = 0;
             this.sendArg.SocketError = SocketError.Success;
 
             if (this.byteRangeQueue.Count > 0)
@@ -276,12 +276,12 @@ namespace NetworkSocket
             }
 
             // 拆分数据
-            this.SplitByteRangeToQueue(byteRange);
+            var count = this.SplitByteRangeToQueue(byteRange);
 
             // 启动发送
-            if (Interlocked.CompareExchange(ref this.isSending, 1, 0) == 0)
+            if (Interlocked.Add(ref this.pendingSendCount, count) == count)
             {
-                this.SendCompleted(this.socket, this.sendArg);
+                this.TrySend();
             }
         }
 
@@ -289,16 +289,43 @@ namespace NetworkSocket
         /// 分割数据并顺序添加到待发送数据集合
         /// </summary>
         /// <param name="byteRange">数据</param>
-        private void SplitByteRangeToQueue(ByteRange byteRange)
+        /// <returns>返回拆分数量</returns>
+        private int SplitByteRangeToQueue(ByteRange byteRange)
         {
             var byteRanges = byteRange.SplitBySize(EventArgBufferSetter.ARG_BUFFER_SIZE);
             lock (this.queueSync)
             {
+                var count = 0;
                 foreach (var range in byteRanges)
                 {
                     this.byteRangeQueue.Enqueue(range);
+                    count++;
                 }
+                return count;
             }
+        }
+
+        /// <summary>
+        /// 尝试发送开始处的ByteRange
+        /// </summary>
+        private void TrySend()
+        {
+            ByteRange byteRange;
+            this.byteRangeQueue.TryDequeue(out byteRange);
+
+            Buffer.BlockCopy(byteRange.Buffer, byteRange.Offset, this.sendArg.Buffer, this.sendArg.Offset, byteRange.Count);
+            this.sendArg.SetBuffer(this.sendArg.Offset, byteRange.Count);
+
+            this.TryInvoke(() =>
+            {
+                if (this.socket.SendAsync(this.sendArg) == false)
+                {
+                    this.SendCompleted(this.socket, this.sendArg);
+                }
+
+                // 信息统计
+                this.ExtraState.SetSended(byteRange.Count);
+            });
         }
 
         /// <summary>
@@ -308,26 +335,13 @@ namespace NetworkSocket
         /// <param name="arg">关联的SocketAsyncEventArgs</param>
         private void SendCompleted(object sender, SocketAsyncEventArgs arg)
         {
-            ByteRange byteRange;
-            if (this.byteRangeQueue.TryDequeue(out byteRange) == false || this.IsConnected == false)
+            if (this.IsConnected)
             {
-                Interlocked.Exchange(ref this.isSending, 0);
-                return;
-            }                     
-
-            Buffer.BlockCopy(byteRange.Buffer, byteRange.Offset, arg.Buffer, arg.Offset, byteRange.Count);
-            arg.SetBuffer(arg.Offset, byteRange.Count);
-
-            this.TryInvoke(() =>
-            {
-                if (this.socket.SendAsync(arg) == false)
+                if (Interlocked.Decrement(ref this.pendingSendCount) > 0)
                 {
-                    this.SendCompleted(sender, arg);
+                    this.TrySend();
                 }
-
-                // 信息统计
-                this.ExtraState.SetSended(byteRange.Count);
-            });
+            }
         }
 
 
