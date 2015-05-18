@@ -291,7 +291,7 @@ namespace NetworkSocket
         /// <param name="byteRange">数据</param>
         private void SplitByteRangeToQueue(ByteRange byteRange)
         {
-            var byteRanges = byteRange.Split(EventArgBufferSetter.ARG_BUFFER_SIZE);
+            var byteRanges = byteRange.SplitBySize(EventArgBufferSetter.ARG_BUFFER_SIZE);
             lock (this.queueSync)
             {
                 foreach (var range in byteRanges)

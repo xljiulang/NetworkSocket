@@ -77,32 +77,31 @@ namespace NetworkSocket
         }
 
         /// <summary>
-        /// 分割为ByteRange集合
+        /// 分割为大小相等的ByteRange集合
         /// </summary>
-        /// <param name="size">集合的大小</param>
+        /// <param name="size">新的ByteRange大小</param>
         /// <returns></returns>
-        public IEnumerable<ByteRange> Split(int size)
+        public IEnumerable<ByteRange> SplitBySize(int size)
         {
             if (size >= this.Count)
             {
                 yield return this;
+                yield break;
             }
-            else
+
+            var remain = this.Count % size;
+            var count = this.Count - remain;
+
+            var offset = 0;
+            while (offset < count)
             {
-                var remain = this.Count % size;
-                var count = this.Count - remain;
+                yield return new ByteRange(this.Buffer, this.Offset + offset, size);
+                offset = offset + size;
+            }
 
-                var offset = 0;
-                while (offset < count)
-                {
-                    yield return new ByteRange(this.Buffer, this.Offset + offset, size);
-                    offset = offset + size;
-                }
-
-                if (remain > 0)
-                {
-                    yield return new ByteRange(this.Buffer, offset, remain);
-                }
+            if (remain > 0)
+            {
+                yield return new ByteRange(this.Buffer, offset, remain);
             }
         }
 
