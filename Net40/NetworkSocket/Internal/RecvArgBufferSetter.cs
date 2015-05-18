@@ -30,7 +30,7 @@ namespace NetworkSocket
         /// <summary>
         /// 获取接收缓冲区连续内存块大小 
         /// </summary>
-        public const int BUFFER_BLOCK_SIZE = ARG_BUFFER_SIZE * 2;
+        public const int BUFFER_BLOCK_SIZE = ARG_BUFFER_SIZE * 1024;
 
 
         /// <summary>
