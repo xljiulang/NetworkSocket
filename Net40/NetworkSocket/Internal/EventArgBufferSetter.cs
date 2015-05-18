@@ -28,9 +28,9 @@ namespace NetworkSocket
         public const int ARG_BUFFER_SIZE = 8 * 1024;
 
         /// <summary>
-        /// 获取接收或发送的缓冲区连续内存块大小 
+        /// 获取接收或发送的缓冲区连续内存块大小(2M) 
         /// </summary>
-        public const int BUFFER_BLOCK_SIZE = ARG_BUFFER_SIZE * 1024;
+        public const int BUFFER_BLOCK_SIZE = ARG_BUFFER_SIZE * 256;
 
 
         /// <summary>
