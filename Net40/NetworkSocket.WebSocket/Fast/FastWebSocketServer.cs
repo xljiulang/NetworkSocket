@@ -232,16 +232,10 @@ namespace NetworkSocket.WebSocket.Fast
         private void ProcessRemoteException(RequestContext requestContext)
         {
             var remoteException = FastWebSocketCommon.SetApiActionTaskException(this.taskSetActionTable, requestContext);
-            if (remoteException == null)
+            if (remoteException != null)
             {
-                return;
-            }
-            var exceptionContext = new ExceptionContext(requestContext, remoteException);
-            this.ExecExceptionFilters(exceptionContext);
-
-            if (exceptionContext.ExceptionHandled == false)
-            {
-                throw exceptionContext.Exception;
+                var exceptionContext = new ExceptionContext(requestContext, remoteException);
+                this.ExecGlobalExceptionFilters(exceptionContext);
             }
         }
 
@@ -285,23 +279,15 @@ namespace NetworkSocket.WebSocket.Fast
         private ApiAction GetApiAction(RequestContext requestContext)
         {
             var action = this.apiActionList.TryGet(requestContext.Packet.api);
-            if (action != null)
+            if (action == null)
             {
-                return action;
+                var exception = new ApiNotExistException(requestContext.Packet.api);
+                var exceptionContext = new ExceptionContext(requestContext, exception);
+
+                FastWebSocketCommon.SetRemoteException(this.JsonSerializer, exceptionContext);
+                this.ExecGlobalExceptionFilters(exceptionContext);
             }
-
-            var exception = new ApiNotExistException(requestContext.Packet.api);
-            var exceptionContext = new ExceptionContext(requestContext, exception);
-
-            FastWebSocketCommon.SetRemoteException(this.JsonSerializer, exceptionContext);
-            this.ExecExceptionFilters(exceptionContext);
-
-            if (exceptionContext.ExceptionHandled == false)
-            {
-                throw exception;
-            }
-
-            return null;
+            return action;
         }
 
         /// <summary>
@@ -311,24 +297,27 @@ namespace NetworkSocket.WebSocket.Fast
         /// <returns></returns>
         private IFastApiService GetFastApiService(ActionContext actionContext)
         {
-            // 获取服务实例
-            var fastApiService = (IFastApiService)DependencyResolver.Current.GetService(actionContext.Action.DeclaringService);
-            if (fastApiService != null)
+            IFastApiService fastApiService = null;
+            Exception innerException = null;
+
+            try
             {
-                return fastApiService;
+                fastApiService = (IFastApiService)DependencyResolver.Current.GetService(actionContext.Action.DeclaringService);
             }
-            var exception = new Exception(string.Format("无法获取类型{0}的实例", actionContext.Action.DeclaringService));
-            var exceptionContext = new ExceptionContext(actionContext, exception);
-
-            FastWebSocketCommon.SetRemoteException(this.JsonSerializer, exceptionContext);
-            this.ExecExceptionFilters(exceptionContext);
-
-            if (exceptionContext.ExceptionHandled == false)
+            catch (Exception ex)
             {
-                throw exception;
+                innerException = ex;
             }
 
-            return null;
+            if (fastApiService == null)
+            {
+                var exception = new ResolveException(actionContext.Action.DeclaringService, innerException);
+                var exceptionContext = new ExceptionContext(actionContext, exception);
+
+                FastWebSocketCommon.SetRemoteException(this.JsonSerializer, exceptionContext);
+                this.ExecGlobalExceptionFilters(exceptionContext);
+            }
+            return fastApiService;
         }
 
 
@@ -336,7 +325,7 @@ namespace NetworkSocket.WebSocket.Fast
         /// 执行异常过滤器
         /// </summary>         
         /// <param name="exceptionContext">上下文</param>       
-        private void ExecExceptionFilters(ExceptionContext exceptionContext)
+        private void ExecGlobalExceptionFilters(ExceptionContext exceptionContext)
         {
             foreach (var filter in GlobalFilters.ExceptionFilters)
             {
@@ -344,6 +333,15 @@ namespace NetworkSocket.WebSocket.Fast
                 {
                     filter.OnException(exceptionContext);
                 }
+                else
+                {
+                    break;
+                }
+            }
+
+            if (exceptionContext.ExceptionHandled == false)
+            {
+                throw exceptionContext.Exception;
             }
         }
 

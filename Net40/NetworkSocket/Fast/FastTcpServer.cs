@@ -199,9 +199,23 @@ namespace NetworkSocket.Fast
         /// <returns></returns>
         private IEnumerable<FastPacket> GetPacketsFromBuffer(ReceiveBuffer buffer)
         {
-            FastPacket packet;
-            while ((packet = FastPacket.From(buffer)) != null)
+            while (true)
             {
+                FastPacket packet = null;
+                try
+                {
+                    packet = FastPacket.From(buffer);
+                }
+                catch (Exception ex)
+                {
+                    buffer.Clear();
+                    this.OnException(ex);
+                }
+
+                if (packet == null)
+                {
+                    break;
+                }
                 yield return packet;
             }
         }
@@ -232,16 +246,10 @@ namespace NetworkSocket.Fast
         private void ProcessRemoteException(RequestContext requestContext)
         {
             var remoteException = FastTcpCommon.SetApiActionTaskException(this.taskSetActionTable, requestContext);
-            if (remoteException == null)
+            if (remoteException != null)
             {
-                return;
-            }
-            var exceptionContext = new ExceptionContext(requestContext, remoteException);
-            this.ExecExceptionFilters(exceptionContext);
-
-            if (exceptionContext.ExceptionHandled == false)
-            {
-                throw exceptionContext.Exception;
+                var exceptionContext = new ExceptionContext(requestContext, remoteException);
+                this.ExecGlobalExceptionFilters(exceptionContext);
             }
         }
 
@@ -258,22 +266,18 @@ namespace NetworkSocket.Fast
             }
 
             var action = this.GetApiAction(requestContext);
-            if (action == null)
+            if (action != null)
             {
-                return;
+                var actionContext = new ActionContext(requestContext, action);
+                var fastApiService = this.GetFastApiService(actionContext);
+                if (fastApiService != null)
+                {
+                    // 执行Api行为           
+                    fastApiService.Execute(actionContext);
+                    // 释放资源
+                    DependencyResolver.Current.TerminateService(fastApiService);
+                }
             }
-
-            var actionContext = new ActionContext(requestContext, action);
-            var fastApiService = this.GetFastApiService(actionContext);
-            if (fastApiService == null)
-            {
-                return;
-            }
-
-            // 执行Api行为           
-            fastApiService.Execute(actionContext);
-            // 释放资源
-            DependencyResolver.Current.TerminateService(fastApiService);
         }
 
         /// <summary>
@@ -284,23 +288,15 @@ namespace NetworkSocket.Fast
         private ApiAction GetApiAction(RequestContext requestContext)
         {
             var action = this.apiActionList.TryGet(requestContext.Packet.ApiName);
-            if (action != null)
+            if (action == null)
             {
-                return action;
+                var exception = new ApiNotExistException(requestContext.Packet.ApiName);
+                var exceptionContext = new ExceptionContext(requestContext, exception);
+
+                FastTcpCommon.SetRemoteException(requestContext.Session, exceptionContext);
+                this.ExecGlobalExceptionFilters(exceptionContext);
             }
-
-            var exception = new ApiNotExistException(requestContext.Packet.ApiName);
-            var exceptionContext = new ExceptionContext(requestContext, exception);
-
-            FastTcpCommon.SetRemoteException(requestContext.Session, exceptionContext);
-            this.ExecExceptionFilters(exceptionContext);
-
-            if (exceptionContext.ExceptionHandled == false)
-            {
-                throw exception;
-            }
-
-            return null;
+            return action;
         }
 
         /// <summary>
@@ -310,32 +306,34 @@ namespace NetworkSocket.Fast
         /// <returns></returns>
         private IFastApiService GetFastApiService(ActionContext actionContext)
         {
-            // 获取服务实例
-            var fastApiService = (IFastApiService)DependencyResolver.Current.GetService(actionContext.Action.DeclaringService);
-            if (fastApiService != null)
+            IFastApiService fastApiService = null;
+            Exception innerException = null;
+
+            try
             {
-                return fastApiService;
+                fastApiService = (IFastApiService)DependencyResolver.Current.GetService(actionContext.Action.DeclaringService);
             }
-            var exception = new Exception(string.Format("无法获取类型{0}的实例", actionContext.Action.DeclaringService));
-            var exceptionContext = new ExceptionContext(actionContext, exception);
-
-            FastTcpCommon.SetRemoteException(actionContext.Session, exceptionContext);
-            this.ExecExceptionFilters(exceptionContext);
-
-            if (exceptionContext.ExceptionHandled == false)
+            catch (Exception ex)
             {
-                throw exception;
+                innerException = ex;
             }
 
-            return null;
+            if (fastApiService == null)
+            {
+                var exception = new ResolveException(actionContext.Action.DeclaringService, innerException);
+                var exceptionContext = new ExceptionContext(actionContext, exception);
+
+                FastTcpCommon.SetRemoteException(actionContext.Session, exceptionContext);
+                this.ExecGlobalExceptionFilters(exceptionContext);
+            }
+            return fastApiService;
         }
-
 
         /// <summary>
         /// 执行异常过滤器
         /// </summary>         
         /// <param name="exceptionContext">上下文</param>       
-        private void ExecExceptionFilters(ExceptionContext exceptionContext)
+        private void ExecGlobalExceptionFilters(ExceptionContext exceptionContext)
         {
             foreach (var filter in GlobalFilters.ExceptionFilters)
             {
@@ -343,9 +341,17 @@ namespace NetworkSocket.Fast
                 {
                     filter.OnException(exceptionContext);
                 }
+                else
+                {
+                    break;
+                }
+            }
+
+            if (exceptionContext.ExceptionHandled == false)
+            {
+                throw exceptionContext.Exception;
             }
         }
-
         #region IDisponse
         /// <summary>
         /// 释放资源

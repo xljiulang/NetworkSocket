@@ -60,6 +60,9 @@
     <Compile Include="ByteBuilder.cs" />
     <Compile Include="ByteConverter.cs" />
     <Compile Include="Endians.cs" />
+    <Compile Include="Fast\Exception\ProtocolException.cs" />
+    <Compile Include="SessionAcceptExcetion.cs" />
+    <Compile Include="SessionCreateException.cs" />
     <Compile Include="Fast\ApiAction.cs" />
     <Compile Include="Fast\ApiAttribute.cs" />
     <Compile Include="Fast\Context\ActionContext.cs" />
@@ -69,6 +72,7 @@
     <Compile Include="Fast\Exception\ApiExecuteException.cs" />
     <Compile Include="Fast\Exception\ApiNotExistException.cs" />
     <Compile Include="Fast\Exception\RemoteException.cs" />
+    <Compile Include="Fast\Exception\ResolveException.cs" />
     <Compile Include="Fast\Exception\SerializerException.cs" />
     <Compile Include="Fast\FastApiService.cs" />
     <Compile Include="Fast\FastSession.cs" />

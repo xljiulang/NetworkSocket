@@ -149,18 +149,26 @@ namespace NetworkSocket.Fast
         /// 不足一个封包时返回null
         /// </summary>
         /// <param name="buffer">接收到的历史数据</param>
+        /// <exception cref="ProtocolException"></exception>
         /// <returns></returns>
         public static FastPacket From(ReceiveBuffer buffer)
-        {
+        {           
             if (buffer.Length < 4)
             {
                 return null;
             }
 
-            // 包长
             buffer.Position = 0;
             var totalBytes = buffer.ReadInt32();
 
+            // 少于15字节是异常数据，清除收到的所有数据
+            const int packetMinSize = 15;
+            if (totalBytes < packetMinSize)
+            {
+                throw new ProtocolException();
+            }
+
+            // 数据包未接收完整
             if (buffer.Length < totalBytes)
             {
                 return null;
@@ -168,6 +176,11 @@ namespace NetworkSocket.Fast
 
             // api名称数据长度
             var apiNameLength = buffer.ReadByte();
+            if (totalBytes < apiNameLength + packetMinSize)
+            {
+                throw new ProtocolException();
+            }
+
             // api名称数据
             var apiNameBytes = buffer.ReadArray(apiNameLength);
             // 标识符

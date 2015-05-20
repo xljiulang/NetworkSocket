@@ -160,8 +160,8 @@ namespace NetworkSocket
             else
             {
                 Interlocked.Increment(ref this.acceptFailureTimes);
-                var remoteEndPoint = socket == null ? null : (IPEndPoint)socket.RemoteEndPoint;
-                this.OnAcceptFailure(arg.SocketError, remoteEndPoint);
+                var innerException = new SocketException((int)arg.SocketError);
+                this.OnException(new SessionAcceptExcetion(innerException));
             }
 
             // 处理后继续接收
@@ -190,9 +190,13 @@ namespace NetworkSocket
                     Interlocked.Increment(ref this.totalSessionCount);
                 }
             }
+            catch (SessionCreateException ex)
+            {
+                this.OnException(ex);
+            }
             catch (Exception ex)
             {
-                this.OnCreateSessionException(ex);
+                this.OnException(new SessionCreateException(ex));
             }
             return session;
         }
@@ -236,25 +240,16 @@ namespace NetworkSocket
         }
 
         /// <summary>
-        /// 接受会话失败时触发
-        /// </summary>
-        /// <param name="socketError">失败原因</param>
-        /// <param name="remoteEndPoint">远程终结点</param>       
-        protected virtual void OnAcceptFailure(SocketError socketError, IPEndPoint remoteEndPoint)
-        {
-        }
-
-        /// <summary>
         /// 创建新的会话对象
         /// </summary>
         /// <returns></returns>
         protected abstract T OnCreateSession();
 
         /// <summary>
-        /// 创建会话异常时触发
+        /// 接收或创建会话时产生的异常
         /// </summary>
         /// <param name="exception">异常</param>
-        protected virtual void OnCreateSessionException(Exception exception)
+        protected virtual void OnException(Exception exception)
         {
         }
 
