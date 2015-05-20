@@ -69,11 +69,6 @@ namespace NetworkSocket.Fast
         /// <exception cref="ArgumentException"></exception>
         private void CheckSelfParameterType(ApiAction apiAction)
         {
-            if (apiAction.ReturnType.IsSerializable == false)
-            {
-                throw new ArgumentException(string.Format("Api{0}的返回类型必须为可序列化", apiAction.ApiName));
-            }
-
             foreach (var pType in apiAction.ParameterTypes)
             {
                 if (pType.IsAbstract || pType.IsInterface)
