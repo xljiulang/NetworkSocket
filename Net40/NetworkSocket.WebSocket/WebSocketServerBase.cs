@@ -42,12 +42,6 @@ namespace NetworkSocket.WebSocket
         private void ProcessHandshake(T session, ReceiveBuffer buffer)
         {
             var request = HandshakeRequest.From(buffer);
-            if (request == null)
-            {
-                session.Close();
-                return;
-            }
-
             if (this.OnHandshake(session, request) == false)
             {
                 session.Close();
@@ -156,6 +150,10 @@ namespace NetworkSocket.WebSocket
         /// <returns></returns>
         protected virtual bool OnHandshake(T session, HandshakeRequest request)
         {
+            if (request == null)
+            {
+                return false;
+            }
             if (string.Equals(request.Method, "GET", StringComparison.OrdinalIgnoreCase) == false)
             {
                 return false;
