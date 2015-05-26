@@ -8,70 +8,106 @@ using System.Text.RegularExpressions;
 namespace NetworkSocket.WebSocket
 {
     /// <summary>
-    /// 表示握手请求信息
+    /// 表示Http请求信息
     /// </summary>
-    public class HandshakeRequest
+    public class HttpRequest
     {
         /// <summary>
-        /// 头信息
+        /// 获取请求的头信息
         /// </summary>
         public IDictionary<string, string> Header { get; private set; }
 
         /// <summary>
-        /// 请求方法
+        /// 获取请求方法
         /// </summary>
         public string Method { get; private set; }
 
         /// <summary>
-        /// 路径
+        /// 获取请求路径
         /// </summary>
         public string Path { get; private set; }
 
         /// <summary>
-        /// 数据体
+        /// 获取请求的数据体
         /// </summary>
         public string Body { get; private set; }
 
         /// <summary>
-        /// Scheme
+        /// 获取请求的Scheme
         /// </summary>
         public string Scheme { get; private set; }
 
         /// <summary>
         /// 获取头数据
         /// </summary>
-        /// <param name="key">键</param>
+        /// <param name="key">键(不分大小写)</param>
         /// <returns></returns>
         public string this[string key]
         {
             get
             {
-                string value = null;
-                if (this.Header.TryGetValue(key, out value))
-                {
-                    return value;
-                }
-                return null;
+                string value;
+                this.Header.TryGetValue(key, out value);
+                return value;
             }
         }
 
         /// <summary>
-        /// 握手请求信息
+        /// Http请求信息
         /// </summary>
-        private HandshakeRequest()
+        private HttpRequest()
         {
             this.Header = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>
-        /// 获取头数据是否存在
+        /// 获取请求头数据是否存在
         /// </summary>
-        /// <param name="key">键</param>
-        /// <param name="value">值</param>
+        /// <param name="key">键(不分大小写)</param>       
+        /// <returns></returns>
+        public bool ExistHeader(string key)
+        {
+            return this.Header.ContainsKey(key);
+        }
+
+        /// <summary>
+        /// 获取请求头数据是否存在
+        /// </summary>
+        /// <param name="key">键(不分大小写)</param>
+        /// <param name="value">值(不分大小写)</param>
         /// <returns></returns>
         public bool ExistHeader(string key, string value)
         {
             return string.Equals(this[key], value, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// 获取是否为Websocket请求
+        /// </summary>
+        /// <returns></returns>
+        public virtual bool IsWebsocketRequest()
+        {
+            if (string.Equals(this.Method, "GET", StringComparison.OrdinalIgnoreCase) == false)
+            {
+                return false;
+            }
+            if (this.ExistHeader("Connection", "Upgrade") == false)
+            {
+                return false;
+            }
+            if (this.ExistHeader("Upgrade", "websocket") == false)
+            {
+                return false;
+            }
+            if (this.ExistHeader("Sec-WebSocket-Version", "13") == false)
+            {
+                return false;
+            }
+            if (this.ExistHeader("Sec-WebSocket-Key") == false)
+            {
+                return false;
+            }
+            return true;
         }
 
 
@@ -80,12 +116,12 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="buffer">接收到的原始数量</param>
         /// <returns></returns>
-        public static HandshakeRequest From(ReceiveBuffer buffer)
+        public static HttpRequest From(ReceiveBuffer buffer)
         {
             buffer.Position = 0;
             var bytes = buffer.ReadArray();
             buffer.Clear();
-            return HandshakeRequest.From(bytes, "ws");
+            return HttpRequest.From(bytes, "ws");
         }
 
         /// <summary>
@@ -94,7 +130,7 @@ namespace NetworkSocket.WebSocket
         /// <param name="bytes">原始数量</param>
         /// <param name="scheme">scheme</param>
         /// <returns></returns>
-        private static HandshakeRequest From(byte[] bytes, string scheme)
+        private static HttpRequest From(byte[] bytes, string scheme)
         {
             const string pattern = @"^(?<method>[^\s]+)\s(?<path>[^\s]+)\sHTTP\/1\.1\r\n" +
                 @"((?<field_name>[^:\r\n]+):\s(?<field_value>[^\r\n]*)\r\n)+" +
@@ -107,7 +143,7 @@ namespace NetworkSocket.WebSocket
                 return null;
             }
 
-            var request = new HandshakeRequest
+            var request = new HttpRequest
             {
                 Method = match.Groups["method"].Value,
                 Path = match.Groups["path"].Value,

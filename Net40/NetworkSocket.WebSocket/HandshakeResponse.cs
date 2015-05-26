@@ -14,14 +14,14 @@ namespace NetworkSocket.WebSocket
         /// <summary>
         /// 握手请求
         /// </summary>
-        private HandshakeRequest request;
+        private HttpRequest request;
 
         /// <summary>
         /// 表示握手回复
         /// </summary>
         /// <param name="request">握手请求</param>
         /// <exception cref="ArgumentNullException"></exception>
-        public HandshakeResponse(HandshakeRequest request)
+        public HandshakeResponse(HttpRequest request)
         {
             if (request == null)
             {

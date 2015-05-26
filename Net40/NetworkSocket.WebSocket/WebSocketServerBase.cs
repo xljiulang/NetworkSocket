@@ -41,7 +41,7 @@ namespace NetworkSocket.WebSocket
         /// <param name="buffer">接收到的数据</param>
         private void ProcessHandshake(T session, ReceiveBuffer buffer)
         {
-            var request = HandshakeRequest.From(buffer);
+            var request = HttpRequest.From(buffer);
             if (this.OnHandshake(session, request) == false)
             {
                 session.Close();
@@ -148,33 +148,13 @@ namespace NetworkSocket.WebSocket
         /// <param name="session">会话对象</param>
         /// <param name="request">握手请求</param>     
         /// <returns></returns>
-        protected virtual bool OnHandshake(T session, HandshakeRequest request)
+        protected virtual bool OnHandshake(T session, HttpRequest request)
         {
             if (request == null)
             {
                 return false;
             }
-            if (string.Equals(request.Method, "GET", StringComparison.OrdinalIgnoreCase) == false)
-            {
-                return false;
-            }
-            if (request.ExistHeader("Connection", "Upgrade") == false)
-            {
-                return false;
-            }
-            if (request.ExistHeader("Upgrade", "websocket") == false)
-            {
-                return false;
-            }
-            if (request.ExistHeader("Sec-WebSocket-Version", "13") == false)
-            {
-                return false;
-            }
-            if (request["Sec-WebSocket-Key"] == null)
-            {
-                return false;
-            }
-            return true;
+            return request.IsWebsocketRequest();
         }
 
         /// <summary>

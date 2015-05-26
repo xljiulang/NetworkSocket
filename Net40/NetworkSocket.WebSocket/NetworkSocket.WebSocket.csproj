@@ -162,13 +162,12 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="StatusCodes.cs" />
-    <Compile Include="HandshakeRequest.cs" />
+    <Compile Include="HttpRequest.cs" />
     <Compile Include="HandshakeResponse.cs" />
     <Compile Include="FrameCodes.cs" />
     <Compile Include="FrameRequest.cs" />
     <Compile Include="Response.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="WebSocketServer.cs" />
     <Compile Include="WebSocketSession.cs" />
     <Compile Include="WebSocketServerBase.cs" />
     <Compile Include="FrameResponse.cs" />
