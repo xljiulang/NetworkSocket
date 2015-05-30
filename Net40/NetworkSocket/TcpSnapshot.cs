@@ -5,6 +5,7 @@ using System.Text;
 using System.Runtime.InteropServices;
 using System.Net;
 using System.Diagnostics;
+using System.Net.Sockets;
 
 namespace NetworkSocket
 {
@@ -65,46 +66,58 @@ namespace NetworkSocket
 
         [DllImport("iphlpapi.dll", SetLastError = true)]
         private unsafe static extern uint GetExtendedTcpTable(
-            void* pTcpTable,
+            byte* pTcpTable,
             int* dwOutBufLen,
             bool sort,
-            int ipVersion,
+            AddressFamily ipVersion,
             int tblEnum,
             int reserved);
 
+        /// <summary>
+        /// 获取一次IPv4的Tcp端口快照信息
+        /// </summary>     
+        /// <returns></returns>
+        public unsafe static PortOwnerPid[] Snapshot()
+        {
+            return TcpSnapshot.Snapshot(AddressFamily.InterNetwork);
+        }
 
         /// <summary>
         /// 获取一次Tcp端口快照信息
         /// </summary>
+        /// <param name="ipVersion">ip版本</param>
         /// <returns></returns>
-        public unsafe static PortOwnerPid[] Snapshot()
+        public unsafe static PortOwnerPid[] Snapshot(AddressFamily ipVersion)
         {
-            var hashSet = new HashSet<PortOwnerPid>();
-
-            const int AF_INET = 2;
-            const int TCP_TABLE_OWNER_PID_ALL = 5;
-
             var size = 0;
-            TcpSnapshot.GetExtendedTcpTable(null, &size, true, AF_INET, TCP_TABLE_OWNER_PID_ALL, 0);
-            byte* pTable = stackalloc byte[size];
+            var TCP_TABLE_OWNER_PID_ALL = 5;
+            TcpSnapshot.GetExtendedTcpTable(null, &size, true, ipVersion, TCP_TABLE_OWNER_PID_ALL, 0);
 
-            if (TcpSnapshot.GetExtendedTcpTable(pTable, &size, true, AF_INET, TCP_TABLE_OWNER_PID_ALL, 0) == 0)
+            var pTable = stackalloc byte[size];
+            var state = TcpSnapshot.GetExtendedTcpTable(pTable, &size, false, ipVersion, TCP_TABLE_OWNER_PID_ALL, 0);
+            if (state != 0)
             {
-                var rowLength = *(int*)(pTable);
-                var pRow = pTable + Marshal.SizeOf(rowLength);
-
-                for (int i = 0; i < rowLength; i++)
-                {
-                    var row = *(MIB_TCPROW_OWNER_PID*)pRow;
-                    var portOwner = new PortOwnerPid
-                    {
-                        Port = IPAddress.NetworkToHostOrder((short)row.LocalPort),
-                        OwerPid = (int)row.OwningPid
-                    };
-                    hashSet.Add(portOwner);
-                    pRow = pRow + Marshal.SizeOf(typeof(MIB_TCPROW_OWNER_PID));
-                }
+                return new PortOwnerPid[0];
             }
+
+            var hashSet = new HashSet<PortOwnerPid>();
+            var rowLength = *(int*)(pTable);
+            var pRow = pTable + Marshal.SizeOf(rowLength);
+
+            for (int i = 0; i < rowLength; i++)
+            {
+                var row = *(MIB_TCPROW_OWNER_PID*)pRow;
+                var port = ByteConverter.ToBytes(row.LocalPort, Endians.Little);
+
+                var portOwner = new PortOwnerPid
+                {
+                    Port = ByteConverter.ToUInt16(port, 0, Endians.Big),
+                    OwerPid = (int)row.OwningPid
+                };
+                hashSet.Add(portOwner);
+                pRow = pRow + Marshal.SizeOf(typeof(MIB_TCPROW_OWNER_PID));
+            }
+
             return hashSet.OrderBy(item => item.Port).ToArray();
         }
     }
