@@ -16,9 +16,15 @@ function fastWebSocket(url) {
     this.onopen = function (e) {
     };
 
-    // 绑定给服务器来调用的api
+    // 绑定给服务器来调用的api，返回是否绑定成功
+    // name：api名称
+    // func: api实现函数
     this.bindApi = function (name, func) {
+        if (typeof name !== "string" || !name || !isFunction(func)) {
+            return false;
+        }
         selfApi[name.toLowerCase()] = func;
+        return true;
     }
 
     function isFunction(func) {

@@ -91,7 +91,7 @@ namespace NetworkSocket
         {
             var size = 0;
             var TCP_TABLE_OWNER_PID_ALL = 5;
-            TcpSnapshot.GetExtendedTcpTable(null, &size, true, ipVersion, TCP_TABLE_OWNER_PID_ALL, 0);
+            TcpSnapshot.GetExtendedTcpTable(null, &size, false, ipVersion, TCP_TABLE_OWNER_PID_ALL, 0);
 
             var pTable = stackalloc byte[size];
             var state = TcpSnapshot.GetExtendedTcpTable(pTable, &size, false, ipVersion, TCP_TABLE_OWNER_PID_ALL, 0);
