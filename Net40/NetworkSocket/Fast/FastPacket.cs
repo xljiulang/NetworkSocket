@@ -123,15 +123,21 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 转换为ByteRange
         /// </summary>
+        /// <exception cref="ProtocolException"></exception>
         /// <returns></returns>
         public ByteRange ToByteRange()
         {
             var apiNameBytes = Encoding.UTF8.GetBytes(this.ApiName);
             var headLength = apiNameBytes.Length + 15;
-
-            this.ApiNameLength = (byte)apiNameBytes.Length;
             this.TotalBytes = this.Body == null ? headLength : headLength + this.Body.Length;
 
+            const int packegMaxSize = 10 * 1204 * 1024; // 10M
+            if (this.TotalBytes > packegMaxSize)
+            {
+                throw new ProtocolException();
+            }
+
+            this.ApiNameLength = (byte)apiNameBytes.Length;
             var builder = new ByteBuilder(Endians.Big);
             builder.Add(this.TotalBytes);
             builder.Add(this.ApiNameLength);
@@ -152,7 +158,7 @@ namespace NetworkSocket.Fast
         /// <exception cref="ProtocolException"></exception>
         /// <returns></returns>
         public static FastPacket From(ReceiveBuffer buffer)
-        {           
+        {
             if (buffer.Length < 4)
             {
                 return null;
@@ -160,6 +166,11 @@ namespace NetworkSocket.Fast
 
             buffer.Position = 0;
             var totalBytes = buffer.ReadInt32();
+            const int packegMaxSize = 10 * 1204 * 1024; // 10M
+            if (totalBytes > packegMaxSize)
+            {
+                throw new ProtocolException();
+            }
 
             // 少于15字节是异常数据，清除收到的所有数据
             const int packetMinSize = 15;

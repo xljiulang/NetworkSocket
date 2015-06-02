@@ -11,10 +11,10 @@ namespace NetworkSocket.Fast
     public class ProtocolException : Exception
     {
         /// <summary>
-        /// 据包协议异常
+        /// 数据包协议异常
         /// </summary>
         public ProtocolException()
-            : base("请求的数据包协议不正确")
+            : base("数据包协议不正确或数据包太大")
         {
         }
     }

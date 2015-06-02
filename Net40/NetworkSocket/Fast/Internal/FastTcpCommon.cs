@@ -100,6 +100,7 @@ namespace NetworkSocket.Fast
         /// <param name="parameters">参数</param>      
         /// <exception cref="SocketException"></exception>   
         /// <exception cref="SerializerException"></exception>
+        /// <exception cref="ProtocolException"></exception>
         /// <returns></returns>
         public static Task<T> InvokeApi<T>(ISession session, TaskSetActionTable taskSetActionTable, ISerializer serializer, string api, long id, bool fromClient, params object[] parameters)
         {

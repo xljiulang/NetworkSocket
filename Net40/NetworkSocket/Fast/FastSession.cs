@@ -54,7 +54,8 @@ namespace NetworkSocket.Fast
         /// <param name="api">数据包Api名</param>
         /// <param name="parameters">参数列表</param>      
         /// <exception cref="SocketException"></exception>     
-        /// <exception cref="SerializerException"></exception>          
+        /// <exception cref="SerializerException"></exception>   
+        /// <exception cref="ProtocolException"></exception>
         public void InvokeApi(string api, params object[] parameters)
         {
             var id = this.packetIdProvider.GetId();
@@ -72,6 +73,7 @@ namespace NetworkSocket.Fast
         /// <param name="parameters">参数</param>       
         /// <exception cref="SocketException"></exception>      
         /// <exception cref="SerializerException"></exception>
+        /// <exception cref="ProtocolException"></exception>
         /// <returns>远程数据任务</returns>         
         public Task<T> InvokeApi<T>(string api, params object[] parameters)
         {
