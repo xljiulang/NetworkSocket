@@ -13,7 +13,7 @@ namespace WebSocket
         public Server()
         {
             Console.Title = "FastWebSocketServer";
-            GlobalFilters.Add(new ExceptionFilterAttribute());
+            this.GlobalFilter.Add(new ExceptionFilterAttribute());
             this.BindService<CpuCounterService>();
             this.StartListen(8282);
             Console.WriteLine("FastWebSocketServer服务已启动，端口：" + this.LocalEndPoint.Port);

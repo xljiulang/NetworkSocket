@@ -29,6 +29,11 @@ namespace NetworkSocket.Fast
         internal ISerializer Serializer { get; private set; }
 
         /// <summary>
+        /// 获取全局滤过器
+        /// </summary>
+        internal GlobalFilters GlobalFilter { get; private set; }
+
+        /// <summary>
         /// Api行为特性过滤器提供者
         /// </summary>
         internal IFilterAttributeProvider FilterAttributeProvider { get; set; }
@@ -40,11 +45,13 @@ namespace NetworkSocket.Fast
         /// <param name="packetIdProvider">数据包id提供者</param>
         /// <param name="taskSetActionTable">任务行为表</param>
         /// <param name="filterAttributeProvider">特性过滤器提供者</param>
-        internal FastSession(PacketIdProvider packetIdProvider, TaskSetActionTable taskSetActionTable, ISerializer serializer, IFilterAttributeProvider filterAttributeProvider)
+        /// <param name="globalFilter">全局过滤器</param>
+        internal FastSession(PacketIdProvider packetIdProvider, TaskSetActionTable taskSetActionTable, ISerializer serializer, IFilterAttributeProvider filterAttributeProvider, GlobalFilters globalFilter)
         {
             this.packetIdProvider = packetIdProvider;
             this.taskSetActionTable = taskSetActionTable;
             this.Serializer = serializer;
+            this.GlobalFilter = globalFilter;
             this.FilterAttributeProvider = filterAttributeProvider;
         }
 

@@ -6,80 +6,87 @@ using System.Text;
 namespace NetworkSocket.Fast
 {
     /// <summary>
-    /// 全局过滤器
+    /// 表示全局过滤器
     /// </summary>
-    public static class GlobalFilters
+    public class GlobalFilters
     {
-        /// <summary>
-        /// 获取IAuthorization过滤器
-        /// </summary>
-        public static IEnumerable<IAuthorizationFilter> AuthorizationFilters { get; private set; }
-
         /// <summary>
         /// 获取IAction过滤器
         /// </summary>
-        public static IEnumerable<IActionFilter> ActionFilters { get; private set; }
+        public IEnumerable<IActionFilter> ActionFilters { get; private set; }
 
         /// <summary>
         /// 获取IExceptionFilter过滤器
         /// </summary>
-        public static IEnumerable<IExceptionFilter> ExceptionFilters { get; private set; }
+        public IEnumerable<IExceptionFilter> ExceptionFilters { get; private set; }
+
+        /// <summary>
+        /// 获取IAuthorization过滤器
+        /// </summary>
+        public IEnumerable<IAuthorizationFilter> AuthorizationFilters { get; private set; }
 
         /// <summary>
         /// 全局过滤器
         /// </summary>
-        static GlobalFilters()
+        public GlobalFilters()
         {
-            AuthorizationFilters = Enumerable.Empty<IAuthorizationFilter>();
-            ActionFilters = Enumerable.Empty<IActionFilter>();
-            ExceptionFilters = Enumerable.Empty<IExceptionFilter>();
+            this.ActionFilters = Enumerable.Empty<IActionFilter>();
+            this.ExceptionFilters = Enumerable.Empty<IExceptionFilter>();
+            this.AuthorizationFilters = Enumerable.Empty<IAuthorizationFilter>();
         }
 
         /// <summary>
-        /// 添加过滤器
+        /// 移除过滤器类型
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        public void Remove<T>() where T : class, IFilter
+        {
+            this.ActionFilters = this.ActionFilters.Where(item => item.GetType() != typeof(T));
+            this.ExceptionFilters = this.ExceptionFilters.Where(item => item.GetType() != typeof(T));
+            this.AuthorizationFilters = this.AuthorizationFilters.Where(item => item.GetType() != typeof(T));
+        }
+
+        /// <summary>
+        /// 添加过滤器并按Order字段排序
         /// </summary>
         /// <param name="filter">过滤器</param>
         /// <exception cref="ArgumentNullException"></exception>
         /// <returns></returns>
-        public static bool Add(IFilter filter)
+        public bool Add(IFilter filter)
         {
             if (filter == null)
             {
                 throw new ArgumentNullException();
             }
 
-            if (filter.AllowMultiple == false)
+            var actionFilter = filter as IActionFilter;
+            if (actionFilter != null)
             {
-                var allFilters = ActionFilters.Cast<IFilter>().Concat(AuthorizationFilters).Concat(ExceptionFilters);
-                if (allFilters.Any(item => item.GetType() == filter.GetType()))
+                if (actionFilter.AllowMultiple == false && this.ActionFilters.Any(item => item.GetType() == actionFilter.GetType()))
                 {
                     return false;
                 }
+                this.ActionFilters = this.ActionFilters.Concat(new[] { actionFilter }).OrderBy(item => item.Order);
             }
 
-            var actionFilter = filter as IActionFilter;
             var authorizationFilter = filter as IAuthorizationFilter;
-            var exceptionFilter = filter as IExceptionFilter;
-
-            if (actionFilter != null)
-            {
-                ActionFilters = ActionFilters
-                    .Concat(new[] { actionFilter })
-                    .OrderBy(item => item.Order);
-            }
-
             if (authorizationFilter != null)
             {
-                AuthorizationFilters = AuthorizationFilters
-                    .Concat(new[] { authorizationFilter })
-                    .OrderBy(item => item.Order);
+                if (authorizationFilter.AllowMultiple == false && this.AuthorizationFilters.Any(item => item.GetType() == authorizationFilter.GetType()))
+                {
+                    return false;
+                }
+                this.AuthorizationFilters = this.AuthorizationFilters.Concat(new[] { authorizationFilter }).OrderBy(item => item.Order);
             }
 
+            var exceptionFilter = filter as IExceptionFilter;
             if (exceptionFilter != null)
             {
-                ExceptionFilters = ExceptionFilters
-                    .Concat(new[] { exceptionFilter })
-                    .OrderBy(item => item.Order);
+                if (exceptionFilter.AllowMultiple == false && this.ExceptionFilters.Any(item => item.GetType() == exceptionFilter.GetType()))
+                {
+                    return false;
+                }
+                this.ExceptionFilters = this.ExceptionFilters.Concat(new[] { exceptionFilter }).OrderBy(item => item.Order);
             }
 
             return true;

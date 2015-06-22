@@ -97,7 +97,7 @@ namespace NetworkSocket.Fast
             action.Parameters = packet.GetBodyParameters(serializer, action.ParameterTypes);
 
             this.ExecFiltersBeforeAction(filters, actionContext);
-            var returnValue = action.Execute(this, action.Parameters);           
+            var returnValue = action.Execute(this, action.Parameters);
             this.ExecFiltersAfterAction(filters, actionContext);
 
             // 返回数据
@@ -153,7 +153,7 @@ namespace NetworkSocket.Fast
         private void ExecFiltersBeforeAction(IEnumerable<IFilter> actionFilters, ActionContext actionContext)
         {
             // OnAuthorization
-            foreach (var globalFilter in GlobalFilters.AuthorizationFilters)
+            foreach (var globalFilter in this.CurrentContext.Session.GlobalFilter.AuthorizationFilters)
             {
                 globalFilter.OnAuthorization(actionContext);
             }
@@ -168,7 +168,7 @@ namespace NetworkSocket.Fast
             }
 
             // OnExecuting
-            foreach (var globalFilter in GlobalFilters.ActionFilters)
+            foreach (var globalFilter in this.CurrentContext.Session.GlobalFilter.ActionFilters)
             {
                 globalFilter.OnExecuting(actionContext);
             }
@@ -193,7 +193,7 @@ namespace NetworkSocket.Fast
         private void ExecFiltersAfterAction(IEnumerable<IFilter> actionFilters, ActionContext actionContext)
         {
             // 全局过滤器
-            foreach (var globalFilter in GlobalFilters.ActionFilters)
+            foreach (var globalFilter in this.CurrentContext.Session.GlobalFilter.ActionFilters)
             {
                 globalFilter.OnExecuted(actionContext);
             }
@@ -219,7 +219,7 @@ namespace NetworkSocket.Fast
         /// <param name="exceptionContext">上下文</param>       
         private void ExecExceptionFilters(IEnumerable<IFilter> actionFilters, ExceptionContext exceptionContext)
         {
-            foreach (var filter in GlobalFilters.ExceptionFilters)
+            foreach (var filter in this.CurrentContext.Session.GlobalFilter.ExceptionFilters)
             {
                 if (exceptionContext.ExceptionHandled == false)
                 {

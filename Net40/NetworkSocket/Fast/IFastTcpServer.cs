@@ -17,6 +17,11 @@ namespace NetworkSocket.Fast
         ISerializer Serializer { get; set; }
 
         /// <summary>
+        /// 获取全局过滤器
+        /// </summary>
+        GlobalFilters GlobalFilter { get; }
+
+        /// <summary>
         /// 获取或设置Api行为特性过滤器提供者
         /// </summary>
         IFilterAttributeProvider FilterAttributeProvider { get; set; }

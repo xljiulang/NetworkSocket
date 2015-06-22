@@ -55,6 +55,11 @@ namespace NetworkSocket.Fast
         public ISerializer Serializer { get; set; }
 
         /// <summary>
+        /// 获取全局过滤器
+        /// </summary>
+        public GlobalFilters GlobalFilter { get; private set; }
+
+        /// <summary>
         /// 获取或设置Api行为特性过滤器提供者
         /// </summary>
         public IFilterAttributeProvider FilterAttributeProvider { get; set; }
@@ -69,6 +74,7 @@ namespace NetworkSocket.Fast
             this.taskSetActionTable = new TaskSetActionTable();
 
             this.Serializer = new DefaultSerializer();
+            this.GlobalFilter = new GlobalFilters();
             this.FilterAttributeProvider = new FilterAttributeProvider();
         }
 
@@ -173,7 +179,7 @@ namespace NetworkSocket.Fast
         /// <returns></returns>
         protected override FastSession OnCreateSession()
         {
-            return new FastSession(this.packetIdProvider, this.taskSetActionTable, this.Serializer, this.FilterAttributeProvider);
+            return new FastSession(this.packetIdProvider, this.taskSetActionTable, this.Serializer, this.FilterAttributeProvider, this.GlobalFilter);
         }
 
         /// <summary>
@@ -335,7 +341,7 @@ namespace NetworkSocket.Fast
         /// <param name="exceptionContext">上下文</param>       
         private void ExecGlobalExceptionFilters(ExceptionContext exceptionContext)
         {
-            foreach (var filter in GlobalFilters.ExceptionFilters)
+            foreach (var filter in this.GlobalFilter.ExceptionFilters)
             {
                 if (exceptionContext.ExceptionHandled == false)
                 {
@@ -369,6 +375,7 @@ namespace NetworkSocket.Fast
 
                 this.packetIdProvider = null;
                 this.Serializer = null;
+                this.GlobalFilter = null;
                 this.FilterAttributeProvider = null;
             }
         }

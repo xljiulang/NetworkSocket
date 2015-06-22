@@ -20,10 +20,9 @@ namespace Server
     {
         static void Main(string[] args)
         {
-
-            GlobalFilters.Add(new ExceptionFilterAttribute());
-
             var fastServer = new FastServer();
+            
+            fastServer.GlobalFilter.Add(new ExceptionFilterAttribute());
             fastServer.Serializer = new FastJsonSerializer();
             fastServer.BindService(fastServer.GetType().Assembly);
             fastServer.RegisterResolver();

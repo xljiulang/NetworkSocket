@@ -52,6 +52,11 @@ namespace NetworkSocket.WebSocket.Fast
         public IJsonSerializer JsonSerializer { get; set; }
 
         /// <summary>
+        /// 获取全局过滤器
+        /// </summary>
+        public GlobalFilters GlobalFilter { get; private set; }
+
+        /// <summary>
         /// 获取或设置Api行为特性过滤器提供者
         /// </summary>
         public IFilterAttributeProvider FilterAttributeProvider { get; set; }
@@ -66,6 +71,7 @@ namespace NetworkSocket.WebSocket.Fast
             this.taskSetActionTable = new TaskSetActionTable();
 
             this.JsonSerializer = new DefaultJsonSerializer();
+            this.GlobalFilter = new GlobalFilters();
             this.FilterAttributeProvider = new FilterAttributeProvider();
         }
 
@@ -197,7 +203,7 @@ namespace NetworkSocket.WebSocket.Fast
         /// <returns></returns>
         protected override FastWebSocketSession OnCreateSession()
         {
-            return new FastWebSocketSession(this.packetIdProvider, this.taskSetActionTable, this.JsonSerializer, this.FilterAttributeProvider);
+            return new FastWebSocketSession(this.packetIdProvider, this.taskSetActionTable, this.JsonSerializer, this.FilterAttributeProvider,this.GlobalFilter);
         }
 
         /// <summary>
@@ -327,7 +333,7 @@ namespace NetworkSocket.WebSocket.Fast
         /// <param name="exceptionContext">上下文</param>       
         private void ExecGlobalExceptionFilters(ExceptionContext exceptionContext)
         {
-            foreach (var filter in GlobalFilters.ExceptionFilters)
+            foreach (var filter in this.GlobalFilter.ExceptionFilters)
             {
                 if (exceptionContext.ExceptionHandled == false)
                 {
@@ -362,6 +368,7 @@ namespace NetworkSocket.WebSocket.Fast
 
                 this.packetIdProvider = null;
                 this.JsonSerializer = null;
+                this.GlobalFilter = null;
                 this.FilterAttributeProvider = null;
             }
         }

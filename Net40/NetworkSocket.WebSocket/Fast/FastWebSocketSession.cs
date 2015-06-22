@@ -29,6 +29,11 @@ namespace NetworkSocket.WebSocket.Fast
         internal IJsonSerializer JsonSerializer { get; private set; }
 
         /// <summary>
+        /// 获取全局滤过器
+        /// </summary>
+        internal GlobalFilters GlobalFilter { get; private set; }
+
+        /// <summary>
         /// 获取Api行为特性过滤器提供者
         /// </summary>
         internal IFilterAttributeProvider FilterAttributeProvider { get; private set; }
@@ -41,11 +46,12 @@ namespace NetworkSocket.WebSocket.Fast
         /// <param name="taskSetActionTable"></param>
         /// <param name="jsonSerializer"></param>
         /// <param name="filterAttributeProvider"></param>
-        internal FastWebSocketSession(PacketIdProvider packetIdProvider, TaskSetActionTable taskSetActionTable, IJsonSerializer jsonSerializer, IFilterAttributeProvider filterAttributeProvider)
+        internal FastWebSocketSession(PacketIdProvider packetIdProvider, TaskSetActionTable taskSetActionTable, IJsonSerializer jsonSerializer, IFilterAttributeProvider filterAttributeProvider, GlobalFilters globalFilter)
         {
             this.packetIdProvider = packetIdProvider;
             this.taskSetActionTable = taskSetActionTable;
             this.JsonSerializer = jsonSerializer;
+            this.GlobalFilter = globalFilter;
             this.FilterAttributeProvider = filterAttributeProvider;
         }
 
