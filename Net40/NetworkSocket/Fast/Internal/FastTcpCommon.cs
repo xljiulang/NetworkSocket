@@ -168,36 +168,6 @@ namespace NetworkSocket.Fast
                 }
             };
             return setAction;
-        }
-
-
-        /// <summary>
-        /// 生成Api行为的调用参数
-        /// </summary>        
-        /// <param name="serializer">序列化工具</param>
-        /// <param name="context">上下文</param> 
-        /// <exception cref="SerializerException"></exception>
-        /// <returns></returns>
-        public static object[] GetApiActionParameters(ISerializer serializer, ActionContext context)
-        {
-            var bodyParameters = context.Packet.GetBodyParameters();
-            var parameters = new object[bodyParameters.Count];
-
-            for (var i = 0; i < bodyParameters.Count; i++)
-            {
-                var parameterBytes = bodyParameters[i];
-                var parameterType = context.Action.ParameterTypes[i];
-
-                if (parameterBytes == null || parameterBytes.Length == 0)
-                {
-                    parameters[i] = Activator.CreateInstance(parameterType);
-                }
-                else
-                {
-                    parameters[i] = serializer.Deserialize(parameterBytes, parameterType);
-                }
-            }
-            return parameters;
-        }
+        }      
     }
 }

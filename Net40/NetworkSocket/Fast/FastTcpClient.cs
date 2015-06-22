@@ -212,13 +212,16 @@ namespace NetworkSocket.Fast
         /// <exception cref="SerializerException"></exception>
         private void ExecuteAction(ActionContext actionContext)
         {
-            var parameters = FastTcpCommon.GetApiActionParameters(this.Serializer, actionContext);
-            var returnValue = actionContext.Action.Execute(this, parameters);
-            if (actionContext.Action.IsVoidReturn == false && this.IsConnected)
-            {
-                var returnByes = this.Serializer.Serialize(returnValue);
-                actionContext.Packet.Body = returnByes;
-                this.Send(actionContext.Packet.ToByteRange());
+            var action = actionContext.Action;
+            var packet = actionContext.Packet; 
+         
+            action.Parameters = packet.GetBodyParameters(this.Serializer, action.ParameterTypes);
+            var returnValue = action.Execute(this, action.Parameters);
+
+            if (action.IsVoidReturn == false && this.IsConnected)
+            { 
+                packet.Body = this.Serializer.Serialize(returnValue);
+                this.Send(packet.ToByteRange());
             }
         }
 

@@ -90,22 +90,21 @@ namespace NetworkSocket.Fast
         /// <param name="filters">过滤器</param>
         private void ExecuteAction(ActionContext actionContext, IEnumerable<IFilter> filters)
         {
-            // 执行Filter
+            var action = actionContext.Action;
+            var packet = actionContext.Packet;
+            var session = actionContext.Session;
+            var serializer = session.Serializer;
+            action.Parameters = packet.GetBodyParameters(serializer, action.ParameterTypes);
+
             this.ExecFiltersBeforeAction(filters, actionContext);
-
-            var parameters = FastTcpCommon.GetApiActionParameters(actionContext.Session.Serializer, actionContext);
-            var returnValue = actionContext.Action.Execute(this, parameters);
-
-            // 执行Filter
+            var returnValue = action.Execute(this, action.Parameters);           
             this.ExecFiltersAfterAction(filters, actionContext);
 
             // 返回数据
-            if (actionContext.Action.IsVoidReturn == false && actionContext.Session.IsConnected)
+            if (action.IsVoidReturn == false && session.IsConnected)
             {
-                var returnBytes = actionContext.Session.Serializer.Serialize(returnValue);
-                actionContext.Packet.Body = returnBytes;
-                var session = actionContext.Session;               
-                session.Send(actionContext.Packet.ToByteRange());
+                packet.Body = serializer.Serialize(returnValue);
+                session.Send(packet.ToByteRange());
             }
         }
 
