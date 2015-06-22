@@ -91,10 +91,12 @@ namespace NetworkSocket.WebSocket.Fast
         /// <exception cref="SerializerException"></exception>
         private void ExecuteAction(ActionContext actionContext, IEnumerable<IFilter> filters)
         {
+            var parameters = FastWebSocketCommon.GetApiActionParameters(actionContext.Session.JsonSerializer, actionContext);
+            actionContext.Action.Parameters = parameters;
+
             // 执行Filter
             this.ExecFiltersBeforeAction(filters, actionContext);
 
-            var parameters = FastWebSocketCommon.GetApiActionParameters(actionContext.Session.JsonSerializer, actionContext);
             var returnValue = actionContext.Action.Execute(this, parameters);
 
             // 执行Filter

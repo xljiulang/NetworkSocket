@@ -46,6 +46,7 @@ namespace NetworkSocket.WebSocket.Fast
         /// <param name="taskSetActionTable"></param>
         /// <param name="jsonSerializer"></param>
         /// <param name="filterAttributeProvider"></param>
+        /// <param name="globalFilter"></param>
         internal FastWebSocketSession(PacketIdProvider packetIdProvider, TaskSetActionTable taskSetActionTable, IJsonSerializer jsonSerializer, IFilterAttributeProvider filterAttributeProvider, GlobalFilters globalFilter)
         {
             this.packetIdProvider = packetIdProvider;

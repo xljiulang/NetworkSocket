@@ -24,6 +24,26 @@ namespace NetworkSocket.WebSocket.Fast
         /// </summary>
         private Func<object, object[], object> methodInvoker;
 
+        /// <summary>
+        /// 参数值
+        /// </summary>
+        [ThreadStatic]
+        private static object[] parameters;
+
+        /// <summary>
+        /// 获取参数值
+        /// </summary>
+        public object[] Parameters
+        {
+            get
+            {
+                return parameters;
+            }
+            internal set
+            {
+                parameters = value;
+            }
+        }
 
 
         /// <summary>
