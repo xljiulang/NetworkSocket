@@ -30,21 +30,6 @@ namespace NetworkSocket.WebSocket.Fast
         [ThreadStatic]
         private static object[] parameters;
 
-        /// <summary>
-        /// 获取参数值
-        /// </summary>
-        public object[] Parameters
-        {
-            get
-            {
-                return parameters;
-            }
-            internal set
-            {
-                parameters = value;
-            }
-        }
-
 
         /// <summary>
         /// 获取服务Api名称
@@ -62,9 +47,29 @@ namespace NetworkSocket.WebSocket.Fast
         public Type ReturnType { get; private set; }
 
         /// <summary>
+        /// 获取Api行为的参数信息
+        /// </summary>
+        public ParameterInfo[] ParameterInfos { get; private set; }
+
+        /// <summary>
         /// 获取Api行为的方法成员参数类型
         /// </summary>
         public Type[] ParameterTypes { get; private set; }
+
+        /// <summary>
+        /// 获取Api行为的参数值
+        /// </summary>
+        public object[] ParameterValues
+        {
+            get
+            {
+                return parameters;
+            }
+            internal set
+            {
+                parameters = value;
+            }
+        }
 
         /// <summary>
         /// 获取声明该成员的服务类型
@@ -87,7 +92,8 @@ namespace NetworkSocket.WebSocket.Fast
 
             this.ReturnType = method.ReturnType;
             this.IsVoidReturn = method.ReturnType.Equals(typeof(void));
-            this.ParameterTypes = method.GetParameters().Select(item => item.ParameterType).ToArray();
+            this.ParameterInfos = method.GetParameters();
+            this.ParameterTypes = this.ParameterInfos.Select(item => item.ParameterType).ToArray();
 
             var api = Attribute.GetCustomAttribute(method, typeof(ApiAttribute)) as ApiAttribute;
             this.ApiName = api.Name ?? method.Name;

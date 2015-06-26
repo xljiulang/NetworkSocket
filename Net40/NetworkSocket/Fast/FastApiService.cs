@@ -94,10 +94,10 @@ namespace NetworkSocket.Fast
             var packet = actionContext.Packet;
             var session = actionContext.Session;
             var serializer = session.Serializer;
-            action.Parameters = packet.GetBodyParameters(serializer, action.ParameterTypes);
+            action.ParameterValues = packet.GetBodyParameters(serializer, action.ParameterTypes);
 
             this.ExecFiltersBeforeAction(filters, actionContext);
-            var returnValue = action.Execute(this, action.Parameters);
+            var returnValue = action.Execute(this, action.ParameterValues);
             this.ExecFiltersAfterAction(filters, actionContext);
 
             // 返回数据

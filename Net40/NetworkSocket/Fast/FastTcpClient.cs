@@ -215,8 +215,8 @@ namespace NetworkSocket.Fast
             var action = actionContext.Action;
             var packet = actionContext.Packet; 
          
-            action.Parameters = packet.GetBodyParameters(this.Serializer, action.ParameterTypes);
-            var returnValue = action.Execute(this, action.Parameters);
+            action.ParameterValues = packet.GetBodyParameters(this.Serializer, action.ParameterTypes);
+            var returnValue = action.Execute(this, action.ParameterValues);
 
             if (action.IsVoidReturn == false && this.IsConnected)
             { 

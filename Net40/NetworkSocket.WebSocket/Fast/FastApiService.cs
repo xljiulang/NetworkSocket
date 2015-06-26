@@ -92,7 +92,7 @@ namespace NetworkSocket.WebSocket.Fast
         private void ExecuteAction(ActionContext actionContext, IEnumerable<IFilter> filters)
         {
             var parameters = FastWebSocketCommon.GetApiActionParameters(actionContext.Session.JsonSerializer, actionContext);
-            actionContext.Action.Parameters = parameters;
+            actionContext.Action.ParameterValues = parameters;
 
             // 执行Filter
             this.ExecFiltersBeforeAction(filters, actionContext);
