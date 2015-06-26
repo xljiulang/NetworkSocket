@@ -13,17 +13,23 @@ namespace NetworkSocket.Fast
     /// 任务行为表
     /// 自带超时检测功能
     /// </summary>
-    internal class TaskSetActionTable
+    internal class TaskSetActionTable : IDisposable
     {
         /// <summary>
-        /// 任务行为字典
+        /// 超时检测时钟
         /// </summary>
-        private readonly ConcurrentDictionary<long, TaskSetAction> table = new ConcurrentDictionary<long, TaskSetAction>();
+        private Timer timer;
 
         /// <summary>
         /// 超时时间
         /// </summary>       
         private int timeOut = 30 * 1000;
+
+        /// <summary>
+        /// 任务行为字典
+        /// </summary>
+        private readonly ConcurrentDictionary<long, TaskSetAction> table = new ConcurrentDictionary<long, TaskSetAction>();
+
 
         /// <summary>
         /// 获取或设置超时时间(毫秒)
@@ -51,18 +57,13 @@ namespace NetworkSocket.Fast
         /// </summary>
         public TaskSetActionTable()
         {
-            Task.Factory.StartNew(() =>
+            this.timer = new Timer((state) =>
             {
-                var spinWait = new SpinWait();
-                while (true)
+                if (this.table.Count > 0)
                 {
-                    if (this.table.Count > 0)
-                    {
-                        this.CheckTaskActionTimeout();
-                    }
-                    spinWait.SpinOnce();
+                    this.CheckTaskActionTimeout();
                 }
-            });
+            }, null, 0, 1);
         }
 
         /// <summary>
@@ -129,6 +130,14 @@ namespace NetworkSocket.Fast
         public void Clear()
         {
             this.table.Clear();
+        }
+
+        /// <summary>
+        /// 释放资源
+        /// </summary>
+        public void Dispose()
+        {
+            this.timer.Dispose();
         }
     }
 }

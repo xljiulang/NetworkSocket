@@ -87,5 +87,15 @@ namespace NetworkSocket.Fast
             var id = this.packetIdProvider.GetId();
             return FastTcpCommon.InvokeApi<T>(this, this.taskSetActionTable, this.Serializer, api, id, false, parameters);
         }
+
+        /// <summary>
+        /// 释放资源
+        /// </summary>
+        /// <param name="disposing"></param>
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+            this.taskSetActionTable.Dispose();            
+        }
     }
 }

@@ -306,6 +306,8 @@ namespace NetworkSocket.Fast
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
+            this.taskSetActionTable.Dispose();
+
             if (disposing)
             {
                 this.apiActionList = null;

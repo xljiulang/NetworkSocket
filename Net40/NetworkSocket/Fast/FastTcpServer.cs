@@ -358,6 +358,8 @@ namespace NetworkSocket.Fast
                 throw exceptionContext.Exception;
             }
         }
+
+
         #region IDisponse
         /// <summary>
         /// 释放资源
@@ -366,6 +368,8 @@ namespace NetworkSocket.Fast
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
+            this.taskSetActionTable.Dispose();
+
             if (disposing)
             {
                 this.apiActionList = null;
