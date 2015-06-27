@@ -61,6 +61,7 @@
     <Compile Include="ByteConverter.cs" />
     <Compile Include="Endians.cs" />
     <Compile Include="Fast\Exception\ProtocolException.cs" />
+    <Compile Include="Fast\Internal\LoopWorker.cs" />
     <Compile Include="SessionAcceptExcetion.cs" />
     <Compile Include="SessionCreateException.cs" />
     <Compile Include="Fast\ApiAction.cs" />

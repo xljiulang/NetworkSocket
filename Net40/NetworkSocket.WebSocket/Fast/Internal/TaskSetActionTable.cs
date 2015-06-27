@@ -13,17 +13,18 @@ namespace NetworkSocket.WebSocket.Fast
     /// 任务行为表
     /// 自带超时检测功能
     /// </summary>
-    internal class TaskSetActionTable
+    internal class TaskSetActionTable : IDisposable
     {
-        /// <summary>
-        /// 任务行为字典
-        /// </summary>
-        private readonly ConcurrentDictionary<long, TaskSetAction> table = new ConcurrentDictionary<long, TaskSetAction>();
-
         /// <summary>
         /// 超时时间
         /// </summary>       
         private int timeOut = 30 * 1000;
+
+        /// <summary>
+        /// 任务行为字典
+        /// </summary>
+        private readonly ConcurrentDictionary<long, ITaskSetAction> table = new ConcurrentDictionary<long, ITaskSetAction>();
+
 
         /// <summary>
         /// 获取或设置超时时间(毫秒)
@@ -51,18 +52,7 @@ namespace NetworkSocket.WebSocket.Fast
         /// </summary>
         public TaskSetActionTable()
         {
-            Task.Factory.StartNew(() =>
-            {
-                var spinWait = new SpinWait();
-                while (true)
-                {
-                    if (this.table.Count > 0)
-                    {
-                        this.CheckTaskActionTimeout();
-                    }
-                    spinWait.SpinOnce();
-                }
-            });
+            LoopWorker.AddWork(this.CheckTaskActionTimeout);
         }
 
         /// <summary>
@@ -70,22 +60,43 @@ namespace NetworkSocket.WebSocket.Fast
         /// </summary>       
         private void CheckTaskActionTimeout()
         {
+            if (this.table.Count == 0)
+            {
+                return;
+            }
+
             foreach (var key in this.table.Keys)
             {
-                TaskSetAction taskSetAction;
-                if (this.table.TryGetValue(key, out taskSetAction))
+                if (this.ProcessIfTimeout(key) == false)
                 {
-                    if (Environment.TickCount - taskSetAction.InitTime < TimeOut)
-                    {
-                        break;
-                    }
-                }
-
-                if (this.table.TryRemove(key, out taskSetAction))
-                {
-                    taskSetAction.SetAction(SetTypes.SetTimeoutException, null);
+                    // 遇到还没超时的对象就退出检测
+                    break;
                 }
             }
+        }
+
+        /// <summary>
+        /// 如果超时了就处理超时并返回true
+        /// 否则返回false
+        /// </summary>
+        /// <param name="key">值</param>
+        private bool ProcessIfTimeout(long key)
+        {
+            ITaskSetAction taskSetAction;
+            if (this.table.TryGetValue(key, out taskSetAction))
+            {
+                // 还没有超时
+                if (Environment.TickCount - taskSetAction.CreateTime < TimeOut)
+                {
+                    return false;
+                }
+            }
+
+            if (this.table.TryRemove(key, out taskSetAction))
+            {
+                taskSetAction.SetAction(SetTypes.SetTimeoutException, null);
+            }
+            return true;
         }
 
         /// <summary>
@@ -94,7 +105,7 @@ namespace NetworkSocket.WebSocket.Fast
         /// <param name="key">键值</param>
         /// <param name="taskSetAction">设置行为</param>       
         /// <returns></returns>
-        public void Add(long key, TaskSetAction taskSetAction)
+        public void Add(long key, ITaskSetAction taskSetAction)
         {
             this.table.TryAdd(key, taskSetAction);
         }
@@ -105,9 +116,9 @@ namespace NetworkSocket.WebSocket.Fast
         /// </summary>
         /// <param name="key">键值</param>
         /// <returns></returns>
-        public TaskSetAction Take(long key)
+        public ITaskSetAction Take(long key)
         {
-            TaskSetAction taskSetAction;
+            ITaskSetAction taskSetAction;
             this.table.TryRemove(key, out taskSetAction);
             return taskSetAction;
         }
@@ -116,10 +127,10 @@ namespace NetworkSocket.WebSocket.Fast
         /// 取出并移除全部的项
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<TaskSetAction> TakeAll()
+        public IEnumerable<ITaskSetAction> TakeAll()
         {
             var values = this.table.ToArray().Select(item => item.Value);
-            this.Clear();
+            this.table.Clear();
             return values;
         }
 
@@ -129,6 +140,14 @@ namespace NetworkSocket.WebSocket.Fast
         public void Clear()
         {
             this.table.Clear();
+        }
+
+        /// <summary>
+        /// 释放资源
+        /// </summary>
+        public void Dispose()
+        {
+            LoopWorker.RemoveWork(this.CheckTaskActionTimeout);
         }
     }
 }

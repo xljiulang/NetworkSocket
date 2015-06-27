@@ -85,7 +85,9 @@ namespace NetworkSocket.Fast
         public Task<T> InvokeApi<T>(string api, params object[] parameters)
         {
             var id = this.packetIdProvider.GetId();
-            return FastTcpCommon.InvokeApi<T>(this, this.taskSetActionTable, this.Serializer, api, id, false, parameters);
+            var packet = new FastPacket(api, id, false);
+            packet.SetBodyParameters(this.Serializer, parameters);
+            return FastTcpCommon.InvokeApi<T>(this, this.taskSetActionTable, this.Serializer, packet);
         }
 
         /// <summary>
@@ -95,7 +97,7 @@ namespace NetworkSocket.Fast
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
-            this.taskSetActionTable.Dispose();            
+            this.taskSetActionTable.Dispose();
         }
     }
 }

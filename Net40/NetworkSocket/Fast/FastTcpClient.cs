@@ -213,13 +213,13 @@ namespace NetworkSocket.Fast
         private void ExecuteAction(ActionContext actionContext)
         {
             var action = actionContext.Action;
-            var packet = actionContext.Packet; 
-         
+            var packet = actionContext.Packet;
+
             action.ParameterValues = packet.GetBodyParameters(this.Serializer, action.ParameterTypes);
             var returnValue = action.Execute(this, action.ParameterValues);
 
             if (action.IsVoidReturn == false && this.IsConnected)
-            { 
+            {
                 packet.Body = this.Serializer.Serialize(returnValue);
                 this.Send(packet.ToByteRange());
             }
@@ -282,7 +282,10 @@ namespace NetworkSocket.Fast
         /// <returns>远程数据任务</returns>    
         public Task<T> InvokeApi<T>(string api, params object[] parameters)
         {
-            return FastTcpCommon.InvokeApi<T>(this, this.taskSetActionTable, this.Serializer, api, this.packetIdProvider.GetId(), true, parameters);
+            var id = this.packetIdProvider.GetId();
+            var packet = new FastPacket(api, id, true);
+            packet.SetBodyParameters(this.Serializer, parameters);
+            return FastTcpCommon.InvokeApi<T>(this, this.taskSetActionTable, this.Serializer, packet);
         }
 
         /// <summary>

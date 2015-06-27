@@ -16,11 +16,6 @@ namespace NetworkSocket.Fast
     internal class TaskSetActionTable : IDisposable
     {
         /// <summary>
-        /// 超时检测时钟
-        /// </summary>
-        private Timer timer;
-
-        /// <summary>
         /// 超时时间
         /// </summary>       
         private int timeOut = 30 * 1000;
@@ -28,7 +23,7 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 任务行为字典
         /// </summary>
-        private readonly ConcurrentDictionary<long, TaskSetAction> table = new ConcurrentDictionary<long, TaskSetAction>();
+        private readonly ConcurrentDictionary<long, ITaskSetAction> table = new ConcurrentDictionary<long, ITaskSetAction>();
 
 
         /// <summary>
@@ -57,13 +52,7 @@ namespace NetworkSocket.Fast
         /// </summary>
         public TaskSetActionTable()
         {
-            this.timer = new Timer((state) =>
-            {
-                if (this.table.Count > 0)
-                {
-                    this.CheckTaskActionTimeout();
-                }
-            }, null, 0, 1);
+            LoopWorker.AddWork(this.CheckTaskActionTimeout);
         }
 
         /// <summary>
@@ -71,22 +60,43 @@ namespace NetworkSocket.Fast
         /// </summary>       
         private void CheckTaskActionTimeout()
         {
+            if (this.table.Count == 0)
+            {
+                return;
+            }
+
             foreach (var key in this.table.Keys)
             {
-                TaskSetAction taskSetAction;
-                if (this.table.TryGetValue(key, out taskSetAction))
+                if (this.ProcessIfTimeout(key) == false)
                 {
-                    if (Environment.TickCount - taskSetAction.InitTime < TimeOut)
-                    {
-                        break;
-                    }
-                }
-
-                if (this.table.TryRemove(key, out taskSetAction))
-                {
-                    taskSetAction.SetAction(SetTypes.SetTimeoutException, null);
+                    // 遇到还没超时的对象就退出检测
+                    break;
                 }
             }
+        }
+
+        /// <summary>
+        /// 如果超时了就处理超时并返回true
+        /// 否则返回false
+        /// </summary>
+        /// <param name="key">值</param>
+        private bool ProcessIfTimeout(long key)
+        {
+            ITaskSetAction taskSetAction;
+            if (this.table.TryGetValue(key, out taskSetAction))
+            {
+                // 还没有超时
+                if (Environment.TickCount - taskSetAction.CreateTime < TimeOut)
+                {
+                    return false;
+                }
+            }
+
+            if (this.table.TryRemove(key, out taskSetAction))
+            {
+                taskSetAction.SetAction(SetTypes.SetTimeoutException, null);
+            }
+            return true;
         }
 
         /// <summary>
@@ -95,7 +105,7 @@ namespace NetworkSocket.Fast
         /// <param name="key">键值</param>
         /// <param name="taskSetAction">设置行为</param>       
         /// <returns></returns>
-        public void Add(long key, TaskSetAction taskSetAction)
+        public void Add(long key, ITaskSetAction taskSetAction)
         {
             this.table.TryAdd(key, taskSetAction);
         }
@@ -106,9 +116,9 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="key">键值</param>
         /// <returns></returns>
-        public TaskSetAction Take(long key)
+        public ITaskSetAction Take(long key)
         {
-            TaskSetAction taskSetAction;
+            ITaskSetAction taskSetAction;
             this.table.TryRemove(key, out taskSetAction);
             return taskSetAction;
         }
@@ -117,10 +127,10 @@ namespace NetworkSocket.Fast
         /// 取出并移除全部的项
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<TaskSetAction> TakeAll()
+        public IEnumerable<ITaskSetAction> TakeAll()
         {
             var values = this.table.ToArray().Select(item => item.Value);
-            this.Clear();
+            this.table.Clear();
             return values;
         }
 
@@ -137,7 +147,7 @@ namespace NetworkSocket.Fast
         /// </summary>
         public void Dispose()
         {
-            this.timer.Dispose();
+            LoopWorker.RemoveWork(this.CheckTaskActionTimeout);
         }
     }
 }

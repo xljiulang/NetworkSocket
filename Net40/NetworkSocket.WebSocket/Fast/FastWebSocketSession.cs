@@ -100,59 +100,12 @@ namespace NetworkSocket.WebSocket.Fast
 
             // 登记TaskSetAction       
             var taskSource = new TaskCompletionSource<T>();
-            var setAction = this.NewSetAction<T>(taskSource);
-            var taskSetAction = new TaskSetAction(setAction);
+            var taskSetAction = new TaskSetAction<T>(taskSource);
             taskSetActionTable.Add(packet.id, taskSetAction);
 
             var packetJson = this.JsonSerializer.Serialize(packet);
             this.SendText(packetJson);
             return taskSource.Task;
-        }
-
-        /// <summary>
-        /// 创建新的SetAction
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="taskSource">任务源</param>       
-        /// <returns></returns>
-        private Action<SetTypes, object> NewSetAction<T>(TaskCompletionSource<T> taskSource)
-        {
-            Action<SetTypes, object> setAction = (setType, value) =>
-            {
-                if (setType == SetTypes.SetReturnReult)
-                {
-                    try
-                    {
-                        var result = JObject.Cast<T>(value);
-                        taskSource.TrySetResult(result);
-                    }
-                    catch (SerializerException ex)
-                    {
-                        taskSource.TrySetException(ex);
-                    }
-                    catch (Exception ex)
-                    {
-                        taskSource.TrySetException(new SerializerException(ex));
-                    }
-                }
-                else if (setType == SetTypes.SetReturnException)
-                {
-                    var exception = new RemoteException((string)value);
-                    taskSource.TrySetException(exception);
-                }
-                else if (setType == SetTypes.SetTimeoutException)
-                {
-                    var exception = new TimeoutException();
-                    taskSource.TrySetException(exception);
-                }
-                else if (setType == SetTypes.SetShutdownException)
-                {
-                    var exception = new SocketException((int)SocketError.Shutdown);
-                    taskSource.TrySetException(exception);
-                }
-            };
-
-            return setAction;
         }
     }
 }

@@ -149,6 +149,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Fast\Internal\JObject.cs" />
+    <Compile Include="Fast\Internal\LoopWorker.cs" />
     <Compile Include="Fast\Internal\PacketIdProvider.cs">
       <SubType>Code</SubType>
     </Compile>
