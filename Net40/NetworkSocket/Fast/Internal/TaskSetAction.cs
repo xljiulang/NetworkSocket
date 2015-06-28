@@ -45,15 +45,15 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 获取创建时间
         /// </summary>
-        public int CreateTime { get; private set; }        
+        public int CreateTime { get; private set; }
 
         /// <summary>
         /// 任务设置行为
         /// </summary>       
         /// <param name="serializer">序列化工具</param>
         /// <param name="taskSource">任务源</param>
-        public TaskSetAction( ISerializer serializer, TaskCompletionSource<T> taskSource)
-        {           
+        public TaskSetAction(ISerializer serializer, TaskCompletionSource<T> taskSource)
+        {
             this.serializer = serializer;
             this.taskSource = taskSource;
             this.CreateTime = Environment.TickCount;
@@ -66,43 +66,54 @@ namespace NetworkSocket.Fast
         /// <param name="bytes">数据值</param>
         public void SetAction(SetTypes setType, byte[] bytes)
         {
-            if (setType == SetTypes.SetReturnReult)
+            switch (setType)
             {
-                if (bytes == null || bytes.Length == 0)
-                {
-                    this.taskSource.TrySetResult(default(T));
-                    return;
-                }
+                case SetTypes.SetReturnReult:
+                    this.SetResult(bytes);
+                    break;
 
-                try
-                {
-                    var result = (T)this.serializer.Deserialize(bytes, typeof(T));
-                    this.taskSource.TrySetResult(result);
-                }
-                catch (SerializerException ex)
-                {
-                    this.taskSource.TrySetException(ex);
-                }
-                catch (Exception ex)
-                {
-                    this.taskSource.TrySetException(new SerializerException(ex));
-                }
+                case SetTypes.SetReturnException:
+                    var message = bytes == null ? string.Empty : Encoding.UTF8.GetString(bytes);
+                    var remoteException = new RemoteException(message);
+                    this.taskSource.TrySetException(remoteException);
+                    break;
+
+                case SetTypes.SetTimeoutException:
+                    var timeoutException = new TimeoutException();
+                    this.taskSource.TrySetException(timeoutException);
+                    break;
+
+                case SetTypes.SetShutdownException:
+                    var shutdownException = new SocketException(SocketError.Shutdown.GetHashCode());
+                    this.taskSource.TrySetException(shutdownException);
+                    break;
             }
-            else if (setType == SetTypes.SetReturnException)
+        }
+
+        /// <summary>
+        /// 设置结果
+        /// </summary>
+        /// <param name="bytes">数据</param>
+        private void SetResult(byte[] bytes)
+        {
+            if (bytes == null || bytes.Length == 0)
             {
-                var message = bytes == null ? string.Empty : Encoding.UTF8.GetString(bytes);
-                var exception = new RemoteException(message);
-                this.taskSource.TrySetException(exception);
+                this.taskSource.TrySetResult(default(T));
+                return;
             }
-            else if (setType == SetTypes.SetTimeoutException)
+
+            try
             {
-                var exception = new TimeoutException();
-                this.taskSource.TrySetException(exception);
+                var result = (T)this.serializer.Deserialize(bytes, typeof(T));
+                this.taskSource.TrySetResult(result);
             }
-            else if (setType == SetTypes.SetShutdownException)
+            catch (SerializerException ex)
             {
-                var exception = new SocketException(SocketError.Shutdown.GetHashCode());
-                this.taskSource.TrySetException(exception);
+                this.taskSource.TrySetException(ex);
+            }
+            catch (Exception ex)
+            {
+                this.taskSource.TrySetException(new SerializerException(ex));
             }
         }
     }

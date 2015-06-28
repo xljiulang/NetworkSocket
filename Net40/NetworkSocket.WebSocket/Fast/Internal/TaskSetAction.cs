@@ -59,36 +59,47 @@ namespace NetworkSocket.WebSocket.Fast
         /// <param name="value">数据值</param>
         public void SetAction(SetTypes setType, object value)
         {
-            if (setType == SetTypes.SetReturnReult)
+            switch (setType)
             {
-                try
-                {
-                    var result = JObject.Cast<T>(value);
-                    taskSource.TrySetResult(result);
-                }
-                catch (SerializerException ex)
-                {
-                    taskSource.TrySetException(ex);
-                }
-                catch (Exception ex)
-                {
-                    taskSource.TrySetException(new SerializerException(ex));
-                }
+                case SetTypes.SetReturnReult:
+                    this.SetResult(value);
+                    break;
+
+                case SetTypes.SetReturnException:
+                    var remoteException = new RemoteException((string)value);
+                    this.taskSource.TrySetException(remoteException);
+                    break;
+
+                case SetTypes.SetTimeoutException:
+                    var timeoutException = new TimeoutException();
+                    this.taskSource.TrySetException(timeoutException);
+                    break;
+
+                case SetTypes.SetShutdownException:
+                    var shutdownException = new SocketException((int)SocketError.Shutdown);
+                    this.taskSource.TrySetException(shutdownException);
+                    break;
             }
-            else if (setType == SetTypes.SetReturnException)
+        }
+
+        /// <summary>
+        /// 设置结果
+        /// </summary>
+        /// <param name="value">数据</param>
+        private void SetResult(object value)
+        {
+            try
             {
-                var exception = new RemoteException((string)value);
-                taskSource.TrySetException(exception);
+                var result = JObject.Cast<T>(value);
+                this.taskSource.TrySetResult(result);
             }
-            else if (setType == SetTypes.SetTimeoutException)
+            catch (SerializerException ex)
             {
-                var exception = new TimeoutException();
-                taskSource.TrySetException(exception);
+                this.taskSource.TrySetException(ex);
             }
-            else if (setType == SetTypes.SetShutdownException)
+            catch (Exception ex)
             {
-                var exception = new SocketException((int)SocketError.Shutdown);
-                taskSource.TrySetException(exception);
+                this.taskSource.TrySetException(new SerializerException(ex));
             }
         }
     }
