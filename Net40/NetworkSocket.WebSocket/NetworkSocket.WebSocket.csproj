@@ -73,9 +73,6 @@
       <SubType>
       </SubType>
     </Compile>
-    <Compile Include="Fast\DependencyResolver.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Fast\Exception\ApiExecuteException.cs">
       <SubType>Code</SubType>
     </Compile>

@@ -26,7 +26,7 @@ namespace Server
         /// </summary>
         public void RegisterResolver()
         {           
-            this.RegisterDependencyResolver((builder) =>
+            this.SetAutofacDependencyResolver((builder) =>
             {
                 // 注册服务            
                 builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
@@ -53,7 +53,7 @@ namespace Server
             });
 
             // 给过滤器添加属性注入
-            this.RegisterFilters();
+            this.SetAutofacFilterAttributeProvider();          
         }
 
 

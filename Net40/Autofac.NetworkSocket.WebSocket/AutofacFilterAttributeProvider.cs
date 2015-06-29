@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using NetworkSocket.Fast;
 using Autofac;
+using NetworkSocket.WebSocket.Fast;
 
-namespace Autofac.NetworkSocket
+namespace Autofac.NetworkSocket.WebSocket
 {
     /// <summary>
     /// Autofac服务行为特性过滤器提供者

@@ -57,6 +57,11 @@ namespace NetworkSocket.WebSocket.Fast
         public GlobalFilters GlobalFilter { get; private set; }
 
         /// <summary>
+        /// 获取或设置依赖关系解析提供者
+        /// </summary>
+        public IDependencyResolver DependencyResolver { get; set; }
+
+        /// <summary>
         /// 获取或设置Api行为特性过滤器提供者
         /// </summary>
         public IFilterAttributeProvider FilterAttributeProvider { get; set; }
@@ -72,6 +77,7 @@ namespace NetworkSocket.WebSocket.Fast
 
             this.JsonSerializer = new DefaultJsonSerializer();
             this.GlobalFilter = new GlobalFilters();
+            this.DependencyResolver = new DefaultDependencyResolver();
             this.FilterAttributeProvider = new FilterAttributeProvider();
         }
 
@@ -203,7 +209,7 @@ namespace NetworkSocket.WebSocket.Fast
         /// <returns></returns>
         protected override FastWebSocketSession OnCreateSession()
         {
-            return new FastWebSocketSession(this.packetIdProvider, this.taskSetActionTable, this.JsonSerializer, this.FilterAttributeProvider,this.GlobalFilter);
+            return new FastWebSocketSession(this.packetIdProvider, this.taskSetActionTable, this.JsonSerializer, this.FilterAttributeProvider, this.GlobalFilter);
         }
 
         /// <summary>
@@ -274,7 +280,7 @@ namespace NetworkSocket.WebSocket.Fast
             fastApiService.Execute(actionContext);
 
             // 释放资源
-            DependencyResolver.Current.TerminateService(fastApiService);
+            this.DependencyResolver.TerminateService(fastApiService);
         }
 
         /// <summary>
@@ -308,7 +314,7 @@ namespace NetworkSocket.WebSocket.Fast
 
             try
             {
-                fastApiService = (IFastApiService)DependencyResolver.Current.GetService(actionContext.Action.DeclaringService);
+                fastApiService = (IFastApiService)this.DependencyResolver.GetService(actionContext.Action.DeclaringService);
             }
             catch (Exception ex)
             {
@@ -369,6 +375,7 @@ namespace NetworkSocket.WebSocket.Fast
                 this.packetIdProvider = null;
                 this.JsonSerializer = null;
                 this.GlobalFilter = null;
+                this.DependencyResolver = null;
                 this.FilterAttributeProvider = null;
             }
         }

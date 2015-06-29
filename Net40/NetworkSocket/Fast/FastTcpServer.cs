@@ -386,6 +386,7 @@ namespace NetworkSocket.Fast
                 this.packetIdProvider = null;
                 this.Serializer = null;
                 this.GlobalFilter = null;
+                this.DependencyResolver = null;
                 this.FilterAttributeProvider = null;
             }
         }
