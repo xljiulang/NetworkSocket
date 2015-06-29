@@ -68,7 +68,7 @@ namespace NetworkSocket.WebSocket.Fast
             var packet = new FastPacket
             {
                 api = api,
-                id = this.packetIdProvider.GetId(),
+                id = this.packetIdProvider.NewId(),
                 state = true,
                 fromClient = false,
                 body = parameters
@@ -92,7 +92,7 @@ namespace NetworkSocket.WebSocket.Fast
             var packet = new FastPacket
             {
                 api = api,
-                id = this.packetIdProvider.GetId(),
+                id = this.packetIdProvider.NewId(),
                 state = true,
                 fromClient = false,
                 body = parameters

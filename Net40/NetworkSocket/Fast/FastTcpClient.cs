@@ -264,7 +264,7 @@ namespace NetworkSocket.Fast
         /// <exception cref="ProtocolException"></exception>
         public void InvokeApi(string api, params object[] parameters)
         {
-            var packet = new FastPacket(api, this.packetIdProvider.GetId(), true);
+            var packet = new FastPacket(api, this.packetIdProvider.NewId(), true);
             packet.SetBodyParameters(this.Serializer, parameters);
             this.Send(packet.ToByteRange());
         }
@@ -282,7 +282,7 @@ namespace NetworkSocket.Fast
         /// <returns>远程数据任务</returns>    
         public Task<T> InvokeApi<T>(string api, params object[] parameters)
         {
-            var id = this.packetIdProvider.GetId();
+            var id = this.packetIdProvider.NewId();
             var packet = new FastPacket(api, id, true);
             packet.SetBodyParameters(this.Serializer, parameters);
             return FastTcpCommon.InvokeApi<T>(this, this.taskSetActionTable, this.Serializer, packet);
