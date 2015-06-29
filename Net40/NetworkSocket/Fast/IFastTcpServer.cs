@@ -22,6 +22,11 @@ namespace NetworkSocket.Fast
         GlobalFilters GlobalFilter { get; }
 
         /// <summary>
+        /// 获取或设置依赖关系解析提供者
+        /// </summary>
+        IDependencyResolver DependencyResolver { get; set; }
+
+        /// <summary>
         /// 获取或设置Api行为特性过滤器提供者
         /// </summary>
         IFilterAttributeProvider FilterAttributeProvider { get; set; }

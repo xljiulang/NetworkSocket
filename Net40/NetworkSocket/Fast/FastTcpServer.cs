@@ -60,6 +60,11 @@ namespace NetworkSocket.Fast
         public GlobalFilters GlobalFilter { get; private set; }
 
         /// <summary>
+        /// 获取或设置依赖关系解析提供者
+        /// </summary>
+        public IDependencyResolver DependencyResolver { get; set; }
+
+        /// <summary>
         /// 获取或设置Api行为特性过滤器提供者
         /// </summary>
         public IFilterAttributeProvider FilterAttributeProvider { get; set; }
@@ -75,6 +80,7 @@ namespace NetworkSocket.Fast
 
             this.Serializer = new DefaultSerializer();
             this.GlobalFilter = new GlobalFilters();
+            this.DependencyResolver = new DefaultDependencyResolver();
             this.FilterAttributeProvider = new FilterAttributeProvider();
         }
 
@@ -281,7 +287,7 @@ namespace NetworkSocket.Fast
                     // 执行Api行为           
                     fastApiService.Execute(actionContext);
                     // 释放资源
-                    DependencyResolver.Current.TerminateService(fastApiService);
+                    this.DependencyResolver.TerminateService(fastApiService);
                 }
             }
         }
@@ -317,7 +323,7 @@ namespace NetworkSocket.Fast
 
             try
             {
-                fastApiService = (IFastApiService)DependencyResolver.Current.GetService(actionContext.Action.DeclaringService);
+                fastApiService = (IFastApiService)this.DependencyResolver.GetService(actionContext.Action.DeclaringService);
             }
             catch (Exception ex)
             {

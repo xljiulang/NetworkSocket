@@ -7,11 +7,12 @@ using System.Threading.Tasks;
 using NetworkSocket.Fast;
 using NetworkSocket;
 using Models;
-using Autofac;
 using System.Reflection;
 using Server.Interfaces;
 using Server.Services;
 using Server.Database;
+using Autofac;
+using Autofac.NetworkSocket;
 
 namespace Server
 {
@@ -24,39 +25,35 @@ namespace Server
         /// 注册依赖注入
         /// </summary>
         public void RegisterResolver()
-        {
-            var builder = new ContainerBuilder();
+        {           
+            this.RegisterDependencyResolver((builder) =>
+            {
+                // 注册服务            
+                builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
+                    .Where(type => (typeof(IFastApiService).IsAssignableFrom(type)))
+                    .PropertiesAutowired();
 
-            // 注册服务            
-            builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
-                .Where(type => (typeof(IFastApiService).IsAssignableFrom(type)))
-                .PropertiesAutowired();
+                // 注册DbContext           
+                builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
+                   .Where(type => (typeof(IDbContext).IsAssignableFrom(type)))
+                   .AsImplementedInterfaces()
+                   .InstancePerLifetimeScope();
 
-            // 注册DbContext           
-            builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
-               .Where(type => (typeof(IDbContext).IsAssignableFrom(type)))
-               .AsImplementedInterfaces()
-               .InstancePerLifetimeScope();
+                // 注册Dao
+                builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
+                   .Where(type => (typeof(IDao).IsAssignableFrom(type)))
+                   .PropertiesAutowired()
+                   .AsImplementedInterfaces()
+                   .InstancePerLifetimeScope();
 
-            // 注册Dao
-            builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
-               .Where(type => (typeof(IDao).IsAssignableFrom(type)))
-               .PropertiesAutowired()
-               .AsImplementedInterfaces()
-               .InstancePerLifetimeScope();
-
-            // 注册日志
-            builder.RegisterType<Loger>()
-                .As<ILog>()
-                .InstancePerLifetimeScope();
-
-            var container = builder.Build();
-
-            // 设置依赖关系解析程序
-            DependencyResolver.SetResolver(new AutofacResolver(container));
+                // 注册日志
+                builder.RegisterType<Loger>()
+                    .As<ILog>()
+                    .InstancePerLifetimeScope();
+            });
 
             // 给过滤器添加属性注入
-            this.FilterAttributeProvider = new AutofacFilterAttributeProvider();
+            this.RegisterFilters();
         }
 
 
