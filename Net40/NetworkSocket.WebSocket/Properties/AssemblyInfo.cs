@@ -8,9 +8,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("NetworkSocket.WebSocket")]
 [assembly: AssemblyDescription("WebSocket服务")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Chen Guowei")]
 [assembly: AssemblyProduct("NetworkSocket.WebSocket")]
-[assembly: AssemblyCopyright("Copyright © Chen Guowei  2014-2015")]
+[assembly: AssemblyCopyright("Copyright © Chen Guowei 2014-2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 [assembly: InternalsVisibleTo("UnitTest.NetworkSocket,PublicKey=0024000004800000940000000602000000240000525341310004000001000100a1876d6d847bfe6491a9bf93262a5dc197e8c46ab9fec73eb87f2d25e2b8b88f260302c0ce561eb7117cdd6ac0c7095027bfef2911e397a42475d17332c925f0635280451923d87d57a09f149b4544a115bc8679432f2db2ee1fea3672be1a77908fd1efbf2ba408239d92850360c1abea9dbf2724d5b66bc907ccba893d36a2")]
@@ -34,5 +34,5 @@ using System.Runtime.InteropServices;
 // 可以指定所有这些值，也可以使用“生成号”和“修订号”的默认值，
 // 方法是按如下所示使用“*”:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.3.5.0")]
-[assembly: AssemblyFileVersion("1.3.5.0")]
+[assembly: AssemblyVersion("1.3.7.0")]
+[assembly: AssemblyFileVersion("1.3.7.0")]

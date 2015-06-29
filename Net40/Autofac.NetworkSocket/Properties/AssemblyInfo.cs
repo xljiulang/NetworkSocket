@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // 特性集控制。更改这些特性值可修改
 // 与程序集关联的信息。
 [assembly: AssemblyTitle("Autofac.NetworkSocket")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("NetworkSocket的Autofac依赖注入提供者")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Microsoft")]
+[assembly: AssemblyCompany("Chen Guowei")]
 [assembly: AssemblyProduct("Autofac.NetworkSocket")]
-[assembly: AssemblyCopyright("Copyright © Microsoft 2015")]
+[assembly: AssemblyCopyright("Copyright © Chen Guowei 2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
