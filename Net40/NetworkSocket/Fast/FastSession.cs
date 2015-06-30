@@ -88,16 +88,6 @@ namespace NetworkSocket.Fast
             var packet = new FastPacket(api, id, false);
             packet.SetBodyParameters(this.Serializer, parameters);
             return FastTcpCommon.InvokeApi<T>(this, this.taskSetActionTable, this.Serializer, packet);
-        }
-
-        /// <summary>
-        /// 释放资源
-        /// </summary>
-        /// <param name="disposing"></param>
-        protected override void Dispose(bool disposing)
-        {
-            base.Dispose(disposing);
-            this.taskSetActionTable.Dispose();
-        }
+        }       
     }
 }

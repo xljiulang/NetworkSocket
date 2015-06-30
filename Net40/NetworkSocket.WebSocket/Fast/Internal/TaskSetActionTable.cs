@@ -124,17 +124,6 @@ namespace NetworkSocket.WebSocket.Fast
         }
 
         /// <summary>
-        /// 取出并移除全部的项
-        /// </summary>
-        /// <returns></returns>
-        public IEnumerable<ITaskSetAction> TakeAll()
-        {
-            var values = this.table.ToArray().Select(item => item.Value);
-            this.table.Clear();
-            return values;
-        }
-
-        /// <summary>
         /// 清除所有数据
         /// </summary>
         public void Clear()

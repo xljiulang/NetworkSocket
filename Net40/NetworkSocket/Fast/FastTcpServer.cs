@@ -196,21 +196,6 @@ namespace NetworkSocket.Fast
         /// <returns></returns>
         protected override void OnReceive(FastSession session, ReceiveBuffer buffer)
         {
-            var packets = this.GetPacketsFromBuffer(buffer);
-            foreach (var packet in packets)
-            {
-                // 新线程处理业务内容
-                Task.Factory.StartNew(() => this.OnRecvPacket(session, packet));
-            }
-        }
-
-        /// <summary>
-        /// 获取数据包
-        /// </summary>
-        /// <param name="buffer">接收到的历史数据</param>
-        /// <returns></returns>
-        private IEnumerable<FastPacket> GetPacketsFromBuffer(ReceiveBuffer buffer)
-        {
             while (true)
             {
                 FastPacket packet = null;
@@ -221,16 +206,18 @@ namespace NetworkSocket.Fast
                 catch (Exception ex)
                 {
                     buffer.Clear();
-                    this.OnException(ex);
+                    this.OnException(session, ex);
                 }
 
                 if (packet == null)
                 {
                     break;
                 }
-                yield return packet;
+                // 新线程处理业务内容
+                Task.Factory.StartNew(() => this.OnRecvPacket(session, packet));
             }
         }
+
 
         /// <summary>
         /// 接收到会话对象的数据包

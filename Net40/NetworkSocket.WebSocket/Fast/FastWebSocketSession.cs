@@ -101,7 +101,7 @@ namespace NetworkSocket.WebSocket.Fast
             // 登记TaskSetAction       
             var taskSource = new TaskCompletionSource<T>();
             var taskSetAction = new TaskSetAction<T>(taskSource);
-            taskSetActionTable.Add(packet.id, taskSetAction);
+            this.taskSetActionTable.Add(packet.id, taskSetAction);
 
             var packetJson = this.JsonSerializer.Serialize(packet);
             this.SendText(packetJson);

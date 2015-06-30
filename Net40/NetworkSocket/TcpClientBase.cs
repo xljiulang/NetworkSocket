@@ -23,6 +23,22 @@ namespace NetworkSocket
         }
 
         /// <summary>
+        /// 连接到远程端
+        /// </summary>
+        /// <param name="hostNameOrAddress">域名或ip地址</param>
+        /// <param name="port">远程端口</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="SocketException"></exception>
+        /// <returns></returns>
+        public Task<bool> Connect(string hostNameOrAddress, int port)
+        {
+            var ipAddress = Dns.GetHostAddresses(hostNameOrAddress);
+            return this.Connect(ipAddress.First(), port);
+        }
+
+        /// <summary>
         /// 连接到远程终端       
         /// </summary>
         /// <param name="ip">远程ip</param>

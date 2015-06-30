@@ -69,28 +69,18 @@ namespace NetworkSocket.Fast
         /// <param name="buffer">接收到的历史数据</param>        
         protected override void OnReceive(ReceiveBuffer buffer)
         {
-            var packets = this.GetPacketsFromBuffer(buffer);
-            foreach (var packet in packets)
+            while (true)
             {
+                var packet = FastPacket.From(buffer);
+                if (packet == null)
+                {
+                    break;
+                }
                 // 新线程处理业务内容
                 Task.Factory.StartNew(() => this.OnRecvPacket(packet));
             }
         }
-
-        /// <summary>
-        /// 获取数据包
-        /// </summary>
-        /// <param name="buffer">接收到的历史数据</param>
-        /// <returns></returns>
-        private IEnumerable<FastPacket> GetPacketsFromBuffer(ReceiveBuffer buffer)
-        {
-            FastPacket packet;
-            while ((packet = FastPacket.From(buffer)) != null)
-            {
-                yield return packet;
-            }
-        }
-
+         
         /// <summary>
         /// 接收到服务发来的数据包
         /// </summary>
