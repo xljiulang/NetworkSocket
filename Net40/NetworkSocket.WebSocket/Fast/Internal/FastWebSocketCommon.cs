@@ -70,14 +70,14 @@ namespace NetworkSocket.WebSocket.Fast
         /// <returns></returns>
         public static bool SetRemoteException(IJsonSerializer serializer, ExceptionContext exceptionContext)
         {
-            var packet = exceptionContext.Packet;
-            packet.state = false;
-            packet.body = exceptionContext.Exception.Message;
-
             try
             {
-                var json = serializer.Serialize(packet);
-                exceptionContext.Session.SendText(json);
+                var packet = exceptionContext.Packet;
+                packet.state = false;
+                packet.body = exceptionContext.Exception.Message;
+
+                var packetJson = serializer.Serialize(packet);
+                exceptionContext.Session.SendText(packetJson);
                 return true;
             }
             catch (Exception)
@@ -88,13 +88,11 @@ namespace NetworkSocket.WebSocket.Fast
 
         /// <summary>
         /// 生成Api行为的调用参数
-        /// </summary>        
-        /// <param name="serializer">序列化工具</param>
-        /// <param name="context">上下文</param> 
-        /// <exception cref="ArgumentException"></exception>
+        /// </summary> 
+        /// <param name="context">上下文</param>        
         /// <exception cref="SerializerException"></exception>
         /// <returns></returns>
-        public static object[] GetApiActionParameters(IJsonSerializer serializer, ActionContext context)
+        public static object[] GetApiActionParameters(ActionContext context)
         {
             var body = context.Packet.body as JObject;
             if (body == null || body.IsArray == false)

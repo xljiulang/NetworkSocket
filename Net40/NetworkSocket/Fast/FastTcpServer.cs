@@ -22,14 +22,14 @@ namespace NetworkSocket.Fast
         private ApiActionList apiActionList;
 
         /// <summary>
-        /// 数据包id提供者
+        /// 获取数据包id提供者
         /// </summary>
-        private PacketIdProvider packetIdProvider;
+        internal PacketIdProvider PacketIdProvider { get; private set; }
 
         /// <summary>
-        /// 任务行为表
+        /// 获取任务行为记录表
         /// </summary>
-        private TaskSetActionTable taskSetActionTable;
+        internal TaskSetActionTable TaskSetActionTable { get; private set; }
 
         /// <summary>
         /// 获取或设置请求等待超时时间(毫秒)    
@@ -40,11 +40,11 @@ namespace NetworkSocket.Fast
         {
             get
             {
-                return this.taskSetActionTable.TimeOut;
+                return this.TaskSetActionTable.TimeOut;
             }
             set
             {
-                this.taskSetActionTable.TimeOut = value;
+                this.TaskSetActionTable.TimeOut = value;
             }
         }
 
@@ -75,8 +75,8 @@ namespace NetworkSocket.Fast
         public FastTcpServer()
         {
             this.apiActionList = new ApiActionList();
-            this.packetIdProvider = new PacketIdProvider();
-            this.taskSetActionTable = new TaskSetActionTable();
+            this.PacketIdProvider = new PacketIdProvider();
+            this.TaskSetActionTable = new TaskSetActionTable();
 
             this.Serializer = new DefaultSerializer();
             this.GlobalFilter = new GlobalFilters();
@@ -185,7 +185,7 @@ namespace NetworkSocket.Fast
         /// <returns></returns>
         protected override FastSession OnCreateSession()
         {
-            return new FastSession(this.packetIdProvider, this.taskSetActionTable, this.Serializer, this.FilterAttributeProvider, this.GlobalFilter);
+            return new FastSession(this);
         }
 
         /// <summary>
@@ -244,7 +244,7 @@ namespace NetworkSocket.Fast
         /// <param name="requestContext">请求上下文</param>
         private void ProcessRemoteException(RequestContext requestContext)
         {
-            var remoteException = FastTcpCommon.SetApiActionTaskException(this.taskSetActionTable, requestContext);
+            var remoteException = FastTcpCommon.SetApiActionTaskException(this.TaskSetActionTable, requestContext);
             if (remoteException != null)
             {
                 var exceptionContext = new ExceptionContext(requestContext, remoteException);
@@ -260,7 +260,7 @@ namespace NetworkSocket.Fast
         {
             if (requestContext.Packet.IsFromClient == false)
             {
-                FastTcpCommon.SetApiActionTaskResult(requestContext, this.taskSetActionTable);
+                FastTcpCommon.SetApiActionTaskResult(requestContext, this.TaskSetActionTable);
                 return;
             }
 
@@ -361,16 +361,16 @@ namespace NetworkSocket.Fast
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
-            this.taskSetActionTable.Dispose();
+            this.TaskSetActionTable.Dispose();
 
             if (disposing)
             {
                 this.apiActionList = null;
 
-                this.taskSetActionTable.Clear();
-                this.taskSetActionTable = null;
+                this.TaskSetActionTable.Clear();
+                this.TaskSetActionTable = null;
 
-                this.packetIdProvider = null;
+                this.PacketIdProvider = null;
                 this.Serializer = null;
                 this.GlobalFilter = null;
                 this.DependencyResolver = null;

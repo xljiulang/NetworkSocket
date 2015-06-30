@@ -19,14 +19,14 @@ namespace NetworkSocket.WebSocket.Fast
         private ApiActionList apiActionList;
 
         /// <summary>
-        /// 数据包哈希码提供者
+        /// 获取数据包ID生成提供者
         /// </summary>
-        private PacketIdProvider packetIdProvider;
+        internal PacketIdProvider PacketIdProvider { get; private set; }
 
         /// <summary>
-        /// 任务行为表
+        /// 获取任务行为记录表
         /// </summary>
-        private TaskSetActionTable taskSetActionTable;
+        internal TaskSetActionTable TaskSetActionTable { get; private set; }
 
         /// <summary>
         /// 获取或设置请求等待超时时间(毫秒)    
@@ -37,11 +37,11 @@ namespace NetworkSocket.WebSocket.Fast
         {
             get
             {
-                return this.taskSetActionTable.TimeOut;
+                return this.TaskSetActionTable.TimeOut;
             }
             set
             {
-                this.taskSetActionTable.TimeOut = value;
+                this.TaskSetActionTable.TimeOut = value;
             }
         }
 
@@ -72,8 +72,8 @@ namespace NetworkSocket.WebSocket.Fast
         public FastWebSocketServer()
         {
             this.apiActionList = new ApiActionList();
-            this.packetIdProvider = new PacketIdProvider();
-            this.taskSetActionTable = new TaskSetActionTable();
+            this.PacketIdProvider = new PacketIdProvider();
+            this.TaskSetActionTable = new TaskSetActionTable();
 
             this.JsonSerializer = new DefaultJsonSerializer();
             this.GlobalFilter = new GlobalFilters();
@@ -209,7 +209,7 @@ namespace NetworkSocket.WebSocket.Fast
         /// <returns></returns>
         protected override FastWebSocketSession OnCreateSession()
         {
-            return new FastWebSocketSession(this.packetIdProvider, this.taskSetActionTable, this.JsonSerializer, this.FilterAttributeProvider, this.GlobalFilter);
+            return new FastWebSocketSession(this);
         }
 
         /// <summary>
@@ -243,7 +243,7 @@ namespace NetworkSocket.WebSocket.Fast
         /// <param name="requestContext">请求上下文</param>     
         private void ProcessRemoteException(RequestContext requestContext)
         {
-            var remoteException = FastWebSocketCommon.SetApiActionTaskException(this.taskSetActionTable, requestContext);
+            var remoteException = FastWebSocketCommon.SetApiActionTaskException(this.TaskSetActionTable, requestContext);
             if (remoteException != null)
             {
                 var exceptionContext = new ExceptionContext(requestContext, remoteException);
@@ -259,7 +259,7 @@ namespace NetworkSocket.WebSocket.Fast
         {
             if (requestContext.Packet.fromClient == false)
             {
-                FastWebSocketCommon.SetApiActionTaskResult(requestContext, this.taskSetActionTable);
+                FastWebSocketCommon.SetApiActionTaskResult(requestContext, this.TaskSetActionTable);
                 return;
             }
 
@@ -369,10 +369,10 @@ namespace NetworkSocket.WebSocket.Fast
             {
                 this.apiActionList = null;
 
-                this.taskSetActionTable.Clear();
-                this.taskSetActionTable = null;
+                this.TaskSetActionTable.Clear();
+                this.TaskSetActionTable = null;
 
-                this.packetIdProvider = null;
+                this.PacketIdProvider = null;
                 this.JsonSerializer = null;
                 this.GlobalFilter = null;
                 this.DependencyResolver = null;

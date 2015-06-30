@@ -14,45 +14,17 @@ namespace NetworkSocket.Fast
     public sealed class FastSession : SessionBase, IFastSession
     {
         /// <summary>
-        /// 数据包id提供者
+        /// 获取服务器实例
         /// </summary>
-        private PacketIdProvider packetIdProvider;
-
-        /// <summary>
-        /// 任务行为表
-        /// </summary>
-        private TaskSetActionTable taskSetActionTable;
-
-        /// <summary>
-        /// 获取序列化工具      
-        /// </summary>
-        internal ISerializer Serializer { get; private set; }
-
-        /// <summary>
-        /// 获取全局滤过器
-        /// </summary>
-        internal GlobalFilters GlobalFilter { get; private set; }
-
-        /// <summary>
-        /// Api行为特性过滤器提供者
-        /// </summary>
-        internal IFilterAttributeProvider FilterAttributeProvider { get; set; }
+        internal FastTcpServer Server { get; private set; } 
 
         /// <summary>
         /// 服务器的客户端对象
         /// </summary>
-        /// <param name="serializer">序列化工具</param>
-        /// <param name="packetIdProvider">数据包id提供者</param>
-        /// <param name="taskSetActionTable">任务行为表</param>
-        /// <param name="filterAttributeProvider">特性过滤器提供者</param>
-        /// <param name="globalFilter">全局过滤器</param>
-        internal FastSession(PacketIdProvider packetIdProvider, TaskSetActionTable taskSetActionTable, ISerializer serializer, IFilterAttributeProvider filterAttributeProvider, GlobalFilters globalFilter)
+        /// <param name="server">服务器实例</param>
+        internal FastSession(FastTcpServer server )
         {
-            this.packetIdProvider = packetIdProvider;
-            this.taskSetActionTable = taskSetActionTable;
-            this.Serializer = serializer;
-            this.GlobalFilter = globalFilter;
-            this.FilterAttributeProvider = filterAttributeProvider;
+            this.Server = server;
         }
 
         /// <summary>
@@ -65,9 +37,9 @@ namespace NetworkSocket.Fast
         /// <exception cref="ProtocolException"></exception>
         public void InvokeApi(string api, params object[] parameters)
         {
-            var id = this.packetIdProvider.NewId();
+            var id = this.Server.PacketIdProvider.NewId();
             var packet = new FastPacket(api, id, false);
-            packet.SetBodyParameters(this.Serializer, parameters);
+            packet.SetBodyParameters(this.Server.Serializer, parameters);
             this.Send(packet.ToByteRange());
         }
 
@@ -84,10 +56,10 @@ namespace NetworkSocket.Fast
         /// <returns>远程数据任务</returns>         
         public Task<T> InvokeApi<T>(string api, params object[] parameters)
         {
-            var id = this.packetIdProvider.NewId();
+            var id = this.Server.PacketIdProvider.NewId();
             var packet = new FastPacket(api, id, false);
-            packet.SetBodyParameters(this.Serializer, parameters);
-            return FastTcpCommon.InvokeApi<T>(this, this.taskSetActionTable, this.Serializer, packet);
-        }       
+            packet.SetBodyParameters(this.Server.Serializer, parameters);
+            return FastTcpCommon.InvokeApi<T>(this, this.Server.TaskSetActionTable, this.Server.Serializer, packet);
+        }
     }
 }

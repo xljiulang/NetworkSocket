@@ -14,46 +14,17 @@ namespace NetworkSocket.WebSocket.Fast
     public sealed class FastWebSocketSession : WebSocketSession, IFastWebSocketSession
     {
         /// <summary>
-        /// 数据包id提供者
+        /// 获取服务器实例
         /// </summary>
-        private PacketIdProvider packetIdProvider;
-
-        /// <summary>
-        /// 任务行为表
-        /// </summary>
-        private TaskSetActionTable taskSetActionTable;
-
-        /// <summary>
-        /// 获取Json序列化工具       
-        /// </summary>
-        internal IJsonSerializer JsonSerializer { get; private set; }
-
-        /// <summary>
-        /// 获取全局滤过器
-        /// </summary>
-        internal GlobalFilters GlobalFilter { get; private set; }
-
-        /// <summary>
-        /// 获取Api行为特性过滤器提供者
-        /// </summary>
-        internal IFilterAttributeProvider FilterAttributeProvider { get; private set; }
-
+        internal FastWebSocketServer Server { get; private set; }
 
         /// <summary>
         /// FastWebSocket的客户端对象
         /// </summary>
-        /// <param name="packetIdProvider"></param>
-        /// <param name="taskSetActionTable"></param>
-        /// <param name="jsonSerializer"></param>
-        /// <param name="filterAttributeProvider"></param>
-        /// <param name="globalFilter"></param>
-        internal FastWebSocketSession(PacketIdProvider packetIdProvider, TaskSetActionTable taskSetActionTable, IJsonSerializer jsonSerializer, IFilterAttributeProvider filterAttributeProvider, GlobalFilters globalFilter)
+        /// <param name="server">服务器实例</param>
+        internal FastWebSocketSession(FastWebSocketServer server)
         {
-            this.packetIdProvider = packetIdProvider;
-            this.taskSetActionTable = taskSetActionTable;
-            this.JsonSerializer = jsonSerializer;
-            this.GlobalFilter = globalFilter;
-            this.FilterAttributeProvider = filterAttributeProvider;
+            this.Server = server;
         }
 
         /// <summary>
@@ -68,12 +39,12 @@ namespace NetworkSocket.WebSocket.Fast
             var packet = new FastPacket
             {
                 api = api,
-                id = this.packetIdProvider.NewId(),
+                id = this.Server.PacketIdProvider.NewId(),
                 state = true,
                 fromClient = false,
                 body = parameters
             };
-            var packetJson = this.JsonSerializer.Serialize(packet);
+            var packetJson = this.Server.JsonSerializer.Serialize(packet);
             this.SendText(packetJson);
         }
 
@@ -92,7 +63,7 @@ namespace NetworkSocket.WebSocket.Fast
             var packet = new FastPacket
             {
                 api = api,
-                id = this.packetIdProvider.NewId(),
+                id = this.Server.PacketIdProvider.NewId(),
                 state = true,
                 fromClient = false,
                 body = parameters
@@ -101,9 +72,9 @@ namespace NetworkSocket.WebSocket.Fast
             // 登记TaskSetAction       
             var taskSource = new TaskCompletionSource<T>();
             var taskSetAction = new TaskSetAction<T>(taskSource);
-            this.taskSetActionTable.Add(packet.id, taskSetAction);
+            this.Server.TaskSetActionTable.Add(packet.id, taskSetAction);
 
-            var packetJson = this.JsonSerializer.Serialize(packet);
+            var packetJson = this.Server.JsonSerializer.Serialize(packet);
             this.SendText(packetJson);
             return taskSource.Task;
         }
