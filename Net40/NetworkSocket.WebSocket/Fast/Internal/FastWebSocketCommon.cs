@@ -36,7 +36,7 @@ namespace NetworkSocket.WebSocket.Fast
             var taskSetAction = taskSetActionTable.Take(requestContext.Packet.id);
             if (taskSetAction != null)
             {
-                var returnValue = (object)requestContext.Packet.body;
+                var returnValue = requestContext.Packet.body;
                 taskSetAction.SetAction(SetTypes.SetReturnReult, returnValue);
             }
         }
