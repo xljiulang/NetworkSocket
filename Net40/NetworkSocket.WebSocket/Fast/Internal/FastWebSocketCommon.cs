@@ -51,7 +51,7 @@ namespace NetworkSocket.WebSocket.Fast
         /// <returns></returns>
         public static RemoteException SetApiActionTaskException(TaskSetActionTable taskSetActionTable, RequestContext requestContext)
         {
-            string message = JObject.TryCast<string>(requestContext.Packet.body);
+            var message = JObject.TryCast<string>(requestContext.Packet.body);
             var taskSetAction = taskSetActionTable.Take(requestContext.Packet.id);
 
             if (taskSetAction != null)

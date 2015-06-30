@@ -29,15 +29,15 @@ namespace NetworkSocket.WebSocket.Fast
 
         /// <summary>
         /// 获取或设置返回的数据是否正常   
-        /// 如果返回false，body是异常内容json
+        /// 如果返回false，body是异常内容
         /// </summary>
         public bool state { get; set; }
 
         /// <summary>
         /// 获取或设置发送或返回的内容体
-        /// 发送时为api的参数值数组json文本
-        /// 接收时为api的返回json文本     
+        /// 发送时为api的参数值数组
+        /// 接收时为远程api的返回内容    
         /// </summary>
-        public dynamic body { get; set; }
+        public object body { get; set; }
     }
 }

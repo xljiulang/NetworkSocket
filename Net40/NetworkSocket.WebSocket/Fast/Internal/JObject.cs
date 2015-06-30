@@ -204,7 +204,7 @@ namespace NetworkSocket.WebSocket.Fast
         /// <typeparam name="T">目标类型</typeparam>
         /// <param name="value">值</param>
         /// <returns></returns>
-        public static object TryCast<T>(object value)
+        public static T TryCast<T>(object value)
         {
             try
             {
@@ -279,7 +279,7 @@ namespace NetworkSocket.WebSocket.Fast
         /// <param name="targetType">目标类型</param>     
         /// <returns></returns>
         private static object CastByJavaScriptSerializer(object value, Type targetType)
-        {           
+        {
             var jObjectValue = value as JObject;
             if (jObjectValue != null && jObjectValue.IsArray)
             {
