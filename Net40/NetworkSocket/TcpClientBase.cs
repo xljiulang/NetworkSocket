@@ -35,7 +35,7 @@ namespace NetworkSocket
         public Task<bool> Connect(string hostNameOrAddress, int port)
         {
             var ipAddress = Dns.GetHostAddresses(hostNameOrAddress);
-            return this.Connect(ipAddress.First(), port);
+            return this.Connect(ipAddress.Last(), port);
         }
 
         /// <summary>
