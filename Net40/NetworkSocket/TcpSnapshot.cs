@@ -31,6 +31,17 @@ namespace NetworkSocket
             public int OwerPid { get; internal set; }
 
             /// <summary>
+            ///  获取占用端口的进程信息
+            /// </summary>
+            public Process OwerProcess
+            {
+                get
+                {
+                    return Process.GetProcessById(this.OwerPid);
+                }
+            }
+
+            /// <summary>
             /// 获取哈希码
             /// </summary>
             /// <returns></returns>
@@ -54,7 +65,7 @@ namespace NetworkSocket
         /// 端口进程信息
         /// </summary>
         [StructLayout(LayoutKind.Sequential)]
-        internal struct MIB_TCPROW_OWNER_PID
+        private struct MIB_TCPROW_OWNER_PID
         {
             public uint State;
             public uint LocalAddr;
