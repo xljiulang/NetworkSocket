@@ -20,17 +20,6 @@ namespace NetworkSocket.Fast
         private static ActionContext currentContext;
 
         /// <summary>
-        /// 获取全局过滤器
-        /// </summary>
-        private GlobalFilters GlobalFilter
-        {
-            get
-            {
-                return currentContext.Session.Server.GlobalFilter;
-            }
-        }
-
-        /// <summary>
         /// 获取当前Api行为上下文
         /// </summary>
         protected ActionContext CurrentContext
@@ -46,16 +35,27 @@ namespace NetworkSocket.Fast
         }
 
         /// <summary>
+        /// 获取关联的服务器实例
+        /// </summary>
+        private FastTcpServer Server
+        {
+            get
+            {
+                return currentContext.Session.Server;
+            }
+        }
+
+        /// <summary>
         /// 执行Api行为
         /// </summary>   
         /// <param name="actionContext">上下文</param>      
         void IFastApiService.Execute(ActionContext actionContext)
         {
-            var filters = actionContext.Session.Server.FilterAttributeProvider.GetActionFilters(actionContext.Action);
+            this.CurrentContext = actionContext;
+            var filters = this.Server.FilterAttributeProvider.GetActionFilters(actionContext.Action);
 
             try
             {
-                this.CurrentContext = actionContext;
                 this.ExecuteAction(actionContext, filters);
             }
             catch (AggregateException exception)
@@ -164,7 +164,7 @@ namespace NetworkSocket.Fast
         private void ExecFiltersBeforeAction(IEnumerable<IFilter> actionFilters, ActionContext actionContext)
         {
             // OnAuthorization
-            foreach (var globalFilter in this.GlobalFilter.AuthorizationFilters)
+            foreach (var globalFilter in this.Server.GlobalFilter.AuthorizationFilters)
             {
                 globalFilter.OnAuthorization(actionContext);
             }
@@ -179,7 +179,7 @@ namespace NetworkSocket.Fast
             }
 
             // OnExecuting
-            foreach (var globalFilter in this.GlobalFilter.ActionFilters)
+            foreach (var globalFilter in this.Server.GlobalFilter.ActionFilters)
             {
                 globalFilter.OnExecuting(actionContext);
             }
@@ -204,7 +204,7 @@ namespace NetworkSocket.Fast
         private void ExecFiltersAfterAction(IEnumerable<IFilter> actionFilters, ActionContext actionContext)
         {
             // 全局过滤器
-            foreach (var globalFilter in this.GlobalFilter.ActionFilters)
+            foreach (var globalFilter in this.Server.GlobalFilter.ActionFilters)
             {
                 globalFilter.OnExecuted(actionContext);
             }
@@ -230,7 +230,7 @@ namespace NetworkSocket.Fast
         /// <param name="exceptionContext">上下文</param>       
         private void ExecExceptionFilters(IEnumerable<IFilter> actionFilters, ExceptionContext exceptionContext)
         {
-            foreach (var filter in this.GlobalFilter.ExceptionFilters)
+            foreach (var filter in this.Server.GlobalFilter.ExceptionFilters)
             {
                 if (exceptionContext.ExceptionHandled == false)
                 {

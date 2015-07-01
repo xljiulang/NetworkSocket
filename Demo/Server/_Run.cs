@@ -12,7 +12,6 @@ using System.Reflection;
 using NetworkSocket.Fast;
 using Server.Services;
 using Server.Filters;
-using Models.Serializer;
 
 namespace Server
 {
@@ -22,11 +21,10 @@ namespace Server
         {
             var fastServer = new FastServer();
             
-            fastServer.GlobalFilter.Add(new ExceptionFilterAttribute());
-            fastServer.Serializer = new FastJsonSerializer();
+            fastServer.GlobalFilter.Add(new ExceptionFilterAttribute());           
             fastServer.BindService(fastServer.GetType().Assembly);
             fastServer.RegisterResolver();
-            fastServer.StartListen(1350);
+            fastServer.StartListen(1380);
 
             Console.Title = "FastServer V" + new SystemService().GetVersion();
             Console.WriteLine("服务已启动，端口：" + fastServer.LocalEndPoint.Port);

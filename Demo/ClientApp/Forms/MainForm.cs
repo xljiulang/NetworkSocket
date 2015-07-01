@@ -1,5 +1,4 @@
 ﻿using Models;
-using Models.Serializer;
 using NetworkSocket.Fast;
 using System;
 using System.Collections.Generic;
@@ -25,10 +24,8 @@ namespace ClientApp.Forms
 
 
         private async void MainForm_Load(object sender, EventArgs e)
-        {
-            RemoteServer.Instance.Serializer = new FastJsonSerializer();
-
-            var endPoint = new System.Net.IPEndPoint(System.Net.IPAddress.Loopback, 1350);
+        {            
+            var endPoint = new System.Net.IPEndPoint(System.Net.IPAddress.Loopback, 1380);
             var state = await RemoteServer.Instance.Connect(endPoint);
             var version = state ? await RemoteServer.Instance.GetVersion() : "未知";
 

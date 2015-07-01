@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("Autofac.NetworkSocket")]
 [assembly: AssemblyDescription("NetworkSocket的Autofac依赖注入提供者")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Chen Guowei")]
+[assembly: AssemblyCompany("https://github.com/xljiulang/NetworkSocket")]
 [assembly: AssemblyProduct("Autofac.NetworkSocket")]
 [assembly: AssemblyCopyright("Copyright © Chen Guowei 2015")]
 [assembly: AssemblyTrademark("")]
