@@ -102,7 +102,7 @@ namespace NetworkSocket.WebSocket.Fast
 
             if (apiServices.Count() == 0)
             {
-                throw new ArgumentException(string.Format("程序集{0}不包含任何IFastApiService服务", assembly.GetName().Name));
+                throw new ArgumentException(string.Format("程序集{0}不包含任何{1}服务", assembly.GetName().Name, typeof(IFastApiService).Name));
             }
 
             return this.BindService(apiServices);
@@ -164,7 +164,7 @@ namespace NetworkSocket.WebSocket.Fast
 
             if (apiServiceType.Any(item => typeof(IFastApiService).IsAssignableFrom(item) == false))
             {
-                throw new ArgumentException("apiServiceType必须派生于IFastApiService");
+                throw new ArgumentException(string.Format("apiServiceType必须派生于{0}", typeof(IFastApiService).Name));
             }
 
             foreach (var type in apiServiceType)

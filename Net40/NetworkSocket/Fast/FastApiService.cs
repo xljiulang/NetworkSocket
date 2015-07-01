@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace NetworkSocket.Fast
 {
     /// <summary>
-    /// Fast的Api服务
+    /// Fast的Api服务抽象类
     /// </summary>
     public abstract class FastApiService : IFastApiService, IAuthorizationFilter, IActionFilter, IExceptionFilter
     {
