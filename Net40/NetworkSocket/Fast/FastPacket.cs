@@ -108,7 +108,7 @@ namespace NetworkSocket.Fast
 
                 if (parameterBytes == null || parameterBytes.Length == 0)
                 {
-                    parameters[i] = Activator.CreateInstance(parameterType);
+                    parameters[i] = parameterType.IsValueType ? Activator.CreateInstance(parameterType) : null;
                 }
                 else
                 {
