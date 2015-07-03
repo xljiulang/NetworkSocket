@@ -162,7 +162,7 @@ namespace NetworkSocket.Fast
             const int packegMaxSize = 10 * 1204 * 1024; // 10M
             if (this.TotalBytes > packegMaxSize)
             {
-                throw new ProtocolException();
+                throw new ProtocolException("数据包太大");
             }
 
             this.ApiNameLength = (byte)apiNameBytes.Length;

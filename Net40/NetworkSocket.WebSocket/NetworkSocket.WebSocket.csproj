@@ -186,9 +186,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>mkdir $(SolutionDir)\Release\Net40
-xcopy $(TargetDir)$(TargetName).dll $(SolutionDir)\Release\Net40 /y
-xcopy $(TargetDir)$(TargetName).xml $(SolutionDir)\Release\Net40 /y</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
