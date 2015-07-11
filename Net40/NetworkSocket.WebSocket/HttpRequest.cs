@@ -95,7 +95,7 @@ namespace NetworkSocket.WebSocket
             {
                 return false;
             }
-            if (this.ExistHeader("Upgrade", "websocket") == false)
+            if (this.ExistHeader("Upgrade") == false)
             {
                 return false;
             }
