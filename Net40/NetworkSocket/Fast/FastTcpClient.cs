@@ -237,9 +237,9 @@ namespace NetworkSocket.Fast
         ///  当操作中遇到处理异常时，将触发此方法
         /// </summary>
         /// <param name="packet">数据包对象</param>
-        /// <param name="pxception">异常对象</param>
+        /// <param name="exception">异常对象</param>
         /// <param name="exceptionHandled">异常是否已处理</param>
-        protected virtual void OnException(FastPacket packet, Exception pxception, out bool exceptionHandled)
+        protected virtual void OnException(FastPacket packet, Exception exception, out bool exceptionHandled)
         {
             exceptionHandled = false;
         }
