@@ -74,6 +74,9 @@ namespace NetworkSocket.WebSocket
             {
                 this.SendResponse(response);
             }
+            catch (Exception)
+            {
+            }
             finally
             {
                 this.Close();

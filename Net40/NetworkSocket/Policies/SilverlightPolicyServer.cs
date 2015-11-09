@@ -62,6 +62,9 @@ namespace NetworkSocket.Policies
             {
                 session.Send(byteRange);
             }
+            catch (Exception)
+            {
+            }
             finally
             {
                 session.Close();

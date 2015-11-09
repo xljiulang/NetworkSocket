@@ -318,6 +318,9 @@ namespace NetworkSocket
                 {
                     this.listenSocket.Dispose();
                 }
+                catch (Exception)
+                {
+                }
                 finally
                 {
                     this.listenSocket = null;

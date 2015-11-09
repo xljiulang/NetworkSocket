@@ -363,6 +363,9 @@ namespace NetworkSocket
                     this.socket.Shutdown(SocketShutdown.Both);
                     this.socket.Dispose();
                 }
+                catch (Exception)
+                {
+                }
                 finally
                 {
                     this.socketClosed = true;

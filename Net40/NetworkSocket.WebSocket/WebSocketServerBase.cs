@@ -54,6 +54,9 @@ namespace NetworkSocket.WebSocket
                 var response = new HandshakeResponse(request);
                 session.SendResponse(response);
             }
+            catch (Exception)
+            {
+            }
             finally
             {
                 session.TagData.Set("HANDSHAKED", true);
@@ -124,6 +127,9 @@ namespace NetworkSocket.WebSocket
                     try
                     {
                         session.SendResponse(new FrameResponse(FrameCodes.Pong, request.Content));
+                    }
+                    catch (Exception)
+                    {
                     }
                     finally
                     {
