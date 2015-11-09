@@ -308,15 +308,18 @@ namespace NetworkSocket
         /// <summary>
         /// 尝试发送开始处的ByteRange
         /// </summary>
-        private void TrySend()
+        private bool TrySend()
         {
             ByteRange byteRange;
-            this.byteRangeQueue.TryDequeue(out byteRange);
+            if (this.byteRangeQueue.TryDequeue(out byteRange) == false)
+            {
+                return false;
+            }
 
             Buffer.BlockCopy(byteRange.Buffer, byteRange.Offset, this.sendArg.Buffer, this.sendArg.Offset, byteRange.Count);
             this.sendArg.SetBuffer(this.sendArg.Offset, byteRange.Count);
 
-            this.TryInvoke(() =>
+            return this.TryInvoke(() =>
             {
                 if (this.socket.SendAsync(this.sendArg) == false)
                 {
