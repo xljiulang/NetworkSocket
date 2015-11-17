@@ -1,4 +1,5 @@
 ﻿using NetworkSocket.Core;
+using NetworkSocket.Core.Internal;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -35,7 +36,7 @@ namespace NetworkSocket.Http
         /// <param name="property">属性</param>        
         public PropertySetter(PropertyInfo property)
         {
-            this.methodInvoker = ApiAction.CreateMethodInvoker(property.GetSetMethod());
+            this.methodInvoker = MethodReflection.CreateInvoker(property.GetSetMethod());
             this.Name = property.Name;
             this.Type = property.PropertyType;
         }

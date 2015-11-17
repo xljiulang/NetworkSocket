@@ -64,6 +64,7 @@
     <Compile Include="Core\IFilter.cs" />
     <Compile Include="Core\Internal\ApiActionList.cs" />
     <Compile Include="Core\Internal\LoopWorker.cs" />
+    <Compile Include="Core\Internal\MethodReflection.cs" />
     <Compile Include="Fast\Internal\PacketIdProvider.cs" />
     <Compile Include="Endians.cs" />
     <Compile Include="Core\ApiAttribute.cs" />
