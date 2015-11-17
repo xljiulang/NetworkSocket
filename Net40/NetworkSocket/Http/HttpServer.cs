@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace NetworkSocket.Http
 {
@@ -89,9 +90,17 @@ namespace NetworkSocket.Http
         /// <param name="response">回复对象</param>
         protected override void OnHttpRequest(HttpRequest request, HttpResponse response)
         {
-            var route = request.Url.AbsolutePath;
+            Task.Factory.StartNew(() => this.ProcessRequest(new RequestContext(request, response)));
+        }
+
+        /// <summary>
+        /// 处理http请求
+        /// </summary>
+        /// <param name="requestContext">请求上下文</param>
+        private void ProcessRequest(RequestContext requestContext)
+        {
+            var route = requestContext.Request.Url.AbsolutePath;
             var action = this.httpActionList.TryGet(route);
-            var requestContext = new RequestContext(request, response);
 
             if (action == null)
             {
