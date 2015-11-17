@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using NetworkSocket.Fast;
 using NetworkSocket.WebSocket.Fast;
+using NetworkSocket.Core;
+using NetworkSocket.Http;
 
 namespace Autofac.NetworkSocket
 {
@@ -16,8 +18,8 @@ namespace Autofac.NetworkSocket
         /// 使用Autofac作依赖解析
         /// 并为相关类型进行注册
         /// </summary>
-        /// <param name="fastTcpServer">服务器</param>
-        public static void SetAutofacDependencyResolver(this IFastTcpServer fastTcpServer, Action<ContainerBuilder> builderAction)
+        /// <param name="server">服务器</param>
+        public static void SetAutofacDependencyResolver(this IDependencyResolverSupportable server, Action<ContainerBuilder> builderAction)
         {
             var builder = new ContainerBuilder();
             if (builderAction != null)
@@ -25,7 +27,7 @@ namespace Autofac.NetworkSocket
                 builderAction.Invoke(builder);
             }
             var container = builder.Build();
-            fastTcpServer.DependencyResolver = new DependencyResolver(container);
+            server.DependencyResolver = new DependencyResolver(container);
         } 
 
 
@@ -45,22 +47,6 @@ namespace Autofac.NetworkSocket
         }
 
         /// <summary>
-        /// 使用Autofac作依赖解析
-        /// 并为相关类型进行注册
-        /// </summary>
-        /// <param name="fastWebSocketServer">服务器</param>
-        public static void SetAutofacDependencyResolver(this IFastWebSocketServer fastWebSocketServer, Action<ContainerBuilder> builderAction)
-        {
-            var builder = new ContainerBuilder();
-            if (builderAction != null)
-            {
-                builderAction.Invoke(builder);
-            }
-            var container = builder.Build();
-            fastWebSocketServer.DependencyResolver = new DependencyResolver(container);
-        }
-
-        /// <summary>
         /// 使用Autofac作过滤器依赖解析
         /// 使过滤器支持属性依赖注入功能
         /// </summary>
@@ -73,6 +59,21 @@ namespace Autofac.NetworkSocket
                 throw new Exception("Autofac不是服务的DependencyResolver，请先调用SetAutofacDependencyResolver");
             }
             fastWebSocketServer.FilterAttributeProvider = new FastWebSocketFilterAttributeProvider(dependencyResolver);
+        }
+
+        /// <summary>
+        /// 使用Autofac作过滤器依赖解析
+        /// 使过滤器支持属性依赖注入功能
+        /// </summary>
+        /// <param name="httpServer">服务器</param>
+        public static void SetAutofacFilterAttributeProvider(this HttpServer httpServer)
+        {
+            var dependencyResolver = httpServer.DependencyResolver as DependencyResolver;
+            if (dependencyResolver == null)
+            {
+                throw new Exception("Autofac不是服务的DependencyResolver，请先调用SetAutofacDependencyResolver");
+            }
+            httpServer.FilterAttributeProvider = new  HttpFilterAttributeProvider(dependencyResolver);
         }
     }
 }

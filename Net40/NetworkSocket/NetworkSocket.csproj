@@ -60,6 +60,7 @@
     <Compile Include="ByteBuilder.cs" />
     <Compile Include="ByteConverter.cs" />
     <Compile Include="Core\FilterAttribute.cs" />
+    <Compile Include="Core\IDependencyResolverSupportable.cs" />
     <Compile Include="Core\IFilter.cs" />
     <Compile Include="Core\Internal\ApiActionList.cs" />
     <Compile Include="Core\Internal\LoopWorker.cs" />

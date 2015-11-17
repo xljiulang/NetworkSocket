@@ -11,7 +11,7 @@ namespace NetworkSocket.Http
     /// <summary>
     /// 表示Http服务
     /// </summary>
-    public class HttpServer : HttpServerBase
+    public class HttpServer : HttpServerBase, IDependencyResolverSupportable
     {
         /// <summary>
         /// 所有Http行为
@@ -29,9 +29,9 @@ namespace NetworkSocket.Http
         public GlobalFilters GlobalFilter { get; private set; }
 
         /// <summary>
-        /// 特性过滤器提供者
+        /// 获取或设置特性过滤器提供者
         /// </summary>
-        public IFilterAttributeProvider FilterAttributeProvider { get; private set; }
+        public IFilterAttributeProvider FilterAttributeProvider { get; set; }
 
         /// <summary>
         /// 获取或设置依赖关系解析提供者
@@ -103,7 +103,11 @@ namespace NetworkSocket.Http
                     if (exceptionContext.ExceptionHandled == true) break;
                 }
 
-                var result = exceptionContext.Result == null ? new ErrorResult { Status = 404, Errors = exception.Message } : exceptionContext.Result;
+                var result = exceptionContext.Result != null ? exceptionContext.Result : new ErrorResult
+                {
+                    Status = 404,
+                    Errors = exception.Message
+                };
                 result.ExecuteResult(requestContext);
             }
             else
@@ -113,6 +117,9 @@ namespace NetworkSocket.Http
 
                 controller.Server = this;
                 ((IHttpController)controller).Execute(actionContext);
+
+                // 释放资源
+                this.DependencyResolver.TerminateService(controller);
             }
         }
     }

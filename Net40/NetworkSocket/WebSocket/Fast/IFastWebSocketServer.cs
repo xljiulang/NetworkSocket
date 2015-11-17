@@ -10,7 +10,7 @@ namespace NetworkSocket.WebSocket.Fast
     /// <summary>
     /// 定义基于Json文本协议通讯的WebSocket服务
     /// </summary>
-    public interface IFastWebSocketServer
+    public interface IFastWebSocketServer : IDependencyResolverSupportable
     {
         /// <summary>
         /// 获取或设置Json序列化工具       
@@ -23,13 +23,8 @@ namespace NetworkSocket.WebSocket.Fast
         GlobalFilters GlobalFilter { get; }
 
         /// <summary>
-        /// 获取或设置依赖关系解析提供者
-        /// </summary>
-        IDependencyResolver DependencyResolver { get; set; }
-
-        /// <summary>
         /// 获取或设置Api行为特性过滤器提供者
         /// </summary>
-        IFilterAttributeProvider FilterAttributeProvider { get; set; }      
+        IFilterAttributeProvider FilterAttributeProvider { get; set; }
     }
 }

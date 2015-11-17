@@ -10,7 +10,7 @@ using NetworkSocket.Core;
 namespace NetworkSocket.Http
 {
     /// <summary>
-    /// Http控制器
+    /// 表示Http控制器
     /// </summary>
     public class HttpController : IHttpController, IAuthorizationFilter, IActionFilter, IExceptionFilter
     {
