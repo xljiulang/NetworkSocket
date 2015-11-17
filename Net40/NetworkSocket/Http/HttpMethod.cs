@@ -8,23 +8,29 @@ namespace NetworkSocket.Http
     /// <summary>
     /// 请求方式
     /// </summary>
+    [Flags]
     public enum HttpMethod
     {
         /// <summary>
         /// Get
         /// </summary>
-        GET,
+        GET = 1,
         /// <summary>
         /// Post
         /// </summary>
-        POST,
+        POST = 2,
         /// <summary>
         /// Put
         /// </summary>
-        PUT,
+        PUT = 4,
         /// <summary>
         /// Delete
         /// </summary>
-        DELETE
+        DELETE = 8,
+
+        /// <summary>
+        /// 全部
+        /// </summary>
+        ALL = GET | POST | PUT | DELETE
     }
 }

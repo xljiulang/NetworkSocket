@@ -22,6 +22,11 @@ namespace NetworkSocket.Http
         public string Route { get; private set; }
 
         /// <summary>
+        /// 获取是允许的请求方式
+        /// </summary>
+        public HttpMethod AllowMethod { get; private set; }
+
+        /// <summary>
         /// Api行为
         /// </summary>
         /// <param name="method">方法信息</param>
@@ -30,8 +35,40 @@ namespace NetworkSocket.Http
             : base(method)
         {
             var routeAttribute = Attribute.GetCustomAttributes(this.DeclaringService, typeof(RouteAttribute), true).Cast<RouteAttribute>().FirstOrDefault();
-            var route = routeAttribute == null ? Regex.Replace(this.DeclaringService.Name, @"Controller$", string.Empty) : routeAttribute.Route;
-            this.Route = string.Format("/{0}/{1}", route.Trim('/'), this.ApiName);
+            var route = routeAttribute == null ? Regex.Replace(this.DeclaringService.Name, @"Controller$", string.Empty, RegexOptions.IgnoreCase) : routeAttribute.Route;
+            this.Route = string.Format("/{0}/{1}", route.Trim('/'), this.ApiName).ToLower();
+
+            if (Attribute.IsDefined(method, typeof(HttpPostAttribute), false) == true)
+            {
+                this.AllowMethod = HttpMethod.POST;
+            }
+            else
+            {
+                this.AllowMethod = HttpMethod.ALL;
+            }
+        }
+
+        /// <summary>
+        /// 获取哈希码
+        /// </summary>
+        /// <returns></returns>
+        public override int GetHashCode()
+        {
+            return this.Route.GetHashCode() ^ this.AllowMethod.GetHashCode();
+        }
+
+        /// <summary>
+        /// 比较是否相等
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public override bool Equals(object obj)
+        {
+            if (obj == null)
+            {
+                return false;
+            }
+            return obj.GetHashCode() == this.GetHashCode() && obj is HttpAction;
         }
     }
 }

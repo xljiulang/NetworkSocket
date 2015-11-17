@@ -10,7 +10,7 @@ namespace NetworkSocket.Http
     /// <summary>
     /// 默认的模型生成器
     /// </summary>
-    public class DefaultModelBinder : IModelBinder
+    internal class DefaultModelBinder : IModelBinder
     {
         /// <summary>
         /// 生成模型

@@ -100,7 +100,7 @@ namespace NetworkSocket.Http
         private void ProcessRequest(RequestContext requestContext)
         {
             var route = requestContext.Request.Url.AbsolutePath;
-            var action = this.httpActionList.TryGet(route);
+            var action = this.httpActionList.TryGet(requestContext.Request);
 
             if (action == null)
             {

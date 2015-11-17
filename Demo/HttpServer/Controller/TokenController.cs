@@ -16,10 +16,17 @@ namespace HttpServer.Controller
             public int y { get; set; }
         }
 
-        [LogFilter("Test请求了")]
-        public ActionResult Test(model m, DateTime? t)
+        [LogFilter("Test方法收到Get请求了")]
+        public ActionResult Test(model m)
         {
             return Json(new { m.x, m.y });
         }
+
+        [HttpPost]
+        [LogFilter("Test方法收到Post请求了")] 
+        public ActionResult Test(model m, DateTime? t)
+        {
+            return Json(new { m.x, m.y });
+        }       
     }
 }

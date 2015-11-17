@@ -15,7 +15,7 @@ namespace NetworkSocket.Http
         /// <summary>
         /// Api行为字典
         /// </summary>
-        private Dictionary<string, HttpAction> dictionary = new Dictionary<string, HttpAction>(StringComparer.OrdinalIgnoreCase);
+        private Dictionary<int, HttpAction> dictionary = new Dictionary<int, HttpAction>();
 
         /// <summary>
         /// 添加Api行为
@@ -30,11 +30,12 @@ namespace NetworkSocket.Http
                 throw new ArgumentNullException("apiAction");
             }
 
-            if (this.dictionary.ContainsKey(httpAction.Route))
+            var key = httpAction.GetHashCode();
+            if (this.dictionary.ContainsKey(key) == true)
             {
                 throw new ArgumentException(string.Format("Http行为：{0}存在冲突的路由规则", httpAction.Route));
             }
-            this.dictionary.Add(httpAction.Route, httpAction);
+            this.dictionary.Add(key, httpAction);
         }
 
         /// <summary>
@@ -52,15 +53,24 @@ namespace NetworkSocket.Http
         }
 
         /// <summary>
-        /// 获取Api行为
+        /// 获取http行为
         /// 如果获取不到则返回null
         /// </summary>
-        /// <param name="route">路由规则</param>
+        /// <param name="request">请求上下文</param>
         /// <returns></returns>
-        public HttpAction TryGet(string route)
+        public HttpAction TryGet(HttpRequest request)
         {
+            var route = request.Url.AbsolutePath.ToLower();
+            var key = route.GetHashCode() ^ HttpMethod.POST.GetHashCode();
+
             HttpAction apiAction;
-            if (this.dictionary.TryGetValue(route, out apiAction))
+            if (this.dictionary.TryGetValue(key, out apiAction))
+            {
+                return apiAction;
+            }
+
+            key = request.GetHashCode() ^ HttpMethod.ALL.GetHashCode();
+            if (this.dictionary.TryGetValue(key, out apiAction))
             {
                 return apiAction;
             }

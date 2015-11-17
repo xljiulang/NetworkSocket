@@ -105,6 +105,7 @@
     <Compile Include="Http\Filter\IFilterAttributeProvider.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Http\HttpPostAttribute.cs" />
     <Compile Include="Http\Result\ErrorResult.cs" />
     <Compile Include="Http\RouteAttribute.cs" />
     <Compile Include="Http\HttpAction.cs" />
