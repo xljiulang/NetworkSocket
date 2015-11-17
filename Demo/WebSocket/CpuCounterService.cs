@@ -1,4 +1,5 @@
 ﻿using NetworkSocket;
+using NetworkSocket.Core;
 using NetworkSocket.WebSocket;
 using NetworkSocket.WebSocket.Fast;
 using System;

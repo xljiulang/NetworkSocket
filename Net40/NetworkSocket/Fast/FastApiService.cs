@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using NetworkSocket.Core;
 
 namespace NetworkSocket.Fast
 {

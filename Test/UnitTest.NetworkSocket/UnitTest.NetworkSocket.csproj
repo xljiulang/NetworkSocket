@@ -77,10 +77,6 @@
     <Compile Include="WebSocket\Fast\JObjectTest.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Net40\NetworkSocket.WebSocket\NetworkSocket.WebSocket.csproj">
-      <Project>{63d2ded9-1a63-4209-adee-9a67a8d3257e}</Project>
-      <Name>NetworkSocket.WebSocket</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\Net40\NetworkSocket\NetworkSocket.csproj">
       <Project>{80d0fa44-523b-4e68-bdc2-b12901d5855b}</Project>
       <Name>NetworkSocket</Name>
