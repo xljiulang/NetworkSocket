@@ -13,6 +13,11 @@ namespace NetworkSocket.Http
     internal class HttpActionList
     {
         /// <summary>
+        /// 全部http方法
+        /// </summary>
+        private const HttpMethod HttpMethod_ALL = HttpMethod.GET | HttpMethod.POST | HttpMethod.PUT | HttpMethod.DELETE;
+
+        /// <summary>
         /// Api行为字典
         /// </summary>
         private Dictionary<int, HttpAction> dictionary = new Dictionary<int, HttpAction>();
@@ -61,20 +66,20 @@ namespace NetworkSocket.Http
         public HttpAction TryGet(HttpRequest request)
         {
             var route = request.Url.AbsolutePath.ToLower();
-            var key = route.GetHashCode() ^ HttpMethod.POST.GetHashCode();
+            var apiAction = default(HttpAction);
 
-            HttpAction apiAction;
-            if (this.dictionary.TryGetValue(key, out apiAction))
+            if (request.HttpMethod == HttpMethod.POST)
             {
-                return apiAction;
+                var postKey = route.GetHashCode() ^ HttpMethod.POST.GetHashCode();
+                if (this.dictionary.TryGetValue(postKey, out apiAction))
+                {
+                    return apiAction;
+                }
             }
 
-            key = request.GetHashCode() ^ HttpMethod.ALL.GetHashCode();
-            if (this.dictionary.TryGetValue(key, out apiAction))
-            {
-                return apiAction;
-            }
-            return null;
+            var allKey = route.GetHashCode() ^ HttpMethod_ALL.GetHashCode();
+            this.dictionary.TryGetValue(allKey, out apiAction);
+            return apiAction;
         }
     }
 }

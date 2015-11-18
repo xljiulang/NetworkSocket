@@ -27,10 +27,5 @@ namespace NetworkSocket.Http
         /// Delete
         /// </summary>
         DELETE = 8,
-
-        /// <summary>
-        /// 全部
-        /// </summary>
-        ALL = GET | POST | PUT | DELETE
     }
 }
