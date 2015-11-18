@@ -42,7 +42,23 @@ namespace NetworkSocket.WebSocket
         /// <param name="buffer">接收到的数据</param>
         private void ProcessHandshake(T session, ReceiveBuffer buffer)
         {
-            var request = HttpRequest.From(buffer, this.LocalEndPoint, session.RemoteEndPoint);
+            var request = default(HttpRequest);
+            try
+            {
+                request = HttpRequest.Parse(buffer, this.LocalEndPoint, session.RemoteEndPoint);
+            }
+            catch (NotSupportedException)
+            {
+                session.Close();
+                return;
+            }
+
+            // http请求的数据未完整
+            if (request == null)
+            {
+                return;
+            }
+
             if (this.OnHandshake(session, request) == false)
             {
                 session.Close();

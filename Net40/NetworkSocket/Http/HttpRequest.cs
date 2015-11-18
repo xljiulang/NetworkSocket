@@ -159,17 +159,19 @@ namespace NetworkSocket.Http
 
         /// <summary>
         /// 解析连接请求信息
+        /// 如果数据未完整则返回null
         /// </summary>
         /// <param name="buffer">接收到的原始数量</param>
         /// <param name="localEndpoint">服务器的本地终结点</param>
         /// <param name="remoteEndpoint">远程端的IP和端口</param>
+        /// <exception cref="NotSupportedException"></exception>
         /// <returns></returns>
-        public static HttpRequest From(ReceiveBuffer buffer, IPEndPoint localEndpoint, IPEndPoint remoteEndpoint)
+        public static HttpRequest Parse(ReceiveBuffer buffer, IPEndPoint localEndpoint, IPEndPoint remoteEndpoint)
         {
             buffer.Position = 0;
             var bytes = buffer.ReadArray();
 
-            var request = HttpRequest.From(bytes, localEndpoint, remoteEndpoint);
+            var request = HttpRequest.Parse(bytes, localEndpoint, remoteEndpoint);
             if (request != null)
             {
                 buffer.Clear();
@@ -183,8 +185,9 @@ namespace NetworkSocket.Http
         /// <param name="bytes">原始数量</param>
         /// <param name="localEndpoint">服务器终结点</param>
         /// <param name="remoteEndpoint">远程端的IP和端口</param>
+        /// <exception cref="NotSupportedException"></exception>
         /// <returns></returns>
-        private static HttpRequest From(byte[] bytes, IPEndPoint localEndpoint, IPEndPoint remoteEndpoint)
+        private static HttpRequest Parse(byte[] bytes, IPEndPoint localEndpoint, IPEndPoint remoteEndpoint)
         {
             const string pattern = @"^(?<method>[^\s]+)\s(?<path>[^\s]+)\sHTTP\/1\.1\r\n" +
                 @"((?<field_name>[^:\r\n]+):\s(?<field_value>[^\r\n]*)\r\n)+" +
@@ -193,14 +196,15 @@ namespace NetworkSocket.Http
             var match = Regex.Match(Encoding.ASCII.GetString(bytes), pattern, RegexOptions.IgnoreCase);
             if (match.Success == false)
             {
-                return null;
+                return null; // 数据未完整
             }
 
-            var httpMethod = HttpRequest.GetHttpMethod(match.Groups["method"].Value);
+            var httpMethod = GetHttpMethod(match.Groups["method"].Value);
             var httpHeader = new HttpHeader(match.Groups["field_name"].Captures, match.Groups["field_value"].Captures);
-            if (httpMethod != HttpMethod.GET && bytes.Length - match.Length < httpHeader.ContentLength)
+
+            if (httpMethod == HttpMethod.POST && bytes.Length - match.Length < httpHeader.ContentLength)
             {
-                return null;
+                return null; // 数据未完整
             }
 
             var request = new HttpRequest
@@ -230,15 +234,19 @@ namespace NetworkSocket.Http
         }
 
         /// <summary>
-        /// 获取请求方式
+        /// 获取http方法
         /// </summary>
-        /// <param name="method"></param>
+        /// <param name="method">方法字符串</param>
+        /// <exception cref="NotSupportedException"></exception>
         /// <returns></returns>
         private static HttpMethod GetHttpMethod(string method)
         {
             var httpMethod = HttpMethod.GET;
-            Enum.TryParse<HttpMethod>(method, true, out httpMethod);
-            return httpMethod;
+            if (Enum.TryParse<HttpMethod>(method, true, out httpMethod))
+            {
+                return httpMethod;
+            }
+            throw new NotSupportedException("不支持的http方法：" + method);
         }
     }
 }

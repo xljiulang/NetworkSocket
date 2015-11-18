@@ -29,13 +29,23 @@ namespace NetworkSocket.Http
         /// <param name="buffer">数据</param>
         protected override void OnReceive(SessionBase session, ReceiveBuffer buffer)
         {
-            var request = HttpRequest.From(buffer, base.LocalEndPoint, session.RemoteEndPoint);
-            if (request == null)
+            var request = default(HttpRequest);
+            try
             {
+                request = HttpRequest.Parse(buffer, base.LocalEndPoint, session.RemoteEndPoint);
+            }
+            catch (NotSupportedException ex)
+            {
+                var response = new HttpResponse(session);
+                response.Status = 501;
+                response.Write(ex.Message);
                 return;
             }
-            var response = new HttpResponse(session);
-            this.OnHttpRequest(request, response);
+
+            if (request != null)
+            {
+                this.OnHttpRequest(request, new HttpResponse(session));
+            }
         }
 
         /// <summary>

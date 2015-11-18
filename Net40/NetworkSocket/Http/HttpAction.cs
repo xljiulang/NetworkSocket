@@ -46,7 +46,7 @@ namespace NetworkSocket.Http
             }
             else
             {
-                this.AllowMethod = HttpMethod.GET | HttpMethod.POST | HttpMethod.PUT | HttpMethod.DELETE;
+                this.AllowMethod = HttpMethod.GET | HttpMethod.POST;
             }
         }
 

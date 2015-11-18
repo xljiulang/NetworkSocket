@@ -7,6 +7,7 @@ namespace NetworkSocket.Http
 {
     /// <summary>
     /// 请求方式
+    /// 目前只支持Get和Post两种
     /// </summary>
     [Flags]
     public enum HttpMethod
@@ -19,13 +20,5 @@ namespace NetworkSocket.Http
         /// Post
         /// </summary>
         POST = 2,
-        /// <summary>
-        /// Put
-        /// </summary>
-        PUT = 4,
-        /// <summary>
-        /// Delete
-        /// </summary>
-        DELETE = 8,
     }
 }

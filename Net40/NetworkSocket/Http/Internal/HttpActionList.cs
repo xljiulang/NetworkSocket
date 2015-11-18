@@ -15,7 +15,7 @@ namespace NetworkSocket.Http
         /// <summary>
         /// 全部http方法
         /// </summary>
-        private const HttpMethod HttpMethod_ALL = HttpMethod.GET | HttpMethod.POST | HttpMethod.PUT | HttpMethod.DELETE;
+        private const HttpMethod HttpMethod_ALL = HttpMethod.GET | HttpMethod.POST;
 
         /// <summary>
         /// Api行为字典
