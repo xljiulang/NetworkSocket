@@ -30,14 +30,16 @@ namespace NetworkSocket.Http
         /// Api行为
         /// </summary>
         /// <param name="method">方法信息</param>
+        /// <param name="declaringType">声明的类型</param>
         /// <exception cref="ArgumentException"></exception>
-        public HttpAction(MethodInfo method)
+        public HttpAction(MethodInfo method, Type declaringType)
             : base(method)
         {
-            var routeAttribute = Attribute.GetCustomAttributes(this.DeclaringService, typeof(RouteAttribute), true).Cast<RouteAttribute>().FirstOrDefault();
-            var route = routeAttribute == null ? Regex.Replace(this.DeclaringService.Name, @"Controller$", string.Empty, RegexOptions.IgnoreCase) : routeAttribute.Route;
+            this.DeclaringService = declaringType;
+            var routeAttribute = Attribute.GetCustomAttributes(declaringType, typeof(RouteAttribute), true).Cast<RouteAttribute>().FirstOrDefault();
+            var route = routeAttribute == null ? Regex.Replace(declaringType.Name, @"Controller$", string.Empty, RegexOptions.IgnoreCase) : routeAttribute.Route;
             this.Route = string.Format("/{0}/{1}", route.Trim('/'), this.ApiName).ToLower();
-
+         
             if (Attribute.IsDefined(method, typeof(HttpPostAttribute), false) == true)
             {
                 this.AllowMethod = HttpMethod.POST;

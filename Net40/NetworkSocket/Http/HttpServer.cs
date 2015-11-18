@@ -80,7 +80,7 @@ namespace NetworkSocket.Http
             return controller
                 .GetMethods()
                 .Where(item => typeof(ActionResult).IsAssignableFrom(item.ReturnType))
-                .Select(method => new HttpAction(method));
+                .Select(method => new HttpAction(method, controller));
         }
 
         /// <summary>

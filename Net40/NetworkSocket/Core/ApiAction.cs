@@ -75,7 +75,7 @@ namespace NetworkSocket.Core
         /// <summary>
         /// 获取声明该成员的服务类型
         /// </summary>
-        public Type DeclaringService { get; private set; }
+        public Type DeclaringService { get;  protected set; }
 
 
         /// <summary>
@@ -89,7 +89,6 @@ namespace NetworkSocket.Core
             this.methodInvoker = MethodReflection.CreateInvoker(method);
 
             this.DeclaringService = method.DeclaringType;
-
             this.ReturnType = method.ReturnType;
             this.IsVoidReturn = method.ReturnType.Equals(typeof(void));
             this.ParameterInfos = method.GetParameters();
