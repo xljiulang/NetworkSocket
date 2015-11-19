@@ -19,6 +19,7 @@ namespace NetworkSocket.Http
 
         /// <summary>
         /// 表示路由规则
+        /// 以/开始
         /// </summary>
         /// <param name="route">路由规则</param>
         /// <exception cref="ArgumentNullException"></exception>
