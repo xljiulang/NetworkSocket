@@ -79,7 +79,7 @@ namespace NetworkSocket.WebSocket
             }
             finally
             {
-                this.Close();
+                base.Close();
             }
         }
 

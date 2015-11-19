@@ -61,7 +61,7 @@ namespace NetworkSocket.WebSocket
 
             if (this.OnHandshake(session, request) == false)
             {
-                session.Close();
+                session.Close();             
                 return;
             }
 

@@ -217,7 +217,7 @@ namespace NetworkSocket
         /// </summary>
         internal bool TryReceive()
         {
-            if (this.IsConnected == false)
+            if (this.socketClosed || this.IsConnected == false)
             {
                 return false;
             }
@@ -313,6 +313,7 @@ namespace NetworkSocket
             ByteRange byteRange;
             if (this.byteRangeQueue.TryDequeue(out byteRange) == false)
             {
+                this.pendingSendCount = 0;
                 return false;
             }
 
@@ -338,48 +339,81 @@ namespace NetworkSocket
         /// <param name="arg">关联的SocketAsyncEventArgs</param>
         private void SendCompleted(object sender, SocketAsyncEventArgs arg)
         {
-            if (this.IsConnected)
+            if (this.socketClosed || this.IsConnected == false)
             {
-                if (Interlocked.Decrement(ref this.pendingSendCount) > 0)
-                {
-                    this.TrySend();
-                }
+                this.pendingSendCount = 0;
+            }
+            else if (Interlocked.Decrement(ref this.pendingSendCount) > 0)
+            {
+                this.TrySend();
             }
         }
 
+        /// <summary>     
+        /// 等待缓冲区数据发送完成
+        /// 然后断开和远程端的连接   
+        /// </summary>     
+        public void Close()
+        {
+            this.Close(true);
+        }
 
         /// <summary>
-        /// 断开和远程端的连接             
+        /// 断开和远程端的连接           
         /// </summary>
+        /// <param name="waitForSendComplete">是否等待缓冲区数据发送完成再关闭</param>       
+        public void Close(bool waitForSendComplete)
+        {
+            if (this.CloseInternal(waitForSendComplete) == true && this.CloseHandler != null)
+            {
+                this.CloseHandler.Invoke();
+            }
+        }
+
+        /// <summary>
+        /// 主动断开和远程端的连接  
+        /// </summary>
+        /// <param name="waitForSendComplete">是否等待数据发送完成</param>
         /// <returns></returns>
-        public void Close()
+        internal bool CloseInternal(bool waitForSendComplete)
         {
             lock (this.socketRoot)
             {
                 if (this.socketClosed == true)
                 {
-                    return;
+                    return false;
+                }
+
+                // 清除未发送完成的数据
+                if (waitForSendComplete == false && this.byteRangeQueue.Count > 0)
+                {
+                    this.byteRangeQueue = new ConcurrentQueue<ByteRange>();
+                }
+
+                // 自旋等待最后一次发送完成
+                var spinWait = new SpinWait();
+                while (this.pendingSendCount > 0)
+                {
+                    spinWait.SpinOnce();
                 }
 
                 try
                 {
                     this.socket.Shutdown(SocketShutdown.Both);
-                    this.socket.Dispose();
                 }
                 catch (Exception)
                 {
                 }
                 finally
                 {
+                    this.socket.Dispose();
                     this.socketClosed = true;
-                }
-
-                if (this.CloseHandler != null)
-                {
-                    this.CloseHandler();
-                }
+                }             
+               
+                return true;
             }
         }
+
 
         /// <summary>
         /// 字符串显示
@@ -424,8 +458,7 @@ namespace NetworkSocket
         /// <param name="disposing">是否也释放托管资源</param>
         protected virtual void Dispose(bool disposing)
         {
-            this.Close();
-
+            this.CloseInternal(false);
             this.sendArg.Dispose();
             this.recvArg.Dispose();
 

@@ -106,6 +106,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Http\HttpPostAttribute.cs" />
+    <Compile Include="Http\Result\EmptyResult.cs" />
     <Compile Include="Http\Result\ErrorResult.cs" />
     <Compile Include="Http\RouteAttribute.cs" />
     <Compile Include="Http\HttpAction.cs" />
@@ -179,7 +180,7 @@
     <Compile Include="TcpSnapshot.cs" />
     <Compile Include="Internal\SessionCollection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Internal\FreeSessionStack.cs" />
+    <Compile Include="Internal\FreeSessionQueue.cs" />
     <Compile Include="Internal\TagBag.cs" />
     <Compile Include="TcpServerBase.cs" />
     <Compile Include="SessionBase.cs" />

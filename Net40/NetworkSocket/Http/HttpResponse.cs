@@ -43,21 +43,6 @@ namespace NetworkSocket.Http
             this.ContentType = "text/html";
         }
 
-        /// <summary>
-        /// 写入二进制内容并关闭连接       
-        /// </summary>
-        /// <param name="bytes">二进制内容</param>
-        private void Write(byte[] bytes)
-        {
-            if (bytes != null && bytes.Length > 0)
-            {
-                if (this.Session.IsConnected)
-                {
-                    this.Session.Send(new ByteRange(bytes));
-                }
-            }
-            this.Session.Close();
-        }
 
         /// <summary>
         /// 输出文本内容
@@ -83,7 +68,31 @@ namespace NetworkSocket.Http
             headerByes.CopyTo(bytes, 0);
             contentBytes.CopyTo(bytes, headerByes.Length);
 
-            this.Write(bytes);
+            this.TrySend(bytes);
+        }
+
+
+        /// <summary>
+        /// 尝试发送数据到客户端
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <returns></returns>
+        private bool TrySend(byte[] bytes)
+        {
+            if (bytes == null && bytes.Length == 0 || this.Session.IsConnected == false)
+            {
+                return false;
+            }
+
+            try
+            {
+                this.Session.Send(new ByteRange(bytes));
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
     }
 }

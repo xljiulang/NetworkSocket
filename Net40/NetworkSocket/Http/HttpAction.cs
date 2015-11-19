@@ -36,18 +36,47 @@ namespace NetworkSocket.Http
             : base(method)
         {
             this.DeclaringService = declaringType;
-            var routeAttribute = Attribute.GetCustomAttributes(declaringType, typeof(RouteAttribute), true).Cast<RouteAttribute>().FirstOrDefault();
-            var route = routeAttribute == null ? Regex.Replace(declaringType.Name, @"Controller$", string.Empty, RegexOptions.IgnoreCase) : routeAttribute.Route;
-            this.Route = string.Format("/{0}/{1}", route.Trim('/'), this.ApiName).ToLower();
-         
-            if (Attribute.IsDefined(method, typeof(HttpPostAttribute), false) == true)
+            this.AllowMethod = this.GetAllowMethod(method);
+            this.Route = this.GetRoute(declaringType);
+        }
+
+        /// <summary>
+        /// 获取路由地址
+        /// </summary>
+        /// <param name="declaringType"></param>
+        /// <returns></returns>
+        private string GetRoute(Type declaringType)
+        {
+            var route = string.Empty;
+            var routeAttribute = Attribute.GetCustomAttributes(declaringType, typeof(RouteAttribute), false).Cast<RouteAttribute>().FirstOrDefault();
+            if (routeAttribute != null)
             {
-                this.AllowMethod = HttpMethod.POST;
+                route = routeAttribute.Route;
             }
             else
             {
-                this.AllowMethod = HttpMethod.GET | HttpMethod.POST;
+                route = "/" + Regex.Replace(declaringType.Name, @"Controller$", string.Empty, RegexOptions.IgnoreCase);
             }
+            if (route.Length > 1 && route.EndsWith("/") == false)
+            {
+                route = route + "/";
+            }
+            return (route + this.ApiName).ToLower();
+        }
+
+
+        /// <summary>
+        /// 获取支持的http请求方式
+        /// </summary>
+        /// <param name="method"></param>
+        /// <returns></returns>
+        private HttpMethod GetAllowMethod(MethodInfo method)
+        {
+            if (Attribute.IsDefined(method, typeof(HttpPostAttribute), false) == true)
+            {
+                return HttpMethod.POST;
+            }
+            return HttpMethod.GET | HttpMethod.POST;
         }
 
         /// <summary>

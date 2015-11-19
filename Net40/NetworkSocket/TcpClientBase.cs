@@ -126,7 +126,7 @@ namespace NetworkSocket
         /// </summary>
         private void Disconnect()
         {
-            this.Close();
+            this.CloseInternal(false);
             this.OnDisconnect();
         }
 

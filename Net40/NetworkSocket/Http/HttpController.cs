@@ -136,18 +136,19 @@ namespace NetworkSocket.Http
                 }
 
                 result = action.Execute(this, action.ParameterValues) as ActionResult;
-                this.ExecFiltersAfterAction(filters, actionContext);
+                if (result == null) // 直接在方法体里return null
+                {
+                    throw new Exception("ActionResult不能为null，请使用EmptyResult替代");
+                }
 
+                this.ExecFiltersAfterAction(filters, actionContext);
                 if (actionContext.Result != null)
                 {
                     result = actionContext.Result;
                 }
             }
 
-            if (result != null)
-            {
-                result.ExecuteResult(actionContext);
-            }
+            result.ExecuteResult(actionContext);
         }
 
 
