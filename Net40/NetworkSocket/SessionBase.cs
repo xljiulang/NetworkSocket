@@ -313,7 +313,7 @@ namespace NetworkSocket
             ByteRange byteRange;
             if (this.byteRangeQueue.TryDequeue(out byteRange) == false)
             {
-                this.pendingSendCount = 0;
+                Interlocked.Exchange(ref this.pendingSendCount, 0);
                 return false;
             }
 
@@ -341,7 +341,7 @@ namespace NetworkSocket
         {
             if (this.socketClosed || this.IsConnected == false)
             {
-                this.pendingSendCount = 0;
+                Interlocked.Exchange(ref this.pendingSendCount, 0);
             }
             else if (Interlocked.Decrement(ref this.pendingSendCount) > 0)
             {
@@ -408,8 +408,8 @@ namespace NetworkSocket
                 {
                     this.socket.Dispose();
                     this.socketClosed = true;
-                }             
-               
+                }
+
                 return true;
             }
         }
