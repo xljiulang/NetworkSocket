@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using WebSocket.Filters;
 
-namespace WebSocket
+namespace WebSocket.Services
 {
     /// <summary>
     /// Cpu性能检测控制服务
@@ -25,7 +25,7 @@ namespace WebSocket
         [LogFilter("获取版本号")]
         public string GetVersion()
         {
-            return this.GetType().Assembly.GetName().Version.ToString();
+            return typeof(NetworkSocket.SessionBase).Assembly.GetName().Version.ToString();
         }
 
         /// <summary>

@@ -11,7 +11,7 @@ namespace WebSocket
     /// <summary>
     /// CPU性能检测
     /// </summary>
-    public static class CpuCounter
+    public static class CpuCounterHelper
     {
         /// <summary>
         /// 最近一次统计的值
@@ -31,7 +31,7 @@ namespace WebSocket
         /// <summary>
         /// CPU性能检测
         /// </summary>
-        static CpuCounter()
+        static CpuCounterHelper()
         {
             Task.Run(() =>
             {

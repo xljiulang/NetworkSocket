@@ -8,7 +8,7 @@ using NetworkSocket.Core;
 
 namespace HttpServer.Controller
 {
-    [Route("/api/token")]
+    [Route("/api/token")] //路由映射
     public class TokenController : HttpController
     {
         public class model
@@ -30,7 +30,7 @@ namespace HttpServer.Controller
             return Json(new { m.x, m.y });
         }
 
-        [Api("ApiTest")]
+        [Api("ApiTest")] // 接口名修饰
         public ActionResult TestApi(string input)
         {
             return Content(input);

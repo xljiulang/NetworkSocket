@@ -28,7 +28,7 @@ namespace FastServer.Services
         [LogFilter("获取版本号")]
         public string GetVersion()
         {
-            return this.GetType().Assembly.GetName().Version.ToString();
+            return typeof(FastApiService).Assembly.GetName().Version.ToString();
         }
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace FastServer.Services
         [Api("System.Login")]
         [LogFilter("登录操作")]
         public bool Login(User user, bool ifAdmin)
-        {          
+        {
             // 调用客户端的Sort
             var sortResult = this.CurrentContext.Session.InvokeApi<List<int>>("Sort", new List<int> { 3, 1, 2 }).Result;
 

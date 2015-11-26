@@ -24,12 +24,11 @@ namespace FastClientApp.Forms
 
 
         private async void MainForm_Load(object sender, EventArgs e)
-        {            
+        {
             var endPoint = new System.Net.IPEndPoint(System.Net.IPAddress.Loopback, 1380);
             var state = await RemoteServer.Instance.Connect(endPoint);
-            var version = state ? await RemoteServer.Instance.GetVersion() : "未知";
-
-            this.Text = "连接" + (state ? "成功" : "失败") + " 服务版本：" + version;
+            var version = state ? await RemoteServer.Instance.GetVersion() : null;
+            this.Text = state ? ("服务版本：" + version) : "连接服务器失败 ..";
             this.btn_Login.Enabled = this.btn_Pass.Enabled = state;
         }
 

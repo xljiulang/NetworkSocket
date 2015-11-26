@@ -15,7 +15,7 @@ using FastServer.Filters;
 
 namespace FastServer
 {
-    class _Run
+    class Program
     {
         static void Main(string[] args)
         {

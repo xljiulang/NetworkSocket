@@ -63,10 +63,10 @@
     <Compile Include="Interfaces\ILog.cs" />
     <Compile Include="Interfaces\IUserDao.cs" />
     <Compile Include="Interfaces\IRoleDao.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Services\MathService.cs" />
     <Compile Include="Services\SystemService.cs" />
     <Compile Include="Filters\LoginFilterAttribute.cs" />
-    <Compile Include="_Run.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="FastServer.cs" />
   </ItemGroup>

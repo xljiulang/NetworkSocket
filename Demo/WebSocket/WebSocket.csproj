@@ -41,13 +41,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CpuCounter.cs" />
-    <Compile Include="Server.cs" />
+    <Compile Include="CpuCounterHelper.cs" />
+    <Compile Include="MyWebsocketServer.cs" />
     <Compile Include="Filters\ExceptionFilterAttribute.cs" />
     <Compile Include="Filters\LogFilterAttribute.cs" />
     <Compile Include="Filters\LoginFilterAttribute.cs" />
-    <Compile Include="CpuCounterService.cs" />
-    <Compile Include="_Run.cs" />
+    <Compile Include="Services\CpuCounterService.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -60,9 +60,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Chart.js" />
-    <Content Include="FastWebSocke.html" />
-    <Content Include="fastWebSocket.js" />
+    <Content Include="Htmls\chart.js" />
+    <Content Include="Htmls\WebSocket.html" />
+    <Content Include="Htmls\fastWebSocket.js" />
+    <Content Include="Htmls\cpu-chart.js" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
