@@ -3,8 +3,9 @@
 <br>PM> `Install-Package NetworkSocket`
 
 ##### 相关文章阅读
-* [http://www.cnblogs.com/kewei/p/4465632.html](http://www.cnblogs.com/kewei/p/4465632.html)
-* [http://www.cnblogs.com/kewei/p/4458022.html](http://www.cnblogs.com/kewei/p/4458022.html)
+* [通讯基础设计思想](http://www.cnblogs.com/kewei/p/4465632.html)
+* [WebSocket服务设计](http://www.cnblogs.com/kewei/p/4458022.html)
+* [Flex策略服务](https://github.com/xljiulang/NetworkSocket/wiki/Flex%E5%92%8CSilverlight%E7%AD%96%E7%95%A5%E6%9C%8D%E5%8A%A1)
 
 ##### 加入群交流
 * 群号 439800853
