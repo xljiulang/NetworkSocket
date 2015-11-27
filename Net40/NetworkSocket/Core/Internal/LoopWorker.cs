@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Collections.Concurrent;
 
-namespace NetworkSocket.Core.Internal
+namespace NetworkSocket.Core
 {
     /// <summary>
     /// 由一个线程循环工作的对象

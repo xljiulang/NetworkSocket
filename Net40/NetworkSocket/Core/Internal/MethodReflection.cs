@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 
-namespace NetworkSocket.Core.Internal
+namespace NetworkSocket.Core
 {
     /// <summary>
     /// 方法反射调用

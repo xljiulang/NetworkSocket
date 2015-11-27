@@ -1,4 +1,4 @@
-﻿using NetworkSocket.Core.Internal;
+﻿using NetworkSocket.Core;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;

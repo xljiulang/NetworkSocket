@@ -9,7 +9,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net.Sockets;
 using NetworkSocket.Core;
-using NetworkSocket.Core.Internal;
 
 namespace NetworkSocket.Fast
 {

@@ -1,5 +1,4 @@
 ﻿using NetworkSocket.Core;
-using NetworkSocket.Core.Internal;
 using System;
 using System.Collections.Generic;
 using System.Linq;

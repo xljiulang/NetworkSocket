@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace NetworkSocket.Core.Internal
+namespace NetworkSocket.Core
 {
     /// <summary>
     /// 默认的依赖关系解析程序的实现

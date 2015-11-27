@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NetworkSocket.Core.Internal
+namespace NetworkSocket.Core
 {
     /// <summary>
     /// 表示Api行为列表

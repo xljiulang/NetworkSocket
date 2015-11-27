@@ -157,7 +157,7 @@ namespace NetworkSocket.Http
         /// </summary>
         /// <param name="content">内容</param>
         /// <returns></returns>
-        protected ContentResult Content(string content)
+        protected virtual ContentResult Content(string content)
         {
             return new ContentResult(content);
         }
@@ -166,7 +166,7 @@ namespace NetworkSocket.Http
         /// 生成json结果
         /// </summary>
         /// <param name="data">内容</param>
-        protected JsonResult Json(object data)
+        protected virtual JsonResult Json(object data)
         {
             return new JsonResult(data);
         }
