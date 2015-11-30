@@ -11,6 +11,9 @@ namespace NetworkSocket.Http
     /// </summary>
     public class JsonResult : ActionResult
     {
+        /// <summary>
+        /// 内容
+        /// </summary>
         private object data;
 
         /// <summary>

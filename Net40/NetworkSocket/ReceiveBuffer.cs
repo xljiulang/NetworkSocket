@@ -331,6 +331,69 @@ namespace NetworkSocket
         }
 
         /// <summary>
+        /// 查找索引
+        /// </summary>
+        /// <param name="binary">要匹配的数据</param>
+        /// <returns></returns>
+        public int IndexOf(byte[] binary)
+        {
+            if (binary == null || binary.Length == 0 || binary.Length > this.Length)
+            {
+                return -1;
+            }
+
+            for (var i = 0; i <= this.Length - binary.Length; i++)
+            {
+                if (this.EqualsBinary(i, binary) == true)
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        /// <summary>
+        /// 是否和目标binary相等
+        /// </summary>
+        /// <param name="index">索引</param>
+        /// <param name="binary"></param>
+        /// <returns></returns>
+        private bool EqualsBinary(int index, byte[] binary)
+        {
+            for (var i = 0; i < binary.Length; i++)
+            {
+                if (this._buffer[index + i] != binary[i])
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// 获取字符串
+        /// </summary>
+        /// <param name="index">索引</param>
+        /// <param name="count">字节数</param>
+        /// <param name="encode">编码</param>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <returns></returns>
+        public string GetString(int index, int count, Encoding encode)
+        {
+            if (index < 0 || index >= this.Length)
+            {
+                throw new ArgumentOutOfRangeException();
+            }
+            if (encode == null)
+            {
+                throw new ArgumentNullException();
+            }
+            return encode.GetString(this._buffer, index, count);
+        }
+
+        /// <summary>
         /// 调试视图
         /// </summary>
         private class DebugView

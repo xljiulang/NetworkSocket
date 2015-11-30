@@ -15,6 +15,13 @@ namespace NetworkSocket.Http
     {
         /// <summary>
         /// http头
+        /// </summary>
+        public HttpHeader()
+        {
+        }
+
+        /// <summary>
+        /// http头
         /// </summary>       
         public HttpHeader(CaptureCollection keys, CaptureCollection values)
         {
@@ -24,29 +31,7 @@ namespace NetworkSocket.Http
                 var value = values[i].ToString();
                 this.Add(name, value);
             }
-        }
-
-        /// <summary>
-        /// 获取内容长度
-        /// </summary>
-        public int ContentLength
-        {
-            get
-            {
-                return this.TryGet<int>("Content-Length");
-            }
-        }
-
-        /// <summary>
-        /// 获取用户代理字符串
-        /// </summary>
-        public string UserAgent
-        {
-            get
-            {
-                return this.TryGet<string>("User-Agent");
-            }
-        }
+        } 
 
         /// <summary>
         /// 获取指定键的值

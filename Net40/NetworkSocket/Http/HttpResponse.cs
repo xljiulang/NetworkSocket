@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 
 namespace NetworkSocket.Http
@@ -12,9 +13,38 @@ namespace NetworkSocket.Http
     public class HttpResponse
     {
         /// <summary>
-        /// 获取会话对象
+        /// 会话对象
         /// </summary>
-        public SessionBase Session { get; private set; }
+        private SessionBase session;
+
+        /// <summary>
+        /// 是否已写头信息
+        /// </summary>
+        private bool wroteHeader = false;
+
+
+        /// <summary>
+        /// 获取是否已连接到远程端
+        /// </summary>
+        public bool IsConnected
+        {
+            get
+            {
+                return this.session.IsConnected;
+            }
+        }
+
+        /// <summary>
+        /// 获取远程终结点
+        /// </summary>
+        public IPEndPoint RemoteEndPoint
+        {
+            get
+            {
+                return this.session.RemoteEndPoint;
+            }
+        }
+
 
         /// <summary>
         /// 获取或设置Http状态
@@ -22,14 +52,51 @@ namespace NetworkSocket.Http
         public int Status { get; set; }
 
         /// <summary>
-        /// 获取或设置编码
+        /// 获取或设置输出的 HTTP 状态字符串
+        /// </summary>
+        public string StatusDescription { get; set; }
+
+        /// <summary>
+        /// 获取或设置内容体的编码
         /// </summary>
         public Encoding Charset { get; set; }
 
+
         /// <summary>
-        /// 获取或设置内容类型
+        /// 获取回复头信息
         /// </summary>
-        public string ContentType { get; set; }
+        public HttpHeader Headers { get; private set; }
+
+        /// <summary>
+        /// 获取或设置Header的内容类型
+        /// </summary>
+        public string ContentType
+        {
+            get
+            {
+                return this.Headers["Content-Type"];
+            }
+            set
+            {
+                this.Headers["Content-Type"] = value;
+            }
+        }
+
+        /// <summary>
+        /// 获取或设置Header的内容描述
+        /// </summary>
+        public string ContentDisposition
+        {
+            get
+            {
+                return this.Headers["Content-Disposition"];
+            }
+            set
+            {
+                this.Headers["Content-Disposition"] = value;
+            }
+        }
+
 
         /// <summary>
         /// 表示http回复
@@ -37,62 +104,146 @@ namespace NetworkSocket.Http
         /// <param name="session">会话</param>
         public HttpResponse(SessionBase session)
         {
-            this.Session = session;
-            this.Status = 200;
+            this.session = session;
+
             this.Charset = Encoding.UTF8;
+            this.Status = 200;
+            this.StatusDescription = "OK";
+
+            this.Headers = new HttpHeader();
             this.ContentType = "text/html";
         }
 
+        /// <summary>
+        /// 忽略的key
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        private static bool IsIgnoreKey(string key)
+        {
+            var keys = new[] { "Content-Type", "Content-Length", "Date", "Server" };
+            return keys.Any(item => string.Equals(key, item, StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
+        /// 获取内容类型
+        /// </summary>
+        /// <returns></returns>
+        private string GenerateContentType()
+        {
+            if (this.Charset == null)
+            {
+                return string.Format("Content-Type: {0}", this.ContentType);
+            }
+            return string.Format("Content-Type: {0}; charset={1}", this.ContentType, this.Charset.WebName);
+        }
+
+        /// <summary>
+        /// 生成头部数据
+        /// </summary>
+        /// <param name="contentLength"></param>
+        /// <returns></returns>
+        private byte[] GetHeaderBytes(int contentLength)
+        {
+            var header = new StringBuilder()
+                   .AppendFormat("HTTP/1.1 {0} {1}", this.Status, this.StatusDescription).AppendLine()
+                   .AppendLine(this.GenerateContentType())
+                   .AppendFormat("Content-Length: {0}", contentLength).AppendLine()
+                   .AppendFormat("Date: {0}", DateTime.Now.ToUniversalTime().ToString("r")).AppendLine()
+                   .AppendLine("Server: NetworkSocket.HttpServer");
+
+            var keys = this.Headers.AllKeys.Where(item => IsIgnoreKey(item) == false).ToArray();
+            foreach (var key in keys)
+            {
+                var value = this.Headers[key];
+                if (string.IsNullOrWhiteSpace(value) == false)
+                {
+                    header.AppendFormat("{0}: {1}", key, value).AppendLine();
+                }
+            }
+            return Encoding.ASCII.GetBytes(header.AppendLine().ToString());
+        }
+
+        /// <summary>
+        /// 输出头数据
+        /// </summary>
+        /// <param name="contentLength">内容长度</param>
+        /// <returns></returns>
+        public bool WriteHeader(int contentLength)
+        {
+            if (this.wroteHeader == false)
+            {
+                this.wroteHeader = true;
+                var headerByes = this.GetHeaderBytes(contentLength);
+                return this.TrySend(new ByteRange(headerByes));
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 输出内容
+        /// </summary>
+        /// <param name="range"></param>
+        /// <returns></returns>
+        public bool WriteContent(ByteRange range)
+        {
+            return this.TrySend(range);
+        }
 
         /// <summary>
         /// 输出文本内容
         /// </summary>      
         /// <param name="content">内容</param>
-        public void Write(string content)
+        public bool Write(string content)
         {
             if (content == null)
             {
                 content = string.Empty;
             }
-
+            var buffer = new ByteBuilder(Endians.Little);
             var contentBytes = this.Charset.GetBytes(content);
-            var header = new StringBuilder()
-                .AppendFormat("HTTP/1.1 {0}", this.Status == 200 ? "200 OK" : this.Status.ToString()).AppendLine()
-                .AppendFormat("Content-Type: {0}; charset={1}", this.ContentType, this.Charset.WebName).AppendLine()
-                .AppendFormat("Content-Length: {0}", contentBytes.Length).AppendLine()
-                .AppendLine()
-                .ToString();
 
-            var headerByes = this.Charset.GetBytes(header);
-            var bytes = new byte[headerByes.Length + contentBytes.Length];
-            headerByes.CopyTo(bytes, 0);
-            contentBytes.CopyTo(bytes, headerByes.Length);
+            if (this.wroteHeader == false)
+            {
+                this.wroteHeader = true;
+                var headerByes = this.GetHeaderBytes(contentBytes.Length);
+                buffer.Add(headerByes);
+            }
 
-            this.TrySend(bytes);
+            buffer.Add(contentBytes);
+            return this.TrySend(buffer.ToByteRange());
         }
 
 
         /// <summary>
         /// 尝试发送数据到客户端
         /// </summary>
-        /// <param name="bytes"></param>
+        /// <param name="range"></param>
         /// <returns></returns>
-        private bool TrySend(byte[] bytes)
+        private bool TrySend(ByteRange range)
         {
-            if (bytes == null && bytes.Length == 0 || this.Session.IsConnected == false)
+            if (range == null)
             {
                 return false;
             }
 
             try
             {
-                this.Session.Send(new ByteRange(bytes));
+                this.session.Send(range);
                 return true;
             }
             catch (Exception)
             {
                 return false;
             }
+        }
+
+        /// <summary>
+        /// 主动关闭连接
+        /// </summary>
+        public void End()
+        {
+            this.session.Close();
         }
     }
 }

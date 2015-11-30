@@ -47,7 +47,7 @@ namespace NetworkSocket.WebSocket
             {
                 request = HttpRequest.Parse(buffer, this.LocalEndPoint, session.RemoteEndPoint);
             }
-            catch (NotSupportedException)
+            catch (Exception)
             {
                 session.Close();
                 return;
@@ -61,7 +61,7 @@ namespace NetworkSocket.WebSocket
 
             if (this.OnHandshake(session, request) == false)
             {
-                session.Close();             
+                session.Close();
                 return;
             }
 

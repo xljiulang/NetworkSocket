@@ -1,6 +1,7 @@
 ﻿using NetworkSocket.Core;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -29,6 +30,11 @@ namespace NetworkSocket.Http
         public GlobalFilters GlobalFilter { get; private set; }
 
         /// <summary>
+        /// 获取MIME集合
+        /// </summary>
+        public HttpMIMECollection MIMECollection { get; private set; }
+
+        /// <summary>
         /// 获取或设置特性过滤器提供者
         /// </summary>
         public IFilterAttributeProvider FilterAttributeProvider { get; set; }
@@ -38,6 +44,7 @@ namespace NetworkSocket.Http
         /// </summary>
         public IDependencyResolver DependencyResolver { get; set; }
 
+
         /// <summary>
         /// Http服务
         /// </summary>
@@ -46,12 +53,15 @@ namespace NetworkSocket.Http
             this.httpActionList = new HttpActionList();
             this.ModelBinder = new DefaultModelBinder();
             this.GlobalFilter = new GlobalFilters();
+            this.MIMECollection = new HttpMIMECollection();
             this.FilterAttributeProvider = new FilterAttributeProvider();
             this.DependencyResolver = new DefaultDependencyResolver();
+
+            this.MIMECollection.FillBasicMIME();
         }
 
         /// <summary>
-        /// 注册所有控制器         
+        /// 注册程序集下的所有控制器         
         /// </summary>
         /// <exception cref="ArgumentNullException"></exception>
         public void RegisterControllers(Assembly assembly)
@@ -98,37 +108,103 @@ namespace NetworkSocket.Http
         /// <param name="requestContext">请求上下文</param>
         private void ProcessRequest(RequestContext requestContext)
         {
-            var route = requestContext.Request.Url.AbsolutePath;
-            var action = this.httpActionList.TryGet(requestContext.Request);
+            var path = requestContext.Request.Url.AbsolutePath;
+            var extenstion = Path.GetExtension(path);
 
-            if (action == null)
+            if (string.IsNullOrWhiteSpace(extenstion) == false)
             {
-                var exception = new ApiNotExistException(route);
-                var exceptionContext = new ExceptionContext(requestContext, exception);
-                foreach (var filter in this.GlobalFilter.ExceptionFilters)
-                {
-                    filter.OnException(exceptionContext);
-                    if (exceptionContext.ExceptionHandled == true) break;
-                }
+                this.ProcessStaticFileRequest(extenstion, requestContext);
+            }
+            else
+            {
+                this.ProcessNormalRequest(path, requestContext);
+            }
+        }
 
-                var result = exceptionContext.Result != null ? exceptionContext.Result : new ErrorResult
-                {
-                    Status = 404,
-                    Errors = exception.Message
-                };
+        /// <summary>
+        /// 处理静态资源请求
+        /// </summary>
+        /// <param name="extension">扩展名</param>
+        /// <param name="requestContext">上下文</param>
+        private void ProcessStaticFileRequest(string extension, RequestContext requestContext)
+        {
+            var contenType = this.MIMECollection.GetContentType(extension);
+            var file = requestContext.Request.Url.AbsolutePath.TrimStart('/').Replace(@"/", @"\");
+
+            if (string.IsNullOrWhiteSpace(contenType) == true)
+            {
+                var result = new ErrorResult { Status = 403 };
+                result.ExecuteResult(requestContext);
+            }
+            else if (File.Exists(file) == false)
+            {
+                var result = new ErrorResult { Status = 404, Errors = "找不到指定的文件 .." };
                 result.ExecuteResult(requestContext);
             }
             else
             {
-                var controller = this.DependencyResolver.GetService(action.DeclaringService) as HttpController;
-                var actionContext = new ActionContext(requestContext, action);
-
-                controller.Server = this;
-                ((IHttpController)controller).Execute(actionContext);
-
-                // 释放资源
-                this.DependencyResolver.TerminateService(controller);
+                var result = new FileResult { FileName = file, ContentType = contenType };
+                result.ExecuteResult(requestContext);
             }
+        }
+
+
+        /// <summary>
+        /// 处理一般的请求
+        /// </summary>
+        /// <param name="route">路由</param>
+        /// <param name="requestContext">上下文</param>
+        private void ProcessNormalRequest(string route, RequestContext requestContext)
+        {
+            var action = this.httpActionList.TryGet(requestContext.Request);
+            if (action == null)
+            {
+                this.ProcessActionNotFound(route, requestContext);
+            }
+            else
+            {
+                this.ExecuteHttpAction(action, requestContext);
+            }
+        }
+
+        /// <summary>
+        /// 处理找不到Action
+        /// </summary>
+        /// <param name="route">路由</param>
+        /// <param name="requestContext">上下文</param>
+        private void ProcessActionNotFound(string route, RequestContext requestContext)
+        {
+            var exception = new ApiNotExistException(route);
+            var exceptionContext = new ExceptionContext(requestContext, exception);
+            foreach (var filter in this.GlobalFilter.ExceptionFilters)
+            {
+                filter.OnException(exceptionContext);
+                if (exceptionContext.ExceptionHandled == true) break;
+            }
+
+            var result = exceptionContext.Result != null ? exceptionContext.Result : new ErrorResult
+            {
+                Status = 404,
+                Errors = exception.Message
+            };
+            result.ExecuteResult(requestContext);
+        }
+
+        /// <summary>
+        /// 执行httpAction
+        /// </summary>
+        /// <param name="action">httpAction</param>
+        /// <param name="requestContext">上下文</param>      
+        private void ExecuteHttpAction(HttpAction action, RequestContext requestContext)
+        {
+            var controller = this.DependencyResolver.GetService(action.DeclaringService) as HttpController;
+            var actionContext = new ActionContext(requestContext, action);
+
+            controller.Server = this;
+            ((IHttpController)controller).Execute(actionContext);
+
+            // 释放资源
+            this.DependencyResolver.TerminateService(controller);
         }
     }
 }

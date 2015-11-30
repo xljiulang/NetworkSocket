@@ -51,6 +51,7 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
@@ -106,9 +107,13 @@
     <Compile Include="Http\Filter\IFilterAttributeProvider.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Http\HttpException.cs" />
+    <Compile Include="Http\HttpMIME.cs" />
+    <Compile Include="Http\HttpMIMECollection.cs" />
     <Compile Include="Http\HttpPostAttribute.cs" />
     <Compile Include="Http\Result\EmptyResult.cs" />
     <Compile Include="Http\Result\ErrorResult.cs" />
+    <Compile Include="Http\Result\FileResult.cs" />
     <Compile Include="Http\RouteAttribute.cs" />
     <Compile Include="Http\HttpAction.cs" />
     <Compile Include="Http\Context\ActionContext.cs" />
