@@ -108,9 +108,11 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Http\HttpException.cs" />
+    <Compile Include="Http\HttpFile.cs" />
     <Compile Include="Http\HttpMIME.cs" />
     <Compile Include="Http\HttpMIMECollection.cs" />
     <Compile Include="Http\HttpPostAttribute.cs" />
+    <Compile Include="Http\Internal\MultipartHead.cs" />
     <Compile Include="Http\Result\EmptyResult.cs" />
     <Compile Include="Http\Result\ErrorResult.cs" />
     <Compile Include="Http\Result\FileResult.cs" />

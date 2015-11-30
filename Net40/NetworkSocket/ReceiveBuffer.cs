@@ -267,6 +267,30 @@ namespace NetworkSocket
         }
 
         /// <summary>
+        /// 从Position偏移位置读取为字符串
+        /// </summary>        
+        /// <param name="count">字节数</param>
+        /// <param name="encode">编码</param>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <returns></returns>
+        public string ReadString(int count, Encoding encode)
+        {
+            if (encode == null)
+            {
+                throw new ArgumentNullException();
+            }
+            if (count + this.Position > this.Length)
+            {
+                throw new ArgumentOutOfRangeException();
+            }
+
+            var value = encode.GetString(this._buffer, this.Position, count);
+            this.Position = this.Position + count;
+            return value;
+        }
+
+        /// <summary>
         /// 将指定长度的数据复制到目标数组
         /// </summary>
         /// <param name="dstArray">目标数组</param>     
@@ -331,7 +355,7 @@ namespace NetworkSocket
         }
 
         /// <summary>
-        /// 查找索引
+        /// 从Position位置查找第一个匹配的相对Position的偏移量
         /// </summary>
         /// <param name="binary">要匹配的数据</param>
         /// <returns></returns>
@@ -342,11 +366,11 @@ namespace NetworkSocket
                 return -1;
             }
 
-            for (var i = 0; i <= this.Length - binary.Length; i++)
+            for (var i = this.Position; i <= this.Length - binary.Length; i++)
             {
                 if (this.EqualsBinary(i, binary) == true)
                 {
-                    return i;
+                    return i - this.Position;
                 }
             }
 
@@ -370,29 +394,6 @@ namespace NetworkSocket
             }
             return true;
         }
-
-        /// <summary>
-        /// 获取字符串
-        /// </summary>
-        /// <param name="index">索引</param>
-        /// <param name="count">字节数</param>
-        /// <param name="encode">编码</param>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        /// <exception cref="ArgumentNullException"></exception>
-        /// <returns></returns>
-        public string GetString(int index, int count, Encoding encode)
-        {
-            if (index < 0 || index >= this.Length)
-            {
-                throw new ArgumentOutOfRangeException();
-            }
-            if (encode == null)
-            {
-                throw new ArgumentNullException();
-            }
-            return encode.GetString(this._buffer, index, count);
-        }
-
         /// <summary>
         /// 调试视图
         /// </summary>

@@ -31,6 +31,11 @@ namespace NetworkSocket.Http
         public HttpNameValueCollection Form { get; private set; }
 
         /// <summary>
+        /// 获取请求的文件
+        /// </summary>
+        public HttpFile[] Files { get; private set; }
+
+        /// <summary>
         /// 获取请求的流
         /// </summary>
         public byte[] InputStrem { get; private set; }
@@ -147,6 +152,30 @@ namespace NetworkSocket.Http
         }
 
         /// <summary>
+        /// Content-Type是否为
+        /// application/x-www-form-urlencoded
+        /// </summary>
+        /// <returns></returns>
+        public bool IsApplicationFormRequest()
+        {
+            var contentType = this.Headers["Content-Type"];
+            return StringEquals(contentType, "application/x-www-form-urlencoded");
+        }
+
+        /// <summary>
+        /// Content-Type是否为
+        /// multipart/form-data
+        /// </summary>
+        /// <returns></returns>
+        public bool IsMultipartFormRequest(out string boundary)
+        {
+            var contentType = this.Headers["Content-Type"];
+            var match = Regex.Match(contentType, "(?<=multipart/form-data; boundary=).+");
+            boundary = match.Value;
+            return match.Success;
+        }
+
+        /// <summary>
         /// 获取是否相等
         /// 不区分大小写
         /// </summary>
@@ -169,6 +198,7 @@ namespace NetworkSocket.Http
         /// <returns></returns>
         public static HttpRequest Parse(ReceiveBuffer buffer, IPEndPoint localEndpoint, IPEndPoint remoteEndpoint)
         {
+            buffer.Position = 0;
             var doubleCrlf = Encoding.ASCII.GetBytes("\r\n\r\n");
             var headerIndex = buffer.IndexOf(doubleCrlf);
             if (headerIndex < 0)
@@ -177,7 +207,7 @@ namespace NetworkSocket.Http
             }
 
             var headerLength = headerIndex + doubleCrlf.Length;
-            var headerString = buffer.GetString(0, headerLength, Encoding.ASCII);
+            var headerString = buffer.ReadString(headerLength, Encoding.ASCII);
             const string pattern = @"^(?<method>[^\s]+)\s(?<path>[^\s]+)\sHTTP\/1\.1\r\n" +
                 @"((?<field_name>[^:\r\n]+):\s(?<field_value>[^\r\n]*)\r\n)+" +
                 @"\r\n";
@@ -190,7 +220,7 @@ namespace NetworkSocket.Http
 
             var httpMethod = GetHttpMethod(match.Groups["method"].Value);
             var httpHeader = new HttpHeader(match.Groups["field_name"].Captures, match.Groups["field_value"].Captures);
-            var contentLength = httpHeader.TryGet<int>("Content-Length"); ;
+            var contentLength = httpHeader.TryGet<int>("Content-Length");
 
             if (httpMethod == HttpMethod.POST && buffer.Length - headerLength < contentLength)
             {
@@ -209,21 +239,23 @@ namespace NetworkSocket.Http
             request.Path = request.Url.AbsolutePath;
             request.Query = new HttpNameValueCollection(request.Url.Query.TrimStart('?'));
 
-            var formString = string.Empty;
-            if (httpMethod == HttpMethod.POST)
+            if (httpMethod == HttpMethod.GET)
             {
-                buffer.Position = headerLength;
+                request.InputStrem = new byte[0];
+                request.Form = new HttpNameValueCollection();
+                request.Files = new HttpFile[0];
+            }
+            else
+            {
                 request.InputStrem = buffer.ReadArray(contentLength);
-                if (StringEquals(request.Headers["Content-Type"], "application/x-www-form-urlencoded") == true)
-                {
-                    formString = HttpUtility.UrlDecode(Encoding.UTF8.GetString(request.InputStrem));
-                }
+                buffer.Position = headerLength;
+                HttpRequest.GeneratePostFormAndFiles(request, buffer);
             }
 
-            request.Form = new HttpNameValueCollection(formString);
             buffer.Clear(headerLength + contentLength);
             return request;
         }
+
 
         /// <summary>
         /// 获取http方法
@@ -239,6 +271,99 @@ namespace NetworkSocket.Http
                 return httpMethod;
             }
             throw new HttpException(501, "不支持的http方法：" + method);
+        }
+
+        /// <summary>
+        /// 生成Post得到的表单和文件
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="buffer"></param>      
+        private static void GeneratePostFormAndFiles(HttpRequest request, ReceiveBuffer buffer)
+        {
+            var boundary = default(string);
+            if (request.IsApplicationFormRequest() == true)
+            {
+                HttpRequest.GenerateApplicationForm(request);
+            }
+            else if (request.IsMultipartFormRequest(out boundary) == true)
+            {
+                if (request.InputStrem.Length >= boundary.Length)
+                {
+                    HttpRequest.GenerateMultipartFormAndFiles(request, buffer, boundary);
+                }
+            }
+
+
+            if (request.Form == null)
+            {
+                request.Form = new HttpNameValueCollection();
+            }
+
+            if (request.Files == null)
+            {
+                request.Files = new HttpFile[0];
+            }
+        }
+
+        /// <summary>
+        /// 生成一般表单的Form
+        /// </summary>
+        /// <param name="request"></param>
+        private static void GenerateApplicationForm(HttpRequest request)
+        {
+            var formString = HttpUtility.UrlDecode(Encoding.UTF8.GetString(request.InputStrem));
+            request.Form = new HttpNameValueCollection(formString);
+            request.Files = new HttpFile[0];
+        }
+
+        /// <summary>
+        /// 生成表单和文件
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="buffer"></param>   
+        /// <param name="boundary">边界</param>
+        private static void GenerateMultipartFormAndFiles(HttpRequest request, ReceiveBuffer buffer, string boundary)
+        {
+            var doubleCrlf = Encoding.ASCII.GetBytes("\r\n\r\n");
+            var boundaryBytes = Encoding.ASCII.GetBytes("\r\n--" + boundary);
+            var maxPosition = buffer.Length - Encoding.ASCII.GetBytes("--\r\n").Length;
+
+            var files = new List<HttpFile>();
+            var form = new HttpNameValueCollection();
+
+            buffer.Position = buffer.Position + boundaryBytes.Length;
+            while (buffer.Position < maxPosition)
+            {
+                var headLength = buffer.IndexOf(doubleCrlf) + doubleCrlf.Length;
+                if (headLength < doubleCrlf.Length)
+                {
+                    break;
+                }
+
+                var head = buffer.ReadString(headLength, Encoding.UTF8);
+                var bodyLength = buffer.IndexOf(boundaryBytes);
+                if (bodyLength < 0)
+                {
+                    break;
+                }
+
+                var mHead = new MultipartHead(head);
+                if (mHead.IsFile == true)
+                {
+                    var stream = buffer.ReadArray(bodyLength);
+                    var file = new HttpFile(mHead.Name, mHead.FileName, stream);
+                    files.Add(file);
+                }
+                else
+                {
+                    var value = buffer.ReadString(bodyLength, Encoding.UTF8);
+                    form.Add(mHead.Name, value);
+                }
+                buffer.Position = buffer.Position + boundaryBytes.Length;
+            }
+
+            request.Form = form;
+            request.Files = files.ToArray();
         }
     }
 }
