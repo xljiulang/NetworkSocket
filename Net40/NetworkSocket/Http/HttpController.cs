@@ -6,6 +6,7 @@ using System.Text;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using NetworkSocket.Core;
+using System.Web;
 
 namespace NetworkSocket.Http
 {
@@ -169,6 +170,45 @@ namespace NetworkSocket.Http
         protected virtual JsonResult Json(object data)
         {
             return new JsonResult(data);
+        }
+
+        /// <summary>
+        /// 生成文件结果
+        /// </summary>
+        /// <param name="fileName">文件名</param>
+        /// <returns></returns>
+        protected virtual FileResult File(string fileName)
+        {
+            return this.File(fileName, null);
+        }
+
+        /// <summary>
+        /// 生成文件结果
+        /// </summary>
+        /// <param name="fileName">文件名</param>
+        /// <param name="contenType">内容类型</param>
+        /// <returns></returns>
+        protected virtual FileResult File(string fileName, string contenType)
+        {
+            var contentDisposition = "attachment; filename=" + HttpUtility.UrlEncode(fileName);
+            return this.File(fileName, contenType, contentDisposition);
+        }
+
+        /// <summary>
+        /// 生成文件结果
+        /// </summary>
+        /// <param name="fileName">文件名</param>
+        /// <param name="contenType">内容类型</param>
+        /// <param name="contentDisposition">内容描述</param>
+        /// <returns></returns>
+        protected virtual FileResult File(string fileName, string contenType, string contentDisposition)
+        {
+            return new FileResult
+            {
+                FileName = fileName,
+                ContentType = contenType,
+                ContentDisposition = contentDisposition
+            };
         }
 
 

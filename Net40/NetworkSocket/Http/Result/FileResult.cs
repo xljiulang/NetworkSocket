@@ -32,6 +32,27 @@ namespace NetworkSocket.Http
         /// <param name="context">上下文</param>
         public override void ExecuteResult(RequestContext context)
         {
+            if (File.Exists(this.FileName) == true)
+            {
+                this.ExecuteFileResult(context);
+            }
+            else
+            {
+                var result = new ErrorResult { Status = 404, Errors = "找不到文件：" + this.FileName };
+                result.ExecuteResult(context);
+            }
+        }
+
+        /// <summary>
+        /// 输出文件
+        /// </summary>
+        /// <param name="context">上下文</param>
+        private void ExecuteFileResult(RequestContext context)
+        {
+            if (string.IsNullOrEmpty(this.ContentType))
+            {
+                this.ContentType = "application/ocelet-stream";
+            }
             context.Response.Charset = null;
             context.Response.ContentType = this.ContentType;
             context.Response.ContentDisposition = this.ContentDisposition;

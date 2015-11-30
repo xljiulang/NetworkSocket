@@ -35,5 +35,10 @@ namespace HttpServer.Controller
         {
             return Content(input);
         }
+
+        public FileResult GetFile(string name)
+        {
+            return File(name);
+        }
     }
 }
