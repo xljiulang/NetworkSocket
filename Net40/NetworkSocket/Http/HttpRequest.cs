@@ -351,12 +351,12 @@ namespace NetworkSocket.Http
                 if (mHead.IsFile == true)
                 {
                     var stream = buffer.ReadArray(bodyLength);
-                    var file = new HttpFile(mHead.Name, mHead.FileName, stream);
+                    var file = new HttpFile(mHead, stream);
                     files.Add(file);
                 }
                 else
                 {
-                    var value = buffer.ReadString(bodyLength, Encoding.UTF8);
+                    var value = HttpUtility.UrlDecode(buffer.ReadString(bodyLength, Encoding.UTF8));
                     form.Add(mHead.Name, value);
                 }
                 buffer.Position = buffer.Position + boundaryBytes.Length;

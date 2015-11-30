@@ -14,10 +14,12 @@ namespace NetworkSocket.Http
         /// <summary>
         /// http文件
         /// </summary>
-        internal HttpFile(string name, string fileName, byte[] stream)
+        /// <param name="head">头内容</param>
+        /// <param name="stream">数据流</param>
+        internal HttpFile(MultipartHead head, byte[] stream)
         {
-            this.Name = name;
-            this.FileName = fileName;
+            this.Name = head.Name ;
+            this.FileName = head.FileName ;
             this.Stream = stream;
         }
         /// <summary>

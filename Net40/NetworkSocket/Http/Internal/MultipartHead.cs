@@ -43,7 +43,7 @@ namespace NetworkSocket.Http
         {
             get
             {
-                return GetValue("name");
+                return this.GetValue("name");
             }
         }
         /// <summary>
@@ -53,7 +53,7 @@ namespace NetworkSocket.Http
         {
             get
             {
-                return GetValue("filename");
+                return this.GetValue("filename");
             }
         }
 
