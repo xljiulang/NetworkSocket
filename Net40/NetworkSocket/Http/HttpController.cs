@@ -7,6 +7,7 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using NetworkSocket.Core;
 using System.Web;
+using System.IO;
 
 namespace NetworkSocket.Http
 {
@@ -179,7 +180,9 @@ namespace NetworkSocket.Http
         /// <returns></returns>
         protected virtual FileResult File(string fileName)
         {
-            return this.File(fileName, null);
+            var extension = Path.GetExtension(fileName);
+            var contenType = this.Server.MIMECollection.GetContentType(extension);
+            return this.File(fileName, contenType);
         }
 
         /// <summary>

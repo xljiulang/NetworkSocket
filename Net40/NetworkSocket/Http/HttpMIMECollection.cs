@@ -133,6 +133,10 @@ namespace NetworkSocket.Http
         /// <returns></returns>
         public string GetContentType(string extension)
         {
+            if (string.IsNullOrEmpty(extension))
+            {
+                return null;
+            }
             string contentType;
             this.mimes.TryGetValue(extension, out contentType);
             return contentType;
