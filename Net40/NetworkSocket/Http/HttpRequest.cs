@@ -69,7 +69,7 @@ namespace NetworkSocket.Http
         /// Http请求信息
         /// </summary>
         private HttpRequest()
-        {          
+        {
         }
 
         /// <summary>
@@ -170,9 +170,18 @@ namespace NetworkSocket.Http
         public bool IsMultipartFormRequest(out string boundary)
         {
             var contentType = this.Headers["Content-Type"];
-            var match = Regex.Match(contentType, "(?<=multipart/form-data; boundary=).+");
-            boundary = match.Value;
-            return match.Success;
+            if (string.IsNullOrEmpty(contentType) == false)
+            {
+                if (Regex.IsMatch(contentType, "multipart/form-data", RegexOptions.IgnoreCase))
+                {
+                    var match = Regex.Match(contentType, "(?<=boundary=).+");
+                    boundary = match.Value;
+                    return match.Success;
+                }
+            }
+
+            boundary = null;
+            return false;
         }
 
         /// <summary>
