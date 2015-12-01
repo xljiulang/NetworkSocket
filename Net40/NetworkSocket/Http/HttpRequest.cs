@@ -69,7 +69,7 @@ namespace NetworkSocket.Http
         /// Http请求信息
         /// </summary>
         private HttpRequest()
-        {
+        {          
         }
 
         /// <summary>
@@ -237,7 +237,7 @@ namespace NetworkSocket.Http
 
             request.Url = new Uri("http://localhost:" + localEndpoint.Port + match.Groups["path"].Value);
             request.Path = request.Url.AbsolutePath;
-            request.Query = new HttpNameValueCollection(request.Url.Query.TrimStart('?'));
+            request.Query = new HttpNameValueCollection(HttpUtility.UrlDecode(request.Url.Query.TrimStart('?')));
 
             if (httpMethod == HttpMethod.GET)
             {

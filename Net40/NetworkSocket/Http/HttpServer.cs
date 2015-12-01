@@ -108,8 +108,7 @@ namespace NetworkSocket.Http
         /// <param name="requestContext">请求上下文</param>
         private void ProcessRequest(RequestContext requestContext)
         {
-            var path = requestContext.Request.Url.AbsolutePath;
-            var extenstion = Path.GetExtension(path);
+            var extenstion = Path.GetExtension(requestContext.Request.Path);
 
             if (string.IsNullOrWhiteSpace(extenstion) == false)
             {
@@ -117,7 +116,7 @@ namespace NetworkSocket.Http
             }
             else
             {
-                this.ProcessNormalRequest(path, requestContext);
+                this.ProcessNormalRequest(requestContext.Request.Path, requestContext);
             }
         }
 
