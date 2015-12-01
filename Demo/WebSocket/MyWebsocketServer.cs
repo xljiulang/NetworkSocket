@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using NetworkSocket.WebSocket.Fast;
 using WebSocket.Filters;
+using System.Diagnostics;
 
 namespace WebSocket
 {
@@ -17,7 +18,7 @@ namespace WebSocket
             this.BindService(this.GetType().Assembly); // 绑定服务
             this.StartListen(8282);
             Console.WriteLine("FastWebSocketServer服务已启动，端口：" + this.LocalEndPoint.Port);
-            Console.WriteLine(@"请在浏览器打开Htmls\WebSocke.Html");
+            Process.Start(@"..\..\Htmls\WebSocket.html");
             CpuCounterHelper.CpuTimeChanged += CpuCounter_CpuTimeChanged;
         }
 
