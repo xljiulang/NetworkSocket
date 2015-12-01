@@ -66,7 +66,7 @@ namespace MixedServer.Service
 
             // 推送成员上线
             this.CurrentContext.Session.TagBag.Name = name;
-            foreach (var session in this.OtherSessions)
+            foreach (var session in this.CurrentContext.AllSessions)
             {
                 session.TryInvokeApi("OnMemberChange", 1, name);
             }
