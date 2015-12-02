@@ -11,14 +11,19 @@ namespace HttpServer
     class Program
     {
         static void Main(string[] args)
-        {            
+        {
             var http = new NetworkSocket.Http.HttpServer();
             http.GlobalFilter.Add(new ExceptionFilterAttribute());
             http.BindController(typeof(Program).Assembly);
             http.StartListen(7777);
 
-            Console.WriteLine("http服务启动成功");            
-            Process.Start("http://localhost:7777/power/index");                             
+            if (Directory.Exists("js") == false)
+            {
+                Directory.SetCurrentDirectory("../../");
+            }
+
+            Console.WriteLine("http服务启动成功");
+            Process.Start("http://localhost:7777/power/index");
             Console.ReadLine();
         }
     }
