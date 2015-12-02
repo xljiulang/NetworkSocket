@@ -15,8 +15,7 @@ namespace MixedServer
         static void Main(string[] args)
         {
             // http服务 用于提供静态html页面(也可以用IIS)
-            var http = new HttpServer();
-            http.RegisterControllers(typeof(Program).Assembly);
+            var http = new HttpServer();           
             http.StartListen(82);
 
             // websocket服务

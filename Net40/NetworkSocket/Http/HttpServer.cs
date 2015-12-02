@@ -61,21 +61,75 @@ namespace NetworkSocket.Http
         }
 
         /// <summary>
-        /// 注册程序集下的所有控制器         
+        /// 绑定程序集下的所有控制器         
         /// </summary>
+        /// <param name="assembly">程序集</param>
         /// <exception cref="ArgumentNullException"></exception>
-        public void RegisterControllers(Assembly assembly)
+        /// <returns></returns>
+        public HttpServer BindController(Assembly assembly)
         {
             if (assembly == null)
             {
                 throw new ArgumentNullException();
             }
             var controllers = assembly.GetTypes().Where(item => typeof(HttpController).IsAssignableFrom(item) && item.IsAbstract == false);
+            return this.BindController(controllers);
+        }
+
+
+        /// <summary>
+        /// 绑定控制器
+        /// </summary>
+        /// <typeparam name="TController">控制器类型</typeparam>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentException"></exception>
+        /// <returns></returns>
+        public HttpServer BindController<TController>()
+        {
+            return this.BindController(typeof(TController));
+        }
+
+        /// <summary>
+        /// 注册控制器
+        /// </summary>
+        /// <param name="controllers">控制器</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentException"></exception>
+        /// <returns></returns>
+        public HttpServer BindController(params Type[] controllers)
+        {
+            if (controllers == null)
+            {
+                throw new ArgumentNullException();
+            }
+            return this.BindController((IEnumerable<Type>)controllers);
+        }
+
+        /// <summary>
+        /// 注册控制器
+        /// </summary>
+        /// <param name="controllers">控制器</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentException"></exception>
+        /// <returns></returns>
+        public HttpServer BindController(IEnumerable<Type> controllers)
+        {
+            if (controllers == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            if (controllers.Any(item => typeof(HttpController).IsAssignableFrom(item) == false || item.IsAbstract))
+            {
+                throw new ArgumentException("类型必须派生于HttpController且不为抽象类");
+            }
+
             foreach (var controller in controllers)
             {
-                var httpActions = GetControllerHttpActions(controller);
+                var httpActions = HttpServer.GetControllerHttpActions(controller);
                 this.httpActionList.AddRange(httpActions);
             }
+            return this;
         }
 
         /// <summary>
