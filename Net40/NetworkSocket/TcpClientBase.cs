@@ -88,7 +88,7 @@ namespace NetworkSocket
             if (result == true)
             {
                 base.Bind(socket);
-                base.TryReceive();
+                base.TryReceiveAsync();
             }
             else
             {

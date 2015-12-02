@@ -8,6 +8,7 @@ using System.IO;
 using System.Threading;
 using System.Diagnostics;
 using System.Collections.Concurrent;
+using System.Runtime.Remoting.Messaging;
 
 namespace NetworkSocket
 {
@@ -48,12 +49,6 @@ namespace NetworkSocket
         private SocketAsyncEventArgs sendArg = new SocketAsyncEventArgs();
 
         /// <summary>
-        /// byteRangeQueue添加数据的锁
-        /// </summary>
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private object queueSync = new object();
-
-        /// <summary>
         /// 待发送的ByeRange集合
         /// </summary>
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -69,7 +64,6 @@ namespace NetworkSocket
         /// 接收到的未处理数据
         /// </summary>      
         private ReceiveBuffer recvBuffer = new ReceiveBuffer();
-
 
         /// <summary>
         /// 处理和分析收到的数据的委托
@@ -215,7 +209,7 @@ namespace NetworkSocket
         /// <summary>
         /// 尝试开始接收数据
         /// </summary>
-        internal bool TryReceive()
+        internal bool TryReceiveAsync()
         {
             if (this.socketClosed || this.IsConnected == false)
             {
@@ -253,7 +247,7 @@ namespace NetworkSocket
             }
 
             // 重新进行一次接收
-            this.TryReceive();
+            this.TryReceiveAsync();
         }
 
 
@@ -275,43 +269,45 @@ namespace NetworkSocket
                 throw new SocketException((int)SocketError.NotConnected);
             }
 
-            // 拆分数据
-            var count = this.SplitByteRangeToQueue(byteRange);
-
-            // 启动发送
-            if (Interlocked.Add(ref this.pendingSendCount, count) == count)
-            {
-                this.TrySend();
-            }
-        }
-
-        /// <summary>
-        /// 分割数据并顺序添加到待发送数据集合
-        /// </summary>
-        /// <param name="byteRange">数据</param>
-        /// <returns>返回拆分数量</returns>
-        private int SplitByteRangeToQueue(ByteRange byteRange)
-        {
             var byteRanges = byteRange.SplitBySize(EventArgBufferSetter.ARG_BUFFER_SIZE);
-            lock (this.queueSync)
+            foreach (var range in byteRanges)
             {
-                var count = 0;
-                foreach (var range in byteRanges)
-                {
-                    this.byteRangeQueue.Enqueue(range);
-                    count++;
-                }
-                return count;
+                this.SendByteRange(range);
             }
         }
 
         /// <summary>
-        /// 尝试发送开始处的ByteRange
+        /// 发送一个小于缓冲区的数据范围
         /// </summary>
-        private bool TrySend()
+        /// <param name="byteRange">数据范围</param>
+        private bool SendByteRange(ByteRange byteRange)
         {
-            ByteRange byteRange;
-            if (this.byteRangeQueue.TryDequeue(out byteRange) == false)
+            // 如果发送过程已停止，则本次直接发送
+            if (Interlocked.CompareExchange(ref this.pendingSendCount, 1, 0) == 0)
+            {
+                return this.TrySendByteRangeAsync(byteRange);
+            }
+
+            // 添加数据到缓存区
+            this.byteRangeQueue.Enqueue(byteRange);
+
+            // 如果发送过程已停止，则启动发送缓存中的数据
+            if (Interlocked.Increment(ref this.pendingSendCount) == 1)
+            {
+                return this.TrySendByteRangeAsync(null);
+            }
+            return true;
+        }
+
+
+        /// <summary>
+        /// 尝试异步发送一个ByteRange
+        /// 发送完成将触发SendCompleted方法
+        /// <param name="byteRange">数据范围，为null则从缓冲中区获取</param>
+        /// </summary>
+        private bool TrySendByteRangeAsync(ByteRange byteRange)
+        {
+            if (byteRange == null && this.byteRangeQueue.TryDequeue(out byteRange) == false)
             {
                 Interlocked.Exchange(ref this.pendingSendCount, 0);
                 return false;
@@ -326,14 +322,13 @@ namespace NetworkSocket
                 {
                     this.SendCompleted(this.socket, this.sendArg);
                 }
-
-                // 信息统计
-                this.ExtraState.SetSended(byteRange.Count);
+                this.ExtraState.SetSended(byteRange.Count); // 信息统计;
             });
         }
 
         /// <summary>
-        /// 发送完成一个ByteRange
+        /// 发送完成时触发
+        /// 将检测是否有缓存的数据要继续发送
         /// </summary>
         /// <param name="sender">发送者</param>
         /// <param name="arg">关联的SocketAsyncEventArgs</param>
@@ -343,9 +338,9 @@ namespace NetworkSocket
             {
                 Interlocked.Exchange(ref this.pendingSendCount, 0);
             }
-            else if (Interlocked.Decrement(ref this.pendingSendCount) > 0)
+            else if (Interlocked.Decrement(ref this.pendingSendCount) > 0L)
             {
-                this.TrySend();
+                this.TrySendByteRangeAsync(null);
             }
         }
 
