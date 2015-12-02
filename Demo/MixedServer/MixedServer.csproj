@@ -50,57 +50,25 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="content\bootstrap\css\bootstrap-ie6.min.css">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="content\bootstrap\css\bootstrap-responsive.min.css">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="content\bootstrap\css\bootstrap.min.css">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="content\bootstrap\css\ie.css">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="content\bootstrap\img\glyphicons-halflings-8.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="content\bootstrap\img\glyphicons-halflings-white.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="content\bootstrap\img\glyphicons-halflings.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="content\bootstrap\img\next.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="content\bootstrap\img\prev.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="content\bootstrap\js\bootstrap-ie.js">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="content\bootstrap\js\bootstrap.min.js">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <Content Include="js\bootstrap\css\bootstrap-ie6.min.css" />
+    <Content Include="js\bootstrap\css\bootstrap-responsive.min.css" />
+    <Content Include="js\bootstrap\css\bootstrap.min.css" />
+    <Content Include="js\bootstrap\css\ie.css" />
+    <Content Include="js\bootstrap\img\glyphicons-halflings-8.png" />
+    <Content Include="js\bootstrap\img\glyphicons-halflings-white.png" />
+    <Content Include="js\bootstrap\img\glyphicons-halflings.png" />
+    <Content Include="js\bootstrap\img\next.png" />
+    <Content Include="js\bootstrap\img\prev.png" />
+    <Content Include="js\bootstrap\js\bootstrap-ie.js" />
+    <Content Include="js\bootstrap\js\bootstrap.min.js" />
     <Content Include="favicon.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="index.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="js\fastWebSocket.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="js\jquery-1.7.1.min.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="content\window\window.css">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="content\window\window.js">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <Content Include="index.html" />
+    <Content Include="js\fastWebSocket.js" />
+    <Content Include="js\jquery-1.7.1.min.js" />
+    <Content Include="js\window\window.css" />
+    <Content Include="js\window\window.js" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Net40\NetworkSocket\NetworkSocket.csproj">

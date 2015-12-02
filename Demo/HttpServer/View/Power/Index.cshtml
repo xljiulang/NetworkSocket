@@ -1,0 +1,50 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>远程控制电脑</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link type="text/css" href="/js/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <link type="text/css" href="/js/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet" />
+    <link type="text/css" href="/js/window/window.css" rel="stylesheet" />
+    <link rel="shortcut icon" href="favicon.ico">
+
+    <script src="/js/jquery-1.7.1.min.js"></script>
+    <script src="/js/window/window.js"></script>
+    <script src="/js/bootstrap/js/bootstrap.min.js"></script>
+
+    <script type="text/javascript">
+        function powerAction(dom, action) {
+            $.post("/power/" + action, {}, function (state) {
+                var actionName = $(dom).text();
+                var stateName = state ? '成功' : '失败';
+                var message = '[' + actionName + ']操作' + stateName + '..';
+
+                win.alertEx(message);
+                if (state) {
+                    setTimeout(function () { win.close() }, 2000);
+                }
+            });
+        }
+    </script>
+
+    <style type="text/css">
+        body { padding: 10px; }
+    </style>
+</head>
+
+<body>   
+    <div class="container-fluid">
+        <div class="text-right">
+            <div class="btn-group text-left">
+                <button class="btn btn-warning dropdown-toggle" data-toggle="dropdown"><i class="icon-off icon-white"></i>电源 <span class="caret"></span></button>
+                <ul class="dropdown-menu">
+                    <li><a href="javascript:void(0)" onclick="powerAction(this,'Logoff');"><i class="icon-user"></i>注销</a></li>
+                    <li><a href="javascript:void(0)" onclick="powerAction(this,'Shutdown');"><i class="icon-off"></i>关机</a></li>
+                    <li><a href="javascript:void(0)" onclick="powerAction(this,'Reboot');"><i class="icon-repeat"></i>重启</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

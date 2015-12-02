@@ -80,8 +80,7 @@ namespace NetworkSocket.Http
         /// <summary>
         /// 绑定控制器
         /// </summary>
-        /// <typeparam name="TController">控制器类型</typeparam>
-        /// <exception cref="ArgumentNullException"></exception>
+        /// <typeparam name="TController">控制器类型</typeparam>        
         /// <exception cref="ArgumentException"></exception>
         /// <returns></returns>
         public HttpServer BindController<TController>()

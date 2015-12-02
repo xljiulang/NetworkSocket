@@ -41,7 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Controller\TokenController.cs" />
+    <Compile Include="Controller\PowerController.cs" />
     <Compile Include="Filters\ExceptionFilterAttribute.cs" />
     <Compile Include="Filters\LogFilterAttribute.cs" />
     <Compile Include="Program.cs" />
@@ -52,6 +52,26 @@
       <Project>{80d0fa44-523b-4e68-bdc2-b12901d5855b}</Project>
       <Name>NetworkSocket</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="favicon.ico" />
+    <Content Include="js\bootstrap\css\bootstrap-ie6.min.css" />
+    <Content Include="js\bootstrap\css\bootstrap-responsive.min.css" />
+    <Content Include="js\bootstrap\css\bootstrap.min.css" />
+    <Content Include="js\bootstrap\css\ie.css" />
+    <Content Include="js\bootstrap\img\glyphicons-halflings-8.png" />
+    <Content Include="js\bootstrap\img\glyphicons-halflings-white.png" />
+    <Content Include="js\bootstrap\img\glyphicons-halflings.png" />
+    <Content Include="js\bootstrap\img\next.png" />
+    <Content Include="js\bootstrap\img\prev.png" />
+    <Content Include="js\bootstrap\js\bootstrap-ie.js" />
+    <Content Include="js\bootstrap\js\bootstrap.min.js" />
+    <Content Include="js\jquery-1.7.1.min.js" />
+    <Content Include="js\window\window.css" />
+    <Content Include="js\window\window.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="View\Power\Index.cshtml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
