@@ -31,13 +31,23 @@ namespace NetworkSocket
             public int OwerPid { get; internal set; }
 
             /// <summary>
-            ///  获取占用端口的进程信息
+            /// 杀掉占用端口的进程
             /// </summary>
-            public Process OwerProcess
+            /// <returns></returns>
+            public bool Kill()
             {
-                get
+                try
                 {
-                    return Process.GetProcessById(this.OwerPid);
+                    var process = Process.GetProcessById(this.OwerPid);
+                    if (process != null)
+                    {
+                        process.Kill();
+                    }
+                    return true;
+                }
+                catch (Exception)
+                {
+                    return false;
                 }
             }
 

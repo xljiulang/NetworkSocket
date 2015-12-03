@@ -246,6 +246,7 @@ namespace NetworkSocket
             {
                 this.recvStream.Seek(0, SeekOrigin.End);
                 this.recvStream.Write(arg.Buffer, arg.Offset, arg.BytesTransferred);
+                this.recvStream.Seek(0, SeekOrigin.Begin);
                 this.ReceiveHandler(this.recvStream);
             }
 

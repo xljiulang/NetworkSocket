@@ -7,10 +7,9 @@ using System.Text;
 namespace NetworkSocket.Policies
 {
     /// <summary>
-    /// Flex通讯策略服务
-    /// 不可继承
+    /// Flex通讯策略服务   
     /// </summary>
-    public sealed class FlexPolicyServer : TcpServerBase<SessionBase>
+    public class FlexPolicyServer : TcpServerBase<SessionBase>
     {
         /// <summary>
         /// 本地843端口
@@ -33,19 +32,31 @@ namespace NetworkSocket.Policies
             this.StartListen(this.Port);
         }
 
+
+        /// <summary>
+        /// 创建新的会话对象
+        /// </summary>
+        /// <returns></returns>
+        protected sealed override SessionBase OnCreateSession()
+        {
+            return new SessionBase();
+        }
+
         /// <summary>
         /// 接收到策略请求
         /// </summary>
         /// <param name="session">会话对象</param>
         /// <param name="buffer">数据</param>      
-        protected override void OnReceive(SessionBase session, ReceiveStream buffer)
+        protected sealed override void OnReceive(SessionBase session, ReceiveStream buffer)
         {
-            var xml = "<cross-domain-policy><allow-access-from domain=\"*\" to-ports=\"*\"/></cross-domain-policy>\0";
-            var bytes = Encoding.UTF8.GetBytes(xml.ToCharArray()); // 需要把字符串转为Char[]
-            var byteRange = new ByteRange(bytes);
+            var input = buffer.ReadString(buffer.Length, Encoding.UTF8);
+            var policyXml = this.OnGetPolicyXml(input);
 
             try
             {
+                // 需要把字符串转为Char[]
+                var bytes = Encoding.UTF8.GetBytes(policyXml.ToCharArray());
+                var byteRange = new ByteRange(bytes);
                 session.Send(byteRange);
             }
             catch (Exception)
@@ -58,12 +69,14 @@ namespace NetworkSocket.Policies
         }
 
         /// <summary>
-        /// 创建新的会话对象
+        /// 请求获取策略xml
         /// </summary>
+        /// <param name="input">请求内容</param>
         /// <returns></returns>
-        protected override SessionBase OnCreateSession()
+        protected virtual string OnGetPolicyXml(string input)
         {
-            return new SessionBase();
+            var xml = "<cross-domain-policy><allow-access-from domain=\"*\" to-ports=\"*\"/></cross-domain-policy>\0";
+            return xml;
         }
     }
 }

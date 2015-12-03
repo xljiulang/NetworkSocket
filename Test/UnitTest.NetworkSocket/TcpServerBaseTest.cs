@@ -116,10 +116,10 @@ namespace UnitTest.NetworkSocket
         [TestMethod()]
         public void OnConnectTest()
         {
-            var s = TcpSnapshot.Snapshot().Where(item => item.Port == 6611).FirstOrDefault();
-            if (s != null)
-            {
-                s.OwerProcess.Kill();
+            var ower = TcpSnapshot.Snapshot().Where(item => item.Port == 6611).FirstOrDefault();
+            if (ower != null)
+            {               
+                ower.Kill();
             }
 
             MyTcpServerBase target = new MyTcpServerBase(); // TODO: 初始化为适当的值
