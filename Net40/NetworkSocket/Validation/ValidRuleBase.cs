@@ -24,9 +24,19 @@ namespace NetworkSocket.Validation
         /// <param name="value">值</param>
         /// <param name="validationContext">上下文</param>
         /// <returns></returns>
-        protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+        protected sealed override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
-            throw new NotImplementedException();
+            return base.IsValid(value, validationContext);
+        }
+
+        /// <summary>
+        /// 验证属性的值是否通过
+        /// </summary>
+        /// <param name="value">属性的值</param>
+        /// <returns></returns>
+        public sealed override bool IsValid(object value)
+        {
+            return base.IsValid(value);
         }
 
         /// <summary>
@@ -52,6 +62,7 @@ namespace NetworkSocket.Validation
         /// <param name="validContext">验证上下文</param>
         /// <returns></returns>
         protected abstract bool IsValid(string value, ValidContext validContext);
+
 
         /// <summary>
         /// 格式化错误提示信息
