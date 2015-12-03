@@ -216,7 +216,7 @@ namespace NetworkSocket
             // SocketAsync与socket绑定    
             session.Bind(socket);
             // 添加到活动列表
-            (this.AllSessions as ICollection<T>).Add(session);
+            ((ICollection<T>)this.AllSessions).Add(session);
             // 通知已连接
             this.OnConnect(session);
             // 开始接收数据
@@ -230,7 +230,7 @@ namespace NetworkSocket
         /// <param name="session">会话对象</param>
         private void RecyceSession(T session)
         {
-            if ((this.AllSessions as ICollection<T>).Remove(session) == true)
+            if (((ICollection<T>)this.AllSessions).Remove(session) == true)
             {
                 this.OnDisconnect(session);
                 session.CloseInternal(false);

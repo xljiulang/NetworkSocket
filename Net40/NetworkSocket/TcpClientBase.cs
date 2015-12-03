@@ -19,7 +19,7 @@ namespace NetworkSocket
         public TcpClientBase()
         {
             base.ReceiveHandler = this.OnReceive;
-            base.DisconnectHandler = this.Disconnect;
+            base.DisconnectHandler = this.OnDisconnectInternal;
         }
 
         /// <summary>
@@ -59,17 +59,17 @@ namespace NetworkSocket
             var taskSource = new TaskCompletionSource<bool>();
             if (this.IsConnected)
             {
-                taskSource.SetResult(true);
+                taskSource.TrySetResult(true);
                 return taskSource.Task;
             }
 
             var socket = new Socket(remoteEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             var connectArg = new SocketAsyncEventArgs { RemoteEndPoint = remoteEndPoint, UserToken = taskSource };
-            connectArg.Completed += this.ConnectArgCompleted;
+            connectArg.Completed += this.ConnectCompleted;
 
             if (socket.ConnectAsync(connectArg) == false)
             {
-                this.ConnectArgCompleted(socket, connectArg);
+                this.ConnectCompleted(socket, connectArg);
             }
             return taskSource.Task;
         }
@@ -79,7 +79,7 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="sender">连接者</param>
         /// <param name="e">事件参数</param>
-        private void ConnectArgCompleted(object sender, SocketAsyncEventArgs e)
+        private void ConnectCompleted(object sender, SocketAsyncEventArgs e)
         {
             var socket = sender as Socket;
             var taskSource = e.UserToken as TaskCompletionSource<bool>;
@@ -95,13 +95,14 @@ namespace NetworkSocket
                 socket.Dispose();
             }
 
+            e.Completed -= this.ConnectCompleted;
             e.Dispose();
-            taskSource.SetResult(result);
+            taskSource.TrySetResult(result);
         }
 
         /// <summary>
-        /// 当前与远程端连接断开之后，进行重新连接   
-        /// 如果还连接，则返回TaskOf(false)
+        /// 连接到最近一次连接的远程端口
+        /// 如果IsConnected为true，则返回TaskOf(false)
         /// </summary>
         /// <returns></returns>
         public Task<bool> ReConnect()
@@ -124,7 +125,7 @@ namespace NetworkSocket
         /// <summary>
         /// 关闭连接并触发关闭事件
         /// </summary>
-        private void Disconnect()
+        private void OnDisconnectInternal()
         {
             this.CloseInternal(false);
             this.OnDisconnect();

@@ -9,12 +9,13 @@ namespace NetworkSocket.Policies
     /// <summary>
     /// Siverlight通讯策略服务   
     /// </summary>
-    public class SilverlightPolicyServer : TcpServerBase<SessionBase>
+    public class SilverlightPolicyServer : FlexPolicyServer
     {
         /// <summary>
-        /// 本地943端口
+        /// 获取策略服务端口
+        /// 943
         /// </summary>
-        public int Port
+        public override int Port
         {
             get
             {
@@ -23,55 +24,12 @@ namespace NetworkSocket.Policies
         }
 
         /// <summary>
-        /// 启动策略服务
-        /// 监听本地943端口
-        /// </summary>
-        /// <exception cref="SocketException"></exception>
-        public void StartListen()
-        {
-            this.StartListen(this.Port);
-        }
-
-        /// <summary>
-        /// 创建新的会话对象
-        /// </summary>
-        /// <returns></returns>
-        protected sealed override SessionBase OnCreateSession()
-        {
-            return new SessionBase();
-        }
-
-        /// <summary>
-        /// 接收到策略请求
-        /// </summary>
-        /// <param name="session">会话对象</param>
-        /// <param name="buffer">数据</param>      
-        protected sealed override void OnReceive(SessionBase session, ReceiveStream buffer)
-        {
-            var input = buffer.ReadString(buffer.Length, Encoding.UTF8);
-            var policyXml = this.OnGetPolicyXml(input);
-
-            try
-            {
-                var bytes = Encoding.UTF8.GetBytes(policyXml);
-                var byteRange = new ByteRange(bytes);
-                session.Send(byteRange);
-            }
-            catch (Exception)
-            {
-            }
-            finally
-            {
-                session.Close();
-            }
-        }
-
-        /// <summary>
-        /// 请求获取策略xml
+        /// 生成策略xml
+        /// 返回null则不发送策略文件 
         /// </summary>
         /// <param name="input">请求内容</param>
         /// <returns></returns>
-        protected virtual string OnGetPolicyXml(string input)
+        protected override string GeneratePolicyXml(string input)
         {
             return new StringBuilder()
                 .AppendLine("<?xml version=\"1.0\" encoding=\"utf-8\" ?>")

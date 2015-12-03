@@ -12,9 +12,10 @@ namespace NetworkSocket.Policies
     public class FlexPolicyServer : TcpServerBase<SessionBase>
     {
         /// <summary>
-        /// 本地843端口
+        /// 获取策略服务端口
+        /// 843
         /// </summary>
-        public int Port
+        public virtual int Port
         {
             get
             {
@@ -23,8 +24,7 @@ namespace NetworkSocket.Policies
         }
 
         /// <summary>
-        /// 启动策略服务
-        /// 监听本地843端口       
+        /// 启动策略服务             
         /// </summary>
         /// <exception cref="SocketException"></exception>
         public void StartListen()
@@ -50,33 +50,35 @@ namespace NetworkSocket.Policies
         protected sealed override void OnReceive(SessionBase session, ReceiveStream buffer)
         {
             var input = buffer.ReadString(buffer.Length, Encoding.UTF8);
-            var policyXml = this.OnGetPolicyXml(input);
+            var policyXml = this.GeneratePolicyXml(input);
 
-            try
+            if (policyXml != null)
             {
-                // 需要把字符串转为Char[]
                 var bytes = Encoding.UTF8.GetBytes(policyXml.ToCharArray());
                 var byteRange = new ByteRange(bytes);
-                session.Send(byteRange);
+
+                try
+                {
+                    session.Send(byteRange);
+                }
+                catch (Exception) { }
             }
-            catch (Exception)
-            {
-            }
-            finally
-            {
-                session.Close();
-            }
+            session.Close();
         }
 
         /// <summary>
-        /// 请求获取策略xml
+        /// 生成策略xml
+        /// 返回null则不发送策略文件 
         /// </summary>
         /// <param name="input">请求内容</param>
         /// <returns></returns>
-        protected virtual string OnGetPolicyXml(string input)
+        protected virtual string GeneratePolicyXml(string input)
         {
-            var xml = "<cross-domain-policy><allow-access-from domain=\"*\" to-ports=\"*\"/></cross-domain-policy>\0";
-            return xml;
+            return new StringBuilder()
+                .AppendLine("<cross-domain-policy>")
+                .AppendLine("<allow-access-from domain=\"*\" to-ports=\"*\"/>")
+                .AppendLine("</cross-domain-policy>\0")
+                .ToString();
         }
     }
 }
