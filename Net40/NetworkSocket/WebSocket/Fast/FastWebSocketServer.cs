@@ -209,7 +209,7 @@ namespace NetworkSocket.WebSocket.Fast
         /// 创建新的会话对象
         /// </summary>
         /// <returns></returns>
-        protected override FastWebSocketSession OnCreateSession()
+        protected sealed override FastWebSocketSession OnCreateSession()
         {
             return new FastWebSocketSession(this);
         }
@@ -219,7 +219,7 @@ namespace NetworkSocket.WebSocket.Fast
         /// </summary>
         /// <param name="session">会话对象</param>
         /// <param name="content">内容</param>
-        protected override void OnText(FastWebSocketSession session, string content)
+        protected sealed override void OnText(FastWebSocketSession session, string content)
         {
             var packet = this.GetFastPacket(session, content);
             if (packet == null)

@@ -17,7 +17,7 @@ namespace NetworkSocket.Http
         /// 创建新会话
         /// </summary>
         /// <returns></returns>
-        protected override SessionBase OnCreateSession()
+        protected sealed override SessionBase OnCreateSession()
         {
             return new SessionBase();
         }
@@ -27,7 +27,7 @@ namespace NetworkSocket.Http
         /// </summary>
         /// <param name="session">会话</param>
         /// <param name="buffer">数据</param>
-        protected override void OnReceive(SessionBase session, ReceiveStream buffer)
+        protected sealed override void OnReceive(SessionBase session, ReceiveStream buffer)
         {
             try
             {

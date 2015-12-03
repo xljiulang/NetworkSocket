@@ -22,7 +22,7 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="session">会话对象</param>
         /// <param name="buffer">接收到的历史数据</param>   
-        protected override void OnReceive(T session, ReceiveStream buffer)
+        protected sealed override void OnReceive(T session, ReceiveStream buffer)
         {
             var handshaked = session.TagData.TryGet<bool>("HANDSHAKED");
             if (handshaked == false)
