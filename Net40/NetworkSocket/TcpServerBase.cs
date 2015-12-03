@@ -260,7 +260,7 @@ namespace NetworkSocket
         /// <param name="session">会话对象</param>
         /// <param name="buffer">接收到的历史数据</param>
         /// <returns></returns>
-        protected abstract void OnReceive(T session, ReceiveBuffer buffer);
+        protected abstract void OnReceive(T session, ReceiveStream buffer);
 
 
         /// <summary>

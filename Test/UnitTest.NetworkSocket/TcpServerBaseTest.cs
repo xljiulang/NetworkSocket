@@ -79,7 +79,7 @@ namespace UnitTest.NetworkSocket
                 return new SessionBase();
             }
 
-            protected override void OnReceive(SessionBase session, ReceiveBuffer buffer)
+            protected override void OnReceive(SessionBase session, ReceiveStream buffer)
             {
                 buffer.Clear();
             }
@@ -116,6 +116,12 @@ namespace UnitTest.NetworkSocket
         [TestMethod()]
         public void OnConnectTest()
         {
+            var s = TcpSnapshot.Snapshot().Where(item => item.Port == 6611).FirstOrDefault();
+            if (s != null)
+            {
+                s.OwerProcess.Kill();
+            }
+
             MyTcpServerBase target = new MyTcpServerBase(); // TODO: 初始化为适当的值
             target.StartListen(6611);
 
@@ -146,7 +152,7 @@ namespace UnitTest.NetworkSocket
             Assert.IsTrue(target.DisConnectTimes == 2);
             Assert.IsTrue(target.AllSessions.Count() == 0);
             Assert.IsTrue(target.ExtraState.FreeSessionCount == 2);
-           
+
             target.Dispose();
         }
     }

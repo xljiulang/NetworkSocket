@@ -179,7 +179,7 @@
     <Compile Include="Policies\SilverlightPolicyServer.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ReceiveBuffer.cs" />
+    <Compile Include="ReceiveStream.cs" />
     <Compile Include="ServerExtraState.cs" />
     <Compile Include="SessionExtraState.cs" />
     <Compile Include="TcpClientBase.cs">

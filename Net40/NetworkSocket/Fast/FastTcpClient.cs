@@ -68,7 +68,7 @@ namespace NetworkSocket.Fast
         /// 当接收到远程端的数据时，将触发此方法
         /// </summary>
         /// <param name="buffer">接收到的历史数据</param>        
-        protected override void OnReceive(ReceiveBuffer buffer)
+        protected override void OnReceive(ReceiveStream buffer)
         {
             while (true)
             {

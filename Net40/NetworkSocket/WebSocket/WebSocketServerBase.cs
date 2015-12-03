@@ -22,7 +22,7 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="session">会话对象</param>
         /// <param name="buffer">接收到的历史数据</param>   
-        protected override void OnReceive(T session, ReceiveBuffer buffer)
+        protected override void OnReceive(T session, ReceiveStream buffer)
         {
             var handshaked = session.TagData.TryGet<bool>("HANDSHAKED");
             if (handshaked == false)
@@ -40,7 +40,7 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="session">会话对象</param>
         /// <param name="buffer">接收到的数据</param>
-        private void ProcessHandshake(T session, ReceiveBuffer buffer)
+        private void ProcessHandshake(T session, ReceiveStream buffer)
         {
             var request = default(HttpRequest);
             try
@@ -85,7 +85,7 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="session">会话对象</param>
         /// <param name="buffer">接收到的历史数据</param>
-        private void ProcessRequest(T session, ReceiveBuffer buffer)
+        private void ProcessRequest(T session, ReceiveStream buffer)
         {
             var requests = this.GetFrameRequestsFromBuffer(buffer);
             foreach (var request in requests)
@@ -101,7 +101,7 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="buffer">接收到的历史数据</param>
         /// <returns></returns>
-        private IEnumerable<FrameRequest> GetFrameRequestsFromBuffer(ReceiveBuffer buffer)
+        private IEnumerable<FrameRequest> GetFrameRequestsFromBuffer(ReceiveStream buffer)
         {
             FrameRequest request;
             while ((request = FrameRequest.From(buffer)) != null)

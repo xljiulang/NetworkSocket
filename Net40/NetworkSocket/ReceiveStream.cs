@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -8,118 +9,82 @@ namespace NetworkSocket
 {
     /// <summary>
     /// 表示会话接收到的历史数据
-    /// 非线程安全类型
-    /// 不可继承
+    /// 非线程安全类型  
     /// </summary>
     [DebuggerDisplay("Position = {Position}, Length = {Length}, Endian = {Endian}")]
     [DebuggerTypeProxy(typeof(DebugView))]
-    public sealed class ReceiveBuffer
+    public class ReceiveStream : MemoryStream
     {
         /// <summary>
-        /// 指针位置
+        /// 获取同步锁对象
         /// </summary>
-        private int _position;
-
-        /// <summary>
-        /// 容量
-        /// </summary>
-        private int _capacity;
-
-        /// <summary>
-        /// 当前数据
-        /// </summary>
-        private byte[] _buffer;
-
-        /// <summary>
-        /// 获取同步锁
-        /// </summary>
-        public readonly object SyncRoot = new object();
-
-        /// <summary>
-        /// 获取数据长度
-        /// </summary>
-        public int Length { get; private set; }
+        public object SyncRoot { get; private set; }
 
         /// <summary>
         /// 获取或设置字节存储次序
+        /// 默认为Endians.Big
         /// </summary>
         public Endians Endian { get; set; }
 
         /// <summary>
-        /// 获取或设置指针位置    
-        /// 为[0, Length]之间
+        /// 获取用字节表示的流长度
         /// </summary>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public int Position
+        new public int Length
         {
             get
             {
-                return this._position;
+                return (int)base.Length;
+            }
+        }
+
+        /// <summary>
+        /// 获取用字节表示的流长度
+        /// </summary>
+        public long LongLength
+        {
+            get
+            {
+                return base.Length;
+            }
+        }
+
+        /// <summary>
+        /// 获取或设置流中的当前位置
+        /// </summary>
+        new public int Position
+        {
+            get
+            {
+                return (int)base.Position;
             }
             set
             {
-                if (value < 0 || value > this.Length)
-                {
-                    throw new ArgumentOutOfRangeException();
-                }
-                this._position = value;
+                base.Position = value;
             }
         }
 
+        /// <summary>
+        /// 获取或设置流中的当前位置
+        /// </summary>
+        public long LongPosition
+        {
+            get
+            {
+                return base.Position;
+            }
+            set
+            {
+                base.Position = value;
+            }
+        }
 
         /// <summary>
-        /// 提供二进制数据读取和操作支持
-        /// </summary>             
-        internal ReceiveBuffer()
+        /// 会话接收到的历史数据
+        /// </summary>
+        public ReceiveStream()
         {
+            this.SyncRoot = new object();
             this.Endian = Endians.Big;
-            this._capacity = 1024;
-            this._buffer = new byte[this._capacity];
-        }
-
-        /// <summary>
-        /// 添加指定数据数组
-        /// </summary>
-        /// <param name="array">数组</param>
-        /// <param name="offset">数组的偏移量</param>
-        /// <param name="count">字节数</param>       
-        internal void Add(byte[] array, int offset, int count)
-        {
-            if (array == null || array.Length == 0)
-            {
-                return;
-            }
-
-            int newLength = this.Length + count;
-            this.ExpandCapacity(newLength);
-
-            Buffer.BlockCopy(array, offset, this._buffer, this.Length, count);
-            this.Length = newLength;
-        }
-
-
-        /// <summary>
-        /// 扩容
-        /// </summary>
-        /// <param name="newLength">满足的新大小</param>
-        private void ExpandCapacity(int newLength)
-        {
-            if (newLength <= this._capacity)
-            {
-                return;
-            }
-
-            while (newLength > this._capacity)
-            {
-                this._capacity = this._capacity * 2;
-            }
-
-            var newBuffer = new byte[this._capacity];
-            if (this.Length > 0)
-            {
-                Buffer.BlockCopy(this._buffer, 0, newBuffer, 0, this.Length);
-            }
-            this._buffer = newBuffer;
         }
 
         /// <summary>
@@ -136,124 +101,120 @@ namespace NetworkSocket
                 {
                     throw new ArgumentOutOfRangeException();
                 }
-                return this._buffer[index];
+                return base.GetBuffer()[index];
             }
         }
 
         /// <summary>
-        /// 从Position偏移位置读取一个字节并转换为bool类型
+        /// 从流中读取一个字节，并将流内的位置向前推进一个字节，如果已到达流的末尾，则返回 -1
         /// </summary>       
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <returns></returns>
         public bool ReadBoolean()
         {
-            return this.ReadByte() != 0;
+            return base.ReadByte() != 0;
         }
 
         /// <summary>
-        /// 从Position偏移位置读取一个字节
+        /// 从流中读取一个字节，并将流内的位置向前推进一个字节，如果已到达流的末尾，则返回 -1
         /// </summary>      
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <returns></returns>
-        public byte ReadByte()
+        new public byte ReadByte()
         {
-            var value = this[this.Position];
-            this.Position = this.Position + sizeof(byte);
-            return value;
+            return (byte)base.ReadByte();
         }
 
-
         /// <summary>
-        /// 从Position偏移位置读取2个字节
+        /// 从流中读取2个字节，并将流内的位置向前推进2个字节，
         /// 返回其Int16表示类型
         /// </summary>     
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <returns></returns>
         public short ReadInt16()
         {
-            var value = ByteConverter.ToInt16(this._buffer, this.Position, this.Endian);
+            var value = ByteConverter.ToInt16(base.GetBuffer(), this.Position, this.Endian);
             this.Position = this.Position + sizeof(short);
             return value;
         }
 
         /// <summary>
-        /// 从Position偏移位置读取2个字节
+        /// 从流中读取2个字节，并将流内的位置向前推进2个字节，
         /// 返回其UInt16表示类型
         /// </summary>      
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <returns></returns>
         public uint ReadUInt16()
         {
-            var value = ByteConverter.ToUInt16(this._buffer, this.Position, this.Endian);
+            var value = ByteConverter.ToUInt16(base.GetBuffer(), this.Position, this.Endian);
             this.Position = this.Position + sizeof(ushort);
             return value;
         }
 
         /// <summary>
-        /// 从Position偏移位置读取4个字节
+        /// 从流中读取4个字节，并将流内的位置向前推进4个字节，
         /// 返回其Int32表示类型
         /// </summary>          
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <returns></returns>
         public int ReadInt32()
         {
-            var value = ByteConverter.ToInt32(this._buffer, this.Position, this.Endian);
+            var value = ByteConverter.ToInt32(base.GetBuffer(), this.Position, this.Endian);
             this.Position = this.Position + sizeof(int);
             return value;
         }
 
         /// <summary>
-        /// 从Position偏移位置读取4个字节
+        /// 从流中读取4个字节，并将流内的位置向前推进4个字节，
         /// 返回其UInt32表示类型
         /// </summary>     
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <returns></returns>
         public uint ReadUInt32()
         {
-            var value = ByteConverter.ToUInt32(this._buffer, this.Position, this.Endian);
+            var value = ByteConverter.ToUInt32(base.GetBuffer(), this.Position, this.Endian);
             this.Position = this.Position + sizeof(uint);
             return value;
         }
 
-
         /// <summary>
-        /// 从Position偏移位置读取8个字节
+        /// 从流中读取8个字节，并将流内的位置向前推进8个字节，
         /// 返回其Int64表示类型
         /// </summary>         
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <returns></returns>
         public long ReadInt64()
         {
-            var value = ByteConverter.ToInt64(this._buffer, this.Position, this.Endian);
+            var value = ByteConverter.ToInt64(base.GetBuffer(), this.Position, this.Endian);
             this.Position = this.Position + sizeof(long);
             return value;
         }
 
         /// <summary>
-        /// 从Position偏移位置读取8个字节
+        /// 从流中读取8个字节，并将流内的位置向前推进8个字节，
         /// 返回其UInt64表示类型
         /// </summary>        
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <returns></returns>
         public ulong ReadUInt64()
         {
-            var value = ByteConverter.ToUInt64(this._buffer, this.Position, this.Endian);
+            var value = ByteConverter.ToUInt64(base.GetBuffer(), this.Position, this.Endian);
             this.Position = this.Position + sizeof(ulong);
             return value;
         }
 
         /// <summary>
-        /// 从Position偏移位置读取所有数据
+        /// 从流中读取到末尾的字节，并将流内的位置向前推进相同的字节
         /// </summary>
         /// <returns></returns>
         public byte[] ReadArray()
         {
-            return this.ReadArray(this.Length - this.Position);
+            return this.ReadArray((this.Length - this.Position));
         }
 
 
         /// <summary>
-        /// 从Position偏移位置读取指定长度数据
+        /// 从流中读取count字节，并将流内的位置向前推进count字节
         /// </summary>
         /// <param name="count">要读取的字节数</param>
         /// <returns></returns>
@@ -267,7 +228,8 @@ namespace NetworkSocket
         }
 
         /// <summary>
-        /// 从Position偏移位置读取为字符串
+        /// 从流中读取count字节，并将流内的位置向前推进count字节
+        /// 返回以指定编码转换的字符串
         /// </summary>        
         /// <param name="count">字节数</param>
         /// <param name="encode">编码</param>
@@ -285,13 +247,13 @@ namespace NetworkSocket
                 throw new ArgumentOutOfRangeException();
             }
 
-            var value = encode.GetString(this._buffer, this.Position, count);
+            var value = encode.GetString(base.GetBuffer(), this.Position, count);
             this.Position = this.Position + count;
             return value;
         }
 
         /// <summary>
-        /// 将指定长度的数据复制到目标数组
+        /// 从开始位置将指定长度的数据复制到目标数组
         /// </summary>
         /// <param name="dstArray">目标数组</param>     
         /// <param name="count">要复制的字节数</param>
@@ -303,7 +265,7 @@ namespace NetworkSocket
         }
 
         /// <summary>
-        /// 将指定长度的数据复制到目标数组
+        /// 从开始位置将指定长度的数据复制到目标数组
         /// </summary>
         /// <param name="dstArray">目标数组</param>
         /// <param name="dstOffset">目标数组偏移量</param>
@@ -326,20 +288,21 @@ namespace NetworkSocket
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         public void CopyTo(int srcOffset, byte[] dstArray, int dstOffset, int count)
         {
-            Buffer.BlockCopy(this._buffer, srcOffset, dstArray, dstOffset, count);
+            Buffer.BlockCopy(base.GetBuffer(), srcOffset, dstArray, dstOffset, count);
         }
 
         /// <summary>
-        /// 清空所有数据        
+        /// 清空所有数据    
+        /// 等同SetLength(0L)
         /// </summary>
         /// <returns></returns>
         public void Clear()
         {
-            this.Length = 0;
+            base.SetLength(0L);
         }
 
         /// <summary>
-        /// 清除数据        
+        /// 从开始位置清除数据        
         /// </summary>
         /// <param name="count">清除的字节数</param>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
@@ -350,27 +313,34 @@ namespace NetworkSocket
                 throw new ArgumentOutOfRangeException();
             }
             var newLength = this.Length - count;
-            Buffer.BlockCopy(this._buffer, count, this._buffer, 0, newLength);
-            this.Length = newLength;
+            Buffer.BlockCopy(base.GetBuffer(), count, base.GetBuffer(), 0, newLength);
+            base.SetLength(newLength);
         }
 
         /// <summary>
-        /// 从Position位置查找第一个匹配的相对Position的偏移量
+        /// 从Position位置开始查找第一个匹配的值
+        /// 返回相对于Position的偏移量
         /// </summary>
         /// <param name="binary">要匹配的数据</param>
         /// <returns></returns>
         public int IndexOf(byte[] binary)
         {
-            if (binary == null || binary.Length == 0 || binary.Length > this.Length)
+            if (binary == null || binary.Length == 0)
             {
                 return -1;
             }
 
-            for (var i = this.Position; i <= this.Length - binary.Length; i++)
+            if (this.Position + binary.Length > this.Length)
             {
-                if (this.EqualsBinary(i, binary) == true)
+                return -1;
+            }
+
+            var maxPosition = this.Length - binary.Length;
+            for (var p = this.Position; p <= maxPosition; p++)
+            {
+                if (this.SequenceEqual(p, binary) == true)
                 {
-                    return i - this.Position;
+                    return p - this.Position;
                 }
             }
 
@@ -381,19 +351,24 @@ namespace NetworkSocket
         /// 是否和目标binary相等
         /// </summary>
         /// <param name="index">索引</param>
-        /// <param name="binary"></param>
+        /// <param name="binary">要匹配的数据</param>
         /// <returns></returns>
-        private bool EqualsBinary(int index, byte[] binary)
+        unsafe private bool SequenceEqual(int index, byte[] binary)
         {
-            for (var i = 0; i < binary.Length; i++)
+            fixed (byte* p1 = &base.GetBuffer()[index], p2 = &binary[0])
             {
-                if (this._buffer[index + i] != binary[i])
+                for (var i = 0; i < binary.Length; i++)
                 {
-                    return false;
+                    if (*(p1 + i) != *(p2 + i))
+                    {
+                        return false;
+                    }
                 }
             }
+
             return true;
         }
+
         /// <summary>
         /// 调试视图
         /// </summary>
@@ -402,13 +377,13 @@ namespace NetworkSocket
             /// <summary>
             /// 查看的对象
             /// </summary>
-            private ReceiveBuffer view;
+            private ReceiveStream view;
 
             /// <summary>
             /// 调试视图
             /// </summary>
             /// <param name="view">查看的对象</param>
-            public DebugView(ReceiveBuffer view)
+            public DebugView(ReceiveStream view)
             {
                 this.view = view;
             }

@@ -195,7 +195,7 @@ namespace NetworkSocket.Fast
         /// <param name="session">会话对象</param>
         /// <param name="buffer">接收到的历史数据</param>
         /// <returns></returns>
-        protected override void OnReceive(FastSession session, ReceiveBuffer buffer)
+        protected override void OnReceive(FastSession session, ReceiveStream buffer)
         {
             while (true)
             {

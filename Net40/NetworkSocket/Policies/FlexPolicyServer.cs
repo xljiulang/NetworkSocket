@@ -38,7 +38,7 @@ namespace NetworkSocket.Policies
         /// </summary>
         /// <param name="session">会话对象</param>
         /// <param name="buffer">数据</param>      
-        protected override void OnReceive(SessionBase session, ReceiveBuffer buffer)
+        protected override void OnReceive(SessionBase session, ReceiveStream buffer)
         {
             var xml = "<cross-domain-policy><allow-access-from domain=\"*\" to-ports=\"*\"/></cross-domain-policy>\0";
             var bytes = Encoding.UTF8.GetBytes(xml.ToCharArray()); // 需要把字符串转为Char[]

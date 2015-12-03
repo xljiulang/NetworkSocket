@@ -63,12 +63,12 @@ namespace NetworkSocket
         /// <summary>
         /// 接收到的未处理数据
         /// </summary>      
-        private ReceiveBuffer recvBuffer = new ReceiveBuffer();
+        private ReceiveStream recvStream = new ReceiveStream();
 
         /// <summary>
         /// 处理和分析收到的数据的委托
         /// </summary>
-        internal Action<ReceiveBuffer> ReceiveHandler;
+        internal Action<ReceiveStream> ReceiveHandler;
 
         /// <summary>
         /// 连接断开委托   
@@ -142,7 +142,7 @@ namespace NetworkSocket
             this.socketClosed = false;
 
             this.recvArg.SocketError = SocketError.Success;
-            this.recvBuffer.Clear();
+            this.recvStream.Clear();
 
             this.pendingSendCount = 0;
             this.sendArg.SocketError = SocketError.Success;
@@ -155,21 +155,23 @@ namespace NetworkSocket
             this.TagData.Clear();
             this.ExtraState.SetBinded();
             this.RemoteEndPoint = (IPEndPoint)socket.RemoteEndPoint;
-            this.SetKeepAlive(socket);
+            this.TrySetKeepAlive(socket, 5 * 1000, 5 * 1000);
         }
 
         /// <summary>
         /// 设置客户端的心跳包
         /// </summary>
         /// <param name="socket">客户端</param>
-        private void SetKeepAlive(Socket socket)
+        /// <param name="dueTime">延迟的时间量（以毫秒为单位）</param>
+        /// <param name="period">时间间隔（以毫秒为单位）</param>
+        private void TrySetKeepAlive(Socket socket, int dueTime, int period)
         {
             var inOptionValue = new byte[12];
             var outOptionValue = new byte[12];
 
             ByteConverter.ToBytes(1, Endians.Little).CopyTo(inOptionValue, 0);
-            ByteConverter.ToBytes(5 * 1000, Endians.Little).CopyTo(inOptionValue, 4);
-            ByteConverter.ToBytes(5 * 1000, Endians.Little).CopyTo(inOptionValue, 8);
+            ByteConverter.ToBytes(dueTime, Endians.Little).CopyTo(inOptionValue, 4);
+            ByteConverter.ToBytes(period, Endians.Little).CopyTo(inOptionValue, 8);
 
             try
             {
@@ -240,10 +242,11 @@ namespace NetworkSocket
 
             this.ExtraState.SetRecved(arg.BytesTransferred);
 
-            lock (this.recvBuffer.SyncRoot)
+            lock (this.recvStream.SyncRoot)
             {
-                this.recvBuffer.Add(arg.Buffer, arg.Offset, arg.BytesTransferred);
-                this.ReceiveHandler(this.recvBuffer);
+                this.recvStream.Seek(0, SeekOrigin.End);
+                this.recvStream.Write(arg.Buffer, arg.Offset, arg.BytesTransferred);
+                this.ReceiveHandler(this.recvStream);
             }
 
             // 重新进行一次接收
@@ -459,7 +462,7 @@ namespace NetworkSocket
 
             if (disposing)
             {
-                this.recvBuffer = null;
+                this.recvStream = null;
                 this.recvArg = null;
 
                 this.byteRangeQueue = null;

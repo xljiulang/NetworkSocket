@@ -205,7 +205,7 @@ namespace NetworkSocket.Http
         /// <param name="remoteEndpoint">远程端的IP和端口</param>
         /// <exception cref="HttpException"></exception>
         /// <returns></returns>
-        public static HttpRequest Parse(ReceiveBuffer buffer, IPEndPoint localEndpoint, IPEndPoint remoteEndpoint)
+        public static HttpRequest Parse(ReceiveStream buffer, IPEndPoint localEndpoint, IPEndPoint remoteEndpoint)
         {
             buffer.Position = 0;
             var doubleCrlf = Encoding.ASCII.GetBytes("\r\n\r\n");
@@ -287,7 +287,7 @@ namespace NetworkSocket.Http
         /// </summary>
         /// <param name="request"></param>
         /// <param name="buffer"></param>      
-        private static void GeneratePostFormAndFiles(HttpRequest request, ReceiveBuffer buffer)
+        private static void GeneratePostFormAndFiles(HttpRequest request, ReceiveStream buffer)
         {
             var boundary = default(string);
             if (request.IsApplicationFormRequest() == true)
@@ -331,7 +331,7 @@ namespace NetworkSocket.Http
         /// <param name="request"></param>
         /// <param name="buffer"></param>   
         /// <param name="boundary">边界</param>
-        private static void GenerateMultipartFormAndFiles(HttpRequest request, ReceiveBuffer buffer, string boundary)
+        private static void GenerateMultipartFormAndFiles(HttpRequest request, ReceiveStream buffer, string boundary)
         {
             var doubleCrlf = Encoding.ASCII.GetBytes("\r\n\r\n");
             var boundaryBytes = Encoding.ASCII.GetBytes("\r\n--" + boundary);

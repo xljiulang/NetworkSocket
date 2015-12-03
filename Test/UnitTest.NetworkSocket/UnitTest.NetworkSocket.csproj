@@ -71,7 +71,7 @@
     <Compile Include="FlexPolicyServerTest.cs" />
     <Compile Include="TcpServerBaseTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ReceiveBufferTest.cs" />
+    <Compile Include="ReceiveStreamTest.cs" />
     <Compile Include="ServerExtraStateTest.cs" />
     <Compile Include="SessionExtraStateTest.cs" />
     <Compile Include="WebSocket\Fast\JObjectTest.cs" />

@@ -27,7 +27,7 @@ namespace NetworkSocket.Http
         /// </summary>
         /// <param name="session">会话</param>
         /// <param name="buffer">数据</param>
-        protected override void OnReceive(SessionBase session, ReceiveBuffer buffer)
+        protected override void OnReceive(SessionBase session, ReceiveStream buffer)
         {
             try
             {

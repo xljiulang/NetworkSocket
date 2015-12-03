@@ -38,7 +38,7 @@ namespace NetworkSocket.Policies
         /// </summary>
         /// <param name="session">会话对象</param>
         /// <param name="buffer">数据</param>      
-        protected override void OnReceive(SessionBase session, ReceiveBuffer buffer)
+        protected override void OnReceive(SessionBase session, ReceiveStream buffer)
         {
             var xml = new StringBuilder();
             xml.AppendLine("<?xml version=\"1.0\" encoding=\"utf-8\" ?>");

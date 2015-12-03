@@ -185,7 +185,7 @@ namespace NetworkSocket.Fast
         /// <param name="buffer">接收到的历史数据</param>
         /// <exception cref="ProtocolException"></exception>
         /// <returns></returns>
-        public static FastPacket From(ReceiveBuffer buffer)
+        public static FastPacket From(ReceiveStream buffer)
         {
             if (buffer.Length < 4)
             {

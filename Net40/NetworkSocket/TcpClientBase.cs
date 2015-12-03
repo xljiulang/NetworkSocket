@@ -118,7 +118,7 @@ namespace NetworkSocket
         /// </summary>       
         /// <param name="buffer">接收到的历史数据</param>
         /// <returns></returns>
-        protected abstract void OnReceive(ReceiveBuffer buffer);
+        protected abstract void OnReceive(ReceiveStream buffer);
 
 
         /// <summary>
