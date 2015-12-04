@@ -256,7 +256,7 @@
     <Compile Include="WebSocket\StatusCodes.cs" />
     <Compile Include="WebSocket\WebSocketServerBase.cs" />
     <Compile Include="WebSocket\WebSocketSession.cs" />
-    <Compile Include="LimitTask.cs" />
+    <Compile Include="LimitedTask.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="_Sn.snk" />

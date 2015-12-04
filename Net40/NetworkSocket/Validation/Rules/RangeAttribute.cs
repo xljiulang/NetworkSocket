@@ -13,11 +13,6 @@ namespace NetworkSocket.Validation.Rules
     public class RangeAttribute : ValidRuleBase
     {
         /// <summary>
-        /// 是否为整数
-        /// </summary>
-        private bool isInteger;
-
-        /// <summary>
         /// 获取或设置最小值
         /// </summary>
         protected double MinValue { get; set; }
@@ -34,7 +29,6 @@ namespace NetworkSocket.Validation.Rules
         /// <param name="maxValue">最大值</param>
         public RangeAttribute(int minValue, int maxValue)
         {
-            this.isInteger = true;
             this.MinValue = minValue;
             this.MaxValue = maxValue;
             this.ErrorMessage = "值要在区间[{0},{1}]内的整数";
