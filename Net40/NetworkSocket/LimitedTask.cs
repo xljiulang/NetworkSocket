@@ -116,14 +116,13 @@ namespace NetworkSocket
             /// <param name="task">任务</param>
             protected sealed override void QueueTask(Task task)
             {
-                lock (this.scheduledTasks.SyncRoot)
+                this.scheduledTasks.Add(task);
+
+                // 是否要启动线程为抢任务
+                if (this.currentTaskCount < this.maxTaskCount)
                 {
-                    this.scheduledTasks.Add(task);
-                    if (this.currentTaskCount < this.maxTaskCount)
-                    {
-                        this.currentTaskCount = this.currentTaskCount + 1;
-                        ThreadPool.UnsafeQueueUserWorkItem(this.ExecutePendingTasks, null);
-                    }
+                    Interlocked.Increment(ref this.currentTaskCount);
+                    ThreadPool.UnsafeQueueUserWorkItem(this.ExecutePendingTasks, null);
                 }
             }
 
@@ -140,7 +139,6 @@ namespace NetworkSocket
                         var task = this.scheduledTasks.Take();
                         if (task == null)
                         {
-                            this.currentTaskCount = this.currentTaskCount - 1;
                             break;
                         }
                         base.TryExecuteTask(task);
@@ -148,6 +146,7 @@ namespace NetworkSocket
                 }
                 finally
                 {
+                    Interlocked.Decrement(ref this.currentTaskCount);
                     ThreadWorking = false;
                 }
             }
