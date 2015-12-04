@@ -7,6 +7,7 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Linq;
 using System.Threading;
+using NetworkSocket.Exceptions;
 
 
 namespace NetworkSocket

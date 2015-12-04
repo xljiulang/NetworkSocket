@@ -137,8 +137,8 @@
     <Compile Include="Http\Result\ActionResult.cs" />
     <Compile Include="Http\Result\ContentResult.cs" />
     <Compile Include="Http\Result\JsonResult.cs" />
-    <Compile Include="SessionAcceptExcetion.cs" />
-    <Compile Include="SessionCreateException.cs" />
+    <Compile Include="Exceptions\SessionAcceptExcetion.cs" />
+    <Compile Include="Exceptions\SessionCreateException.cs" />
     <Compile Include="Core\ApiAction.cs" />
     <Compile Include="Fast\Context\ActionContext.cs" />
     <Compile Include="Fast\Context\ExceptionContext.cs" />

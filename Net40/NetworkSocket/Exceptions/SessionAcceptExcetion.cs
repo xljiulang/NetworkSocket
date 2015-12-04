@@ -1,20 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using System.Text;
 
-namespace NetworkSocket
+namespace NetworkSocket.Exceptions
 {
     /// <summary>
-    /// 表示创建会话异常
+    /// 表示接收会话异常
     /// </summary>
-    public class SessionCreateException : Exception
+    public class SessionAcceptExcetion : Exception
     {
         /// <summary>
-        /// 创建会话异常
+        /// 接收会话异常
         /// </summary>
         /// <param name="innerException">内部异常</param>
-        public SessionCreateException(Exception innerException)
+        public SessionAcceptExcetion(SocketException innerException)
             : base(innerException.Message, innerException)
         {
         }
