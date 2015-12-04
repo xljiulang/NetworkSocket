@@ -106,6 +106,16 @@ namespace NetworkSocket
         }
 
         /// <summary>
+        /// 从byte[]隐式转换
+        /// </summary>
+        /// <param name="buffer"></param>
+        /// <returns></returns>
+        public static implicit operator ByteRange(byte[] buffer)
+        {
+            return new ByteRange(buffer);
+        }
+
+        /// <summary>
         /// 调试视图
         /// </summary>
         private class DebugView

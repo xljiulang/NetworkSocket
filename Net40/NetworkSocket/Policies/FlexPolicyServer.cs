@@ -55,11 +55,9 @@ namespace NetworkSocket.Policies
             if (policyXml != null)
             {
                 var bytes = Encoding.UTF8.GetBytes(policyXml.ToCharArray());
-                var byteRange = new ByteRange(bytes);
-
                 try
                 {
-                    session.Send(byteRange);
+                    session.Send(bytes);
                 }
                 catch (Exception) { }
             }
