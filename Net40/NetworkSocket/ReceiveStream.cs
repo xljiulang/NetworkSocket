@@ -227,6 +227,19 @@ namespace NetworkSocket
             return bytes;
         }
 
+
+        /// <summary>
+        /// 从流中读取Position到末尾的所有字节，并将流内的位置推到末尾
+        /// 返回以指定编码转换的字符串
+        /// </summary>  
+        /// <param name="encode">编码</param>        
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <returns></returns>
+        public string ReadString(Encoding encode)
+        {
+            return this.ReadString(this.Length - this.Position, encode);
+        }
+
         /// <summary>
         /// 从流中读取count字节，并将流内的位置向前推进count字节
         /// 返回以指定编码转换的字符串

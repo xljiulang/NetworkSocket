@@ -49,7 +49,7 @@ namespace NetworkSocket.Policies
         /// <param name="buffer">数据</param>      
         protected sealed override void OnReceive(SessionBase session, ReceiveStream buffer)
         {
-            var input = buffer.ReadString(buffer.Length, Encoding.UTF8);
+            var input = buffer.ReadString(Encoding.UTF8);
             var policyXml = this.GeneratePolicyXml(input);
 
             if (policyXml != null)
