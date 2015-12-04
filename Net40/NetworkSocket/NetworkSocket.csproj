@@ -70,7 +70,7 @@
     <Compile Include="Fast\Internal\PacketIdProvider.cs" />
     <Compile Include="Endians.cs" />
     <Compile Include="Core\ApiAttribute.cs" />
-    <Compile Include="Fast\Exception\ProtocolException.cs" />
+    <Compile Include="Exceptions\ProtocolException.cs" />
     <Compile Include="Fast\Filter\FilterAttributeProvider.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -121,8 +121,6 @@
     <Compile Include="Http\Context\ActionContext.cs" />
     <Compile Include="Http\Context\ExceptionContext.cs" />
     <Compile Include="Http\Context\RequestContext.cs" />
-    <Compile Include="Http\Exception\ApiExecuteException.cs" />
-    <Compile Include="Http\Exception\ApiNotExistException.cs" />
     <Compile Include="Http\HttpController.cs" />
     <Compile Include="Http\HttpHeader.cs" />
     <Compile Include="Http\HttpServer.cs" />
@@ -145,11 +143,11 @@
     <Compile Include="Fast\Context\ActionContext.cs" />
     <Compile Include="Fast\Context\ExceptionContext.cs" />
     <Compile Include="Fast\Context\RequestContext.cs" />
-    <Compile Include="Fast\Exception\ApiExecuteException.cs" />
-    <Compile Include="Fast\Exception\ApiNotExistException.cs" />
-    <Compile Include="Fast\Exception\RemoteException.cs" />
-    <Compile Include="Fast\Exception\ResolveException.cs" />
-    <Compile Include="Fast\Exception\SerializerException.cs" />
+    <Compile Include="Exceptions\ApiExecuteException.cs" />
+    <Compile Include="Exceptions\ApiNotExistException.cs" />
+    <Compile Include="Exceptions\RemoteException.cs" />
+    <Compile Include="Exceptions\ResolveException.cs" />
+    <Compile Include="Exceptions\SerializerException.cs" />
     <Compile Include="Fast\FastApiService.cs" />
     <Compile Include="Fast\FastSession.cs" />
     <Compile Include="Fast\FastPacket.cs" />
@@ -211,11 +209,6 @@
     <Compile Include="WebSocket\Fast\Context\ActionContext.cs" />
     <Compile Include="WebSocket\Fast\Context\ExceptionContext.cs" />
     <Compile Include="WebSocket\Fast\Context\RequestContext.cs" />
-    <Compile Include="WebSocket\Fast\Exception\ApiExecuteException.cs" />
-    <Compile Include="WebSocket\Fast\Exception\ApiNotExistException.cs" />
-    <Compile Include="WebSocket\Fast\Exception\RemoteException.cs" />
-    <Compile Include="WebSocket\Fast\Exception\ResolveException.cs" />
-    <Compile Include="WebSocket\Fast\Exception\SerializerException.cs" />
     <Compile Include="WebSocket\Fast\FastApiService.cs" />
     <Compile Include="WebSocket\Fast\FastPacket.cs" />
     <Compile Include="WebSocket\Fast\FastWebSocketServer.cs" />

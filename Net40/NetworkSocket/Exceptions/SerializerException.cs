@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace NetworkSocket.WebSocket.Fast
+namespace NetworkSocket.Exceptions
 {
     /// <summary>
     /// 表示序列化或反序列化过程中产生的异常

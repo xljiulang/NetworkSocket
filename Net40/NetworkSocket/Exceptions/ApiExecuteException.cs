@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace NetworkSocket.Http
+namespace NetworkSocket.Exceptions
 {
     /// <summary>
     /// 表示Api执行异常
@@ -12,19 +12,12 @@ namespace NetworkSocket.Http
     public class ApiExecuteException : Exception
     {
         /// <summary>
-        /// 获取Api行为上下文
-        /// </summary>
-        public ActionContext ActionContext { get; private set; }
-
-        /// <summary>
         /// Api执行异常
-        /// </summary>
-        /// <param name="actionContext">Api行为上下文</param>
+        /// </summary>       
         /// <param name="innerException">内部异常</param>
-        public ApiExecuteException(ActionContext actionContext, Exception innerException)
+        public ApiExecuteException(Exception innerException)
             : base(innerException.Message, innerException)
         {
-            this.ActionContext = actionContext;
         }
 
         /// <summary>

@@ -1,4 +1,5 @@
 ﻿using NetworkSocket.Core;
+using NetworkSocket.Exceptions;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -223,7 +224,7 @@ namespace NetworkSocket.Fast
         /// <param name="exception">异常项</param>
         private void ProcessExecutingException(ActionContext actionContext, Exception exception)
         {
-            var exceptionContext = new ExceptionContext(actionContext, new ApiExecuteException(actionContext, exception));
+            var exceptionContext = new ExceptionContext(actionContext, new ApiExecuteException(exception));
             FastTcpCommon.SetRemoteException(this, exceptionContext);
 
             var exceptionHandled = false;

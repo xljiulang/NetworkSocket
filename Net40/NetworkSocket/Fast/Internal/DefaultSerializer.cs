@@ -4,6 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Web.Script.Serialization;
 using System.Text;
+using NetworkSocket.Core;
+using NetworkSocket.Exceptions;
 
 namespace NetworkSocket.Fast
 {
@@ -33,7 +35,7 @@ namespace NetworkSocket.Fast
             }
             catch (Exception ex)
             {
-                throw new NetworkSocket.Fast.SerializerException(ex);
+                throw new SerializerException(ex);
             }
         }
 
@@ -59,7 +61,7 @@ namespace NetworkSocket.Fast
             }
             catch (Exception ex)
             {
-                throw new NetworkSocket.Fast.SerializerException(ex);
+                throw new SerializerException(ex);
             }
         }
 

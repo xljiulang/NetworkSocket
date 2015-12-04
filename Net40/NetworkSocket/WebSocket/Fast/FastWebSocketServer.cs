@@ -7,6 +7,7 @@ using System.Net.Sockets;
 using System.Reflection;
 using NetworkSocket.Core;
 using NetworkSocket.Fast;
+using NetworkSocket.Exceptions;
 
 namespace NetworkSocket.WebSocket.Fast
 {

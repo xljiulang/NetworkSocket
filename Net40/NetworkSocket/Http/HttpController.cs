@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using NetworkSocket.Core;
 using System.Web;
 using System.IO;
+using NetworkSocket.Exceptions;
 
 namespace NetworkSocket.Http
 {
@@ -102,7 +103,7 @@ namespace NetworkSocket.Http
         /// <param name="exception">异常项</param>
         private void ProcessExecutingException(ActionContext actionContext, IEnumerable<IFilter> actionfilters, Exception exception)
         {
-            var exceptionContext = new ExceptionContext(actionContext, new ApiExecuteException(actionContext, exception));
+            var exceptionContext = new ExceptionContext(actionContext, new ApiExecuteException(exception));
             this.ExecExceptionFilters(actionfilters, exceptionContext);
 
             if (exceptionContext.ExceptionHandled == false)

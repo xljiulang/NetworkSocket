@@ -6,6 +6,7 @@ using System.Text;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using NetworkSocket.Core;
+using NetworkSocket.Exceptions;
 
 namespace NetworkSocket.WebSocket.Fast
 {
@@ -84,7 +85,7 @@ namespace NetworkSocket.WebSocket.Fast
         /// <param name="exception">异常项</param>
         private void ProcessExecutingException(ActionContext actionContext, IEnumerable<IFilter> actionfilters, Exception exception)
         {
-            var exceptionContext = new ExceptionContext(actionContext, new ApiExecuteException(actionContext, exception));
+            var exceptionContext = new ExceptionContext(actionContext, new ApiExecuteException(exception));
             FastWebSocketCommon.SetRemoteException(this.Server.JsonSerializer, exceptionContext);
             this.ExecExceptionFilters(actionfilters, exceptionContext);
 

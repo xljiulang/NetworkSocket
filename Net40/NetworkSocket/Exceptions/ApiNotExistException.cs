@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-namespace NetworkSocket.Fast
+namespace NetworkSocket.Exceptions
 {
     /// <summary>
     /// 表示Api不存在引发的异常

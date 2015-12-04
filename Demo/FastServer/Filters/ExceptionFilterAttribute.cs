@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using NetworkSocket.Fast;
 using NetworkSocket.Core;
+using NetworkSocket.Exceptions;
 
 namespace FastServer.Filters
 {
