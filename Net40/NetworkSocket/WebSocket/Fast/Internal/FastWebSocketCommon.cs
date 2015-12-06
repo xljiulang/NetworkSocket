@@ -1,6 +1,7 @@
 ﻿using NetworkSocket.Core;
 using NetworkSocket.Exceptions;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
@@ -53,7 +54,7 @@ namespace NetworkSocket.WebSocket.Fast
         /// <returns></returns>
         public static RemoteException SetApiActionTaskException(TaskSetActionTable taskSetActionTable, RequestContext requestContext)
         {
-            var message = JObject.TryCast<string>(requestContext.Packet.body);
+            var message = Converter.TryCast<string>(requestContext.Packet.body);
             var taskSetAction = taskSetActionTable.Take(requestContext.Packet.id);
 
             if (taskSetAction != null)
@@ -92,27 +93,27 @@ namespace NetworkSocket.WebSocket.Fast
         /// 生成Api行为的调用参数
         /// </summary> 
         /// <param name="context">上下文</param>        
-        /// <exception cref="SerializerException"></exception>
+        /// <exception cref="ArgumentException"></exception>
         /// <returns></returns>
         public static object[] GetApiActionParameters(ActionContext context)
         {
-            var body = context.Packet.body as JObject;
-            if (body == null || body.IsArray == false)
+            var body = context.Packet.body as IList;
+            if (body == null)
             {
                 throw new ArgumentException("body参数必须为数组");
             }
 
-            if (body.Length != context.Action.ParameterTypes.Length)
+            if (body.Count != context.Action.ParameterTypes.Length)
             {
                 throw new ArgumentException("body参数数量不正确");
             }
 
-            var parameters = new object[body.Length];
-            for (var i = 0; i < body.Length; i++)
+            var parameters = new object[body.Count];
+            for (var i = 0; i < body.Count; i++)
             {
-                var bodyParameter = body[i];
+                var bodyParameter = body[i];               
                 var parameterType = context.Action.ParameterTypes[i];
-                parameters[i] = JObject.Cast(bodyParameter, parameterType);
+                parameters[i] = Converter.Cast(bodyParameter, parameterType);
             }
             return parameters;
         }

@@ -61,6 +61,7 @@
     <Compile Include="ByteBits.cs" />
     <Compile Include="ByteBuilder.cs" />
     <Compile Include="ByteConverter.cs" />
+    <Compile Include="Converter.cs" />
     <Compile Include="Core\FilterAttribute.cs" />
     <Compile Include="Core\IDependencyResolverSupportable.cs" />
     <Compile Include="Core\IFilter.cs" />
@@ -165,6 +166,7 @@
     <Compile Include="Fast\Internal\TaskSetAction.cs" />
     <Compile Include="Fast\Internal\TaskSetActionTable.cs" />
     <Compile Include="Fast\ISerializer.cs" />
+    <Compile Include="IConvert.cs" />
     <Compile Include="Internal\TagData.cs" />
     <Compile Include="ISession.cs" />
     <Compile Include="ITag.cs" />

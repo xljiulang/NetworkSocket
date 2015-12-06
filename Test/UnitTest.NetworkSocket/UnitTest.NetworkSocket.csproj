@@ -74,7 +74,7 @@
     <Compile Include="ReceiveStreamTest.cs" />
     <Compile Include="ServerExtraStateTest.cs" />
     <Compile Include="SessionExtraStateTest.cs" />
-    <Compile Include="WebSocket\Fast\JObjectTest.cs" />
+    <Compile Include="JObjectTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Net40\NetworkSocket\NetworkSocket.csproj">

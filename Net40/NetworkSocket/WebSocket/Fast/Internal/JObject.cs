@@ -14,177 +14,10 @@ namespace NetworkSocket.WebSocket.Fast
 {
     /// <summary>
     /// 表示动态Json对象
-    /// </summary>
-    [DebuggerDisplay("IsArray = {IsArray}")]
+    /// </summary>   
     [DebuggerTypeProxy(typeof(DebugView))]
-    internal class JObject : DynamicObject, IDictionary<string, object>, IEnumerable<object>
+    internal class JObject : DynamicObject
     {
-        /// <summary>
-        /// 数据数组
-        /// </summary>
-        private object[] dataArray;
-
-        /// <summary>
-        /// 数据字典
-        /// </summary>
-        private IDictionary<string, object> dataDic;
-
-        /// <summary>
-        /// 获取是否为数组
-        /// </summary>
-        public bool IsArray
-        {
-            get
-            {
-                return this.dataArray != null;
-            }
-        }
-
-        /// <summary>
-        /// 获取数组长度
-        /// </summary>
-        public int Length
-        {
-            get
-            {
-                if (this.IsArray)
-                {
-                    return this.dataArray.Length;
-                }
-                return 1;
-            }
-        }
-
-        /// <summary>
-        /// 获取指定索引内容
-        /// </summary>
-        /// <param name="index">索引</param>
-        /// <returns></returns>
-        public object this[int index]
-        {
-            get
-            {
-                return this.ToArray()[index];
-            }
-        }
-
-        /// <summary>
-        /// 创建动态Json数组对象
-        /// </summary>
-        /// <param name="dataArray">Object对象或JObject对象</param>
-        /// <exception cref="ArgumentNullException"></exception>
-        private JObject(params object[] dataArray)
-        {
-            if (dataArray == null)
-            {
-                throw new ArgumentNullException();
-            }
-            this.dataArray = dataArray;
-        }
-
-        /// <summary>
-        /// 表示动态Json对象
-        /// </summary>
-        /// <param name="dataDic">内容字典</param>
-        private JObject(IDictionary<string, object> dataDic)
-        {
-            this.dataDic = dataDic;
-        }
-
-        /// <summary>
-        /// 转换为数组
-        /// </summary>
-        /// <returns></returns>
-        public object[] ToArray()
-        {
-            if (this.IsArray)
-            {
-                return this.dataArray;
-            }
-            else
-            {
-                return new object[] { this };
-            }
-        }
-
-        /// <summary>
-        /// 获取迭代器
-        /// </summary>
-        /// <returns></returns>
-        public IEnumerator<object> GetEnumerator()
-        {
-            var array = this.ToArray();
-            foreach (var item in array)
-            {
-                yield return item;
-            }
-        }
-
-        /// <summary>
-        /// 迭代自身的元素
-        /// 而不是字典的元素
-        /// </summary>
-        /// <returns></returns>
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return this.GetEnumerator();
-        }
-
-        /// <summary>
-        /// 转换为目标类型
-        /// </summary>
-        /// <param name="binder"></param>
-        /// <param name="result"></param>
-        /// <returns></returns>
-        public override bool TryConvert(ConvertBinder binder, out object result)
-        {
-            result = JObject.Cast(this, binder.Type);
-            return true;
-        }
-
-
-        /// <summary>
-        /// 获取成员的值
-        /// </summary>
-        /// <param name="binder"></param>
-        /// <param name="result"></param>
-        /// <returns></returns>
-        public override bool TryGetMember(GetMemberBinder binder, out object result)
-        {
-            var key = binder.Name;
-            this.dataDic.TryGetValue(key, out result);
-            result = this.CastResult(result);
-            return true;
-        }
-
-        /// <summary>
-        /// 转换结果为JObject结构或JArray结构
-        /// </summary>
-        /// <param name="result"></param>
-        /// <returns></returns>
-        private object CastResult(object result)
-        {
-            if (result == null)
-            {
-                return null;
-            }
-
-            var dicResult = result as IDictionary<string, object>;
-            if (dicResult != null)
-            {
-                return new JObject(dicResult);
-            }
-
-            var arrayResult = result as ArrayList;
-            if (arrayResult != null)
-            {
-                var objectArray = arrayResult.Cast<object>().Select(item => CastResult(item)).ToArray();
-                return new JObject(objectArray);
-            }
-            return result;
-        }
-
-
         /// <summary>
         /// 解析Json
         /// </summary>
@@ -201,193 +34,102 @@ namespace NetworkSocket.WebSocket.Fast
         }
 
         /// <summary>
-        /// 尝试将解析出来的动态值转换为目标类型
+        /// 数据字典
         /// </summary>
-        /// <typeparam name="T">目标类型</typeparam>
-        /// <param name="value">值</param>
+        private IDictionary<string, object> data;
+
+        /// <summary>
+        /// 表示动态Json对象
+        /// </summary>
+        /// <param name="data">内容字典</param>
+        private JObject(IDictionary<string, object> data)
+        {
+            this.data = data;
+        }
+
+        /// <summary>
+        /// 获取成员名称
+        /// </summary>
         /// <returns></returns>
-        public static T TryCast<T>(object value)
+        public override IEnumerable<string> GetDynamicMemberNames()
+        {
+            return this.data.Keys;
+        }
+
+        /// <summary>
+        /// 转换为目标类型
+        /// </summary>
+        /// <param name="binder"></param>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        public override bool TryConvert(ConvertBinder binder, out object result)
         {
             try
             {
-                return JObject.Cast<T>(value);
+                result = Converter.Cast(this, binder.Type);
+                return true;
             }
             catch (Exception)
             {
-                return default(T);
+                result = null;
+                return false;
             }
         }
 
         /// <summary>
-        /// 将解析出来的动态值转换为目标类型
+        /// 获取成员的值
         /// </summary>
-        /// <typeparam name="T">目标类型</typeparam>
-        /// <param name="value">动态值</param>
-        /// <exception cref="SerializerException"></exception>
+        /// <param name="binder"></param>
+        /// <param name="result"></param>
         /// <returns></returns>
-        public static T Cast<T>(object value)
+        public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
-            return (T)JObject.Cast(value, typeof(T));
+            result = null;
+            var key = this.data.Keys.FirstOrDefault(item => string.Equals(binder.Name, item, StringComparison.OrdinalIgnoreCase));
+            if (key == null)
+            {
+                return true;
+            }
+
+            object value;
+            if (this.data.TryGetValue(key, out value) == false)
+            {
+                return true;
+            }
+
+            result = this.CastToJObject(value);
+            return true;
         }
 
         /// <summary>
-        /// 将解析出来的动态值转换为目标类型
+        /// 转换结果为JObject结构或JArray结构
         /// </summary>
-        /// <param name="value">动态值</param>
-        /// <param name="targetType">目标类型</param>
-        /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="SerializerException"></exception>
+        /// <param name="result"></param>
         /// <returns></returns>
-        public static object Cast(object value, Type targetType)
+        private object CastToJObject(object result)
         {
-            if (targetType == null)
+            if (result == null)
             {
-                throw new ArgumentNullException("targetType");
-            }
-
-            if (targetType == typeof(object))
-            {
-                return value;
-            }
-
-            if (value == null)
-            {
-                if (targetType.IsValueType)
-                {
-                    return Activator.CreateInstance(targetType);
-                }
                 return null;
             }
 
-            if (targetType == value.GetType())
+            var dicResult = result as IDictionary<string, object>;
+            if (dicResult != null)
             {
-                return value;
+                return new JObject(dicResult);
             }
 
-            try
+            var listResult = result as IList;
+            if (listResult != null)
             {
-                return JObject.CastByJavaScriptSerializer(value, targetType);
+                for (var i = 0; i < listResult.Count; i++)
+                {
+                    var castValue = this.CastToJObject(listResult[i]);
+                    listResult[i] = castValue;
+                }
             }
-            catch (Exception ex)
-            {
-                throw new SerializerException(ex);
-            }
+            return result;
         }
-
-        /// <summary>
-        /// 调用JavaScriptSerializer进行类型转换
-        /// </summary>
-        /// <param name="value">动态值</param>
-        /// <param name="targetType">目标类型</param>     
-        /// <returns></returns>
-        private static object CastByJavaScriptSerializer(object value, Type targetType)
-        {
-            var jObjectValue = value as JObject;
-            if (jObjectValue != null && jObjectValue.IsArray)
-            {
-                value = jObjectValue.ToArray();
-            }
-
-            var serializer = new JavaScriptSerializer();
-            return serializer.ConvertToType(value, targetType);
-        }
-
-        #region IDictionary
-
-        void IDictionary<string, object>.Add(string key, object value)
-        {
-            this.dataDic.Add(key, value);
-        }
-
-        bool IDictionary<string, object>.ContainsKey(string key)
-        {
-            return this.dataDic.ContainsKey(key);
-        }
-
-        ICollection<string> IDictionary<string, object>.Keys
-        {
-            get
-            {
-                return this.dataDic.Keys;
-            }
-        }
-
-        bool IDictionary<string, object>.Remove(string key)
-        {
-            return this.dataDic.Remove(key);
-        }
-
-        bool IDictionary<string, object>.TryGetValue(string key, out object value)
-        {
-            return this.dataDic.TryGetValue(key, out value);
-        }
-
-        ICollection<object> IDictionary<string, object>.Values
-        {
-            get
-            {
-                return this.dataDic.Values;
-            }
-        }
-
-        object IDictionary<string, object>.this[string key]
-        {
-            get
-            {
-                return this.dataDic[key];
-            }
-            set
-            {
-                this.dataDic[key] = value;
-            }
-        }
-
-        void ICollection<KeyValuePair<string, object>>.Add(KeyValuePair<string, object> item)
-        {
-            this.dataDic.Add(item);
-        }
-
-        void ICollection<KeyValuePair<string, object>>.Clear()
-        {
-            this.dataDic.Clear();
-        }
-
-        bool ICollection<KeyValuePair<string, object>>.Contains(KeyValuePair<string, object> item)
-        {
-            return this.dataDic.Contains(item);
-        }
-
-        void ICollection<KeyValuePair<string, object>>.CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
-        {
-            this.dataDic.CopyTo(array, arrayIndex);
-        }
-
-        int ICollection<KeyValuePair<string, object>>.Count
-        {
-            get
-            {
-                return this.dataDic.Count;
-            }
-        }
-
-        bool ICollection<KeyValuePair<string, object>>.IsReadOnly
-        {
-            get
-            {
-                return this.dataDic.IsReadOnly;
-            }
-        }
-
-        bool ICollection<KeyValuePair<string, object>>.Remove(KeyValuePair<string, object> item)
-        {
-            return this.dataDic.Remove(item);
-        }
-
-        IEnumerator<KeyValuePair<string, object>> IEnumerable<KeyValuePair<string, object>>.GetEnumerator()
-        {
-            return this.dataDic.GetEnumerator();
-        }
-        #endregion
 
         #region DynamicJsonConverter
         /// <summary>
@@ -455,11 +197,11 @@ namespace NetworkSocket.WebSocket.Fast
             /// 查看的内容
             /// </summary>
             [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-            public object[] Values
+            public KeyValuePair<string, object>[] Values
             {
                 get
                 {
-                    return view.ToArray();
+                    return view.data.ToArray();
                 }
             }
         }

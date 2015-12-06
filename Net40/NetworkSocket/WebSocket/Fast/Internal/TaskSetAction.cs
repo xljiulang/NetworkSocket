@@ -92,7 +92,7 @@ namespace NetworkSocket.WebSocket.Fast
         {
             try
             {
-                var result = JObject.Cast<T>(value);
+                var result = Converter.Cast<T>(value);
                 this.taskSource.TrySetResult(result);
             }
             catch (SerializerException ex)
