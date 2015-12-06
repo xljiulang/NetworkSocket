@@ -11,7 +11,7 @@
         var ws = new fastWebSocket('ws://localhost:8282/');
 
         // 注册api
-        ws.bindApi("CpuTimeChanged", function (data) {           
+        ws.bindApi("CpuTimeChanged", function (data) {
             cpu.draw(data);
         });
 
@@ -34,8 +34,8 @@
         <canvas id="canvas" style="height: 300px; width: 100%;"></canvas>
     </div>
     <p>
-        <button type="button" onclick="ws.invokeApi('SubscribeCpuChangeNotify',[true]);">订阅CPU变化通知</button>
-        <button type="button" onclick="ws.invokeApi('SubscribeCpuChangeNotify',[false]);">取消CPU变化通知</button>
+        <button type="button" onclick="ws.invokeApi('Subscribe',[true]);">订阅CPU变化通知</button>
+        <button type="button" onclick="ws.invokeApi('Subscribe',[false]);">取消CPU变化通知</button>
     </p>
 </body>
 </html>

@@ -33,8 +33,8 @@ namespace WebSocket.Services
         /// </summary>       
         /// <returns></returns>
         [Api]
-        [LogFilter("订阅/取消Cpu变化通知")]
-        public bool SubscribeCpuChangeNotify(bool subscribe)
+        [LogFilter("订阅或取消")]
+        public bool Subscribe(bool subscribe)
         {
             this.CurrentContext.Session.TagData.Set("NotifyFlag", subscribe);
             return true;

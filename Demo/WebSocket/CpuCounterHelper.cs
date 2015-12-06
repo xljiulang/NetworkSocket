@@ -14,11 +14,6 @@ namespace WebSocket
     public static class CpuCounterHelper
     {
         /// <summary>
-        /// 最近一次统计的值
-        /// </summary>
-        private static int lastValue = 0;
-
-        /// <summary>
         /// 性能记数器
         /// </summary>
         private static PerformanceCounter counter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
@@ -26,7 +21,7 @@ namespace WebSocket
         /// <summary>
         /// CPU时间变化事件
         /// </summary>
-        public static event Action<int> CpuTimeChanged;
+        public static event Action<int> OnCpuTimeChanged;
 
         /// <summary>
         /// CPU性能检测
@@ -39,11 +34,10 @@ namespace WebSocket
                 {
                     Thread.Sleep(1000);
                     var value = (int)Math.Round(counter.NextValue());
-                    if (value != lastValue && CpuTimeChanged != null)
+                    if (OnCpuTimeChanged != null)
                     {
-                        CpuTimeChanged.Invoke(value);
+                        OnCpuTimeChanged(value);
                     }
-                    lastValue = value;
                 }
             });
         }
