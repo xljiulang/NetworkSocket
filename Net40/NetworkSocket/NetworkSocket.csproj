@@ -65,6 +65,7 @@
     <Compile Include="Converts\ArrayConvert.cs" />
     <Compile Include="Converts\DictionaryConvert.cs" />
     <Compile Include="Converts\DynamicObjectConvert.cs" />
+    <Compile Include="Converts\NoConvert.cs" />
     <Compile Include="Converts\NullableConvert.cs" />
     <Compile Include="Converts\NullConvert.cs" />
     <Compile Include="Converts\PrimitiveContert.cs" />

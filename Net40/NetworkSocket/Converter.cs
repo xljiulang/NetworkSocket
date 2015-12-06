@@ -61,6 +61,7 @@ namespace NetworkSocket
         public Converter()
         {
             this.Items = new ContertItems()
+                .AddLast<NoConvert>()
                 .AddLast<NullConvert>()
                 .AddLast<PrimitiveContert>()
                 .AddLast<NullableConvert>()
@@ -96,16 +97,6 @@ namespace NetworkSocket
             if (targetType == null)
             {
                 throw new ArgumentNullException("targetType");
-            }
-
-            if (targetType == typeof(object))
-            {
-                return value;
-            }
-
-            if (value != null && targetType == value.GetType())
-            {
-                return value;
             }
 
             object result;
