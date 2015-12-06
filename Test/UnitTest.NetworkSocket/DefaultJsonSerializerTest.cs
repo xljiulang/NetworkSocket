@@ -30,7 +30,7 @@ namespace UnitTest.NetworkSocket.WebSocket.Fast
                     new { age ="11", name = "陈" } 
                 }
             };
-            var serializer = new System.Web.Script.Serialization.JavaScriptSerializer();
+            var serializer = new DefaultJsonSerializer();
             var json = serializer.Serialize(model);
 
             var jObject = new DefaultJsonSerializer().Deserialize(json);
@@ -38,7 +38,7 @@ namespace UnitTest.NetworkSocket.WebSocket.Fast
 
             var datas = jObject.Datas as IList;
             Assert.IsTrue(datas != null && datas.Count == 2);
-            
+
             var user = (User)jObject.Datas[0];
             Assert.IsTrue(user != null && user.Name == "张");
         }
