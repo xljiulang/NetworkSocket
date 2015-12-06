@@ -188,7 +188,7 @@ namespace NetworkSocket.WebSocket.Fast
         {
             try
             {
-                var packet = JObject.Parse(content);
+                var packet = this.JsonSerializer.Deserialize(content);
                 var fastPacket = new FastPacket
                 {
                     api = packet.api,

@@ -14,6 +14,7 @@ namespace WebSocket
         public MyWebsocketServer()
         {
             Console.Title = "FastWebSocketServer";
+            this.JsonSerializer = new JsonNetSerializer();
             this.GlobalFilter.Add(new ExceptionFilterAttribute());
             this.BindService(this.GetType().Assembly); // 绑定服务
             this.StartListen(8282);

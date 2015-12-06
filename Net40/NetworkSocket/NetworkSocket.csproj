@@ -239,7 +239,6 @@
     <Compile Include="WebSocket\Fast\IJsonSerializer.cs" />
     <Compile Include="WebSocket\Fast\Internal\DefaultJsonSerializer.cs" />
     <Compile Include="WebSocket\Fast\Internal\FastWebSocketCommon.cs" />
-    <Compile Include="WebSocket\Fast\Internal\JObject.cs" />
     <Compile Include="WebSocket\Fast\Internal\SetTypes.cs" />
     <Compile Include="WebSocket\Fast\Internal\TaskSetAction.cs" />
     <Compile Include="WebSocket\Fast\Internal\TaskSetActionTable.cs" />

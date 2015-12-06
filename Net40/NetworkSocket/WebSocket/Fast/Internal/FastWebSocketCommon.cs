@@ -40,7 +40,8 @@ namespace NetworkSocket.WebSocket.Fast
             if (taskSetAction != null)
             {
                 var returnValue = requestContext.Packet.body;
-                taskSetAction.SetAction(SetTypes.SetReturnReult, returnValue);
+                var serializer = requestContext.Session.Server.JsonSerializer;
+                taskSetAction.SetAction(SetTypes.SetReturnReult, returnValue, serializer);
             }
         }
 
@@ -54,12 +55,12 @@ namespace NetworkSocket.WebSocket.Fast
         /// <returns></returns>
         public static RemoteException SetApiActionTaskException(TaskSetActionTable taskSetActionTable, RequestContext requestContext)
         {
-            var message = Converter.TryCast<string>(requestContext.Packet.body);
+            var message = requestContext.Packet.body as string;
             var taskSetAction = taskSetActionTable.Take(requestContext.Packet.id);
 
             if (taskSetAction != null)
             {
-                taskSetAction.SetAction(SetTypes.SetReturnException, message);
+                taskSetAction.SetAction(SetTypes.SetReturnException, message, null);
                 return null;
             }
             return new RemoteException(message);
@@ -109,11 +110,13 @@ namespace NetworkSocket.WebSocket.Fast
             }
 
             var parameters = new object[body.Count];
+            var serializer = context.Session.Server.JsonSerializer;
+
             for (var i = 0; i < body.Count; i++)
             {
-                var bodyParameter = body[i];               
+                var bodyParameter = body[i];
                 var parameterType = context.Action.ParameterTypes[i];
-                parameters[i] = Converter.Cast(bodyParameter, parameterType);
+                parameters[i] = serializer.Convert(bodyParameter, parameterType);
             }
             return parameters;
         }

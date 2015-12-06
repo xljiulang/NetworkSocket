@@ -25,7 +25,8 @@ namespace NetworkSocket.WebSocket.Fast
         /// </summary>
         /// <param name="setType">行为类型</param>
         /// <param name="value">数据值</param>
-        void SetAction(SetTypes setType, object value);
+        /// <param name="serializer">序列化工具</param>
+        void SetAction(SetTypes setType, object value, IJsonSerializer serializer);
     }
 
     /// <summary>
@@ -59,12 +60,13 @@ namespace NetworkSocket.WebSocket.Fast
         /// </summary>
         /// <param name="setType">行为类型</param>
         /// <param name="value">数据值</param>
-        public void SetAction(SetTypes setType, object value)
+        /// <param name="serializer">序列化工具</param>
+        public void SetAction(SetTypes setType, object value, IJsonSerializer serializer)
         {
             switch (setType)
             {
                 case SetTypes.SetReturnReult:
-                    this.SetResult(value);
+                    this.SetResult(value, serializer);
                     break;
 
                 case SetTypes.SetReturnException:
@@ -88,11 +90,12 @@ namespace NetworkSocket.WebSocket.Fast
         /// 设置结果
         /// </summary>
         /// <param name="value">数据</param>
-        private void SetResult(object value)
+        /// <param name="serializer">序列化工具</param>
+        private void SetResult(object value, IJsonSerializer serializer)
         {
             try
             {
-                var result = Converter.Cast<T>(value);
+                var result = (T)serializer.Convert(value, typeof(T));
                 this.taskSource.TrySetResult(result);
             }
             catch (SerializerException ex)

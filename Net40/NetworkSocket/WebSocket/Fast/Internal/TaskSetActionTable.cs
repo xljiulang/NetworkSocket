@@ -95,7 +95,7 @@ namespace NetworkSocket.WebSocket.Fast
 
             if (this.table.TryRemove(key, out taskSetAction))
             {
-                taskSetAction.SetAction(SetTypes.SetTimeoutException, null);
+                taskSetAction.SetAction(SetTypes.SetTimeoutException, null,null);
             }
             return true;
         }

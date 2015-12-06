@@ -74,7 +74,7 @@
     <Compile Include="ReceiveStreamTest.cs" />
     <Compile Include="ServerExtraStateTest.cs" />
     <Compile Include="SessionExtraStateTest.cs" />
-    <Compile Include="JObjectTest.cs" />
+    <Compile Include="DefaultJsonSerializerTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Net40\NetworkSocket\NetworkSocket.csproj">

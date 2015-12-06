@@ -10,7 +10,7 @@ using NetworkSocket;
 namespace UnitTest.NetworkSocket.WebSocket.Fast
 {
     [TestClass()]
-    public class JObjectTest
+    public class DefaultJsonSerializerTest
     {
         class User
         {
@@ -19,7 +19,7 @@ namespace UnitTest.NetworkSocket.WebSocket.Fast
         }
 
         [TestMethod()]
-        public void ParseTest()
+        public void DeserializeTest()
         {
             var model = new
             {
@@ -32,7 +32,8 @@ namespace UnitTest.NetworkSocket.WebSocket.Fast
             };
             var serializer = new System.Web.Script.Serialization.JavaScriptSerializer();
             var json = serializer.Serialize(model);
-            var jObject = JObject.Parse(json);
+
+            var jObject = new DefaultJsonSerializer().Deserialize(json);
             Assert.IsTrue(jObject.Flag == "test");
 
             var datas = jObject.Datas as IList;
