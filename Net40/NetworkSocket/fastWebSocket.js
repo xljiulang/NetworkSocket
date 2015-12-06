@@ -36,7 +36,7 @@ function fastWebSocket(url) {
     // parameters：参数值数组，注意参数顺序(可选)
     // doneFunc：服务端返回api结果后触发的回调(可选)
     // exFunc：服务端返回异常信息后触发的回调(可选)    
-    this.invkeApi = function (api, parameters, doneFunc, exFunc) {
+    this.invokeApi = function (api, parameters, doneFunc, exFunc) {
         if (this.connected === false) {
             return false;
         }

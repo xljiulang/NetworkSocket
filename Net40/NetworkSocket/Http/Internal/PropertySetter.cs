@@ -15,6 +15,27 @@ namespace NetworkSocket.Http
     internal class PropertySetter
     {
         /// <summary>
+        /// 类型属性的Setter缓存
+        /// </summary>
+        private static ConcurrentDictionary<Type, PropertySetter[]> cached = new ConcurrentDictionary<Type, PropertySetter[]>();
+
+        /// <summary>
+        /// 从类型的属性获取Setter
+        /// </summary>
+        /// <param name="type">类型</param>
+        /// <returns></returns>
+        public static PropertySetter[] GetPropertySetters(Type type)
+        {
+            Func<Type, PropertySetter[]> func = (t) =>
+                t.GetProperties()
+                .Where(p => p.CanWrite && IsSimpleType(p.PropertyType))
+                .Select(p => new PropertySetter(p))
+                .ToArray();
+
+            return PropertySetter.cached.GetOrAdd(type, func);
+        }
+
+        /// <summary>
         /// Api行为的方法成员调用委托
         /// </summary>
         private Func<object, object[], object> methodInvoker;
@@ -58,27 +79,6 @@ namespace NetworkSocket.Http
         public override string ToString()
         {
             return this.Name;
-        }
-
-        /// <summary>
-        /// 类型属性的Setter缓存
-        /// </summary>
-        private static ConcurrentDictionary<Type, PropertySetter[]> cached = new ConcurrentDictionary<Type, PropertySetter[]>();
-
-        /// <summary>
-        /// 从类型的属性获取Setter
-        /// </summary>
-        /// <param name="type">类型</param>
-        /// <returns></returns>
-        public static PropertySetter[] FromPropertiesOf(Type type)
-        {
-            PropertySetter[] setters;
-            if (cached.TryGetValue(type, out setters) == false)
-            {
-                setters = type.GetProperties().Where(p => p.CanWrite && IsSimpleType(p.PropertyType)).Select(p => new PropertySetter(p)).ToArray();
-                cached.TryAdd(type, setters);
-            }
-            return setters;
         }
 
         /// <summary>

@@ -46,7 +46,7 @@
 
         // 获取所有在线成员
         function getAllMembers() {
-            ws.invkeApi("getAllMembers", [], function (data) {
+            ws.invokeApi("getAllMembers", [], function (data) {
                 $(".member-list").empty();
                 for (var i = 0; i < data.length; i++) {
                     var li = "<li>" + data[i] + "</li>";
@@ -58,7 +58,7 @@
         // 设置聊天昵称
         function setName(dom) {
             var name = $(dom).prev().val();
-            ws.invkeApi("setName", [name], function (data) {
+            ws.invokeApi("setName", [name], function (data) {
                 win.alertEx(data.message);
                 if (data.state) {
                     $(".alert-success").hide();
@@ -70,7 +70,7 @@
         // 发表聊天内容
         function groupMessage(dom) {
             var message = $(dom).prev().val();
-            ws.invkeApi("groupMessage", [message], function (data) {
+            ws.invokeApi("groupMessage", [message], function (data) {
                 if (data) {
                     var li = $(".template").clone();
                     li.removeClass().addClass("text-right").find("div").html(message);

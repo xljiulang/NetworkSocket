@@ -1,8 +1,11 @@
-﻿using System;
+﻿using NetworkSocket.Core;
+using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace NetworkSocket
@@ -16,26 +19,6 @@ namespace NetworkSocket
         /// 转换器静态实例
         /// </summary>
         private static readonly Converter Instance = new Converter();
-
-        /// <summary>       
-        /// 支持基础类型、decimal、guid和枚举相互转换以及这些类型的可空类型和数组类型相互转换
-        /// 支持字典和DynamicObject转换为对象以及字典和DynamicObject的数组转换为对象数组
-        /// </summary>
-        /// <typeparam name="T">目标类型</typeparam>
-        /// <param name="value">值</param>
-        /// <exception cref="NotSupportedException"></exception>
-        /// <returns></returns>
-        public static T TryCast<T>(object value)
-        {
-            try
-            {
-                return Converter.Cast<T>(value);
-            }
-            catch (Exception)
-            {
-                return default(T);
-            }
-        }
 
         /// <summary>       
         /// 支持基础类型、decimal、guid和枚举相互转换以及这些类型的可空类型和数组类型相互转换
@@ -90,7 +73,7 @@ namespace NetworkSocket
             this.converts.Add(new NullConvert());
             this.converts.Add(new SippleConvert());
             this.converts.Add(new NullableConvert());
-            this.converts.Add(new DictionaryConvert());           
+            this.converts.Add(new DictionaryConvert());
             this.converts.Add(new ArrayConvert());
             this.converts.Add(new DynamicObjectConvert());
         }
@@ -141,6 +124,78 @@ namespace NetworkSocket
             throw new NotSupportedException();
         }
 
+        /// <summary>
+        /// 表示属性的设置器
+        /// </summary>
+        private class PropertySetter
+        {
+            /// <summary>
+            /// 类型属性的Setter缓存
+            /// </summary>
+            private static ConcurrentDictionary<Type, PropertySetter[]> cached = new ConcurrentDictionary<Type, PropertySetter[]>();
+
+            /// <summary>
+            /// 从类型的属性获取Setter
+            /// </summary>
+            /// <param name="type">类型</param>
+            /// <returns></returns>
+            public static PropertySetter[] GetPropertySetters(Type type)
+            {
+                Func<Type, PropertySetter[]> func = (t) =>
+                    t.GetProperties()
+                    .Where(p => p.CanWrite)
+                    .Select(p => new PropertySetter(p))
+                    .ToArray();
+
+                return PropertySetter.cached.GetOrAdd(type, func);
+            }
+
+            /// <summary>
+            /// Api行为的方法成员调用委托
+            /// </summary>
+            private Func<object, object[], object> methodInvoker;
+
+            /// <summary>
+            /// 获取属性的名称
+            /// </summary>
+            public string Name { get; private set; }
+
+            /// <summary>
+            /// 获取属性的类型
+            /// </summary>
+            public Type Type { get; private set; }
+
+            /// <summary>
+            /// 属性的Setter
+            /// </summary>       
+            /// <param name="property">属性</param>        
+            public PropertySetter(PropertyInfo property)
+            {
+                this.methodInvoker = MethodReflection.CreateInvoker(property.GetSetMethod());
+                this.Name = property.Name;
+                this.Type = property.PropertyType;
+            }
+
+            /// <summary>
+            /// 设置属性的值
+            /// </summary>
+            /// <param name="instance">实例</param>
+            /// <param name="value">属性的值</param>
+            /// <returns></returns>
+            public void SetValue(object instance, object value)
+            {
+                this.methodInvoker.Invoke(instance, new object[] { value });
+            }
+
+            /// <summary>
+            /// 字符串显示
+            /// </summary>
+            /// <returns></returns>
+            public override string ToString()
+            {
+                return this.Name;
+            }
+        }
 
         /// <summary>
         /// null值转换单元
@@ -287,15 +342,15 @@ namespace NetworkSocket
                 }
 
                 var instance = Activator.CreateInstance(targetType);
-                var setters = targetType.GetProperties().Where(item => item.CanWrite);
+                var setters = PropertySetter.GetPropertySetters(targetType);
 
                 foreach (var set in setters)
                 {
                     var key = dic.Keys.FirstOrDefault(k => string.Equals(k, set.Name, StringComparison.OrdinalIgnoreCase));
                     if (key != null)
                     {
-                        var targetValue = converter.Convert(dic[key], set.PropertyType);
-                        set.SetValue(instance, targetValue, null);
+                        var targetValue = converter.Convert(dic[key], set.Type);
+                        set.SetValue(instance, targetValue);
                     }
                 }
 
@@ -345,15 +400,15 @@ namespace NetworkSocket
                 }
 
                 var instance = Activator.CreateInstance(targetType);
-                var setters = targetType.GetProperties().Where(item => item.CanWrite);
+                var setters = PropertySetter.GetPropertySetters(targetType);
 
                 foreach (var set in setters)
                 {
                     object targetValue;
                     if (this.TryGetValue(dynamicObject, set.Name, out targetValue) == true)
                     {
-                        targetValue = converter.Convert(targetValue, set.PropertyType);
-                        set.SetValue(instance, targetValue, null);
+                        targetValue = converter.Convert(targetValue, set.Type);
+                        set.SetValue(instance, targetValue);
                     }
                 }
 

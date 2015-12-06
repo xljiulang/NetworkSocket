@@ -52,7 +52,7 @@ namespace NetworkSocket.Http
             }
 
             var instance = Activator.CreateInstance(type);
-            var setters = PropertySetter.FromPropertiesOf(type);
+            var setters = PropertySetter.GetPropertySetters(type);
             foreach (var setter in setters)
             {
                 var value = request.GetValues(setter.Name).FirstOrDefault();
