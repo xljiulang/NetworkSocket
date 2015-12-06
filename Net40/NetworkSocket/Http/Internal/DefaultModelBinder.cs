@@ -21,20 +21,27 @@ namespace NetworkSocket.Http
         public object BindModel(HttpRequest request, ParameterInfo parameter)
         {
             var name = parameter.Name;
-            var type = parameter.ParameterType;
+            var targetType = parameter.ParameterType;
 
-            if (type.IsClass == true && type.IsArray == false && type != typeof(string))
+            if (targetType.IsClass == true && targetType.IsArray == false && targetType != typeof(string))
             {
                 return ConvertToClass(request, parameter);
             }
 
+            // 转换为数组
             var values = request.GetValues(name);
-            if (type.IsArray == true)
+            if (targetType.IsArray == true)
             {
-                return ConvertToArray(type, name, values);
+                return Converter.Cast(values, targetType);
             }
 
-            return ConvertToSimple(type, name, values.FirstOrDefault(), parameter.DefaultValue);
+            // 转换为简单类型 保留参数默认值
+            var value = values.FirstOrDefault();
+            if (value == null && parameter.DefaultValue != DBNull.Value)
+            {
+                return parameter.DefaultValue;
+            }
+            return Converter.Cast(value, targetType);
         }
 
         /// <summary>
@@ -45,89 +52,24 @@ namespace NetworkSocket.Http
         /// <returns></returns>
         public static object ConvertToClass(HttpRequest request, ParameterInfo parameter)
         {
-            var type = parameter.ParameterType;
-            if (type.IsByRef && type.IsInterface && type.IsAbstract)
+            var targetType = parameter.ParameterType;
+            if (targetType.IsByRef && targetType.IsInterface && targetType.IsAbstract)
             {
-                throw new NotSupportedException("不支持的类型：" + type.Name);
+                throw new NotSupportedException("不支持的类型：" + targetType.Name);
             }
 
-            var instance = Activator.CreateInstance(type);
-            var setters = PropertySetter.GetPropertySetters(type);
+            var instance = Activator.CreateInstance(targetType);
+            var setters = PropertySetter.GetPropertySetters(targetType);
             foreach (var setter in setters)
             {
                 var value = request.GetValues(setter.Name).FirstOrDefault();
                 if (value != null)
                 {
-                    var valueCast = ConvertToSimple(setter.Type, setter.Name, value, DBNull.Value);
+                    var valueCast = Converter.Cast(value, setter.Type);
                     setter.SetValue(instance, valueCast);
                 }
             }
             return instance;
-        }
-
-        /// <summary>
-        /// 转换为数组
-        /// </summary>
-        /// <param name="type">数组类型</param>
-        /// <param name="name">名称</param>
-        /// <param name="values">值</param>
-        /// <returns></returns>
-        private static object ConvertToArray(Type type, string name, IList<string> values)
-        {
-            var elementType = type.GetElementType();
-            if (values.Count == 0)
-            {
-                return Array.CreateInstance(elementType, 0);
-            }
-
-            var array = Array.CreateInstance(type.GetElementType(), values.Count);
-            for (var i = 0; i < array.Length; i++)
-            {
-                var elementValue = ConvertToSimple(elementType, name, values[i], DBNull.Value);
-                array.SetValue(elementValue, i);
-            }
-            return array;
-        }
-
-        /// <summary>
-        /// 转换为简单类型
-        /// </summary>       
-        /// <param name="type">目标类型</param>
-        /// <param name="name">名称</param>
-        /// <param name="value">值</param>
-        /// <param name="defaultValue">默认值</param>
-        /// <returns></returns>
-        private static object ConvertToSimple(Type type, string name, string value, object defaultValue)
-        {
-            if (value == null)
-            {
-                if (type.IsValueType && type.IsGenericType == false && defaultValue == DBNull.Value)
-                {
-                    throw new ArgumentNullException(name);
-                }
-                return DBNull.Value == defaultValue ? null : defaultValue;
-            }
-
-            if (typeof(IConvertible).IsAssignableFrom(type) == true)
-            {
-                return ((IConvertible)value).ToType(type, null);
-            }
-
-            if (typeof(Guid) == type)
-            {
-                return Guid.Parse(value);
-            }
-
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
-            {
-                var argTypes = type.GetGenericArguments();
-                if (argTypes.Length == 1)
-                {
-                    return ConvertToSimple(argTypes.First(), name, value, DBNull.Value);
-                }
-            }
-
-            throw new NotSupportedException("不支持的类型：" + type.Name);
         }
     }
 }

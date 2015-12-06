@@ -18,7 +18,15 @@ namespace WebSocket
         /// <summary>
         /// 转换器
         /// </summary>
-        private Converter converter = new Converter(new JsonNetConvert());
+        private Converter converter = new Converter();
+
+        /// <summary>
+        /// Json.net提供的序列化工具
+        /// </summary>
+        public JsonNetSerializer()
+        {
+            this.converter.Items.AddFrist<JsonNetConvert>();
+        }
 
         /// <summary>
         /// 序列化
@@ -50,32 +58,33 @@ namespace WebSocket
         {
             return this.converter.Convert(value, targetType);
         }
-    }
 
-    /// <summary>
-    /// JsonNet的动态类型转换单元
-    /// </summary>
-    class JsonNetConvert : IConvert
-    {
+
         /// <summary>
-        /// 只转换Json.Net的几个动态类型
-        /// 这些类型都从JToken派生了
+        /// JsonNet的动态类型转换单元
         /// </summary>
-        /// <param name="converter"></param>
-        /// <param name="value"></param>
-        /// <param name="targetType"></param>
-        /// <param name="result"></param>
-        /// <returns></returns>
-        public bool Convert(Converter converter, object value, Type targetType, out object result)
+        private class JsonNetConvert : IConvert
         {
-            var jToken = value as JToken;
-            if (jToken == null)
+            /// <summary>
+            /// 只转换Json.Net的几个动态类型
+            /// 这些类型都从JToken派生了
+            /// </summary>
+            /// <param name="converter"></param>
+            /// <param name="value"></param>
+            /// <param name="targetType"></param>
+            /// <param name="result"></param>
+            /// <returns></returns>
+            public bool Convert(Converter converter, object value, Type targetType, out object result)
             {
-                result = null;
-                return false;
+                var jToken = value as JToken;
+                if (jToken == null)
+                {
+                    result = null;
+                    return false;
+                }
+                result = jToken.ToObject(targetType);
+                return true;
             }
-            result = jToken.ToObject(targetType);
-            return true;
         }
     }
 }

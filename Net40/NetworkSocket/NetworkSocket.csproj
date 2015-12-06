@@ -62,6 +62,13 @@
     <Compile Include="ByteBuilder.cs" />
     <Compile Include="ByteConverter.cs" />
     <Compile Include="Converter.cs" />
+    <Compile Include="Converts\ArrayConvert.cs" />
+    <Compile Include="Converts\DictionaryConvert.cs" />
+    <Compile Include="Converts\DynamicObjectConvert.cs" />
+    <Compile Include="Converts\NullableConvert.cs" />
+    <Compile Include="Converts\NullConvert.cs" />
+    <Compile Include="Converts\PrimitiveContert.cs" />
+    <Compile Include="Converts\PropertySetter.cs" />
     <Compile Include="Core\FilterAttribute.cs" />
     <Compile Include="Core\IDependencyResolverSupportable.cs" />
     <Compile Include="Core\IFilter.cs" />

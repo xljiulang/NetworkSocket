@@ -1,4 +1,5 @@
-﻿using NetworkSocket.Core;
+﻿using NetworkSocket.Converts;
+using NetworkSocket.Core;
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
@@ -46,36 +47,23 @@ namespace NetworkSocket
             return Converter.Instance.Convert(value, targetType);
         }
 
-
         /// <summary>
-        /// 转换执行者
+        /// 获取转换单元操控对象        
         /// </summary>
-        private List<IConvert> converts = new List<IConvert>();
+        public ContertItems Items { get; private set; }
 
         /// <summary>
         /// 类型转换
         /// </summary>
         public Converter()
-            : this(null)
         {
-        }
-
-        /// <summary>
-        /// 类型转换
-        /// </summary>
-        /// <param name="customConverts">自定义的转换执行者</param>
-        public Converter(params IConvert[] customConverts)
-        {
-            if (customConverts != null)
-            {
-                this.converts.AddRange(customConverts);
-            }
-            this.converts.Add(new NullConvert());
-            this.converts.Add(new SippleConvert());
-            this.converts.Add(new NullableConvert());
-            this.converts.Add(new DictionaryConvert());
-            this.converts.Add(new ArrayConvert());
-            this.converts.Add(new DynamicObjectConvert());
+            this.Items = new ContertItems()
+                .AddLast<NullConvert>()
+                .AddLast<PrimitiveContert>()
+                .AddLast<NullableConvert>()
+                .AddLast<DictionaryConvert>()
+                .AddLast<ArrayConvert>()
+                .AddLast<DynamicObjectConvert>();
         }
 
         /// <summary>
@@ -113,7 +101,7 @@ namespace NetworkSocket
             }
 
             object result;
-            foreach (var item in this.converts)
+            foreach (IConvert item in this.Items)
             {
                 if (item.Convert(this, value, targetType, out result) == true)
                 {
@@ -124,296 +112,88 @@ namespace NetworkSocket
             throw new NotSupportedException();
         }
 
+
         /// <summary>
-        /// 表示属性的设置器
+        /// 表示转换器的转换单元合集
         /// </summary>
-        private class PropertySetter
+        public class ContertItems : IEnumerable
         {
             /// <summary>
-            /// 类型属性的Setter缓存
+            /// 转换单元列表
             /// </summary>
-            private static ConcurrentDictionary<Type, PropertySetter[]> cached = new ConcurrentDictionary<Type, PropertySetter[]>();
+            private readonly List<IConvert> converts = new List<IConvert>();
 
             /// <summary>
-            /// 从类型的属性获取Setter
+            /// 添加一个转换单元到最前面
             /// </summary>
-            /// <param name="type">类型</param>
+            /// <typeparam name="T">转换单元类型</typeparam>
             /// <returns></returns>
-            public static PropertySetter[] GetPropertySetters(Type type)
+            public ContertItems AddFrist<T>() where T : IConvert
             {
-                Func<Type, PropertySetter[]> func = (t) =>
-                    t.GetProperties()
-                    .Where(p => p.CanWrite)
-                    .Select(p => new PropertySetter(p))
-                    .ToArray();
-
-                return PropertySetter.cached.GetOrAdd(type, func);
+                if (this.converts.Any(item => item.GetType() == typeof(T)) == false)
+                {
+                    var convert = Activator.CreateInstance<T>();
+                    this.converts.Insert(0, convert);
+                }
+                return this;
             }
 
             /// <summary>
-            /// Api行为的方法成员调用委托
+            /// 添加一个转换单元到末尾
             /// </summary>
-            private Func<object, object[], object> methodInvoker;
-
-            /// <summary>
-            /// 获取属性的名称
-            /// </summary>
-            public string Name { get; private set; }
-
-            /// <summary>
-            /// 获取属性的类型
-            /// </summary>
-            public Type Type { get; private set; }
-
-            /// <summary>
-            /// 属性的Setter
-            /// </summary>       
-            /// <param name="property">属性</param>        
-            public PropertySetter(PropertyInfo property)
-            {
-                this.methodInvoker = MethodReflection.CreateInvoker(property.GetSetMethod());
-                this.Name = property.Name;
-                this.Type = property.PropertyType;
-            }
-
-            /// <summary>
-            /// 设置属性的值
-            /// </summary>
-            /// <param name="instance">实例</param>
-            /// <param name="value">属性的值</param>
+            /// <typeparam name="T">转换单元类型</typeparam>
             /// <returns></returns>
-            public void SetValue(object instance, object value)
+            public ContertItems AddLast<T>() where T : IConvert
             {
-                this.methodInvoker.Invoke(instance, new object[] { value });
+                if (this.converts.Any(item => item.GetType() == typeof(T)) == false)
+                {
+                    var convert = Activator.CreateInstance<T>();
+                    this.converts.Add(convert);
+                }
+                return this;
             }
 
             /// <summary>
-            /// 字符串显示
+            /// 解绑一个转换单元
+            /// </summary>
+            /// <typeparam name="T">转换单元类型</typeparam>
+            /// <returns></returns>
+            public ContertItems Remove<T>() where T : IConvert
+            {
+                var convert = this.converts.FirstOrDefault(item => item.GetType() == typeof(T));
+                if (convert != null)
+                {
+                    this.converts.Remove(convert);
+                }
+                return this;
+            }
+
+            /// <summary>
+            /// 替换转换单元
+            /// </summary>
+            /// <typeparam name="TSource">要被替换掉的转换单元</typeparam>
+            /// <typeparam name="TDest">替换后的转换单元</typeparam>
+            /// <returns></returns>
+            public ContertItems Repace<TSource, TDest>()
+                where TSource : IConvert
+                where TDest : IConvert
+            {
+                var index = this.converts.FindIndex(item => item.GetType() == typeof(TSource));
+                if (index > -1)
+                {
+                    var convert = Activator.CreateInstance<TDest>();
+                    this.converts[index] = convert;
+                }
+                return this;
+            }
+
+            /// <summary>
+            /// 获取迭代器
             /// </summary>
             /// <returns></returns>
-            public override string ToString()
+            public IEnumerator GetEnumerator()
             {
-                return this.Name;
-            }
-        }
-
-        /// <summary>
-        /// null值转换单元
-        /// </summary>
-        private class NullConvert : IConvert
-        {
-            public bool Convert(Converter converter, object value, Type targetType, out object result)
-            {
-                result = null;
-                if (value != null)
-                {
-                    return false;
-                }
-
-                if (targetType.IsValueType == true)
-                {
-                    if (targetType.IsGenericType == false || targetType.GetGenericTypeDefinition() != typeof(Nullable<>))
-                    {
-                        throw new NotSupportedException();
-                    }
-                }
-                return true;
-            }
-        }
-
-        /// <summary>
-        /// 简单类型转换单元
-        /// </summary>
-        private class SippleConvert : IConvert
-        {
-            public bool Convert(Converter converter, object value, Type targetType, out object result)
-            {
-                var convertible = value as IConvertible;
-                if (convertible != null)
-                {
-                    result = convertible.ToType(targetType, null);
-                    return true;
-                }
-
-                var valueString = value.ToString();
-                if (typeof(Guid) == targetType)
-                {
-                    result = Guid.Parse(valueString);
-                    return true;
-                }
-                else if (typeof(string) == targetType)
-                {
-                    result = valueString;
-                    return true;
-                }
-                else if (targetType.IsEnum == true)
-                {
-                    result = Enum.Parse(targetType, valueString, true);
-                    return true;
-                }
-
-                result = null;
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// 可空类型转换单元
-        /// </summary>
-        private class NullableConvert : IConvert
-        {
-            public bool Convert(Converter converter, object value, Type targetType, out object result)
-            {
-                if (targetType.IsGenericType && targetType.GetGenericTypeDefinition() == typeof(Nullable<>))
-                {
-                    var genericArgument = targetType.GetGenericArguments().First();
-                    result = converter.Convert(value, genericArgument);
-                    return true;
-                }
-
-                result = null;
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// 数组转换单元
-        /// </summary>
-        private class ArrayConvert : IConvert
-        {
-            public bool Convert(Converter converter, object value, Type targetType, out object result)
-            {
-                if (targetType.IsArray == false)
-                {
-                    result = null;
-                    return false;
-                }
-
-                var items = value as IEnumerable;
-                var elementType = targetType.GetElementType();
-
-                if (items == null)
-                {
-                    result = Array.CreateInstance(elementType, 0);
-                    return true;
-                }
-
-                var length = 0;
-                var list = items as IList;
-                if (list != null)
-                {
-                    length = list.Count;
-                }
-                else
-                {
-                    var enumerator = items.GetEnumerator();
-                    while (enumerator.MoveNext())
-                    {
-                        length = length + 1;
-                    }
-                }
-
-                var index = 0;
-                var array = Array.CreateInstance(elementType, length);
-                foreach (var item in items)
-                {
-                    var itemCast = converter.Convert(item, elementType);
-                    array.SetValue(itemCast, index);
-                    index = index + 1;
-                }
-
-                result = array;
-                return true;
-            }
-        }
-
-        /// <summary>
-        /// 字典转换单元
-        /// </summary>
-        private class DictionaryConvert : IConvert
-        {
-            public bool Convert(Converter converter, object value, Type targetType, out object result)
-            {
-                var dic = value as IDictionary<string, object>;
-                if (dic == null)
-                {
-                    result = null;
-                    return false;
-                }
-
-                var instance = Activator.CreateInstance(targetType);
-                var setters = PropertySetter.GetPropertySetters(targetType);
-
-                foreach (var set in setters)
-                {
-                    var key = dic.Keys.FirstOrDefault(k => string.Equals(k, set.Name, StringComparison.OrdinalIgnoreCase));
-                    if (key != null)
-                    {
-                        var targetValue = converter.Convert(dic[key], set.Type);
-                        set.SetValue(instance, targetValue);
-                    }
-                }
-
-                result = instance;
-                return true;
-            }
-        }
-
-        /// <summary>
-        /// 动态类型转换单元
-        /// </summary>
-        private class DynamicObjectConvert : IConvert
-        {
-            private class GetBinder : GetMemberBinder
-            {
-                public GetBinder(string name, bool ignoreCase)
-                    : base(name, ignoreCase)
-                {
-                }
-                public override DynamicMetaObject FallbackGetMember(DynamicMetaObject target, DynamicMetaObject errorSuggestion)
-                {
-                    throw new NotImplementedException();
-                }
-            }
-
-            private bool TryGetValue(DynamicObject dynamicObject, string key, out object value)
-            {
-                var keys = dynamicObject.GetDynamicMemberNames();
-                key = keys.FirstOrDefault(item => string.Equals(item, key, StringComparison.OrdinalIgnoreCase));
-
-                if (key != null)
-                {
-                    return dynamicObject.TryGetMember(new GetBinder(key, false), out value);
-                }
-
-                value = null;
-                return false;
-            }
-
-            public bool Convert(Converter converter, object value, Type targetType, out object result)
-            {
-                var dynamicObject = value as DynamicObject;
-                if (dynamicObject == null)
-                {
-                    result = null;
-                    return false;
-                }
-
-                var instance = Activator.CreateInstance(targetType);
-                var setters = PropertySetter.GetPropertySetters(targetType);
-
-                foreach (var set in setters)
-                {
-                    object targetValue;
-                    if (this.TryGetValue(dynamicObject, set.Name, out targetValue) == true)
-                    {
-                        targetValue = converter.Convert(targetValue, set.Type);
-                        set.SetValue(instance, targetValue);
-                    }
-                }
-
-                result = instance;
-                return true;
+                return this.converts.GetEnumerator();
             }
         }
     }
