@@ -51,9 +51,15 @@ namespace NetworkSocket.WebSocket.Fast
         /// <returns></returns>
         public dynamic Deserialize(string json)
         {
-            return JObject.Parse(json);
+            try
+            {
+                return JObject.Parse(json);
+            }
+            catch (Exception ex)
+            {
+                throw new SerializerException(ex);
+            }
         }
-
 
         /// <summary>
         /// 将值转换为目标类型
