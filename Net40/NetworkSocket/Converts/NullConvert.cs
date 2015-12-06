@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 
 namespace NetworkSocket.Converts
-{   
+{
     /// <summary>
     /// 表示null值转换单元
     /// </summary>
@@ -32,7 +32,7 @@ namespace NetworkSocket.Converts
             {
                 if (targetType.IsGenericType == false || targetType.GetGenericTypeDefinition() != typeof(Nullable<>))
                 {
-                    throw new NotSupportedException();
+                    throw new NotSupportedException("不支持将null转换为" + targetType.Name);
                 }
             }
             return true;

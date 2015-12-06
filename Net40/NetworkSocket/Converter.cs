@@ -26,8 +26,9 @@ namespace NetworkSocket
         /// 支持字典和DynamicObject转换为对象以及字典和DynamicObject的数组转换为对象数组
         /// </summary>
         /// <typeparam name="T">目标类型</typeparam>
-        /// <param name="value">值</param>
+        /// <param name="value">值</param>      
         /// <exception cref="NotSupportedException"></exception>
+        /// <exception cref="Exception"></exception>
         /// <returns></returns>
         public static T Cast<T>(object value)
         {
@@ -40,7 +41,9 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="value">值</param>
         /// <param name="targetType">目标类型</param>       
+        /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="NotSupportedException"></exception>
+        /// <exception cref="Exception"></exception>
         /// <returns></returns>
         public static object Cast(object value, Type targetType)
         {
@@ -70,7 +73,9 @@ namespace NetworkSocket
         /// 转换为目标类型
         /// </summary>
         /// <typeparam name="T">要转换的目标类型</typeparam>
-        /// <param name="value">要转换的值</param>
+        /// <param name="value">要转换的值</param>    
+        /// <exception cref="NotSupportedException"></exception>
+        /// <exception cref="Exception"></exception>
         /// <returns>转换后的值</returns>
         public T Convert<T>(object value)
         {
@@ -82,6 +87,9 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="value">要转换的值</param>
         /// <param name="targetType">要转换的目标类型</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="NotSupportedException"></exception>
+        /// <exception cref="Exception"></exception>
         /// <returns>转换后的值</returns>
         public object Convert(object value, Type targetType)
         {
@@ -109,7 +117,8 @@ namespace NetworkSocket
                 }
             }
 
-            throw new NotSupportedException();
+            var message = string.Format("不支持将{0}转换为{1}", value, targetType.Name);
+            throw new NotSupportedException(message);
         }
 
 
