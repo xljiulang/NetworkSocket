@@ -36,6 +36,7 @@ namespace UnitTest.NetworkSocket
             Assert.AreEqual(1.0f, Converter.Cast<float>(1.0d));
             Assert.IsTrue(new int[] { 1, 2 }.SequenceEqual(Converter.Cast<int[]>(new[] { "1", "2" })));
             Assert.IsTrue(new int?[] { 1, 2 }.SequenceEqual(Converter.Cast<int?[]>(new[] { "1", "2" })));
+            Assert.IsTrue(new int[] { 1, 2 }.SequenceEqual(Converter.Cast<int[]>(new[] { "1", "2" }.Select(item => item))));
 
             Assert.AreEqual(MyEnum.Z, Converter.Cast<MyEnum>(MyEnum.Z.GetHashCode()));
             Assert.AreEqual(MyEnum.Z, Converter.Cast<MyEnum>(MyEnum.Z.GetHashCode().ToString()));

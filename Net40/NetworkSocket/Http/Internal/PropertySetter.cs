@@ -17,7 +17,7 @@ namespace NetworkSocket.Http
         /// <summary>
         /// 类型属性的Setter缓存
         /// </summary>
-        private static ConcurrentDictionary<Type, PropertySetter[]> cached = new ConcurrentDictionary<Type, PropertySetter[]>();
+        private static readonly ConcurrentDictionary<Type, PropertySetter[]> cached = new ConcurrentDictionary<Type, PropertySetter[]>();
 
         /// <summary>
         /// 从类型的属性获取Setter
@@ -28,7 +28,7 @@ namespace NetworkSocket.Http
         {
             Func<Type, PropertySetter[]> func = (t) =>
                 t.GetProperties()
-                .Where(p => p.CanWrite && IsSimpleType(p.PropertyType))
+                .Where(p => p.CanWrite && IsPrimitive(p.PropertyType))
                 .Select(p => new PropertySetter(p))
                 .ToArray();
 
@@ -86,7 +86,7 @@ namespace NetworkSocket.Http
         /// </summary>
         /// <param name="type">类型</param>
         /// <returns></returns>
-        private static bool IsSimpleType(Type type)
+        private static bool IsPrimitive(Type type)
         {
             if (typeof(IConvertible).IsAssignableFrom(type) == true)
             {
@@ -103,7 +103,7 @@ namespace NetworkSocket.Http
                 var argTypes = type.GetGenericArguments();
                 if (argTypes.Length == 1)
                 {
-                    return IsSimpleType(argTypes.First());
+                    return IsPrimitive(argTypes.First());
                 }
             }
             return false;

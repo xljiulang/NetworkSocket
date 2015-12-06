@@ -34,7 +34,7 @@ namespace NetworkSocket.Validation
             var validContext = new ValidContext
             {
                 Instance = model,
-                Properties = Property.From(typeof(T))
+                Properties = Property.GetProperties(typeof(T))
             };
 
             foreach (var property in validContext.Properties)

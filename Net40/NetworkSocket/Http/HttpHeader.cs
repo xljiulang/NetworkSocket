@@ -31,7 +31,7 @@ namespace NetworkSocket.Http
                 var value = values[i].ToString();
                 this.Add(name, value);
             }
-        } 
+        }
 
         /// <summary>
         /// 获取指定键的值
@@ -62,7 +62,7 @@ namespace NetworkSocket.Http
 
             try
             {
-                return (T)((IConvertible)value).ToType(typeof(T), null);
+                return Converter.Cast<T>(value);
             }
             catch (Exception)
             {

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NetworkSocket;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,7 +14,7 @@ namespace TelnetServer
         /// <summary>
         /// 获取参数
         /// </summary>
-        public string Argument { get;  private  set; }
+        public string Argument { get; private set; }
 
         /// <summary>
         /// Telnet参数
@@ -45,7 +46,7 @@ namespace TelnetServer
         public T[] GetArguments<T>()
         {
             return this.GetArguments()
-                .Select(arg => (T)((IConvertible)arg).ToType(typeof(T), null))
+                .Select(arg => Converter.Cast<T>(arg))
                 .ToArray();
         }
 

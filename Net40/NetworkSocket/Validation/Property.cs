@@ -18,7 +18,7 @@ namespace NetworkSocket.Validation
         /// <summary>
         /// 类型的属性缓存
         /// </summary>
-        private static ConcurrentDictionary<Type, Property[]> propertyCached = new ConcurrentDictionary<Type, Property[]>();
+        private static readonly ConcurrentDictionary<Type, Property[]> propertyCached = new ConcurrentDictionary<Type, Property[]>();
 
         /// <summary>
         /// 获取有类型带有验证规则特性的属性
@@ -29,7 +29,7 @@ namespace NetworkSocket.Validation
         {
             return type.GetProperties()
                 .Where(item => item.CanRead)
-                .Where(item => item.PropertyType == typeof(Guid) || item.PropertyType.IsEnum || typeof(IConvertible).IsAssignableFrom(item.PropertyType))
+                .Where(item => item.PropertyType == typeof(Guid) || typeof(IConvertible).IsAssignableFrom(item.PropertyType))
                 .Select(item => new Property(item))
                 .Where(item => item.ValidRules.Length > 0)
                 .ToArray();
@@ -41,7 +41,7 @@ namespace NetworkSocket.Validation
         /// <param name="type">类型</param>       
         /// <exception cref="ArgumentNullException"></exception>
         /// <returns></returns>
-        public static Property[] From(Type type)
+        public static Property[] GetProperties(Type type)
         {
             if (type == null)
             {

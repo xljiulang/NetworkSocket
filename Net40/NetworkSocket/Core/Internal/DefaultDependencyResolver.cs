@@ -14,7 +14,7 @@ namespace NetworkSocket.Core
         /// <summary>
         /// 服务实例反转缓存
         /// </summary>
-        private ConcurrentDictionary<Type, object> serviceResolver = new ConcurrentDictionary<Type, object>();
+        private readonly ConcurrentDictionary<Type, object> serviceResolver = new ConcurrentDictionary<Type, object>();
 
         /// <summary>
         /// 解析支持任意对象创建的一次注册的服务
