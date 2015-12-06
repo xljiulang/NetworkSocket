@@ -23,6 +23,13 @@ namespace NetworkSocket.Converts
         /// <returns>如果不支持转换，则返回false</returns>
         public virtual bool Convert(Converter converter, object value, Type targetType, out object result)
         {
+            var valueString = value.ToString();
+            if (targetType.IsEnum == true)
+            {
+                result = Enum.Parse(targetType, valueString, true);
+                return true;
+            }
+
             var convertible = value as IConvertible;
             if (convertible != null && typeof(IConvertible).IsAssignableFrom(targetType) == true)
             {
@@ -30,7 +37,6 @@ namespace NetworkSocket.Converts
                 return true;
             }
 
-            var valueString = value.ToString();
             if (typeof(Guid) == targetType)
             {
                 result = Guid.Parse(valueString);
@@ -39,11 +45,6 @@ namespace NetworkSocket.Converts
             else if (typeof(string) == targetType)
             {
                 result = valueString;
-                return true;
-            }
-            else if (targetType.IsEnum == true)
-            {
-                result = Enum.Parse(targetType, valueString, true);
                 return true;
             }
 
