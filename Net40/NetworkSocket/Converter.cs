@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Dynamic;
 using System.Linq;
 using System.Reflection;
@@ -116,6 +117,7 @@ namespace NetworkSocket
         /// <summary>
         /// 表示转换器的转换单元合集
         /// </summary>
+        [DebuggerTypeProxy(typeof(DebugView))]
         public class ContertItems : IEnumerable
         {
             /// <summary>
@@ -124,16 +126,62 @@ namespace NetworkSocket
             private readonly List<IConvert> converts = new List<IConvert>();
 
             /// <summary>
+            /// 插入到指定位置
+            /// </summary>
+            /// <typeparam name="T">类型</typeparam>
+            /// <param name="index">索引</param>
+            private void Insert<T>(int index) where T : IConvert
+            {
+                if (this.converts.Any(item => item.GetType() == typeof(T)) == false)
+                {
+                    var convert = Activator.CreateInstance<T>();
+                    this.converts.Insert(index, convert);
+                }
+            }
+
+            /// <summary>
             /// 添加一个转换单元到最前面
             /// </summary>
             /// <typeparam name="T">转换单元类型</typeparam>
             /// <returns></returns>
             public ContertItems AddFrist<T>() where T : IConvert
             {
-                if (this.converts.Any(item => item.GetType() == typeof(T)) == false)
+                this.Insert<T>(0);
+                return this;
+            }
+
+            /// <summary>
+            /// 添加到指定转换单元之后
+            /// </summary>
+            /// <typeparam name="TSource">要被替换掉的转换单元</typeparam>
+            /// <typeparam name="TDest">替换后的转换单元</typeparam>
+            /// <returns></returns>
+            public ContertItems AddBefore<TSource, TDest>()
+                where TSource : IConvert
+                where TDest : IConvert
+            {
+                var index = this.converts.FindIndex(item => item.GetType() == typeof(TSource));
+                if (index > -1)
                 {
-                    var convert = Activator.CreateInstance<T>();
-                    this.converts.Insert(0, convert);
+                    this.Insert<TDest>(index);
+                }
+                return this;
+            }
+
+            /// <summary>
+            /// 添加到指定转换单元之后
+            /// </summary>
+            /// <typeparam name="TSource">要被替换掉的转换单元</typeparam>
+            /// <typeparam name="TDest">替换后的转换单元</typeparam>
+            /// <returns></returns>
+            public ContertItems AddAfter<TSource, TDest>()
+                where TSource : IConvert
+                where TDest : IConvert
+            {
+                var index = this.converts.FindIndex(item => item.GetType() == typeof(TSource));
+                if (index > -1)
+                {
+                    this.Insert<TDest>(index + 1);
                 }
                 return this;
             }
@@ -179,7 +227,7 @@ namespace NetworkSocket
                 where TDest : IConvert
             {
                 var index = this.converts.FindIndex(item => item.GetType() == typeof(TSource));
-                if (index > -1)
+                if (index > -1 && this.converts.Any(item => item.GetType() == typeof(TDest)) == false)
                 {
                     var convert = Activator.CreateInstance<TDest>();
                     this.converts[index] = convert;
@@ -195,6 +243,41 @@ namespace NetworkSocket
             {
                 return this.converts.GetEnumerator();
             }
+
+            #region DebugView
+            /// <summary>
+            /// 调试视图
+            /// </summary>
+            private class DebugView
+            {
+                /// <summary>
+                /// 查看的对象
+                /// </summary>
+                private ContertItems view;
+
+                /// <summary>
+                /// 调试视图
+                /// </summary>
+                /// <param name="view">查看的对象</param>
+                public DebugView(ContertItems view)
+                {
+                    this.view = view;
+                }
+
+                /// <summary>
+                /// 查看的内容
+                /// </summary>
+                [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+                public IConvert[] Values
+                {
+                    get
+                    {
+                        return view.converts.ToArray();
+                    }
+                }
+            }
+
+            #endregion
         }
     }
 }

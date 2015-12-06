@@ -1,4 +1,5 @@
 ﻿using NetworkSocket;
+using NetworkSocket.Converts;
 using NetworkSocket.WebSocket.Fast;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -13,12 +14,12 @@ namespace WebSocket
     /// <summary>
     /// 使用Json.net提供的序列化工具
     /// </summary>
-    class JsonNetSerializer : IJsonSerializer
+    internal class JsonNetSerializer : IJsonSerializer
     {
         /// <summary>
         /// 转换器
         /// </summary>
-        private Converter converter = new Converter();
+        private readonly Converter converter = new Converter();
 
         /// <summary>
         /// Json.net提供的序列化工具
