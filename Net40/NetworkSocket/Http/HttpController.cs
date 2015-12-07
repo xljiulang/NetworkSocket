@@ -225,13 +225,13 @@ namespace NetworkSocket.Http
             var totalFilters = this.Server
                 .GlobalFilters
                 .Cast<IFilter>()
-                .Concat(new[] { (IFilter)this })
+                .Concat(new[] { this })
                 .Concat(filters);
 
             foreach (var filter in totalFilters)
             {
                 filter.OnExecuting(actionContext);
-                if (actionContext.Result != null) return;
+                if (actionContext.Result != null) break;
             }
         }
 
@@ -245,13 +245,13 @@ namespace NetworkSocket.Http
             var totalFilters = this.Server
                   .GlobalFilters
                   .Cast<IFilter>()
-                  .Concat(new[] { (IFilter)this })
+                  .Concat(new[] { this })
                   .Concat(filters);
 
             foreach (var filter in totalFilters)
             {
                 filter.OnExecuted(actionContext);
-                if (actionContext.Result != null) return;
+                if (actionContext.Result != null) break;
             }
         }
 
@@ -265,13 +265,13 @@ namespace NetworkSocket.Http
             var totalFilters = this.Server
                  .GlobalFilters
                  .Cast<IFilter>()
-                 .Concat(new[] { (IFilter)this })
+                 .Concat(new[] { this })
                  .Concat(filters);
 
             foreach (var filter in totalFilters)
             {
                 filter.OnException(exceptionContext);
-                if (exceptionContext.ExceptionHandled == true) return;
+                if (exceptionContext.ExceptionHandled == true) break;
             }
         }
 

@@ -134,7 +134,7 @@ namespace NetworkSocket.WebSocket
             var totalFilters = this.Server
                   .GlobalFilters
                   .Cast<IFilter>()
-                  .Concat(new[] { (IFilter)this })
+                  .Concat(new[] { this })
                   .Concat(filters);
 
             foreach (var filter in totalFilters)
@@ -153,7 +153,7 @@ namespace NetworkSocket.WebSocket
             var totalFilters = this.Server
                   .GlobalFilters
                   .Cast<IFilter>()
-                  .Concat(new[] { (IFilter)this })
+                  .Concat(new[] { this })
                   .Concat(filters);
 
             foreach (var filter in totalFilters)
@@ -172,13 +172,13 @@ namespace NetworkSocket.WebSocket
             var totalFilters = this.Server
               .GlobalFilters
               .Cast<IFilter>()
-              .Concat(new[] { (IFilter)this })
+              .Concat(new[] { this })
               .Concat(filters);
 
             foreach (var filter in totalFilters)
             {
                 filter.OnException(exceptionContext);
-                if (exceptionContext.ExceptionHandled == true) return;
+                if (exceptionContext.ExceptionHandled == true) break;
             }
         }
 

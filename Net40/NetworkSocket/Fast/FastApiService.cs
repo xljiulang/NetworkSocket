@@ -119,7 +119,7 @@ namespace NetworkSocket.Fast
                 session.Send(packet.ToByteRange());
             }
         }
-         
+
         /// <summary>
         /// 在Api行为前 执行过滤器
         /// </summary>       
@@ -130,12 +130,12 @@ namespace NetworkSocket.Fast
             var totalFilters = this.Server
                   .GlobalFilters
                   .Cast<IFilter>()
-                  .Concat(new[] { (IFilter)this })
+                  .Concat(new[] { this })
                   .Concat(filters);
 
             foreach (var filter in totalFilters)
             {
-                filter.OnExecuting(actionContext);                
+                filter.OnExecuting(actionContext);
             }
         }
 
@@ -149,13 +149,13 @@ namespace NetworkSocket.Fast
             var totalFilters = this.Server
                   .GlobalFilters
                   .Cast<IFilter>()
-                  .Concat(new[] { (IFilter)this })
+                  .Concat(new[] { this })
                   .Concat(filters);
 
             foreach (var filter in totalFilters)
             {
                 filter.OnExecuted(actionContext);
-            }   
+            }
         }
 
         /// <summary>
@@ -168,16 +168,16 @@ namespace NetworkSocket.Fast
             var totalFilters = this.Server
                .GlobalFilters
                .Cast<IFilter>()
-               .Concat(new[] { (IFilter)this })
+               .Concat(new[] { this })
                .Concat(filters);
 
             foreach (var filter in totalFilters)
             {
                 filter.OnException(exceptionContext);
-                if (exceptionContext.ExceptionHandled == true) return;
+                if (exceptionContext.ExceptionHandled == true) break;
             }
-        } 
-         
+        }
+
         #region IDisponse
         /// <summary>
         /// 获取对象是否已释放

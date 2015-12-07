@@ -20,6 +20,7 @@ namespace NetworkSocket.Http
 
         /// <summary>
         /// 获取或设置异常是否已处理
+        /// 设置为true之后有异常不会抛出
         /// </summary>
         public bool ExceptionHandled { get; set; }
 

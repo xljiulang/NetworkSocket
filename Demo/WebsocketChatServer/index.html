@@ -59,7 +59,7 @@
         function sendChatMessage(dom) {
             var message = $(dom).prev().val();
             ws.invokeApi("chatMessage", [message], function (data) {
-                chatUI.showMyChatMessage(dom);
+                chatUI.showSelfChatMessage(dom);
             }, function (ex) {
                 win.alertEx(ex);
             });
