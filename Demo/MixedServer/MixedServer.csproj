@@ -67,6 +67,9 @@
     <Content Include="index.html" />
     <Content Include="js\fastWebSocket.js" />
     <Content Include="js\jquery-1.7.1.min.js" />
+    <Content Include="js\swfobject.js" />
+    <Content Include="js\WebSocketMain.swf" />
+    <Content Include="js\web_socket.js" />
     <Content Include="js\window\window.css" />
     <Content Include="js\window\window.js" />
   </ItemGroup>

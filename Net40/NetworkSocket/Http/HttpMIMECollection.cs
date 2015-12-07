@@ -61,6 +61,8 @@ namespace NetworkSocket.Http
             this.Add(".xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
             this.Add(".pptx", "application/vnd.openxmlformats-officedocument.presentationml.presentation");
 
+            this.Add(".swf", "application/x-shockwave-flash");
+
             this.Add(".png", "image/png");
             this.Add(".gif", "image/gif");
             this.Add(".jpg", "image/jpeg");

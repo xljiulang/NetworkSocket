@@ -1,6 +1,7 @@
 ﻿using MixedServer.Filter;
 using MixedServer.Service;
 using NetworkSocket.Http;
+using NetworkSocket.Policies;
 using NetworkSocket.WebSocket.Fast;
 using System;
 using System.Collections.Generic;
@@ -22,6 +23,10 @@ namespace MixedServer
             http.StartListen(82);
             Console.WriteLine("http服务启动成功 ..");
 
+            // 当浏览器不支持websocket时，将由flash实现            
+            var flexPolicyServer = new FlexPolicyServer();
+            flexPolicyServer.StartListen();
+            Console.WriteLine("flex策略服务启动功能");
 
             // websocket服务
             var webSocket = new ChatWebSocketServer();
