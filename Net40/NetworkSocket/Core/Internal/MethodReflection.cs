@@ -18,7 +18,7 @@ namespace NetworkSocket.Core
         /// <param name="method">方法成员信息</param>
         /// <exception cref="ArgumentException"></exception>
         /// <returns></returns>
-        internal static Func<object, object[], object> CreateInvoker(MethodInfo method)
+        public static Func<object, object[], object> CreateInvoker(MethodInfo method)
         {
             var instance = Expression.Parameter(typeof(object), "instance");
             var parameters = Expression.Parameter(typeof(object[]), "parameters");

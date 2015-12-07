@@ -1,4 +1,5 @@
-﻿using NetworkSocket.Http;
+﻿using HttpServer.Filters;
+using NetworkSocket.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -99,6 +100,7 @@ namespace HttpServer.Controller
         /// 重启
         /// </summary>
         /// <returns></returns>
+        [LogFilter("重启")]
         public JsonResult Reboot()
         {
             var state = ExitWindows(ExitCode.Reboot | ExitCode.ForceIfHung);
@@ -109,6 +111,7 @@ namespace HttpServer.Controller
         /// 关机
         /// </summary>
         /// <returns></returns>
+        [LogFilter("关机")]
         public JsonResult Shutdown()
         {
             var state = ExitWindows(ExitCode.ShutDown | ExitCode.ForceIfHung);
@@ -119,6 +122,7 @@ namespace HttpServer.Controller
         /// 注销
         /// </summary>
         /// <returns></returns>
+        [LogFilter("注销")]
         public JsonResult Logoff()
         {
             var state = ExitWindows(ExitCode.LogOff | ExitCode.ForceIfHung);

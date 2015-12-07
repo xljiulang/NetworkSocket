@@ -8,10 +8,10 @@ using System.Text;
 namespace NetworkSocket.Fast
 {
     /// <summary>
-    /// Api行为上下文
+    /// 表示Fast协议的Api执行上下文
     /// </summary>
     [DebuggerDisplay("Action = {Action}")]
-    public class ActionContext : RequestContext
+    public class ActionContext : RequestContext, IActionContext
     {
         /// <summary>
         /// 获取Api行为对象

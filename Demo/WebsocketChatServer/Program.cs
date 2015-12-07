@@ -1,6 +1,5 @@
 ﻿using NetworkSocket.Http;
 using NetworkSocket.Policies;
-using NetworkSocket.WebSocket.Fast;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -17,8 +16,8 @@ namespace WebsocketChatServer
             Console.Title = typeof(Program).Namespace;
 
             // 用于提供静态html页面，也可以用IIS
-            var http = new HttpServer();
-            http.StartListen(82);
+            var httpServer = new HttpServer();
+            httpServer.StartListen(82);
             Console.WriteLine("http服务启动成功 ..");
 
             // 当浏览器不支持websocket时，将由flash实现            
@@ -27,8 +26,8 @@ namespace WebsocketChatServer
             Console.WriteLine("flex策略服务启动成功 ..");
 
             // websocket服务
-            var webSocket = new ChatWebSocketServer();
-            webSocket.StartListen(83);
+            var webSocketServer = new ChatWebSocketServer();
+            webSocketServer.StartListen(83);
             Console.WriteLine("WebSocket服务启动成功 ..");
 
 

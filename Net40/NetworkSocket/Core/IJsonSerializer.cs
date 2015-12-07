@@ -1,13 +1,13 @@
-﻿using System;
+﻿using NetworkSocket.Exceptions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using NetworkSocket.Exceptions;
 
 namespace NetworkSocket.Core
 {
     /// <summary>
-    /// 定义对象的json序列化与动态反序列化的接口
+    /// 定义对象的json序列化与json动态反序列化的接口
     /// 异常时抛出SerializerException
     /// </summary>
     public interface IJsonSerializer

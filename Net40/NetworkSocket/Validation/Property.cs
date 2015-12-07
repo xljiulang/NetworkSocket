@@ -1,12 +1,12 @@
-﻿using System;
+﻿using NetworkSocket.Core;
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
-using System.Collections.Concurrent;
-using NetworkSocket.Core;
 
 namespace NetworkSocket.Validation
 {

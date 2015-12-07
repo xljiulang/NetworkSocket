@@ -1,5 +1,4 @@
-﻿using NetworkSocket.Core;
-using NetworkSocket.WebSocket.Fast;
+﻿using NetworkSocket.WebSocket;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,9 +9,14 @@ namespace WebsocketChatServer
     /// <summary>
     /// 昵称设置过滤器
     /// </summary>
-    public class NickNameFilter : FilterAttribute, IAuthorizationFilter
+    public class NickNameFilter : JsonWebSocketFilterAttribute
     {
-        public void OnAuthorization(ActionContext filterContext)
+        public NickNameFilter()
+        {
+            this.Order = -1;
+        }
+
+        protected override void OnExecuting(ActionContext filterContext)
         {
             if (filterContext.Session.TagBag.Name == null)
             {

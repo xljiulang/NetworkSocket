@@ -9,12 +9,20 @@ using System.Text;
 namespace FastServer.Filters
 {
     /// <summary>
-    /// 登录过滤器
+    /// 表示登录过滤器
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
-    public class LoginFilterAttribute : FilterAttribute, IAuthorizationFilter
+    public class LoginFilterAttribute : FastFilterAttribute
     {
-        public void OnAuthorization(NetworkSocket.Fast.ActionContext filterContext)
+        /// <summary>
+        /// 登录过滤器
+        /// </summary>
+        public LoginFilterAttribute()
+        {
+            this.Order = -1;
+        }
+
+        protected override void OnExecuting(ActionContext filterContext)
         {
             var valid = filterContext.Session.TagData.TryGet<bool>("Logined");
             if (valid == false)

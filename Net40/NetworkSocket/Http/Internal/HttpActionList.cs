@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace NetworkSocket.Http
 {
@@ -20,7 +19,7 @@ namespace NetworkSocket.Http
         /// <summary>
         /// Api行为字典
         /// </summary>
-        private Dictionary<int, HttpAction> dictionary = new Dictionary<int, HttpAction>();
+        private readonly Dictionary<int, HttpAction> dictionary = new Dictionary<int, HttpAction>();
 
         /// <summary>
         /// 添加Api行为

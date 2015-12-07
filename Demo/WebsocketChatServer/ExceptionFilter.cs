@@ -1,5 +1,4 @@
-﻿using NetworkSocket.Core;
-using NetworkSocket.WebSocket.Fast;
+﻿using NetworkSocket.WebSocket;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,12 +9,12 @@ namespace WebsocketChatServer
     /// <summary>
     /// 异常处理
     /// </summary>
-    public class ExceptionFilter : FilterAttribute, IExceptionFilter
+    public class ExceptionFilter : JsonWebSocketFilterAttribute
     {
-        public void OnException(ExceptionContext filterContext)
+        protected override void OnException(ExceptionContext filterContext)
         {
             Console.WriteLine(filterContext.Exception.Message);
-            filterContext.ExceptionHandled = true;
+            filterContext.ExceptionHandled = true;           
         }
     }
 }

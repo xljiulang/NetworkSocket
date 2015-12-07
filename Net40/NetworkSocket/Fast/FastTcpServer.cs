@@ -1,15 +1,15 @@
-﻿using System;
+﻿using NetworkSocket.Core;
+using NetworkSocket.Exceptions;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using System.Net.Sockets;
-using NetworkSocket.Core;
-using NetworkSocket.Exceptions;
 
 namespace NetworkSocket.Fast
 {
@@ -175,7 +175,7 @@ namespace NetworkSocket.Fast
 
             foreach (var type in apiServiceType)
             {
-                var actions = FastTcpCommon.GetServiceApiActions(type);
+                var actions = Common.GetServiceApiActions(type);
                 this.apiActionList.AddRange(actions);
             }
             return this;
@@ -246,7 +246,7 @@ namespace NetworkSocket.Fast
         /// <param name="requestContext">请求上下文</param>
         private void ProcessRemoteException(RequestContext requestContext)
         {
-            var remoteException = FastTcpCommon.SetApiActionTaskException(this.TaskSetActionTable, requestContext);
+            var remoteException = Common.SetApiActionTaskException(this.TaskSetActionTable, requestContext);
             if (remoteException != null)
             {
                 var exceptionContext = new ExceptionContext(requestContext, remoteException);
@@ -262,7 +262,7 @@ namespace NetworkSocket.Fast
         {
             if (requestContext.Packet.IsFromClient == false)
             {
-                FastTcpCommon.SetApiActionTaskResult(requestContext, this.TaskSetActionTable);
+                Common.SetApiActionTaskResult(requestContext, this.TaskSetActionTable);
                 return;
             }
 
@@ -294,7 +294,7 @@ namespace NetworkSocket.Fast
                 var exception = new ApiNotExistException(requestContext.Packet.ApiName);
                 var exceptionContext = new ExceptionContext(requestContext, exception);
 
-                FastTcpCommon.SetRemoteException(requestContext.Session, exceptionContext);
+                Common.SetRemoteException(requestContext.Session, exceptionContext);
                 this.ExecGlobalExceptionFilters(exceptionContext);
             }
             return action;
@@ -324,7 +324,7 @@ namespace NetworkSocket.Fast
                 var exception = new ResolveException(actionContext.Action.DeclaringService, innerException);
                 var exceptionContext = new ExceptionContext(actionContext, exception);
 
-                FastTcpCommon.SetRemoteException(actionContext.Session, exceptionContext);
+                Common.SetRemoteException(actionContext.Session, exceptionContext);
                 this.ExecGlobalExceptionFilters(exceptionContext);
             }
             return fastApiService;
@@ -336,16 +336,10 @@ namespace NetworkSocket.Fast
         /// <param name="exceptionContext">上下文</param>       
         private void ExecGlobalExceptionFilters(ExceptionContext exceptionContext)
         {
-            foreach (var filter in this.GlobalFilter.ExceptionFilters)
+            foreach (IFilter filter in this.GlobalFilter)
             {
-                if (exceptionContext.ExceptionHandled == false)
-                {
-                    filter.OnException(exceptionContext);
-                }
-                else
-                {
-                    break;
-                }
+                filter.OnException(exceptionContext);
+                if (exceptionContext.ExceptionHandled == true) break;
             }
 
             if (exceptionContext.ExceptionHandled == false)

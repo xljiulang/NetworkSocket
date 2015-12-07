@@ -10,10 +10,10 @@ namespace FastServer.Filters
 {
     /// <summary>
     /// 异常处理过滤器
-    /// </summary>
-    public class ExceptionFilterAttribute : FilterAttribute, IExceptionFilter
+    /// </summary>        
+    public class ExceptionFilterAttribute : FastFilterAttribute
     {
-        public void OnException(ExceptionContext filterContext)
+        protected override void OnException(ExceptionContext filterContext)
         {
             if (filterContext.Exception is ApiExecuteException)
             {

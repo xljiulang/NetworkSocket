@@ -1,21 +1,21 @@
-﻿using System;
+﻿using NetworkSocket.Core;
+using NetworkSocket.Exceptions;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Text;
-using System.Net.Sockets;
 using System.Threading.Tasks;
-using NetworkSocket.Core;
 using System.Web;
-using System.IO;
-using NetworkSocket.Exceptions;
 
 namespace NetworkSocket.Http
 {
     /// <summary>
-    /// 表示Http控制器
+    /// Http控制器基类
     /// </summary>
-    public class HttpController : IHttpController, IAuthorizationFilter, IActionFilter, IExceptionFilter
+    public abstract class HttpController : HttpFilterAttribute, IHttpController
     {
         /// <summary>
         /// 线程唯一上下文
@@ -215,211 +215,65 @@ namespace NetworkSocket.Http
             };
         }
 
-
-        #region IFilter重写
-        /// <summary>
-        /// 授权时触发       
-        /// </summary>
-        /// <param name="filterContext">上下文</param>       
-        /// <returns></returns>
-        protected virtual void OnAuthorization(ActionContext filterContext)
-        {
-        }
-
-        /// <summary>
-        /// 在执行Api行为前触发       
-        /// </summary>
-        /// <param name="filterContext">上下文</param>       
-        /// <returns></returns>
-        protected virtual void OnExecuting(ActionContext filterContext)
-        {
-        }
-
-        /// <summary>
-        /// 在执行Api行为后触发
-        /// </summary>
-        /// <param name="filterContext">上下文</param>      
-        protected virtual void OnExecuted(ActionContext filterContext)
-        {
-        }
-
-        /// <summary>
-        /// 异常触发
-        /// </summary>
-        /// <param name="filterContext">上下文</param>
-        protected virtual void OnException(ExceptionContext filterContext)
-        {
-        }
-        #endregion
-
-        #region ExecFilters
         /// <summary>
         /// 在Api行为前 执行过滤器
         /// </summary>       
-        /// <param name="actionFilters">Api行为过滤器</param>
+        /// <param name="filters">Api行为过滤器</param>
         /// <param name="actionContext">上下文</param>   
-        private void ExecFiltersBeforeAction(IEnumerable<IFilter> actionFilters, ActionContext actionContext)
+        private void ExecFiltersBeforeAction(IEnumerable<IFilter> filters, ActionContext actionContext)
         {
-            // OnAuthorization
-            foreach (var globalFilter in this.Server.GlobalFilter.AuthorizationFilters)
+            var totalFilters = this.Server
+                .GlobalFilter
+                .Cast<IFilter>()
+                .Concat(new[] { (IFilter)this })
+                .Concat(filters);
+
+            foreach (var filter in totalFilters)
             {
-                globalFilter.OnAuthorization(actionContext);
+                filter.OnExecuting(actionContext);
                 if (actionContext.Result != null) return;
-            }
-
-            ((IAuthorizationFilter)this).OnAuthorization(actionContext);
-            if (actionContext.Result != null) return;
-
-            foreach (var filter in actionFilters)
-            {
-                var authorizationFilter = filter as IAuthorizationFilter;
-                if (authorizationFilter != null)
-                {
-                    authorizationFilter.OnAuthorization(actionContext);
-                    if (actionContext.Result != null) return;
-                }
-            }
-
-            // OnExecuting
-            foreach (var globalFilter in this.Server.GlobalFilter.ActionFilters)
-            {
-                globalFilter.OnExecuting(actionContext);
-                if (actionContext.Result != null) return;
-            }
-
-            ((IActionFilter)this).OnExecuting(actionContext);
-            if (actionContext.Result != null) return;
-
-            foreach (var filter in actionFilters)
-            {
-                var actionFilter = filter as IActionFilter;
-                if (actionFilter != null)
-                {
-                    actionFilter.OnExecuting(actionContext);
-                    if (actionContext.Result != null) return;
-                }
             }
         }
 
         /// <summary>
         /// 在Api行为后执行过滤器
         /// </summary>       
-        /// <param name="actionFilters">Api行为过滤器</param>
+        /// <param name="filters">Api行为过滤器</param>
         /// <param name="actionContext">上下文</param>       
-        private void ExecFiltersAfterAction(IEnumerable<IFilter> actionFilters, ActionContext actionContext)
+        private void ExecFiltersAfterAction(IEnumerable<IFilter> filters, ActionContext actionContext)
         {
-            // 全局过滤器
-            foreach (var globalFilter in this.Server.GlobalFilter.ActionFilters)
+            var totalFilters = this.Server
+                  .GlobalFilter
+                  .Cast<IFilter>()
+                  .Concat(new[] { (IFilter)this })
+                  .Concat(filters);
+
+            foreach (var filter in totalFilters)
             {
-                globalFilter.OnExecuted(actionContext);
+                filter.OnExecuted(actionContext);
                 if (actionContext.Result != null) return;
-            }
-
-            // 自身过滤器
-            ((IActionFilter)this).OnExecuted(actionContext);
-            if (actionContext.Result != null) return;
-
-            // 特性过滤器
-            foreach (var filter in actionFilters)
-            {
-                var actionFilter = filter as IActionFilter;
-                if (actionFilter != null)
-                {
-                    actionFilter.OnExecuted(actionContext);
-                    if (actionContext.Result != null) return;
-                }
             }
         }
 
         /// <summary>
         /// 执行异常过滤器
         /// </summary>       
-        /// <param name="actionFilters">Api行为过滤器</param>
+        /// <param name="filters">Api行为过滤器</param>
         /// <param name="exceptionContext">上下文</param>       
-        private void ExecExceptionFilters(IEnumerable<IFilter> actionFilters, ExceptionContext exceptionContext)
+        private void ExecExceptionFilters(IEnumerable<IFilter> filters, ExceptionContext exceptionContext)
         {
-            foreach (var filter in this.Server.GlobalFilter.ExceptionFilters)
+            var totalFilters = this.Server
+                 .GlobalFilter
+                 .Cast<IFilter>()
+                 .Concat(new[] { (IFilter)this })
+                 .Concat(filters);
+
+            foreach (var filter in totalFilters)
             {
                 filter.OnException(exceptionContext);
-                if (exceptionContext.ExceptionHandled) return;
-            }
-
-            ((IExceptionFilter)this).OnException(exceptionContext);
-            if (exceptionContext.ExceptionHandled) return;
-
-            foreach (var filter in actionFilters)
-            {
-                var exceptionFilter = filter as IExceptionFilter;
-                if (exceptionFilter != null)
-                {
-                    exceptionFilter.OnException(exceptionContext);
-                    if (exceptionContext.ExceptionHandled) return;
-                }
+                if (exceptionContext.ExceptionHandled == true) return;
             }
         }
-        #endregion
-
-        #region IFilter
-        /// <summary>
-        /// 获取或设置排序
-        /// </summary>
-        int IFilter.Order
-        {
-            get
-            {
-                return 0;
-            }
-        }
-
-        /// <summary>
-        /// 是否允许多个实例
-        /// </summary>
-        bool IFilter.AllowMultiple
-        {
-            get
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// 授权时触发       
-        /// </summary>
-        /// <param name="filterContext">上下文</param>       
-        /// <returns></returns>
-        void IAuthorizationFilter.OnAuthorization(ActionContext filterContext)
-        {
-            this.OnAuthorization(filterContext);
-        }
-
-        /// <summary>
-        /// 在执行Api行为前触发       
-        /// </summary>
-        /// <param name="filterContext">上下文</param>       
-        /// <returns></returns>
-        void IActionFilter.OnExecuting(ActionContext filterContext)
-        {
-            this.OnExecuting(filterContext);
-        }
-
-        /// <summary>
-        /// 在执行Api行为后触发
-        /// </summary>
-        /// <param name="filterContext">上下文</param>   
-        void IActionFilter.OnExecuted(ActionContext filterContext)
-        {
-            this.OnExecuted(filterContext);
-        }
-
-        /// <summary>
-        /// 异常触发
-        /// </summary>
-        /// <param name="filterContext">上下文</param>  
-        void IExceptionFilter.OnException(ExceptionContext filterContext)
-        {
-            this.OnException(filterContext);
-        }
-        #endregion
 
         #region IDisponse
         /// <summary>

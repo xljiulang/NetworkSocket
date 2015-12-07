@@ -1,11 +1,10 @@
-﻿using System;
+﻿using NetworkSocket.Exceptions;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Web.Script.Serialization;
 using System.Text;
-using NetworkSocket.Core;
-using NetworkSocket.Exceptions;
+using System.Web.Script.Serialization;
 
 namespace NetworkSocket.Core
 {

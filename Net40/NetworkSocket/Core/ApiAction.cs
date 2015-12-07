@@ -1,16 +1,14 @@
-﻿using NetworkSocket.Core;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 
 namespace NetworkSocket.Core
 {
     /// <summary>
-    /// Api行为    
+    /// 表示Api行为    
     /// </summary>
     [DebuggerDisplay("ApiName = {ApiName}")]
     public class ApiAction
@@ -34,7 +32,7 @@ namespace NetworkSocket.Core
         /// <summary>
         /// 获取Api行为的Api名称
         /// </summary>
-        public string ApiName { get; private set; }
+        public string ApiName { get; protected set; }
 
         /// <summary>
         /// 获取Api行为的方法成员返回类型是否为void
@@ -74,7 +72,7 @@ namespace NetworkSocket.Core
         /// <summary>
         /// 获取声明该成员的服务类型
         /// </summary>
-        public Type DeclaringService { get;  protected set; }
+        public Type DeclaringService { get; protected set; }
 
 
         /// <summary>
@@ -100,8 +98,6 @@ namespace NetworkSocket.Core
                 this.ApiName = api.Name;
             }
         }
-
-       
 
 
         /// <summary>

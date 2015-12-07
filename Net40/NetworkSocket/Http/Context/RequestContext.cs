@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NetworkSocket.Core;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -7,9 +8,9 @@ using System.Text;
 namespace NetworkSocket.Http
 {
     /// <summary>
-    /// 请求上下文
+    /// 表示Http请求上下文
     /// </summary>   
-    public class RequestContext
+    public class RequestContext 
     {
         /// <summary>
         /// 获取请求上下文对象

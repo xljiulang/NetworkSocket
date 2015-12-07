@@ -7,7 +7,7 @@ using System.Text;
 namespace NetworkSocket.Fast
 {
     /// <summary>
-    /// 请求上下文
+    /// 表示Fast协议请求上下文
     /// </summary>
     [DebuggerDisplay("Packet = {Packet}")]
     public class RequestContext

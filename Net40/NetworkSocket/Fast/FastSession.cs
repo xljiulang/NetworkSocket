@@ -1,10 +1,10 @@
-﻿using System;
+﻿using NetworkSocket.Exceptions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
-using System.Net.Sockets;
-using NetworkSocket.Exceptions;
 
 namespace NetworkSocket.Fast
 {
@@ -60,7 +60,7 @@ namespace NetworkSocket.Fast
             var id = this.Server.PacketIdProvider.NewId();
             var packet = new FastPacket(api, id, false);
             packet.SetBodyParameters(this.Server.Serializer, parameters);
-            return FastTcpCommon.InvokeApi<T>(this, this.Server.TaskSetActionTable, this.Server.Serializer, packet);
+            return Common.InvokeApi<T>(this, this.Server.TaskSetActionTable, this.Server.Serializer, packet);
         }
     }
 }

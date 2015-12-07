@@ -67,7 +67,7 @@
     <Content Include="js\bootstrap\img\prev.png" />
     <Content Include="js\bootstrap\js\bootstrap-ie.js" />
     <Content Include="js\bootstrap\js\bootstrap.min.js" />
-    <Content Include="js\fastWebSocket.js" />
+    <Content Include="js\jsonWebSocket.js" />
     <Content Include="js\jquery-1.7.1.min.js" />
     <Content Include="js\json2.js" />
     <Content Include="js\swfobject.js" />

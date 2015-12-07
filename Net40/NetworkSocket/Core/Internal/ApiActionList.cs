@@ -1,10 +1,8 @@
-﻿using NetworkSocket.Core;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace NetworkSocket.Core
 {
@@ -16,7 +14,7 @@ namespace NetworkSocket.Core
         /// <summary>
         /// Api行为字典
         /// </summary>
-        private Dictionary<string, ApiAction> dictionary = new Dictionary<string, ApiAction>(StringComparer.CurrentCultureIgnoreCase);
+        private readonly Dictionary<string, ApiAction> dictionary = new Dictionary<string, ApiAction>(StringComparer.CurrentCultureIgnoreCase);
 
         /// <summary>
         /// Api行为列表
@@ -54,11 +52,8 @@ namespace NetworkSocket.Core
                 throw new ArgumentException(string.Format("Api行为{0}或其命令值已存在", apiAction.ApiName));
             }
 
-            this.CheckSelfParameterType(apiAction);
             this.dictionary.Add(apiAction.ApiName, apiAction);
         }
-
-
 
         /// <summary>
         /// 添加Api行为
@@ -71,28 +66,6 @@ namespace NetworkSocket.Core
             foreach (var action in apiActions)
             {
                 this.Add(action);
-            }
-        }
-
-
-        /// <summary>
-        /// 检测参数类型
-        /// </summary>
-        /// <param name="apiAction">Api行为</param>
-        /// <exception cref="ArgumentException"></exception>
-        private void CheckSelfParameterType(ApiAction apiAction)
-        {
-            foreach (var pType in apiAction.ParameterTypes)
-            {
-                if (pType.IsAbstract || pType.IsInterface)
-                {
-                    throw new ArgumentException(string.Format("Api{0}的参数类型不能包含抽象类或接口", apiAction.ApiName));
-                }
-
-                if (pType.IsSerializable == false)
-                {
-                    throw new ArgumentException(string.Format("Api{0}的参数类型必须为可序列化", apiAction.ApiName));
-                }
             }
         }
 

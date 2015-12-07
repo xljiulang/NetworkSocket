@@ -5,7 +5,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -59,7 +58,7 @@ namespace NetworkSocket.Fast
         /// </summary>
         public FastTcpClient()
         {
-            this.apiActionList = new ApiActionList(FastTcpCommon.GetServiceApiActions(this.GetType()));
+            this.apiActionList = new ApiActionList(Common.GetServiceApiActions(this.GetType()));
             this.packetIdProvider = new PacketIdProvider();
             this.taskSetActionTable = new TaskSetActionTable();
             this.Serializer = new DefaultSerializer();
@@ -106,7 +105,7 @@ namespace NetworkSocket.Fast
         /// <param name="requestContext">请求上下文</param>
         private void ProcessRemoteException(RequestContext requestContext)
         {
-            var remoteException = FastTcpCommon.SetApiActionTaskException(this.taskSetActionTable, requestContext);
+            var remoteException = Common.SetApiActionTaskException(this.taskSetActionTable, requestContext);
             if (remoteException == null)
             {
                 return;
@@ -129,7 +128,7 @@ namespace NetworkSocket.Fast
         {
             if (requestContext.Packet.IsFromClient)
             {
-                FastTcpCommon.SetApiActionTaskResult(requestContext, this.taskSetActionTable);
+                Common.SetApiActionTaskResult(requestContext, this.taskSetActionTable);
                 return;
             }
 
@@ -158,7 +157,7 @@ namespace NetworkSocket.Fast
 
             var exception = new ApiNotExistException(requestContext.Packet.ApiName);
             var exceptionContext = new ExceptionContext(requestContext, exception);
-            FastTcpCommon.SetRemoteException(this, exceptionContext);
+            Common.SetRemoteException(this, exceptionContext);
 
             var exceptionHandled = false;
             this.OnException(requestContext.Packet, exception, out exceptionHandled);
@@ -225,7 +224,7 @@ namespace NetworkSocket.Fast
         private void ProcessExecutingException(ActionContext actionContext, Exception exception)
         {
             var exceptionContext = new ExceptionContext(actionContext, new ApiExecuteException(exception));
-            FastTcpCommon.SetRemoteException(this, exceptionContext);
+            Common.SetRemoteException(this, exceptionContext);
 
             var exceptionHandled = false;
             this.OnException(actionContext.Packet, exception, out exceptionHandled);
@@ -277,7 +276,7 @@ namespace NetworkSocket.Fast
             var id = this.packetIdProvider.NewId();
             var packet = new FastPacket(api, id, true);
             packet.SetBodyParameters(this.Serializer, parameters);
-            return FastTcpCommon.InvokeApi<T>(this, this.taskSetActionTable, this.Serializer, packet);
+            return Common.InvokeApi<T>(this, this.taskSetActionTable, this.Serializer, packet);
         }
 
         /// <summary>

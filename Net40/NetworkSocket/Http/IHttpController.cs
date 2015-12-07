@@ -6,7 +6,7 @@ using System.Text;
 namespace NetworkSocket.Http
 {
     /// <summary>
-    /// 定义Http控制的执行
+    /// 定义Http控制
     /// </summary>
     public interface IHttpController : IDisposable
     {

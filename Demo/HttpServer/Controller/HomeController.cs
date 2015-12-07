@@ -1,4 +1,5 @@
-﻿using NetworkSocket.Http;
+﻿using HttpServer.Filters;
+using NetworkSocket.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +15,7 @@ namespace HttpServer.Controller
             public string Name { get; set; }
         }
 
+        [LogFilter("请求主页")]
         public ActionResult Index(User user, int?[] x, string[] y, int z = 4)
         {
             return Content("OK");

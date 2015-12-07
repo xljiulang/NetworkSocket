@@ -1,5 +1,4 @@
-﻿using NetworkSocket.Core;
-using NetworkSocket.Http;
+﻿using NetworkSocket.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +9,7 @@ namespace HttpServer.Filters
     /// <summary>
     /// 日志过滤器
     /// </summary>
-    public class LogFilterAttribute : FilterAttribute, IActionFilter
+    public class LogFilterAttribute : HttpFilterAttribute
     {
         private string message;
 
@@ -19,15 +18,10 @@ namespace HttpServer.Filters
             this.message = message;
         }
 
-        public void OnExecuting(ActionContext filterContext)
+        protected override void OnExecuting(ActionContext filterContext)
         {
             Console.WriteLine(message);
             // filterContext.Result = new JsonResult(new { Result = "设置了Result就会中止Action的执行" });
-        }
-
-        public void OnExecuted(ActionContext filterContext)
-        {
-
         }
     }
 }

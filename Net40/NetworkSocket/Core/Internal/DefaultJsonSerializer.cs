@@ -1,5 +1,4 @@
-﻿using NetworkSocket.Core;
-using NetworkSocket.Exceptions;
+﻿using NetworkSocket.Exceptions;
 using System;
 using System.Collections;
 using System.Collections.Generic;

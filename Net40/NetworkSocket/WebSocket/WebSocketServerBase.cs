@@ -42,10 +42,10 @@ namespace NetworkSocket.WebSocket
         /// <param name="buffer">接收到的数据</param>
         private void ProcessHandshake(T session, ReceiveStream buffer)
         {
-            var request = default(HttpRequest);
+            var httpRequest = default(HttpRequest);
             try
             {
-                request = HttpRequest.Parse(buffer, this.LocalEndPoint, session.RemoteEndPoint);
+                httpRequest = HttpRequest.Parse(buffer, this.LocalEndPoint, session.RemoteEndPoint);
             }
             catch (Exception)
             {
@@ -54,12 +54,12 @@ namespace NetworkSocket.WebSocket
             }
 
             // http请求的数据未完整
-            if (request == null)
+            if (httpRequest == null)
             {
                 return;
             }
 
-            if (this.OnHandshake(session, request) == false)
+            if (this.OnHandshake(session, httpRequest) == false)
             {
                 session.Close();
                 return;
@@ -68,7 +68,7 @@ namespace NetworkSocket.WebSocket
             // 握手成功          
             try
             {
-                var response = new HandshakeResponse(request);
+                var response = new HandshakeResponse(httpRequest);
                 session.SendResponse(response);
             }
             catch (Exception)

@@ -7,36 +7,38 @@ using System.Text;
 namespace NetworkSocket.Core
 {
     /// <summary>
-    /// 表示服务或Api行为过滤器基础特性
+    /// 表示Api行为过滤器基础特性
     /// </summary>
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
     public abstract class FilterAttribute : Attribute, IFilter
     {
-        /// <summary>
-        /// 排序
-        /// </summary>
-        private int order;
-
         /// <summary>
         /// 缓存
         /// </summary>
         private static readonly ConcurrentDictionary<Type, bool> multiuseAttributeCache = new ConcurrentDictionary<Type, bool>();
 
         /// <summary>
-        /// 表示服务或Api行为过滤器基础特性
+        /// 执行顺序
+        /// 最小的值优先执行
+        /// </summary>        
+        public int Order { get; protected set; }
+
+        /// <summary>
+        /// 获取是否允许多个实例存在
         /// </summary>
-        public FilterAttribute()
+        public bool AllowMultiple
         {
+            get
+            {
+                return IsAllowMultiple(this.GetType());
+            }
         }
 
         /// <summary>
         /// 表示服务或Api行为过滤器基础特性
         /// </summary>
-        /// <param name="order">执行顺序 越小最优先</param>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public FilterAttribute(int order)
+        public FilterAttribute()
         {
-            this.Order = order;
         }
 
         /// <summary>
@@ -51,38 +53,53 @@ namespace NetworkSocket.Core
                 .Cast<AttributeUsageAttribute>()
                 .First()
                 .AllowMultiple);
+        }         
+
+        /// <summary>
+        /// 在执行Api行为前触发       
+        /// </summary>
+        /// <param name="filterContext">上下文</param>       
+        /// <returns></returns>
+        void IFilter.OnExecuting(IActionContext filterContext)
+        {
+            this.OnExecuting(filterContext);
         }
 
         /// <summary>
-        /// 获取执行顺序
-        /// 越小最优先
+        /// 在执行Api行为后触发
         /// </summary>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public int Order
+        /// <param name="filterContext">上下文</param>      
+        void IFilter.OnExecuted(IActionContext filterContext)
         {
-            get
-            {
-                return this.order;
-            }
-            set
-            {
-                if (value < 0)
-                {
-                    throw new ArgumentOutOfRangeException("order", "order必须大于或等于0");
-                }
-                this.order = value;
-            }
+            this.OnExecuted(filterContext);
         }
 
         /// <summary>
-        /// 获取是否允许多个实例存在
+        /// 在Api执行中异常时触发
         /// </summary>
-        public bool AllowMultiple
+        /// <param name="filterContext">上下文</param>
+        void IFilter.OnException(IExceptionContext filterContext)
         {
-            get
-            {
-                return IsAllowMultiple(this.GetType());
-            }
+            this.OnException(filterContext);
         }
+
+        /// <summary>
+        /// 在执行Api行为前触发       
+        /// </summary>
+        /// <param name="filterContext">上下文</param>       
+        /// <returns></returns>
+        protected abstract void OnExecuting(IActionContext filterContext);
+
+        /// <summary>
+        /// 在执行Api行为后触发
+        /// </summary>
+        /// <param name="filterContext">上下文</param>      
+        protected abstract void OnExecuted(IActionContext filterContext);
+
+        /// <summary>
+        /// 在Api执行中异常时触发
+        /// </summary>
+        /// <param name="filterContext">上下文</param>
+        protected abstract void OnException(IExceptionContext filterContext);
     }
 }

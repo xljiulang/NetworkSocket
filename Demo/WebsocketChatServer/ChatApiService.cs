@@ -1,5 +1,5 @@
 ﻿using NetworkSocket.Core;
-using NetworkSocket.WebSocket.Fast;
+using NetworkSocket.WebSocket;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,12 +10,12 @@ namespace WebsocketChatServer
     /// <summary>
     /// 在线聊天Api服务单元
     /// </summary>
-    public sealed class ChatApiService : FastApiService
+    public sealed class ChatApiService : JsonWebSocketApiService
     {
         /// <summary>
         /// 获取其它成员
         /// </summary>
-        public IEnumerable<FastWebSocketSession> OtherSessions
+        public IEnumerable<JsonWebSocketSession> OtherSessions
         {
             get
             {

@@ -6,7 +6,7 @@ using System.Text;
 namespace NetworkSocket.Fast
 {
     /// <summary>
-    /// 定义快速服务的执行
+    /// 定义Fast协议的Api服务
     /// </summary>
     public interface IFastApiService : IDisposable
     {

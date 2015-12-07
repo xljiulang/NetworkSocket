@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NetworkSocket.Core;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -7,10 +8,10 @@ using System.Text;
 namespace NetworkSocket.Fast
 {
     /// <summary>
-    /// 异常上下文
+    /// 表示Fast协议Api异常上下文
     /// </summary>
     [DebuggerDisplay("Message = {Exception.Message}")]
-    public class ExceptionContext : RequestContext
+    public class ExceptionContext : RequestContext, IExceptionContext
     {
         /// <summary>
         /// 获取异常对象

@@ -1,4 +1,4 @@
-﻿using NetworkSocket.WebSocket.Fast;
+﻿using NetworkSocket.WebSocket;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,7 +17,7 @@ namespace WebsocketChatServer
         /// <param name="api">api</param>
         /// <param name="parameters">参数列表</param>   
         /// <returns></returns>
-        public static bool TryInvokeApi(this FastWebSocketSession session, string api, params object[] parameters)
+        public static bool TryInvokeApi(this JsonWebSocketSession session, string api, params object[] parameters)
         {
             try
             {

@@ -42,12 +42,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FastTcpFilterAttributeProvider.cs" />
-    <Compile Include="DependencyResolver.cs" />
-    <Compile Include="ServerExtend.cs" />
+    <Compile Include="AutofacFilterAttributeProvider.cs" />
+    <Compile Include="AutofacDependencyResolver.cs" />
+    <Compile Include="AutofacServerExtend.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="FastWebSocketFilterAttributeProvider.cs" />
-    <Compile Include="HttpFilterAttributeProvider.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

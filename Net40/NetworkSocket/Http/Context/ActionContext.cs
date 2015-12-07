@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NetworkSocket.Core;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -7,11 +8,22 @@ using System.Text;
 namespace NetworkSocket.Http
 {
     /// <summary>
-    /// Api行为上下文
+    /// 表示Http协议的Api执行上下文
     /// </summary>
     [DebuggerDisplay("Action = {Action}")]
-    public class ActionContext : RequestContext
+    public class ActionContext : RequestContext, IActionContext
     {
+        /// <summary>
+        /// 获取http行为对象
+        /// </summary>
+        ApiAction IActionContext.Action
+        {
+            get
+            {
+                return this.Action;
+            }
+        }
+
         /// <summary>
         /// 获取http行为对象
         /// </summary>

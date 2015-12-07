@@ -13,7 +13,7 @@ namespace NetworkSocket.Http
     /// <summary>
     /// 表示Http服务
     /// </summary>
-    public class HttpServer : HttpServerBase, IDependencyResolverSupportable
+    public class HttpServer : HttpServerBase, IDependencyResolverSupportable, IFilterSupportable
     {
         /// <summary>
         /// 所有Http行为
@@ -229,7 +229,7 @@ namespace NetworkSocket.Http
         {
             var exception = new ApiNotExistException(route);
             var exceptionContext = new ExceptionContext(requestContext, exception);
-            foreach (var filter in this.GlobalFilter.ExceptionFilters)
+            foreach (IFilter filter in this.GlobalFilter)
             {
                 filter.OnException(exceptionContext);
                 if (exceptionContext.ExceptionHandled == true) break;

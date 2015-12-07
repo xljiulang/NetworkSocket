@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NetworkSocket.Core;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -31,7 +32,7 @@ namespace NetworkSocket.Http
         /// <param name="context">上下文</param>
         public override void ExecuteResult(RequestContext context)
         {
-            var json = new JavaScriptSerializer().Serialize(data);
+            var json = new DefaultJsonSerializer().Serialize(this.data);
             context.Response.ContentType = "application/json";
             context.Response.Write(json);
         }

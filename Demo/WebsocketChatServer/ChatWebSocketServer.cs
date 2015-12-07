@@ -1,4 +1,4 @@
-﻿using NetworkSocket.WebSocket.Fast;
+﻿using NetworkSocket.WebSocket;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +9,7 @@ namespace WebsocketChatServer
     /// <summary>
     /// WebSocket聊天服务器
     /// </summary>
-    public class ChatWebSocketServer : FastWebSocketServer
+    public class ChatWebSocketServer : JsonWebSocketServer
     {
         /// <summary>
         /// WebSocket聊天服务器
@@ -25,7 +25,7 @@ namespace WebsocketChatServer
         /// 连接断开
         /// </summary>
         /// <param name="session"></param>
-        protected override void OnDisconnect(FastWebSocketSession session)
+        protected override void OnDisconnect(JsonWebSocketSession session)
         {
             var name = (string)session.TagBag.Name;
             if (name == null)
