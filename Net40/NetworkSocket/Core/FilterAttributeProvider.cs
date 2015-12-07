@@ -40,14 +40,21 @@ namespace NetworkSocket.Core
         /// <returns></returns>
         private static IEnumerable<IFilter> GetActionFiltersNoCached(ApiAction action)
         {
-            var methodAttributes = action.GetMethodFilterAttributes();
+            var filters = new List<IFilter>();
+            var methodFilters = action.GetMethodFilterAttributes();
+            var classFilters = action.GetClassFilterAttributes();
 
-            var classAttributes = action.GetClassFilterAttributes()
-                .Where(filter => filter.AllowMultiple || methodAttributes.Any(mFilter => mFilter.TypeId == filter.TypeId) == false);
-
-            var filters = methodAttributes.Concat(classAttributes).OrderBy(item => item.Order);
-
-            return filters.ToArray();
+            // 如果类和方法都定义相同的滤过器且不允许多个实例
+            // 就只取方法上的过滤器实例
+            filters.AddRange(methodFilters);
+            foreach (var filter in classFilters)
+            {
+                if (filter.AllowMultiple || methodFilters.Any(f => f.TypeId == filter.TypeId) == false)
+                {
+                    filters.Add(filter);
+                }
+            }
+            return filters.OrderBy(item => item.Order).ToArray();
         }
     }
 }
