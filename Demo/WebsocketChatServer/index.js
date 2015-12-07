@@ -19,10 +19,13 @@
     }
 
     this.showNickName = function (data) {
-        win.alertEx(data.message);
         if (data.state) {
             $(".alert-success").hide();
-            document.title += ("[" + name + "]");
+            document.title += ("[" + data.name + "]");
+            var li = "<li>" + data.name + "</li>";
+            $(li).appendTo(".member-list");
+        } else {
+            win.alertEx(data.message);
         }
     }
 

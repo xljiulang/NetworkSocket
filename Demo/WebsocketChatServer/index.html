@@ -70,10 +70,12 @@
 
     <style type="text/css">
         body { padding: 10px; }
+        ul { margin: 0; padding: 10px; }
         .box { border: 1px solid #ddd; }
         .box > .title { line-height: 32px; background: #ddd; padding: 0 8px; }
         .list { height: 360px; overflow-y: scroll; }
         .member-list > li { padding: 0 6px; }
+
         .chat-list > li { padding: 6px; margin: 10px 0; }
         .chat-list > li > div { display: inline; border-radius: 6px; }
         .chat-list > li p { color: blue; }
@@ -116,8 +118,8 @@
                 </div>
 
                 <div style="margin-top: 20px;">
-                    <textarea placeholder="你想说什么?" style="width: 80%; height: 40px; resize: none;"></textarea>
-                    <button type="button" class="btn" onclick="groupMessage(this);">发送</button>
+                    <textarea placeholder="你想说什么?" style="margin: 0; width: 80%; height: 40px; resize: none;"></textarea>
+                    <button type="button" class="btn btn-info btn-large" onclick="groupMessage(this);">发送</button>
                 </div>
             </div>
             <div class="span4">

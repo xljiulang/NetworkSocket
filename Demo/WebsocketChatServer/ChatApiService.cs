@@ -59,13 +59,13 @@ namespace WebsocketChatServer
                 return new { state = false, message = "此昵称已经被占用 .." };
             }
 
-            // 推送成员上线
+            // 推送新成员上线提醒
             this.CurrentContext.Session.TagBag.Name = name;
-            foreach (var session in this.CurrentContext.AllSessions)
+            foreach (var session in this.OtherSessions)
             {
                 session.TryInvokeApi("OnMemberChange", 1, name);
             }
-            return new { state = true, message = "设置昵称成功 .." };
+            return new { state = true, name };
         }
 
         /// <summary>
