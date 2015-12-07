@@ -21,7 +21,7 @@ namespace FastServer
         {
             var fastServer = new FastServer();
             
-            fastServer.GlobalFilter.Add(new ExceptionFilterAttribute());           
+            fastServer.GlobalFilters.Add(new ExceptionFilterAttribute());           
             fastServer.BindService(fastServer.GetType().Assembly);
             fastServer.RegisterResolver();
             fastServer.StartListen(1380);

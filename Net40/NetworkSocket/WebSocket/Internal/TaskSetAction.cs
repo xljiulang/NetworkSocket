@@ -26,7 +26,7 @@ namespace NetworkSocket.WebSocket
         /// <param name="setType">行为类型</param>
         /// <param name="value">数据值</param>
         /// <param name="serializer">序列化工具</param>
-        void SetAction(SetTypes setType, object value, IJsonSerializer serializer);
+        void SetAction(SetTypes setType, object value, IJsonDynamicSerializer serializer);
     }
 
     /// <summary>
@@ -61,7 +61,7 @@ namespace NetworkSocket.WebSocket
         /// <param name="setType">行为类型</param>
         /// <param name="value">数据值</param>
         /// <param name="serializer">序列化工具</param>
-        public void SetAction(SetTypes setType, object value, IJsonSerializer serializer)
+        public void SetAction(SetTypes setType, object value, IJsonDynamicSerializer serializer)
         {
             switch (setType)
             {
@@ -91,7 +91,7 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="value">数据</param>
         /// <param name="serializer">序列化工具</param>
-        private void SetResult(object value, IJsonSerializer serializer)
+        private void SetResult(object value, IJsonDynamicSerializer serializer)
         {
             try
             {

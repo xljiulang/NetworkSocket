@@ -15,6 +15,6 @@ namespace NetworkSocket.WebSocket
         /// <summary>
         /// 获取或设置Json序列化工具       
         /// </summary>
-        IJsonSerializer JsonSerializer { get; set; }
+        IJsonDynamicSerializer JsonSerializer { get; set; }
     }
 }

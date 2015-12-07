@@ -16,7 +16,7 @@ namespace WebsocketChatServer
         /// </summary>
         public ChatWebSocketServer()
         {
-            this.GlobalFilter.Add(new ExceptionFilter()); // 异常处理
+            this.GlobalFilters.Add(new ExceptionFilter()); // 异常处理
             this.BindService<ChatApiService>(); // 关联服务
             this.JsonSerializer = new JsonNetSerializer(); // 替换序列化工具
         }

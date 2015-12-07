@@ -128,7 +128,7 @@ namespace NetworkSocket.Fast
         private void ExecFiltersBeforeAction(IEnumerable<IFilter> filters, ActionContext actionContext)
         {
             var totalFilters = this.Server
-                  .GlobalFilter
+                  .GlobalFilters
                   .Cast<IFilter>()
                   .Concat(new[] { (IFilter)this })
                   .Concat(filters);
@@ -147,7 +147,7 @@ namespace NetworkSocket.Fast
         private void ExecFiltersAfterAction(IEnumerable<IFilter> filters, ActionContext actionContext)
         {
             var totalFilters = this.Server
-                  .GlobalFilter
+                  .GlobalFilters
                   .Cast<IFilter>()
                   .Concat(new[] { (IFilter)this })
                   .Concat(filters);
@@ -166,7 +166,7 @@ namespace NetworkSocket.Fast
         private void ExecExceptionFilters(IEnumerable<IFilter> filters, ExceptionContext exceptionContext)
         {
             var totalFilters = this.Server
-               .GlobalFilter
+               .GlobalFilters
                .Cast<IFilter>()
                .Concat(new[] { (IFilter)this })
                .Concat(filters);

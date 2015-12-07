@@ -10,7 +10,7 @@ namespace NetworkSocket.Core
     /// 定义对象的json序列化与json动态反序列化的接口
     /// 异常时抛出SerializerException
     /// </summary>
-    public interface IJsonSerializer
+    public interface IJsonDynamicSerializer
     {
         /// <summary>
         /// 序列化为Json

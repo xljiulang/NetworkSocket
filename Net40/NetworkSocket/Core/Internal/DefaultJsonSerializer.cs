@@ -14,7 +14,7 @@ namespace NetworkSocket.Core
     /// <summary>
     /// 默认提供的Json序列化工具
     /// </summary>
-    internal sealed class DefaultJsonSerializer : IJsonSerializer
+    internal sealed class DefaultJsonSerializer : IJsonDynamicSerializer
     {
         /// <summary>
         /// 序列化为Json

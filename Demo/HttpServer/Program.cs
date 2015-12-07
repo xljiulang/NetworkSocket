@@ -15,7 +15,7 @@ namespace HttpServer
             Console.Title = typeof(Program).Namespace;
 
             var http = new NetworkSocket.Http.HttpServer();
-            http.GlobalFilter.Add(new ExceptionFilterAttribute());
+            http.GlobalFilters.Add(new ExceptionFilterAttribute());
             http.BindController(typeof(Program).Assembly);
             http.StartListen(7777);
 

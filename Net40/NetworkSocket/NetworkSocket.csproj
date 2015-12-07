@@ -76,6 +76,7 @@
     <Compile Include="Core\IExceptionContext.cs" />
     <Compile Include="Core\IFilter.cs" />
     <Compile Include="Core\IFilterSupportable.cs" />
+    <Compile Include="Core\IGlobalFilters.cs" />
     <Compile Include="Core\Internal\ApiActionList.cs" />
     <Compile Include="Core\Internal\LoopWorker.cs" />
     <Compile Include="Core\Internal\MethodReflection.cs" />
@@ -88,7 +89,7 @@
     <Compile Include="Core\FilterAttributeProvider.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Core\GlobalFilters.cs">
+    <Compile Include="Core\Internal\GlobalFiltersBase.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Fast\Context\ActionContext.cs">
@@ -107,6 +108,7 @@
     <Compile Include="Fast\IFastTcpClient.cs" />
     <Compile Include="Fast\IFastTcpServer.cs" />
     <Compile Include="Fast\Internal\Common.cs" />
+    <Compile Include="Fast\Internal\GlobalFilters.cs" />
     <Compile Include="Fast\Internal\PacketIdProvider.cs" />
     <Compile Include="Fast\Internal\SetTypes.cs" />
     <Compile Include="Fast\Internal\TaskSetAction.cs" />
@@ -120,6 +122,7 @@
     <Compile Include="Http\HttpMIME.cs" />
     <Compile Include="Http\HttpMIMECollection.cs" />
     <Compile Include="Http\HttpPostAttribute.cs" />
+    <Compile Include="Http\Internal\GlobalFilters.cs" />
     <Compile Include="Http\Internal\MultipartHead.cs" />
     <Compile Include="Http\Result\EmptyResult.cs" />
     <Compile Include="Http\Result\ErrorResult.cs" />
@@ -199,11 +202,12 @@
     <Compile Include="Validation\Rules\RangeAttribute.cs" />
     <Compile Include="Validation\Rules\RequiredAttribute.cs" />
     <Compile Include="Validation\Rules\UrlAttribute.cs" />
-    <Compile Include="Core\IJsonSerializer.cs" />
+    <Compile Include="Core\IJsonDynamicSerializer.cs" />
     <Compile Include="LimitedTask.cs" />
     <Compile Include="WebSocket\Context\ActionContext.cs" />
     <Compile Include="WebSocket\Context\ExceptionContext.cs" />
     <Compile Include="WebSocket\Context\RequestContext.cs" />
+    <Compile Include="WebSocket\Internal\GlobalFilters.cs" />
     <Compile Include="WebSocket\JsonWebSocketApiService.cs" />
     <Compile Include="WebSocket\JsonPacket.cs" />
     <Compile Include="WebSocket\JsonWebSocketServer.cs" />

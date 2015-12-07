@@ -7,36 +7,14 @@ using System.Text;
 namespace NetworkSocket.Core
 {
     /// <summary>
-    /// 表示全局过滤器
+    /// 全局过滤器管理者的基础类
     /// </summary>
-    public sealed class GlobalFilters : IEnumerable
+    internal class GlobalFiltersBase : IGlobalFilters
     {
         /// <summary>
         /// 获取过过滤器过滤器
         /// </summary>
         private readonly List<IFilter> fiters = new List<IFilter>();
-
-        /// <summary>
-        /// 全局过滤器
-        /// </summary>
-        public GlobalFilters()
-        {
-        }
-
-        /// <summary>
-        /// 移除过滤器类型
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        public void Remove<T>() where T : class, IFilter
-        {
-            for (var i = 0; i < this.fiters.Count; i++)
-            {
-                if (typeof(T).IsAssignableFrom(this.fiters[i].GetType()) == true)
-                {
-                    this.fiters.RemoveAt(i);
-                }
-            }
-        }
 
         /// <summary>
         /// 添加过滤器并按Order字段排序
@@ -45,7 +23,7 @@ namespace NetworkSocket.Core
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
         /// <returns></returns>
-        public void Add(IFilter filter)
+        public virtual void Add(IFilter filter)
         {
             if (filter == null)
             {
@@ -59,6 +37,28 @@ namespace NetworkSocket.Core
 
             this.fiters.Add(filter);
             this.fiters.Sort(new FilterComparer());
+        }
+
+
+        /// <summary>
+        /// 移除某类型的过滤器实例
+        /// </summary>
+        /// <param name="filterType">过滤器的类型</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        public virtual void Remove(Type filterType)
+        {
+            if (filterType == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            for (var i = 0; i < this.fiters.Count; i++)
+            {
+                if (this.fiters[i].GetType() == filterType)
+                {
+                    this.fiters.RemoveAt(i);
+                }
+            }
         }
 
         /// <summary>

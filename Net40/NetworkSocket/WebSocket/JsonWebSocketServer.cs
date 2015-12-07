@@ -52,12 +52,12 @@ namespace NetworkSocket.WebSocket
         /// 获取或设置序列化工具
         /// 默认是Json序列化
         /// </summary>
-        public IJsonSerializer JsonSerializer { get; set; }
+        public IJsonDynamicSerializer JsonSerializer { get; set; }
 
         /// <summary>
         /// 获取全局过滤器
         /// </summary>
-        public GlobalFilters GlobalFilter { get; private set; }
+        public IGlobalFilters GlobalFilters { get; private set; }
 
         /// <summary>
         /// 获取或设置依赖关系解析提供者
@@ -79,7 +79,7 @@ namespace NetworkSocket.WebSocket
             this.TaskSetActionTable = new TaskSetActionTable();
 
             this.JsonSerializer = new DefaultJsonSerializer();
-            this.GlobalFilter = new GlobalFilters();
+            this.GlobalFilters = new GlobalFilters();
             this.DependencyResolver = new DefaultDependencyResolver();
             this.FilterAttributeProvider = new FilterAttributeProvider();
         }
@@ -342,7 +342,7 @@ namespace NetworkSocket.WebSocket
         /// <param name="exceptionContext">上下文</param>       
         private void ExecGlobalExceptionFilters(ExceptionContext exceptionContext)
         {
-            foreach (IFilter filter in this.GlobalFilter)
+            foreach (IFilter filter in this.GlobalFilters)
             {
                 filter.OnException(exceptionContext);
                 if (exceptionContext.ExceptionHandled == true) break;
@@ -371,7 +371,7 @@ namespace NetworkSocket.WebSocket
 
                 this.PacketIdProvider = null;
                 this.JsonSerializer = null;
-                this.GlobalFilter = null;
+                this.GlobalFilters = null;
                 this.DependencyResolver = null;
                 this.FilterAttributeProvider = null;
             }

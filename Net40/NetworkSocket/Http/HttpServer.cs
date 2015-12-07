@@ -28,7 +28,7 @@ namespace NetworkSocket.Http
         /// <summary>
         /// 获取全局过滤器
         /// </summary>
-        public GlobalFilters GlobalFilter { get; private set; }
+        public IGlobalFilters GlobalFilters { get; private set; }
 
         /// <summary>
         /// 获取MIME集合
@@ -53,7 +53,7 @@ namespace NetworkSocket.Http
         {
             this.httpActionList = new HttpActionList();
             this.ModelBinder = new DefaultModelBinder();
-            this.GlobalFilter = new GlobalFilters();
+            this.GlobalFilters = new GlobalFilters();
             this.MIMECollection = new HttpMIMECollection();
             this.FilterAttributeProvider = new FilterAttributeProvider();
             this.DependencyResolver = new DefaultDependencyResolver();
@@ -229,7 +229,7 @@ namespace NetworkSocket.Http
         {
             var exception = new ApiNotExistException(route);
             var exceptionContext = new ExceptionContext(requestContext, exception);
-            foreach (IFilter filter in this.GlobalFilter)
+            foreach (IFilter filter in this.GlobalFilters)
             {
                 filter.OnException(exceptionContext);
                 if (exceptionContext.ExceptionHandled == true) break;

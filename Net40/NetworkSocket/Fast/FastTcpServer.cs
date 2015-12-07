@@ -59,7 +59,7 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 获取全局过滤器
         /// </summary>
-        public GlobalFilters GlobalFilter { get; private set; }
+        public IGlobalFilters GlobalFilters { get; private set; }
 
         /// <summary>
         /// 获取或设置依赖关系解析提供者
@@ -81,7 +81,7 @@ namespace NetworkSocket.Fast
             this.TaskSetActionTable = new TaskSetActionTable();
 
             this.Serializer = new DefaultSerializer();
-            this.GlobalFilter = new GlobalFilters();
+            this.GlobalFilters = new GlobalFilters();
             this.DependencyResolver = new DefaultDependencyResolver();
             this.FilterAttributeProvider = new FilterAttributeProvider();
         }
@@ -336,7 +336,7 @@ namespace NetworkSocket.Fast
         /// <param name="exceptionContext">上下文</param>       
         private void ExecGlobalExceptionFilters(ExceptionContext exceptionContext)
         {
-            foreach (IFilter filter in this.GlobalFilter)
+            foreach (IFilter filter in this.GlobalFilters)
             {
                 filter.OnException(exceptionContext);
                 if (exceptionContext.ExceptionHandled == true) break;
@@ -368,7 +368,7 @@ namespace NetworkSocket.Fast
 
                 this.PacketIdProvider = null;
                 this.Serializer = null;
-                this.GlobalFilter = null;
+                this.GlobalFilters = null;
                 this.DependencyResolver = null;
                 this.FilterAttributeProvider = null;
             }

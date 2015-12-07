@@ -11,9 +11,9 @@ namespace NetworkSocket.Core
     public interface IFilterSupportable
     {
         /// <summary>
-        /// 获取全局过滤器
+        /// 获取全局过滤器管理者
         /// </summary>
-        GlobalFilters GlobalFilter { get; }
+        IGlobalFilters GlobalFilters { get; }
 
         /// <summary>
         /// 获取或设置Api行为特性过滤器提供者
