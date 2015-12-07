@@ -33,10 +33,15 @@ namespace WebsocketChatServer
                 return;
             }
 
+            var members = this.AllSessions
+               .Select(item => (string)item.TagBag.Name)
+               .Where(item => item != null)
+               .ToArray();
+
             // 推送成员下线通知
             foreach (var item in this.AllSessions)
             {
-                item.TryInvokeApi("OnMemberChange", 0, name);
+                item.TryInvokeApi("OnMemberChange", 0, name, members);
             }
         }
     }

@@ -36,31 +36,29 @@
 
         // 收到其它人发言
         // @昵称 @消息 @时间
-        ws.bindApi("OnGroupMessage", function (name, message, time) {
+        ws.bindApi("OnChatMessage", function (name, message, time) {
             chatUI.showOthersChatMessage(name, message, time);
         });
 
         // 其它成员上线或离线
-        // @状态 @昵称
-        ws.bindApi("OnMemberChange", function (action, name) {
+        // @状态 @昵称 @成员
+        ws.bindApi("OnMemberChange", function (action, name, members) {
+            chatUI.showAllMembers(members);
             win.alertEx("[" + name + (action ? "]上线了" : "]下线了"));
-            ws.invokeApi("getAllMembers", [], function (data) {
-                chatUI.showAllMembers(data);
-            });
         });
 
         // 设置聊天昵称
-        function setName(dom) {
+        function setNickName(dom) {
             var name = $(dom).prev().val();
-            ws.invokeApi("setName", [name], function (data) {
+            ws.invokeApi("setNickName", [name], function (data) {
                 chatUI.showNickName(data);
             });
         }
 
         // 发表聊天内容
-        function groupMessage(dom) {
+        function sendChatMessage(dom) {
             var message = $(dom).prev().val();
-            ws.invokeApi("groupMessage", [message], function (data) {
+            ws.invokeApi("chatMessage", [message], function (data) {
                 chatUI.showMyChatMessage(dom);
             }, function (ex) {
                 win.alertEx(ex);
@@ -106,7 +104,7 @@
             <h4 class="alert-heading" style="margin-bottom: 10px;">连接服务成功！</h4>
             <span>请设置聊天昵称然后开始聊天</span>
             <input type="text" placeholder="昵称" style="margin: 0px;" />
-            <button class="btn btn-warning" onclick="setName(this);">设置昵称</button>
+            <button class="btn btn-warning" onclick="setNickName(this);">设置昵称</button>
         </div>
 
         <div class="row-fluid">
@@ -119,7 +117,7 @@
 
                 <div style="margin-top: 20px;">
                     <textarea placeholder="你想说什么?" style="margin: 0; width: 80%; height: 40px; resize: none;"></textarea>
-                    <button type="button" class="btn btn-info btn-large" onclick="groupMessage(this);">发送</button>
+                    <button type="button" class="btn btn-info btn-large" onclick="sendChatMessage(this);">发送</button>
                 </div>
             </div>
             <div class="span4">

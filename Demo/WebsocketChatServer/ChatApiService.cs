@@ -47,7 +47,7 @@ namespace WebsocketChatServer
         /// <param name="name">名称</param>
         /// <returns></returns>
         [Api]
-        public object SetName(string name)
+        public object SetNickName(string name)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -61,21 +61,23 @@ namespace WebsocketChatServer
 
             // 推送新成员上线提醒
             this.CurrentContext.Session.TagBag.Name = name;
+            var members = this.GetAllMembers();
+
             foreach (var session in this.OtherSessions)
             {
-                session.TryInvokeApi("OnMemberChange", 1, name);
+                session.TryInvokeApi("OnMemberChange", 1, name, members);
             }
             return new { state = true, name };
         }
 
         /// <summary>
-        /// 发送群聊内容
+        /// 成员发表群聊天内容
         /// </summary>
         /// <param name="message">内容</param>
         /// <returns></returns>        
         [Api]
         [NickNameFilter] //设置了昵称才可以发言
-        public bool GroupMessage(string message)
+        public bool ChatMessage(string message)
         {
             if (string.IsNullOrEmpty(message) == true)
             {
@@ -85,7 +87,7 @@ namespace WebsocketChatServer
             var name = (string)this.CurrentContext.Session.TagBag.Name; // 发言人
             foreach (var session in this.OtherSessions)
             {
-                session.TryInvokeApi("OnGroupMessage", name, message, DateTime.Now.ToString("HH:mm:ss"));
+                session.TryInvokeApi("OnChatMessage", name, message, DateTime.Now.ToString("HH:mm:ss"));
             }
             return true;
         }
