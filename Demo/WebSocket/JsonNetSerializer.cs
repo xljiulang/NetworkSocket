@@ -1,6 +1,6 @@
 ﻿using NetworkSocket;
 using NetworkSocket.Converts;
-using NetworkSocket.WebSocket.Fast;
+using NetworkSocket.Core;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;

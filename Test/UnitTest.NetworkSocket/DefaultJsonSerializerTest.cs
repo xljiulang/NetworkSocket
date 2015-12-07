@@ -6,6 +6,7 @@ using System.Text;
 using NetworkSocket.WebSocket.Fast;
 using System.Collections;
 using NetworkSocket;
+using NetworkSocket.Core;
 
 namespace UnitTest.NetworkSocket.WebSocket.Fast
 {

@@ -98,6 +98,9 @@
     <Compile Include="Fast\Filter\IFilterAttributeProvider.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Core\Internal\DefaultJsonSerializer.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Http\Filter\FilterAttributeProvider.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -168,12 +171,12 @@
     <Compile Include="Fast\IFastTcpClient.cs" />
     <Compile Include="Fast\IFastTcpServer.cs" />
     <Compile Include="Core\Internal\DefaultDependencyResolver.cs" />
-    <Compile Include="Fast\Internal\DefaultSerializer.cs" />
+    <Compile Include="Core\Internal\DefaultSerializer.cs" />
     <Compile Include="Fast\Internal\FastTcpCommon.cs" />
     <Compile Include="Fast\Internal\SetTypes.cs" />
     <Compile Include="Fast\Internal\TaskSetAction.cs" />
     <Compile Include="Fast\Internal\TaskSetActionTable.cs" />
-    <Compile Include="Fast\ISerializer.cs" />
+    <Compile Include="Core\ISerializer.cs" />
     <Compile Include="IConvert.cs" />
     <Compile Include="Internal\TagData.cs" />
     <Compile Include="ISession.cs" />
@@ -244,8 +247,7 @@
     <Compile Include="WebSocket\Fast\IFastApiService.cs" />
     <Compile Include="WebSocket\Fast\IFastWebSocketServer.cs" />
     <Compile Include="WebSocket\Fast\IFastWebSocketSession.cs" />
-    <Compile Include="WebSocket\Fast\IJsonSerializer.cs" />
-    <Compile Include="WebSocket\Fast\Internal\DefaultJsonSerializer.cs" />
+    <Compile Include="Core\IJsonSerializer.cs" />
     <Compile Include="WebSocket\Fast\Internal\FastWebSocketCommon.cs" />
     <Compile Include="WebSocket\Fast\Internal\SetTypes.cs" />
     <Compile Include="WebSocket\Fast\Internal\TaskSetAction.cs" />

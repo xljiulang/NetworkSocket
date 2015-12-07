@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Web.Script.Serialization;
 
-namespace NetworkSocket.WebSocket.Fast
+namespace NetworkSocket.Core
 {
     /// <summary>
     /// 默认提供的Json序列化工具

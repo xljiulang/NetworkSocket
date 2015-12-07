@@ -7,7 +7,7 @@ using System.Text;
 using NetworkSocket.Core;
 using NetworkSocket.Exceptions;
 
-namespace NetworkSocket.Fast
+namespace NetworkSocket.Core
 {
     /// <summary>
     /// 默认提供的Json序列化工具
