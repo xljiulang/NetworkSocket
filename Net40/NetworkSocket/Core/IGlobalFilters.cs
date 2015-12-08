@@ -13,6 +13,18 @@ namespace NetworkSocket.Core
     public interface IGlobalFilters : IEnumerable
     {
         /// <summary>
+        /// 获取过滤器元素个数
+        /// </summary>
+        int Count { get; }
+
+        /// <summary>
+        /// 获取或设置过滤器
+        /// </summary>
+        /// <param name="index">索引</param>
+        /// <returns></returns>
+        IFilter this[int index] { get; set; }
+
+        /// <summary>
         /// 添加过滤器并按Order字段排序
         /// </summary>
         /// <param name="filter">过滤器</param>

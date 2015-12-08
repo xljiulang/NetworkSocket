@@ -5,6 +5,7 @@ using System.Text;
 using NetworkSocket.Fast;
 using NetworkSocket.Core;
 using NetworkSocket.Exceptions;
+using FastServer.Interfaces;
 
 namespace FastServer.Filters
 {
@@ -13,8 +14,10 @@ namespace FastServer.Filters
     /// </summary>        
     public class ExceptionFilterAttribute : FastFilterAttribute
     {
+        public IUserDao UserDao { get; set; }
+
         protected override void OnException(ExceptionContext filterContext)
-        {
+        {           
             if (filterContext.Exception is ApiExecuteException)
             {
             }

@@ -53,7 +53,7 @@ namespace FastServer
             });
 
             // 给过滤器添加属性注入
-            this.SetAutofacFilterAttributeProvider();          
+            this.SetAutofacFilterDependencyResolver();          
         }
 
 

@@ -32,13 +32,12 @@ namespace Autofac.NetworkSocket
 
 
         /// <summary>
-        /// 使用Autofac作过滤器依赖解析
-        /// 使过滤器支持属性依赖注入功能
+        /// 使用Autofac作全局过滤器和Api行为过滤器的依赖解析       
         /// </summary>
         /// <param name="server">服务器</param>
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="Exception"></exception>
-        public static void SetAutofacFilterAttributeProvider(this IFilterSupportable server)
+        public static void SetAutofacFilterDependencyResolver(this IFilterSupportable server)
         {
             var dependencyServer = server as IDependencyResolverSupportable;
             if (dependencyServer == null)
@@ -50,6 +49,15 @@ namespace Autofac.NetworkSocket
             {
                 throw new Exception("Autofac不是服务的DependencyResolver，请先调用SetAutofacDependencyResolver");
             }
+
+            // 全局滤过器依赖注入         
+            for (var i = 0; i < server.GlobalFilters.Count; i++)
+            {
+                var injectedFilter = dependencyResolver.InjectFilterProperties(server.GlobalFilters[i]);
+                server.GlobalFilters[i] = injectedFilter;
+            }
+
+            // Api行为特性过滤器提供者依赖注入
             server.FilterAttributeProvider = new AutofacFilterAttributeProvider(dependencyResolver);
         }
     }

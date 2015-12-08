@@ -86,7 +86,7 @@
     <Compile Include="Core\Internal\DefaultJsonSerializer.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Core\FilterAttributeProvider.cs">
+    <Compile Include="Core\Internal\DefaultFilterAttributeProvider.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Core\Internal\GlobalFiltersBase.cs">

@@ -83,7 +83,7 @@ namespace NetworkSocket.Fast
             this.Serializer = new DefaultSerializer();
             this.GlobalFilters = new GlobalFilters();
             this.DependencyResolver = new DefaultDependencyResolver();
-            this.FilterAttributeProvider = new FilterAttributeProvider();
+            this.FilterAttributeProvider = new DefaultFilterAttributeProvider();
         }
 
         /// <summary>

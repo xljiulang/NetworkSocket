@@ -55,7 +55,7 @@ namespace NetworkSocket.Http
             this.ModelBinder = new DefaultModelBinder();
             this.GlobalFilters = new GlobalFilters();
             this.MIMECollection = new HttpMIMECollection();
-            this.FilterAttributeProvider = new FilterAttributeProvider();
+            this.FilterAttributeProvider = new DefaultFilterAttributeProvider();
             this.DependencyResolver = new DefaultDependencyResolver();
 
             this.MIMECollection.FillBasicMIME();

@@ -18,7 +18,7 @@ namespace FastServer.Filters
         private string message;
 
         public LogFilterAttribute(string message)
-        {            
+        {
             this.message = message;
         }
 

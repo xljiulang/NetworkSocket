@@ -17,6 +17,34 @@ namespace NetworkSocket.Core
         private readonly List<IFilter> fiters = new List<IFilter>();
 
         /// <summary>
+        /// 获取过滤器元素个数
+        /// </summary>
+        public int Count
+        {
+            get
+            {
+                return this.fiters.Count;
+            }
+        }
+
+        /// <summary>
+        /// 获取或设置过滤器
+        /// </summary>
+        /// <param name="index">索引</param>
+        /// <returns></returns>
+        public IFilter this[int index]
+        {
+            get
+            {
+                return this.fiters[index];
+            }
+            set
+            {
+                this.fiters[index] = value;
+            }
+        }
+
+        /// <summary>
         /// 添加过滤器并按Order字段排序
         /// </summary>
         /// <param name="filter">过滤器</param>
