@@ -49,8 +49,7 @@ namespace NetworkSocket.WebSocket
         }
 
         /// <summary>
-        /// 获取或设置序列化工具
-        /// 默认是Json序列化
+        /// 获取或设置序列化工具       
         /// </summary>
         public IDynamicJsonSerializer JsonSerializer { get; set; }
 
@@ -61,6 +60,7 @@ namespace NetworkSocket.WebSocket
 
         /// <summary>
         /// 获取或设置依赖关系解析提供者
+        /// 默认提供者解析为单例模式
         /// </summary>
         public IDependencyResolver DependencyResolver { get; set; }
 

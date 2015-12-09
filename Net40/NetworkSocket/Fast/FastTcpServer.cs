@@ -52,7 +52,7 @@ namespace NetworkSocket.Fast
 
         /// <summary>
         /// 获取或设置序列化工具
-        /// 默认是Json序列化
+        /// 默认提供者是Json序列化
         /// </summary>
         public ISerializer Serializer { get; set; }
 
@@ -63,6 +63,7 @@ namespace NetworkSocket.Fast
 
         /// <summary>
         /// 获取或设置依赖关系解析提供者
+        /// 默认提供者解析为单例模式
         /// </summary>
         public IDependencyResolver DependencyResolver { get; set; }
 

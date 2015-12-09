@@ -37,6 +37,7 @@ namespace NetworkSocket.Http
 
         /// <summary>
         /// 获取或设置特性过滤器提供者
+        /// 默认提供者解析为单例模式
         /// </summary>
         public IFilterAttributeProvider FilterAttributeProvider { get; set; }
 
