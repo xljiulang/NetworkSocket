@@ -7,7 +7,7 @@ using System.Text;
 namespace NetworkSocket.Http
 {
     /// <summary>
-    /// 表示文件结果
+    /// 表示Http文件结果
     /// </summary>
     public class FileResult : ActionResult
     {

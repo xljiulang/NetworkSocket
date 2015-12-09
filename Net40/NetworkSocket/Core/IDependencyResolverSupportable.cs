@@ -6,7 +6,7 @@ using System.Text;
 namespace NetworkSocket.Core
 {
     /// <summary>
-    /// 定义支持依赖注入接口
+    /// 定义支持依赖注入功能的接口
     /// </summary>
     public interface IDependencyResolverSupportable
     {

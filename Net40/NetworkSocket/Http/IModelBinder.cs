@@ -14,8 +14,8 @@ namespace NetworkSocket.Http
         /// <summary>
         /// 生成参数的模型
         /// </summary>
-        /// <param name="request">请求数据</param>
-        /// <param name="parameter">参数</param>       
+        /// <param name="request">http请求</param>
+        /// <param name="parameter">HttpAction的一个参数</param>       
         /// <returns></returns>
         object BindModel(HttpRequest request, ParameterInfo parameter);
     }

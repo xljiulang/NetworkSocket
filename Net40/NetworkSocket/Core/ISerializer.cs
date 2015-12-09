@@ -7,8 +7,7 @@ using System.Text;
 namespace NetworkSocket.Core
 {
     /// <summary>
-    /// 定义对象的序列化与反序列化的接口
-    /// 异常时抛出SerializerException
+    /// 定义对象的化进制序列化与反序列化的接口    
     /// </summary>
     public interface ISerializer
     {

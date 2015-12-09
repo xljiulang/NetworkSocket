@@ -11,7 +11,7 @@ namespace NetworkSocket.Http
     public interface IHttpController : IDisposable
     {
         /// <summary>
-        /// 执行Api行为
+        /// 执行Http行为
         /// </summary>              
         /// <param name="actionContext">Api行为上下文</param>      
         void Execute(ActionContext actionContext);

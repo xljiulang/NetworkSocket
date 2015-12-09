@@ -6,7 +6,7 @@ using System.Text;
 namespace NetworkSocket.Http
 {
     /// <summary>
-    /// 表示异常结果
+    /// 表示Http异常结果
     /// </summary>
     public class ErrorResult : ActionResult
     {

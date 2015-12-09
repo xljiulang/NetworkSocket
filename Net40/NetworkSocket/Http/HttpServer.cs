@@ -90,7 +90,7 @@ namespace NetworkSocket.Http
         }
 
         /// <summary>
-        /// 注册控制器
+        /// 绑定控制器
         /// </summary>
         /// <param name="controllers">控制器</param>
         /// <exception cref="ArgumentNullException"></exception>
@@ -106,7 +106,7 @@ namespace NetworkSocket.Http
         }
 
         /// <summary>
-        /// 注册控制器
+        /// 绑定控制器
         /// </summary>
         /// <param name="controllers">控制器</param>
         /// <exception cref="ArgumentNullException"></exception>

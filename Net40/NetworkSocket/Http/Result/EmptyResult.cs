@@ -6,7 +6,7 @@ using System.Text;
 namespace NetworkSocket.Http
 {
     /// <summary>
-    /// 表示空内容的结果
+    /// 表示Http空内容的结果
     /// </summary>
     public class EmptyResult : ContentResult
     {

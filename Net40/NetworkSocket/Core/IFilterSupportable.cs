@@ -6,7 +6,7 @@ using System.Text;
 namespace NetworkSocket.Core
 {
     /// <summary>
-    /// 定义支持过滤器的接口
+    /// 定义支持过滤器功能的接口
     /// </summary>
     public interface IFilterSupportable
     {

@@ -6,7 +6,7 @@ using System.Text;
 namespace NetworkSocket.Http
 {
     /// <summary>
-    /// 表示行为结果
+    /// 表示Http行为结果
     /// </summary>
     public abstract class ActionResult
     {
