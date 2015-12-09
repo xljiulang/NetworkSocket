@@ -93,38 +93,10 @@ namespace NetworkSocket.Fast
         }
 
         /// <summary>
-        /// 获取Body的参数值
-        /// </summary>
-        /// <param name="serializer">序列化工具</param>
-        /// <param name="parameterTypes">参数类型</param>
-        /// <returns></returns>
-        public object[] GetBodyParameters(ISerializer serializer, Type[] parameterTypes)
-        {
-            var bodyParameters = this.GetBodyParameters();
-            var parameters = new object[bodyParameters.Count];
-
-            for (var i = 0; i < bodyParameters.Count; i++)
-            {
-                var parameterBytes = bodyParameters[i];
-                var parameterType = parameterTypes[i];
-
-                if (parameterBytes == null || parameterBytes.Length == 0)
-                {
-                    parameters[i] = parameterType.IsValueType ? Activator.CreateInstance(parameterType) : null;
-                }
-                else
-                {
-                    parameters[i] = serializer.Deserialize(parameterBytes, parameterType);
-                }
-            }
-            return parameters;
-        }
-
-        /// <summary>
         /// 将Body的数据解析为参数
         /// </summary>        
         /// <returns></returns>
-        private List<byte[]> GetBodyParameters()
+        public List<byte[]> GetBodyParameters()
         {
             var parameterList = new List<byte[]>();
 

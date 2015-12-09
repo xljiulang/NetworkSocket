@@ -1,4 +1,5 @@
 ﻿using NetworkSocket.Core;
+using NetworkSocket.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -17,6 +18,12 @@ namespace NetworkSocket.WebSocket
         /// 获取Api行为对象
         /// </summary>
         public ApiAction Action { get; private set; }
+
+        /// <summary>
+        /// 获取或设置结果
+        /// 当设置了Result值，执行将终止并将Result发送到客户端
+        /// </summary>
+        public RemoteException Result { get; set; }
 
         /// <summary>
         /// Api行为上下文

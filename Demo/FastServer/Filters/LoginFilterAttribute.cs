@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using NetworkSocket.Exceptions;
 
 namespace FastServer.Filters
 {
@@ -27,11 +28,8 @@ namespace FastServer.Filters
             var valid = filterContext.Session.TagData.TryGet<bool>("Logined");
             if (valid == false)
             {
-                // 直接关闭客户端的连接
                 // filterContext.Session.Close();
-
-                // 以异常方式提示客户端
-                throw new Exception("未登录就尝试请求其它服务");
+                filterContext.Result = "未登录就尝试请求其它服务";
             }
         }
     }

@@ -20,8 +20,7 @@ namespace WebsocketChatServer
         {
             if (filterContext.Session.TagBag.Name == null)
             {
-                // 未设置昵称的将抛出异常给客户端
-                throw new Exception("请设置昵称后再聊天 ..");
+                filterContext.Result = "请设置昵称后再聊天";
             }
         }
     }

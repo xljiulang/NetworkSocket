@@ -101,27 +101,44 @@ namespace NetworkSocket.WebSocket
         /// <param name="actionContext">上下文</param>       
         /// <param name="filters">过滤器</param>
         /// <exception cref="ArgumentException"></exception>
-        private void ExecuteAction(ActionContext actionContext, IEnumerable<IFilter> filters)
+        /// <returns>当正常执行输出Api的结果时返回true</returns>
+        private bool ExecuteAction(ActionContext actionContext, IEnumerable<IFilter> filters)
         {
-            var parameters = Common.GetApiActionParameters(actionContext);
-            actionContext.Action.ParameterValues = parameters;
+            var packet = actionContext.Packet;
+            var action = actionContext.Action;
+            var session = actionContext.Session;
+            var serializer = this.Server.JsonSerializer;
+            var parameters = Common.GetAndUpdateParameterValues(actionContext);
 
-            // 执行Filter
+            // Api执行前
             this.ExecFiltersBeforeAction(filters, actionContext);
+            if (actionContext.Result != null)
+            {
+                var exceptionContext = new ExceptionContext(actionContext, actionContext.Result);
+                Common.SetRemoteException(serializer, exceptionContext);
+                return false;
+            }
 
-            var returnValue = actionContext.Action.Execute(this, parameters);
+            // 执行Api            
+            var apiResult = action.Execute(this, parameters);
 
-            // 执行Filter
+            // Api执行后
             this.ExecFiltersAfterAction(filters, actionContext);
+            if (actionContext.Result != null)
+            {
+                var exceptionContext = new ExceptionContext(actionContext, actionContext.Result);
+                Common.SetRemoteException(serializer, exceptionContext);
+                return false;
+            }
 
             // 返回数据
-            if (actionContext.Action.IsVoidReturn == false && actionContext.Session.IsConnected)
+            if (action.IsVoidReturn == false && session.IsConnected)
             {
-                var packet = actionContext.Packet;
-                packet.body = returnValue;
-                var packetJson = this.Server.JsonSerializer.Serialize(packet);
-                actionContext.Session.SendText(packetJson);
+                packet.body = apiResult;
+                var packetJson = serializer.Serialize(packet);
+                session.SendText(packetJson);
             }
+            return true;
         }
 
         /// <summary>
@@ -135,6 +152,7 @@ namespace NetworkSocket.WebSocket
             foreach (var filter in totalFilters)
             {
                 filter.OnExecuting(actionContext);
+                if (actionContext.Result != null) break;
             }
         }
 
@@ -149,6 +167,7 @@ namespace NetworkSocket.WebSocket
             foreach (var filter in totalFilters)
             {
                 filter.OnExecuted(actionContext);
+                if (actionContext.Result != null) break;
             }
         }
 

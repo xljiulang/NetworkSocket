@@ -1,4 +1,5 @@
 ﻿using NetworkSocket.Core;
+using NetworkSocket.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -20,9 +21,9 @@ namespace NetworkSocket.Fast
 
         /// <summary>
         /// 获取或设置结果
-        /// 当设置了Result值，执行将终止并以异常协议将Result值发送到客户端
+        /// 当设置了Result值，执行将终止并将Result发送到客户端
         /// </summary>
-        public string Result { get; set; }
+        public RemoteException Result { get; set; }
 
         /// <summary>
         /// Api行为上下文
@@ -42,6 +43,11 @@ namespace NetworkSocket.Fast
         public override string ToString()
         {
             return this.Action.ToString();
+        }
+
+        ApiAction IActionContext.Action
+        {
+            get { throw new NotImplementedException(); }
         }
     }
 }

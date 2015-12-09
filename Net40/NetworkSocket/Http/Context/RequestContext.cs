@@ -13,12 +13,12 @@ namespace NetworkSocket.Http
     public class RequestContext
     {
         /// <summary>
-        /// 获取请求上下文对象
+        /// 获取http请求上下文对象
         /// </summary>
         public HttpRequest Request { get; private set; }
 
         /// <summary>
-        /// 获取回复上下文对象
+        /// 获取http回复上下文对象
         /// </summary>
         public HttpResponse Response { get; private set; }
 

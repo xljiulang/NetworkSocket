@@ -206,15 +206,16 @@ namespace NetworkSocket.Fast
             var action = actionContext.Action;
             var packet = actionContext.Packet;
 
-            action.ParameterValues = packet.GetBodyParameters(this.Serializer, action.ParameterTypes);
-            var returnValue = action.Execute(this, action.ParameterValues);
+            var parameters = Common.GetAndUpdateParameterValues(this.Serializer, actionContext);
+            var apiResult = action.Execute(this, action.ParameterValues);
 
             if (action.IsVoidReturn == false && this.IsConnected)
             {
-                packet.Body = this.Serializer.Serialize(returnValue);
+                packet.Body = this.Serializer.Serialize(apiResult);
                 this.Send(packet.ToByteRange());
             }
         }
+
 
         /// <summary>
         /// 处理Api行为执行过程中产生的异常

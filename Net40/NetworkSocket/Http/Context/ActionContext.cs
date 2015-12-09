@@ -25,7 +25,7 @@ namespace NetworkSocket.Http
         }
 
         /// <summary>
-        /// 获取http行为对象
+        /// 获取http的Api行为对象
         /// </summary>
         public HttpAction Action { get; private set; }
 

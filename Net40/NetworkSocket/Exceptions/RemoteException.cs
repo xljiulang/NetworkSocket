@@ -21,5 +21,15 @@ namespace NetworkSocket.Exceptions
             : base(message)
         {
         }
+
+        /// <summary>
+        /// 从string隐式转换
+        /// </summary>
+        /// <param name="message">异常信息</param>
+        /// <returns></returns>
+        public static implicit operator RemoteException(string message)
+        {
+            return new RemoteException(message);
+        }
     }
 }

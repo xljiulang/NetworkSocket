@@ -91,12 +91,12 @@ namespace NetworkSocket.WebSocket
         }
 
         /// <summary>
-        /// 生成Api行为的调用参数
+        /// 获取和更新Api行为的参数值
         /// </summary> 
         /// <param name="context">上下文</param>        
-        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="ArgumentException"></exception>    
         /// <returns></returns>
-        public static object[] GetApiActionParameters(ActionContext context)
+        public static object[] GetAndUpdateParameterValues(ActionContext context)
         {
             var body = context.Packet.body as IList;
             if (body == null)
@@ -118,6 +118,7 @@ namespace NetworkSocket.WebSocket
                 var parameterType = context.Action.ParameterTypes[i];
                 parameters[i] = serializer.Convert(bodyParameter, parameterType);
             }
+            context.Action.ParameterValues = parameters;
             return parameters;
         }
     }

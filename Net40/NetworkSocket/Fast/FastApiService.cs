@@ -100,25 +100,45 @@ namespace NetworkSocket.Fast
         /// </summary>       
         /// <param name="actionContext">上下文</param>       
         /// <param name="filters">过滤器</param>
-        private void ExecuteAction(ActionContext actionContext, IEnumerable<IFilter> filters)
+        /// <returns>当正常执行输出Api的结果时返回true</returns>
+        private bool ExecuteAction(ActionContext actionContext, IEnumerable<IFilter> filters)
         {
             var action = actionContext.Action;
             var packet = actionContext.Packet;
             var session = actionContext.Session;
-            var serializer = session.Server.Serializer;
-            action.ParameterValues = packet.GetBodyParameters(serializer, action.ParameterTypes);
+            var serializer = this.Server.Serializer;
+            var parameters = Common.GetAndUpdateParameterValues(serializer, actionContext);
 
+            // Api执行前
             this.ExecFiltersBeforeAction(filters, actionContext);
-            var returnValue = action.Execute(this, action.ParameterValues);
+            if (actionContext.Result != null)
+            {
+                var exceptionContext = new ExceptionContext(actionContext, actionContext.Result);
+                Common.SetRemoteException(actionContext.Session, exceptionContext);
+                return false;
+            }
+
+            // 执行Api            
+            var apiResult = action.Execute(this, parameters);
+
+            // Api执行后
             this.ExecFiltersAfterAction(filters, actionContext);
+            if (actionContext.Result != null)
+            {
+                var exceptionContext = new ExceptionContext(actionContext, actionContext.Result);
+                Common.SetRemoteException(actionContext.Session, exceptionContext);
+                return false;
+            }
 
             // 返回数据
             if (action.IsVoidReturn == false && session.IsConnected)
             {
-                packet.Body = serializer.Serialize(returnValue);
+                packet.Body = serializer.Serialize(apiResult);
                 session.Send(packet.ToByteRange());
             }
+            return true;
         }
+
 
         /// <summary>
         /// 在Api行为前 执行过滤器
@@ -131,6 +151,7 @@ namespace NetworkSocket.Fast
             foreach (var filter in totalFilters)
             {
                 filter.OnExecuting(actionContext);
+                if (actionContext.Result != null) break;
             }
         }
 
@@ -145,6 +166,7 @@ namespace NetworkSocket.Fast
             foreach (var filter in totalFilters)
             {
                 filter.OnExecuted(actionContext);
+                if (actionContext.Result != null) break;
             }
         }
 

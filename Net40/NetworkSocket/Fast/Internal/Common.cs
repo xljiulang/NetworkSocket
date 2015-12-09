@@ -107,5 +107,37 @@ namespace NetworkSocket.Fast
             session.Send(packet.ToByteRange());
             return taskSource.Task;
         }
+
+        /// <summary>
+        /// 获取和更新ActionContext的参数值
+        /// </summary>
+        /// <param name="serializer">序列化工具</param>
+        /// <param name="actionContext">Api执行上下文</param>
+        /// <returns></returns>
+        public static object[] GetAndUpdateParameterValues(ISerializer serializer, ActionContext actionContext)
+        {
+            var action = actionContext.Action;
+            var packet = actionContext.Packet;
+            var bodyParameters = packet.GetBodyParameters();
+            var parameters = new object[bodyParameters.Count];
+
+            for (var i = 0; i < bodyParameters.Count; i++)
+            {
+                var parameterBytes = bodyParameters[i];
+                var parameterType = action.ParameterTypes[i];
+
+                if (parameterBytes == null || parameterBytes.Length == 0)
+                {
+                    parameters[i] = parameterType.IsValueType ? Activator.CreateInstance(parameterType) : null;
+                }
+                else
+                {
+                    parameters[i] = serializer.Deserialize(parameterBytes, parameterType);
+                }
+            }
+
+            action.ParameterValues = parameters;
+            return parameters;
+        }
     }
 }

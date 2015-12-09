@@ -20,8 +20,7 @@ namespace HttpServer.Filters
 
         protected override void OnExecuting(ActionContext filterContext)
         {
-            Console.WriteLine(message);
-            // filterContext.Result = new JsonResult(new { Result = "设置了Result就会中止Action的执行" });
+            Console.WriteLine(message);            
         }
     }
 }

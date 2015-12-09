@@ -121,39 +121,58 @@ namespace NetworkSocket.Http
         /// </summary>       
         /// <param name="actionContext">上下文</param>       
         /// <param name="filters">过滤器</param>
-        private void ExecuteAction(ActionContext actionContext, IEnumerable<IFilter> filters)
+        /// <returns>如果输出Api的返回结果就返回true</returns>
+        private bool ExecuteAction(ActionContext actionContext, IEnumerable<IFilter> filters)
         {
+            // Api参数准备
+            var parameters = this.GetAndUpdateParameterValues(actionContext);
+
+            // Action执行前
             this.ExecFiltersBeforeAction(filters, actionContext);
-            var result = actionContext.Result;
-
-            if (result == null)
+            if (actionContext.Result != null)
             {
-                var action = actionContext.Action;
-                action.ParameterValues = new object[action.ParameterInfos.Length];
-
-                for (var i = 0; i < action.ParameterValues.Length; i++)
-                {
-                    var paramter = action.ParameterInfos[i];
-                    var pValue = this.Server.ModelBinder.BindModel(actionContext.Request, paramter);
-                    action.ParameterValues[i] = pValue;
-                }
-
-                result = action.Execute(this, action.ParameterValues) as ActionResult;
-                if (result == null) // 直接在方法体里return null
-                {
-                    throw new Exception("ActionResult不能为null，请使用EmptyResult替代");
-                }
-
-                this.ExecFiltersAfterAction(filters, actionContext);
-                if (actionContext.Result != null)
-                {
-                    result = actionContext.Result;
-                }
+                actionContext.Result.ExecuteResult(actionContext);
+                return false;
             }
 
-            result.ExecuteResult(actionContext);
+            // 执行Action              
+            var apiResult = actionContext.Action.Execute(this, parameters) as ActionResult;
+            if (apiResult == null) // 直接在方法体里return null
+            {
+                throw new Exception("ActionResult不能为null，请使用EmptyResult替代");
+            }
+
+            // Action执行后
+            this.ExecFiltersAfterAction(filters, actionContext);
+            if (actionContext.Result != null)
+            {
+                actionContext.Result.ExecuteResult(actionContext);
+                return false;
+            }
+
+            apiResult.ExecuteResult(actionContext);
+            return true;
         }
 
+
+        /// <summary>
+        /// 获取和更新Http Api的参数值
+        /// </summary>
+        /// <param name="actionContext"></param>
+        /// <returns></returns>
+        private object[] GetAndUpdateParameterValues(ActionContext actionContext)
+        {
+            var action = actionContext.Action;
+            action.ParameterValues = new object[action.ParameterInfos.Length];
+
+            for (var i = 0; i < action.ParameterValues.Length; i++)
+            {
+                var paramter = action.ParameterInfos[i];
+                var pValue = this.Server.ModelBinder.BindModel(actionContext.Request, paramter);
+                action.ParameterValues[i] = pValue;
+            }
+            return action.ParameterValues;
+        }
 
         /// <summary>
         /// 生成Content结果
