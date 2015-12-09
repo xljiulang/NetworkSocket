@@ -6,7 +6,7 @@ using System.Text;
 namespace NetworkSocket.WebSocket
 {
     /// <summary>
-    /// 表示帧类型回复对象
+    /// 表示WebSocket帧类型回复对象
     /// </summary>
     public class FrameResponse : Response
     {

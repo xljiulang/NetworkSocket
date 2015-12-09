@@ -9,8 +9,7 @@ using System.Threading.Tasks;
 namespace NetworkSocket.Fast
 {
     /// <summary>
-    /// Fast会话对象
-    /// 不可继承
+    /// 表示Fast协议的会话对象  
     /// </summary>
     public sealed class FastSession : SessionBase, IFastSession
     {

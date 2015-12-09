@@ -10,7 +10,7 @@ using System.Web;
 namespace NetworkSocket.Validation
 {
     /// <summary>
-    /// 实体验证  
+    /// 提供实体验证的态类  
     /// </summary>
     public static class Model
     {

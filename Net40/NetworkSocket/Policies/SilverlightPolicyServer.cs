@@ -6,7 +6,7 @@ using System.Text;
 namespace NetworkSocket.Policies
 {
     /// <summary>
-    /// Siverlight通讯策略服务   
+    /// 表示Siverlight通讯策略服务   
     /// </summary>
     public class SilverlightPolicyServer : FlexPolicyServer
     {

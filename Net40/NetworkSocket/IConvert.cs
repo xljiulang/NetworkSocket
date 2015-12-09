@@ -6,7 +6,7 @@ using System.Text;
 namespace NetworkSocket
 {
     /// <summary>
-    /// 定义类型转换单元
+    /// 定义类型转换单元的接口
     /// </summary>
     public interface IConvert
     {

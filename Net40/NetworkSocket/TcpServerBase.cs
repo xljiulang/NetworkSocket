@@ -13,7 +13,7 @@ using NetworkSocket.Exceptions;
 namespace NetworkSocket
 {
     /// <summary>
-    /// Tcp服务端抽象类
+    /// 表示Tcp服务端抽象类
     /// 提供对客户端池的初始化、自动回收重用、在线客户端列表维护功能
     /// 提供客户端连接、断开通知功能
     /// 所有Tcp服务端都派生于此类

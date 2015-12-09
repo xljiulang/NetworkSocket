@@ -72,7 +72,7 @@ namespace NetworkSocket.WebSocket
         /// <param name="serializer">序列化工具</param>
         /// <param name="exceptionContext">上下文</param>       
         /// <returns></returns>
-        public static bool SetRemoteException(IJsonDynamicSerializer serializer, ExceptionContext exceptionContext)
+        public static bool SetRemoteException(IDynamicJsonSerializer serializer, ExceptionContext exceptionContext)
         {
             try
             {

@@ -10,7 +10,7 @@ using System.Text;
 namespace NetworkSocket
 {
     /// <summary>
-    /// 提供类型转换
+    /// 提供类型转换功能
     /// </summary>
     public sealed class Converter
     {

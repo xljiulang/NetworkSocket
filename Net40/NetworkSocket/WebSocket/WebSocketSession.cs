@@ -7,7 +7,7 @@ using System.Net.Sockets;
 namespace NetworkSocket.WebSocket
 {
     /// <summary>
-    /// WebSocket会话对象
+    /// 表示WebSocket会话对象
     /// </summary>
     public class WebSocketSession : SessionBase
     {

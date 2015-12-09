@@ -10,7 +10,7 @@ using System.Text.RegularExpressions;
 namespace NetworkSocket.Http
 {
     /// <summary>
-    /// Http行为    
+    /// 表示Http的Api行为    
     /// </summary>
     [DebuggerDisplay("ApiName = {ApiName}")]
     public class HttpAction : ApiAction
@@ -26,7 +26,7 @@ namespace NetworkSocket.Http
         public HttpMethod AllowMethod { get; private set; }
 
         /// <summary>
-        /// Api行为
+        /// Http的Api行为 
         /// </summary>
         /// <param name="method">方法信息</param>
         /// <param name="declaringType">声明的类型</param>

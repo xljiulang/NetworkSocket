@@ -32,7 +32,7 @@ namespace NetworkSocket.Http
         /// <param name="context">上下文</param>
         public override void ExecuteResult(RequestContext context)
         {
-            var json = new DefaultJsonSerializer().Serialize(this.data);
+            var json = new DefaultDynamicJsonSerializer().Serialize(this.data);
             context.Response.ContentType = "application/json";
             context.Response.Write(json);
         }

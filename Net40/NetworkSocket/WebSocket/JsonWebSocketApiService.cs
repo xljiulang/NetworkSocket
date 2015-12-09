@@ -10,7 +10,7 @@ using System.Text;
 namespace NetworkSocket.WebSocket
 {
     /// <summary>
-    /// JsonWebsocket协议的Api服务基类
+    /// 表示JsonWebsocket协议的Api服务基类
     /// </summary>
     public abstract class JsonWebSocketApiService : JsonWebSocketFilterAttribute, IJsonWebSocketApiService
     {
@@ -131,12 +131,7 @@ namespace NetworkSocket.WebSocket
         /// <param name="actionContext">上下文</param>   
         private void ExecFiltersBeforeAction(IEnumerable<IFilter> filters, ActionContext actionContext)
         {
-            var totalFilters = this.Server
-                  .GlobalFilters
-                  .Cast<IFilter>()
-                  .Concat(new[] { this })
-                  .Concat(filters);
-
+            var totalFilters = this.GetTotalFilters(filters);
             foreach (var filter in totalFilters)
             {
                 filter.OnExecuting(actionContext);
@@ -150,12 +145,7 @@ namespace NetworkSocket.WebSocket
         /// <param name="actionContext">上下文</param>       
         private void ExecFiltersAfterAction(IEnumerable<IFilter> filters, ActionContext actionContext)
         {
-            var totalFilters = this.Server
-                  .GlobalFilters
-                  .Cast<IFilter>()
-                  .Concat(new[] { this })
-                  .Concat(filters);
-
+            var totalFilters = this.GetTotalFilters(filters);
             foreach (var filter in totalFilters)
             {
                 filter.OnExecuted(actionContext);
@@ -169,12 +159,7 @@ namespace NetworkSocket.WebSocket
         /// <param name="exceptionContext">上下文</param>       
         private void ExecExceptionFilters(IEnumerable<IFilter> filters, ExceptionContext exceptionContext)
         {
-            var totalFilters = this.Server
-              .GlobalFilters
-              .Cast<IFilter>()
-              .Concat(new[] { this })
-              .Concat(filters);
-
+            var totalFilters = this.GetTotalFilters(filters);
             foreach (var filter in totalFilters)
             {
                 filter.OnException(exceptionContext);
@@ -182,6 +167,19 @@ namespace NetworkSocket.WebSocket
             }
         }
 
+        /// <summary>
+        /// 获取全部的过滤器
+        /// </summary>
+        /// <param name="filters">行为过滤器</param>
+        /// <returns></returns>
+        private IEnumerable<IFilter> GetTotalFilters(IEnumerable<IFilter> filters)
+        {
+            return this.Server
+                .GlobalFilters
+                .Cast<IFilter>()
+                .Concat(new[] { this })
+                .Concat(filters);
+        }
         #region IDisponse
         /// <summary>
         /// 获取对象是否已释放

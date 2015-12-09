@@ -6,7 +6,7 @@ using System.Text;
 namespace NetworkSocket.WebSocket
 {
     /// <summary>
-    /// 帧类型
+    /// 表示WebSocket帧类型
     /// </summary>
     public enum FrameCodes : byte
     {

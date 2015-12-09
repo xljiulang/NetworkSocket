@@ -7,7 +7,7 @@ using System.Text;
 namespace NetworkSocket
 {
     /// <summary>
-    /// 空闲的会话对象集合
+    /// 表示空闲的会话对象集合
     /// 线程安全类型
     /// </summary>
     /// <typeparam name="T">会话</typeparam>   

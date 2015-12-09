@@ -6,8 +6,7 @@ using System.Text;
 namespace NetworkSocket.Http
 {
     /// <summary>
-    /// 表示路由规则
-    /// 不可继承
+    /// 表示路由规则   
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
     public sealed class RouteAttribute : Attribute

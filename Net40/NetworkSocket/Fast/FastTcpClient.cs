@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace NetworkSocket.Fast
 {
     /// <summary>
-    /// 快速构建Tcp客户端
+    /// 表示Fast协议的tcp客户端
     /// </summary>
     public class FastTcpClient : TcpClientBase, IFastTcpClient
     {

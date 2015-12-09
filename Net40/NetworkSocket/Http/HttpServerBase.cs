@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 namespace NetworkSocket.Http
 {
     /// <summary>
-    /// Http监听服务
+    /// 表示Http监听服务抽象类
     /// </summary>
     public abstract class HttpServerBase : TcpServerBase<SessionBase>
     {
@@ -49,7 +49,7 @@ namespace NetworkSocket.Http
         }
 
         /// <summary>
-        /// 收到Http请求
+        /// 收到Http请求时触发
         /// </summary>       
         /// <param name="request">请求对象</param>
         /// <param name="response">回复对象</param>

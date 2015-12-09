@@ -27,9 +27,7 @@ namespace NetworkSocket.Core
         /// <summary>
         /// 添加过滤器并按Order字段排序
         /// </summary>
-        /// <param name="filter">过滤器</param>
-        /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="ArgumentException"></exception>      
+        /// <param name="filter">过滤器</param>       
         void Add(IFilter filter);
 
         /// <summary>

@@ -9,7 +9,7 @@ using System.Text.RegularExpressions;
 namespace NetworkSocket.Http
 {
     /// <summary>
-    /// http头
+    /// 表示http头信息集合
     /// </summary>
     public class HttpHeader : HttpNameValueCollection
     {

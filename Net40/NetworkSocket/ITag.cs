@@ -6,7 +6,7 @@ using System.Text;
 namespace NetworkSocket
 {
     /// <summary>
-    /// 用户附加数据接口
+    /// 定义用户附加数据的接口
     /// </summary>
     public interface ITag
     {

@@ -6,8 +6,8 @@ using System.Text;
 namespace NetworkSocket.Http
 {
     /// <summary>
-    /// 请求方式
-    /// 目前只支持Get和Post两种
+    /// 表示请求方式
+    /// 当前只支持Get和Post两种
     /// </summary>
     [Flags]
     public enum HttpMethod

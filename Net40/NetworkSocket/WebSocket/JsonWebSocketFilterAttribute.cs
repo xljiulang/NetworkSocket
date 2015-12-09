@@ -7,7 +7,7 @@ using System.Text;
 namespace NetworkSocket.WebSocket
 {
     /// <summary>
-    /// 表示jsonWebsocket协议过滤器
+    /// 表示JsonWebsocket协议过滤器
     /// </summary>
     public class JsonWebSocketFilterAttribute : FilterAttribute
     {

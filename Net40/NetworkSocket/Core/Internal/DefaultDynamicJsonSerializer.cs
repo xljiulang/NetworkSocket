@@ -12,9 +12,9 @@ using System.Web.Script.Serialization;
 namespace NetworkSocket.Core
 {
     /// <summary>
-    /// 默认提供的Json序列化工具
+    /// 默认提供的动态Json序列化工具
     /// </summary>
-    internal sealed class DefaultJsonSerializer : IJsonDynamicSerializer
+    internal sealed class DefaultDynamicJsonSerializer : IDynamicJsonSerializer
     {
         /// <summary>
         /// 序列化为Json

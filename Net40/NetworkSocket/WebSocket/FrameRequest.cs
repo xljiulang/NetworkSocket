@@ -7,7 +7,7 @@ using System.Text;
 namespace NetworkSocket.WebSocket
 {
     /// <summary>
-    /// 表示请求帧
+    /// 表示WebSocket请求帧
     /// </summary>
     public class FrameRequest
     {

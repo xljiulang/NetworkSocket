@@ -19,6 +19,12 @@ namespace NetworkSocket.Fast
         public ApiAction Action { get; private set; }
 
         /// <summary>
+        /// 获取或设置结果
+        /// 当设置了Result值，执行将终止并以异常协议将Result值发送到客户端
+        /// </summary>
+        public string Result { get; set; }
+
+        /// <summary>
         /// Api行为上下文
         /// </summary>
         /// <param name="context">请求上下文</param>

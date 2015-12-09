@@ -7,7 +7,7 @@ using System.Text;
 namespace NetworkSocket.WebSocket
 {
     /// <summary>
-    /// Json格式数据包
+    /// 表示WebSocket的json格式数据包
     /// </summary>    
     [DebuggerDisplay("api = {api}")]
     public class JsonPacket

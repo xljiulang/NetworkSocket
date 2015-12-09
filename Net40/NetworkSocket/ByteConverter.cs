@@ -6,7 +6,7 @@ using System.Text;
 namespace NetworkSocket
 {
     /// <summary>
-    /// byte类型转换工具类
+    /// 表示byte类型转换工具类
     /// 提供byte和整型之间的转换
     /// </summary>
     public static class ByteConverter

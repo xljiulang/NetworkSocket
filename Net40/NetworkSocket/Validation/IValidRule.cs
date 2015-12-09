@@ -6,7 +6,7 @@ using System.Text;
 namespace NetworkSocket.Validation
 {
     /// <summary>
-    /// 定义属性的验证规则的行为
+    /// 定义属性的验证规则行为的接口
     /// </summary>
     public interface IValidRule
     {

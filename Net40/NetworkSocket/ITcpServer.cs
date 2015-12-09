@@ -7,7 +7,7 @@ using System.Text;
 namespace NetworkSocket
 {
     /// <summary>
-    /// Tcp服务接口
+    /// 定义Tcp服务的接口
     /// </summary>    
     /// <typeparam name="T">会话类型</typeparam>
     public interface ITcpServer<T> : IDisposable where T : ISession

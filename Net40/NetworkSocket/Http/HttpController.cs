@@ -242,12 +242,7 @@ namespace NetworkSocket.Http
         /// <param name="actionContext">上下文</param>       
         private void ExecFiltersAfterAction(IEnumerable<IFilter> filters, ActionContext actionContext)
         {
-            var totalFilters = this.Server
-                  .GlobalFilters
-                  .Cast<IFilter>()
-                  .Concat(new[] { this })
-                  .Concat(filters);
-
+            var totalFilters = this.GetTotalFilters(filters);
             foreach (var filter in totalFilters)
             {
                 filter.OnExecuted(actionContext);
@@ -262,17 +257,26 @@ namespace NetworkSocket.Http
         /// <param name="exceptionContext">上下文</param>       
         private void ExecExceptionFilters(IEnumerable<IFilter> filters, ExceptionContext exceptionContext)
         {
-            var totalFilters = this.Server
-                 .GlobalFilters
-                 .Cast<IFilter>()
-                 .Concat(new[] { this })
-                 .Concat(filters);
-
+            var totalFilters = this.GetTotalFilters(filters);
             foreach (var filter in totalFilters)
             {
                 filter.OnException(exceptionContext);
                 if (exceptionContext.ExceptionHandled == true) break;
             }
+        }
+
+        /// <summary>
+        /// 获取全部的过滤器
+        /// </summary>
+        /// <param name="filters">行为过滤器</param>
+        /// <returns></returns>
+        private IEnumerable<IFilter> GetTotalFilters(IEnumerable<IFilter> filters)
+        {
+            return this.Server
+                .GlobalFilters
+                .Cast<IFilter>()
+                .Concat(new[] { this })
+                .Concat(filters);
         }
 
         #region IDisponse

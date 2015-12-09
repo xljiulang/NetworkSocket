@@ -6,7 +6,7 @@ using System.Text;
 namespace NetworkSocket.Policies
 {
     /// <summary>
-    /// Flex通讯策略服务   
+    /// 表示Flex通讯策略服务   
     /// </summary>
     public class FlexPolicyServer : TcpServerBase<SessionBase>
     {

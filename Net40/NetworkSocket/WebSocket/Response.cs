@@ -6,7 +6,7 @@ using System.Text;
 namespace NetworkSocket.WebSocket
 {
     /// <summary>
-    /// 表示回复对象抽象类
+    /// 表示Websocekt回复对象抽象类
     /// </summary>
     public abstract class Response
     {

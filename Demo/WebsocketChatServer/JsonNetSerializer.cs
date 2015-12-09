@@ -15,7 +15,7 @@ namespace WebsocketChatServer
     /// 使用Json.net提供的序列化工具
     /// 这个比NetworkSocket自带的序列化工具性能好一点
     /// </summary>
-    internal class JsonNetSerializer : IJsonDynamicSerializer
+    internal class JsonNetSerializer : IDynamicJsonSerializer
     {
         /// <summary>
         /// 转换器

@@ -8,7 +8,7 @@ using System.Linq;
 namespace NetworkSocket
 {
     /// <summary>
-    /// Tcp客户端抽象类
+    /// 表示Tcp客户端抽象类
     /// 所有Tcp客户端都派生于此类
     /// </summary>   
     public abstract class TcpClientBase : SessionBase, ITcpClient

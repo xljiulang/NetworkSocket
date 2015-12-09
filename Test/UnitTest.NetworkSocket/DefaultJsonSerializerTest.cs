@@ -30,10 +30,10 @@ namespace UnitTest.NetworkSocket.WebSocket.Fast
                     new { age ="11", name = "陈" } 
                 }
             };
-            var serializer = new DefaultJsonSerializer();
+            var serializer = new DefaultDynamicJsonSerializer();
             var json = serializer.Serialize(model);
 
-            var jObject = new DefaultJsonSerializer().Deserialize(json);
+            var jObject = new DefaultDynamicJsonSerializer().Deserialize(json);
             Assert.IsTrue(jObject.Flag == "test");
 
             var datas = jObject.Datas as IList;

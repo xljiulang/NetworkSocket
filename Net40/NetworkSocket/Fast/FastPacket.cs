@@ -9,7 +9,7 @@ using System.Text;
 namespace NetworkSocket.Fast
 {
     /// <summary>
-    /// 通讯协议的封包
+    /// 表示Fast协议的封包
     /// </summary>
     [DebuggerDisplay("ApiName = {ApiName}")]
     public sealed class FastPacket

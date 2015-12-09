@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace NetworkSocket
 {
     /// <summary>
-    /// Tcp客户端接口
+    /// 定义Tcp客户端的接口
     /// </summary>    
     public interface ITcpClient : ISession, IDisposable
     {

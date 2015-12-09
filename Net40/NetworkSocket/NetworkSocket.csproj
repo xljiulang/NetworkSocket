@@ -83,7 +83,7 @@
     <Compile Include="Endians.cs" />
     <Compile Include="Core\ApiAttribute.cs" />
     <Compile Include="Exceptions\ProtocolException.cs" />
-    <Compile Include="Core\Internal\DefaultJsonSerializer.cs">
+    <Compile Include="Core\Internal\DefaultDynamicJsonSerializer.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Core\Internal\DefaultFilterAttributeProvider.cs">
@@ -202,7 +202,7 @@
     <Compile Include="Validation\Rules\RangeAttribute.cs" />
     <Compile Include="Validation\Rules\RequiredAttribute.cs" />
     <Compile Include="Validation\Rules\UrlAttribute.cs" />
-    <Compile Include="Core\IJsonDynamicSerializer.cs" />
+    <Compile Include="Core\IDynamicJsonSerializer.cs" />
     <Compile Include="LimitedTask.cs" />
     <Compile Include="WebSocket\Context\ActionContext.cs" />
     <Compile Include="WebSocket\Context\ExceptionContext.cs" />

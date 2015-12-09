@@ -13,7 +13,7 @@ using System.Runtime.Remoting.Messaging;
 namespace NetworkSocket
 {
     /// <summary>
-    /// 会话对象基础类  
+    /// 表示会话对象基础类  
     /// 所有会话对象和客户端都派生于此类
     /// </summary>        
     [DebuggerDisplay("{RemoteEndPoint}")]

@@ -7,7 +7,7 @@ using System.Text;
 namespace NetworkSocket.Validation
 {
     /// <summary>
-    /// 验证规则特性基础类
+    /// 表示验证规则特性基础类
     /// </summary>
     [AttributeUsage(AttributeTargets.Property)]
     public abstract class ValidRuleBase : ValidationAttribute, IValidRule

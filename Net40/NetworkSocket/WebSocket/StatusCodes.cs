@@ -6,7 +6,7 @@ using System.Text;
 namespace NetworkSocket.WebSocket
 {
     /// <summary>
-    /// 状态码
+    /// 表示Websocket的状态码
     /// </summary>
     public enum StatusCodes : ushort
     {

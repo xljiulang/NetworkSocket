@@ -7,7 +7,7 @@ using System.Text;
 namespace NetworkSocket.Http
 {
     /// <summary>
-    /// Http回复
+    /// 表示Http回复对象
     /// </summary>
     public class HttpResponse
     {

@@ -7,12 +7,12 @@ using System.Text;
 namespace NetworkSocket.Http
 {
     /// <summary>
-    /// 模型生成器
+    /// 定义模型生成器的接口
     /// </summary>
     public interface IModelBinder
     {
         /// <summary>
-        /// 生成模型
+        /// 生成参数的模型
         /// </summary>
         /// <param name="request">请求数据</param>
         /// <param name="parameter">参数</param>       

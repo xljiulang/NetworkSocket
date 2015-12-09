@@ -8,8 +8,7 @@ using System.Text;
 namespace NetworkSocket
 {
     /// <summary>
-    /// 表示字节数组范围
-    /// 不可继承
+    /// 表示字节数组范围   
     /// </summary>
     [DebuggerDisplay("Offset = {Offset}, Count = {Count}")]
     [DebuggerTypeProxy(typeof(DebugView))]

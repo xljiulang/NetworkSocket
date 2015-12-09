@@ -18,7 +18,7 @@ namespace NetworkSocket.Fast
         public FastSession Session { get; private set; }
 
         /// <summary>
-        /// 获取数据包对象
+        /// 获取协议数据包对象
         /// </summary>
         public FastPacket Packet { get; private set; }
 

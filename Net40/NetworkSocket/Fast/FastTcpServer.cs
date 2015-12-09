@@ -57,7 +57,7 @@ namespace NetworkSocket.Fast
         public ISerializer Serializer { get; set; }
 
         /// <summary>
-        /// 获取全局过滤器
+        /// 获取全局过滤器管理者
         /// </summary>
         public IGlobalFilters GlobalFilters { get; private set; }
 

@@ -8,7 +8,7 @@ using System.Text;
 namespace NetworkSocket.WebSocket
 {
     /// <summary>
-    /// 表示握手回复
+    /// 表示Websocket的握手回复
     /// </summary>
     public class HandshakeResponse : Response
     {

@@ -7,7 +7,7 @@ using System.Text;
 namespace NetworkSocket
 {
     /// <summary>
-    /// byte的位集合
+    /// 表示byte的位集合
     /// 位索引为高位到低位顺序
     /// </summary>
     [Serializable]

@@ -52,10 +52,10 @@ namespace NetworkSocket.WebSocket
         /// 获取或设置序列化工具
         /// 默认是Json序列化
         /// </summary>
-        public IJsonDynamicSerializer JsonSerializer { get; set; }
+        public IDynamicJsonSerializer JsonSerializer { get; set; }
 
         /// <summary>
-        /// 获取全局过滤器
+        /// 获取全局过滤器管理者
         /// </summary>
         public IGlobalFilters GlobalFilters { get; private set; }
 
@@ -78,7 +78,7 @@ namespace NetworkSocket.WebSocket
             this.PacketIdProvider = new PacketIdProvider();
             this.TaskSetActionTable = new TaskSetActionTable();
 
-            this.JsonSerializer = new DefaultJsonSerializer();
+            this.JsonSerializer = new DefaultDynamicJsonSerializer();
             this.GlobalFilters = new GlobalFilters();
             this.DependencyResolver = new DefaultDependencyResolver();
             this.FilterAttributeProvider = new DefaultFilterAttributeProvider();

@@ -8,7 +8,7 @@ using System.Text;
 namespace NetworkSocket
 {
     /// <summary>
-    /// 定义会话接口
+    /// 定义会话的接口
     /// </summary>   
     public interface ISession
     {

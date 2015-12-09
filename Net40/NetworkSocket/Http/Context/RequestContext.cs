@@ -10,7 +10,7 @@ namespace NetworkSocket.Http
     /// <summary>
     /// 表示Http请求上下文
     /// </summary>   
-    public class RequestContext 
+    public class RequestContext
     {
         /// <summary>
         /// 获取请求上下文对象
@@ -23,7 +23,8 @@ namespace NetworkSocket.Http
         public HttpResponse Response { get; private set; }
 
         /// <summary>
-        /// 获取或设置结果
+        /// 获取或设置行为结果
+        /// 当设置了值之后，执行停止并将结果执行
         /// </summary>
         public ActionResult Result { get; set; }
 
