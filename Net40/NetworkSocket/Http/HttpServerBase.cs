@@ -42,9 +42,12 @@ namespace NetworkSocket.Http
                 response.Status = ex.Status;
                 response.Write(ex.Message);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                session.Close();
+                var response = new HttpResponse(session);
+                response.Status = 500;
+                response.Write(ex.Message);
+                response.End();
             }
         }
 
