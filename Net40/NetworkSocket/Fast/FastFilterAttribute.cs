@@ -9,7 +9,7 @@ namespace NetworkSocket.Fast
     /// <summary>
     /// 表示Fast协议过滤器
     /// </summary>
-    public class FastFilterAttribute : FilterAttribute
+    public abstract class FastFilterAttribute : FilterAttribute
     {
         /// <summary>
         /// 在执行Api行为前触发       

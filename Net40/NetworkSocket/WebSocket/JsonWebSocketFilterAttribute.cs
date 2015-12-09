@@ -9,7 +9,7 @@ namespace NetworkSocket.WebSocket
     /// <summary>
     /// 表示JsonWebsocket协议过滤器
     /// </summary>
-    public class JsonWebSocketFilterAttribute : FilterAttribute
+    public abstract class JsonWebSocketFilterAttribute : FilterAttribute
     {
         /// <summary>
         /// 在执行Api行为前触发       

@@ -9,7 +9,7 @@ namespace NetworkSocket.Http
     /// <summary>
     /// 表示http协议过滤器
     /// </summary>
-    public class HttpFilterAttribute : FilterAttribute
+    public abstract class HttpFilterAttribute : FilterAttribute
     {
         /// <summary>
         /// 在执行Api行为前触发       
