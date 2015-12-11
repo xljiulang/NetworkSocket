@@ -46,6 +46,35 @@ public class SystemApiService : JsonWebSocketApiService
      alert(data.length == 0)
  });
 ```
+自定义协议服务
+```
+public class SimpleServer : TcpServerBase<SessionBase>
+{
+    protected sealed override SessionBase OnCreateSession()
+    {
+        return new SessionBase();
+    }
+
+    // 收到数据时
+    protected sealed override void OnReceive(SessionBase session, ReceiveStream buffer)
+    {
+        var bytes = buffer.ReadArray();
+        session.Send(bytes);
+    }
+
+    // 连接时
+    protected sealed override void OnConnect(SessionBase session)
+    {
+        var connectedCount = this.AllSessions.Count();
+    }
+
+    // 连接时
+    protected sealed override void OnDisconnect(SessionBase session)
+    {
+        var connectedCount = this.AllSessions.Count();
+    }
+}
+```
 ##### 功能列表
 1、提供Tcp服务器抽象类和客户端抽象类，以及相关的流读写功能类，字节和位操作等功能类。所有基于tcp的标准协议和个人自定义协议的服务都基于此继承来开发，抽象类已实现很多最基础功能。
 
