@@ -38,17 +38,29 @@ namespace NetworkSocket.Http
             }
             catch (HttpException ex)
             {
-                var response = new HttpResponse(session);
-                response.Status = ex.Status;
-                response.Write(ex.Message);
+                this.OnException(session, ex);
             }
             catch (Exception ex)
             {
-                var response = new HttpResponse(session);
-                response.Status = 500;
-                response.Write(ex.Message);
-                response.End();
+                this.OnException(session, new HttpException(500, ex.Message));
             }
+        }
+
+        /// <summary>
+        /// 异常时
+        /// </summary>
+        /// <param name="session">产生异常的会话</param>
+        /// <param name="exception">异常</param>
+        protected override void OnException(SessionBase session, Exception exception)
+        {
+            if (session == null)
+            {
+                return;
+            }
+            var httpException = exception as HttpException;
+            var response = new HttpResponse(session);
+            response.Status = httpException == null ? 500 : httpException.Status;
+            response.Write(exception.Message);
         }
 
         /// <summary>

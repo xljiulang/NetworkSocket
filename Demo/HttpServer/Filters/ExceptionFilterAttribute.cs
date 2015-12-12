@@ -14,7 +14,7 @@ namespace HttpServer.Filters
         protected override void OnException(ExceptionContext filterContext)
         {
             filterContext.ExceptionHandled = true;
-            filterContext.Result = new ContentResult("异常处理完成 ..");
+            filterContext.Result = new ContentResult(filterContext.Exception.Message);
         }
     }
 }

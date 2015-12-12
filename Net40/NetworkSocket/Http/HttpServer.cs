@@ -171,7 +171,7 @@ namespace NetworkSocket.Http
             }
             else
             {
-                this.ProcessNormalRequest(requestContext.Request.Path, requestContext);
+                this.ProcessActionRequest(requestContext.Request.Path, requestContext);
             }
         }
 
@@ -187,13 +187,13 @@ namespace NetworkSocket.Http
 
             if (string.IsNullOrWhiteSpace(contenType) == true)
             {
-                var result = new ErrorResult { Status = 403 };
-                result.ExecuteResult(requestContext);
+                var ex = new HttpException(403, string.Format("未配置{0}格式的MIME ..", extension));
+                this.ProcessHttpException(ex, requestContext);
             }
             else if (File.Exists(file) == false)
             {
-                var result = new ErrorResult { Status = 404, Errors = "找不到指定的文件 .." };
-                result.ExecuteResult(requestContext);
+                var ex = new HttpException(404, "找不到指定的文件 ..");
+                this.ProcessHttpException(ex, requestContext);
             }
             else
             {
@@ -208,40 +208,18 @@ namespace NetworkSocket.Http
         /// </summary>
         /// <param name="route">路由</param>
         /// <param name="requestContext">上下文</param>
-        private void ProcessNormalRequest(string route, RequestContext requestContext)
+        private void ProcessActionRequest(string route, RequestContext requestContext)
         {
             var action = this.httpActionList.TryGet(requestContext.Request);
             if (action == null)
             {
-                this.ProcessActionNotFound(route, requestContext);
+                var ex = new HttpException(404, "找不到路径" + route);
+                this.ProcessHttpException(ex, requestContext);
             }
             else
             {
                 this.ExecuteHttpAction(action, requestContext);
             }
-        }
-
-        /// <summary>
-        /// 处理找不到Action
-        /// </summary>
-        /// <param name="route">路由</param>
-        /// <param name="requestContext">上下文</param>
-        private void ProcessActionNotFound(string route, RequestContext requestContext)
-        {
-            var exception = new ApiNotExistException(route);
-            var exceptionContext = new ExceptionContext(requestContext, exception);
-            foreach (IFilter filter in this.GlobalFilters)
-            {
-                filter.OnException(exceptionContext);
-                if (exceptionContext.ExceptionHandled == true) break;
-            }
-
-            var result = exceptionContext.Result != null ? exceptionContext.Result : new ErrorResult
-            {
-                Status = 404,
-                Errors = exception.Message
-            };
-            result.ExecuteResult(requestContext);
         }
 
         /// <summary>
@@ -259,6 +237,59 @@ namespace NetworkSocket.Http
 
             // 释放资源
             this.DependencyResolver.TerminateService(controller);
+        }
+
+        /// <summary>
+        /// 异常时
+        /// </summary>
+        /// <param name="session">产生异常的会话</param>
+        /// <param name="exception">异常</param>
+        protected sealed override void OnException(SessionBase session, Exception exception)
+        {
+            var response = session == null ? null : new HttpResponse(session);
+            var requestContext = new RequestContext(null, response);
+            var exceptionConext = new ExceptionContext(requestContext, exception);
+            this.ExecGlobalExceptionFilters(exceptionConext);
+
+            if (exceptionConext.Result != null && response != null)
+            {
+                exceptionConext.Result.ExecuteResult(requestContext);
+            }
+            else
+            {
+                base.OnException(session, exception);
+            }
+        }
+
+        /// <summary>
+        /// 处理Http异常
+        /// </summary>
+        /// <param name="ex">Http异常</param>
+        /// <param name="context">请求上下文</param>
+        private void ProcessHttpException(HttpException ex, RequestContext context)
+        {
+            var exceptionContent = new ExceptionContext(context, ex);
+            this.ExecGlobalExceptionFilters(exceptionContent);
+            var result = exceptionContent.Result ?? new ErrorResult(ex);
+            result.ExecuteResult(context);
+        }
+
+        /// <summary>
+        /// 执行全局异常过滤器
+        /// </summary>         
+        /// <param name="exceptionContext">上下文</param>       
+        private void ExecGlobalExceptionFilters(ExceptionContext exceptionContext)
+        {
+            foreach (IFilter filter in this.GlobalFilters)
+            {
+                filter.OnException(exceptionContext);
+                if (exceptionContext.ExceptionHandled == true) break;
+            }
+
+            if (exceptionContext.ExceptionHandled == false)
+            {
+                throw exceptionContext.Exception;
+            }
         }
     }
 }

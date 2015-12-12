@@ -10,6 +10,9 @@ namespace NetworkSocket.Http
     /// </summary>
     public class ContentResult : ActionResult
     {
+        /// <summary>
+        /// text/html内容
+        /// </summary>
         private string content;
 
         /// <summary>

@@ -76,11 +76,5 @@ namespace FastServer
             var log = string.Format("Time:{0} Client:{1} Action:{2} Message:{3}", DateTime.Now.ToString("mm:ss"), session, "Disconnect", "ConnectCount(" + this.AllSessions.Count() + ")");
             Console.WriteLine(log);
         }
-
-        protected override void OnException(object sender, Exception exception)
-        {
-            Console.WriteLine(exception.Message);
-            base.OnException(sender, exception);
-        }
     }
 }

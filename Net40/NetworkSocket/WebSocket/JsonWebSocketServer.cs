@@ -195,10 +195,9 @@ namespace NetworkSocket.WebSocket
         /// <param name="content">内容</param>
         protected sealed override void OnText(JsonWebSocketSession session, string content)
         {
-            var packet = this.TryGetJsonPacket(content);
+            var packet = this.TryGetJsonPacket(session, content);
             if (packet == null)
             {
-                session.Close(StatusCodes.UnsupportedDataType, "不支持的数据结构");
                 return;
             }
 
@@ -215,11 +214,12 @@ namespace NetworkSocket.WebSocket
 
 
         /// <summary>
-        /// 获取数据包
+        /// 尝试获取数据包
         /// </summary>     
-        /// <param name="content">内容</param>
+        /// <param name="session">会话</param>
+        /// <param name="content">内容</param>        
         /// <returns></returns>
-        private JsonPacket TryGetJsonPacket(string content)
+        private JsonPacket TryGetJsonPacket(JsonWebSocketSession session, string content)
         {
             try
             {
@@ -234,8 +234,14 @@ namespace NetworkSocket.WebSocket
                 };
                 return jsonPacket;
             }
-            catch (Exception)
+            catch (ProtocolException ex)
             {
+                this.OnException(session, ex);
+                return null;
+            }
+            catch (Exception ex)
+            {
+                this.OnException(session, new ProtocolException(ex.Message));
                 return null;
             }
         }
@@ -273,17 +279,15 @@ namespace NetworkSocket.WebSocket
             }
 
             var actionContext = new ActionContext(requestContext, action);
-            var fastApiService = this.GetFastApiService(actionContext);
-            if (fastApiService == null)
+            var jsonWebSocketApiService = this.GetJsonWebSocketApiService(actionContext);
+            if (jsonWebSocketApiService == null)
             {
                 return;
             }
 
             // 执行Api行为           
-            fastApiService.Execute(actionContext);
-
-            // 释放资源
-            this.DependencyResolver.TerminateService(fastApiService);
+            jsonWebSocketApiService.Execute(actionContext);
+            this.DependencyResolver.TerminateService(jsonWebSocketApiService);
         }
 
         /// <summary>
@@ -310,10 +314,10 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="actionContext">Api行为上下文</param>
         /// <returns></returns>
-        private IJsonWebSocketApiService GetFastApiService(ActionContext actionContext)
+        private IJsonWebSocketApiService GetJsonWebSocketApiService(ActionContext actionContext)
         {
-            IJsonWebSocketApiService fastApiService = null;
-            Exception innerException = null;
+            var fastApiService = default(IJsonWebSocketApiService);
+            var innerException = default(Exception);
 
             try
             {
@@ -352,6 +356,18 @@ namespace NetworkSocket.WebSocket
             {
                 throw exceptionContext.Exception;
             }
+        }
+
+        /// <summary>
+        /// 异常时
+        /// </summary>
+        /// <param name="session">产生异常的会话</param>
+        /// <param name="exception">异常</param>
+        protected sealed override void OnException(JsonWebSocketSession session, Exception exception)
+        {
+            var requestContext = new RequestContext(session, null, this.AllSessions);
+            var exceptionConext = new ExceptionContext(requestContext, exception);
+            this.ExecGlobalExceptionFilters(exceptionConext);           
         }
 
         #region IDisponse

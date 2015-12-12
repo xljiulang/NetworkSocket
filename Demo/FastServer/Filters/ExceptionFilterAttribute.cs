@@ -17,12 +17,11 @@ namespace FastServer.Filters
         public IUserDao UserDao { get; set; }
 
         protected override void OnException(ExceptionContext filterContext)
-        {           
-            if (filterContext.Exception is ApiExecuteException)
+        {
+            // 关闭协议错误的会话
+            if (filterContext.Exception is ProtocolException)
             {
-            }
-            else if (filterContext.Exception is RemoteException)
-            {
+                filterContext.Session.Close();
             }
             filterContext.ExceptionHandled = true;
         }

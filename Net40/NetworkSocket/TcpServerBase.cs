@@ -162,7 +162,7 @@ namespace NetworkSocket
             {
                 Interlocked.Increment(ref this.acceptFailureTimes);
                 var innerException = new SocketException((int)arg.SocketError);
-                this.OnException(this, new SessionAcceptExcetion(innerException));
+                this.OnException(null, new SessionAcceptExcetion(innerException));
             }
 
             // 处理后继续接收
@@ -193,11 +193,11 @@ namespace NetworkSocket
             }
             catch (SessionCreateException ex)
             {
-                this.OnException(this, ex);
+                this.OnException(null, ex);
             }
             catch (Exception ex)
             {
-                this.OnException(this, new SessionCreateException(ex));
+                this.OnException(null, new SessionCreateException(ex));
             }
             return session;
         }
@@ -249,9 +249,9 @@ namespace NetworkSocket
         /// <summary>
         /// 创建会话或解析请求数据产生异常触发
         /// </summary>
-        /// <param name="sender">异常产生者</param>
+        /// <param name="session">产生异常的会话</param>
         /// <param name="exception">异常</param>
-        protected virtual void OnException(object sender, Exception exception)
+        protected virtual void OnException(T session, Exception exception)
         {
         }
 

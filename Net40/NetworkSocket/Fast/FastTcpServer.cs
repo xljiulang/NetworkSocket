@@ -268,18 +268,21 @@ namespace NetworkSocket.Fast
             }
 
             var action = this.GetApiAction(requestContext);
-            if (action != null)
+            if (action == null)
             {
-                var actionContext = new ActionContext(requestContext, action);
-                var fastApiService = this.GetFastApiService(actionContext);
-                if (fastApiService != null)
-                {
-                    // 执行Api行为           
-                    fastApiService.Execute(actionContext);
-                    // 释放资源
-                    this.DependencyResolver.TerminateService(fastApiService);
-                }
+                return;
             }
+
+            var actionContext = new ActionContext(requestContext, action);
+            var fastApiService = this.GetFastApiService(actionContext);
+            if (fastApiService == null)
+            {
+                return;
+            }
+
+            // 执行Api行为           
+            fastApiService.Execute(actionContext);
+            this.DependencyResolver.TerminateService(fastApiService);
         }
 
         /// <summary>
@@ -308,8 +311,8 @@ namespace NetworkSocket.Fast
         /// <returns></returns>
         private IFastApiService GetFastApiService(ActionContext actionContext)
         {
-            IFastApiService fastApiService = null;
-            Exception innerException = null;
+            var fastApiService = default(IFastApiService);
+            var innerException = default(Exception);
 
             try
             {
@@ -331,6 +334,19 @@ namespace NetworkSocket.Fast
             return fastApiService;
         }
 
+
+        /// <summary>
+        /// 异常时
+        /// </summary>
+        /// <param name="session">产生异常的会话</param>
+        /// <param name="exception">异常</param>
+        protected sealed override void OnException(FastSession session, Exception exception)
+        {
+            var requestContext = new RequestContext(session, null, this.AllSessions);
+            var exceptionConext = new ExceptionContext(requestContext, exception);
+            this.ExecGlobalExceptionFilters(exceptionConext);
+        }
+
         /// <summary>
         /// 执行异常过滤器
         /// </summary>         
@@ -348,7 +364,6 @@ namespace NetworkSocket.Fast
                 throw exceptionContext.Exception;
             }
         }
-
 
         #region IDisponse
         /// <summary>
