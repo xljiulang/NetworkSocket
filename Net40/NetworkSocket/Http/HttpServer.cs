@@ -192,7 +192,7 @@ namespace NetworkSocket.Http
             }
             else if (File.Exists(file) == false)
             {
-                var ex = new HttpException(404, "找不到指定的文件 ..");
+                var ex = new HttpException(404, string.Format("找不到文件{0} ..", file));
                 this.ProcessHttpException(ex, requestContext);
             }
             else
@@ -280,6 +280,11 @@ namespace NetworkSocket.Http
         /// <param name="exceptionContext">上下文</param>       
         private void ExecGlobalExceptionFilters(ExceptionContext exceptionContext)
         {
+            if (this.GlobalFilters.Count == 0)
+            {
+                return;
+            }
+
             foreach (IFilter filter in this.GlobalFilters)
             {
                 filter.OnException(exceptionContext);

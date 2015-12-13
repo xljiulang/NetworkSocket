@@ -353,6 +353,11 @@ namespace NetworkSocket.Fast
         /// <param name="exceptionContext">上下文</param>       
         private void ExecGlobalExceptionFilters(ExceptionContext exceptionContext)
         {
+            if (this.GlobalFilters.Count == 0)
+            {
+                return;
+            }
+
             foreach (IFilter filter in this.GlobalFilters)
             {
                 filter.OnException(exceptionContext);
