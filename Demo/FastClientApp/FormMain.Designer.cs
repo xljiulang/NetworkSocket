@@ -1,6 +1,6 @@
-﻿namespace FastClientApp.Forms
+﻿namespace FastClientApp
 {
-    partial class MainForm
+    partial class FormMain
     {
         /// <summary>
         /// 必需的设计器变量。
@@ -42,7 +42,6 @@
             this.textBox_Password.Name = "textBox_Password";
             this.textBox_Password.Size = new System.Drawing.Size(149, 21);
             this.textBox_Password.TabIndex = 0;
-            this.textBox_Password.Text = "123456";
             // 
             // textBox_Account
             // 
@@ -80,17 +79,17 @@
             this.label2.TabIndex = 4;
             this.label2.Text = "密码";
             // 
-            // btn_pass
+            // btn_Pass
             // 
             this.btn_Pass.Enabled = false;
             this.btn_Pass.Location = new System.Drawing.Point(85, 129);
-            this.btn_Pass.Name = "btn_pass";
+            this.btn_Pass.Name = "btn_Pass";
             this.btn_Pass.Size = new System.Drawing.Size(75, 23);
             this.btn_Pass.TabIndex = 5;
             this.btn_Pass.Text = "跳过";
             this.btn_Pass.UseVisualStyleBackColor = true;
             // 
-            // MainForm
+            // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -103,7 +102,7 @@
             this.Controls.Add(this.textBox_Password);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
-            this.Name = "MainForm";
+            this.Name = "FormMain";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "系统登录";
             this.ResumeLayout(false);

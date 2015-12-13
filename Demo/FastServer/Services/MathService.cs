@@ -2,7 +2,6 @@
 using NetworkSocket.Core;
 using NetworkSocket.Fast;
 using FastServer.Filters;
-using FastServer.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -14,10 +13,9 @@ using System.Threading.Tasks;
 namespace FastServer.Services
 {
     /// <summary>
-    /// 数学计算
-    /// 需要客户端登录才能访问
+    /// 数学计算服务  
     /// </summary>
-    [LoginFilter]
+    [LoginFilter] // 客户端登录才能访问
     public class MathService : FastApiService
     {
         /// <summary>
@@ -28,11 +26,10 @@ namespace FastServer.Services
         /// <param name="y"></param>
         /// <param name="z"></param>
         /// <returns></returns>
-        [Api]
+        [Api("GetSum")]
         [LogFilter("求合操作")]
         public int GetSun(int x, int y, int z)
         {
-            // 模拟长时间运算           
             return x + y + z;
         }
     }

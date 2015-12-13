@@ -45,6 +45,7 @@
     <Compile Include="Controller\PowerController.cs" />
     <Compile Include="Filters\ExceptionFilterAttribute.cs" />
     <Compile Include="Filters\LogFilterAttribute.cs" />
+    <Compile Include="PowerHelper.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

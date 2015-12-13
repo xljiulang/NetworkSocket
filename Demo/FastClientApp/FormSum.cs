@@ -9,16 +9,21 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace FastClientApp.Forms
+namespace FastClientApp
 {
-    public partial class SumForm : Form
+    public partial class FormSum : Form
     {
-        public SumForm()
+        public FormSum()
         {
             InitializeComponent();
             this.button_Sum.Click += button_Sum_Click;
         }
 
+        /// <summary>
+        /// 求合请求
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void button_Sum_Click(object sender, EventArgs e)
         {
             var x = 0;
@@ -31,12 +36,12 @@ namespace FastClientApp.Forms
 
             try
             {
-                var sum = await RemoteServer.Instance.GetSun(x, y, z);
+                var sum = await FastClient.Instance.GetSum(x, y, z);
                 MessageBox.Show(string.Format("{0} + {1} + {2} = {3}", x, y, z, sum), "计算结果");
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "系统出错了");
+                MessageBox.Show(ex.Message, "系统提示");
             }
         }
     }

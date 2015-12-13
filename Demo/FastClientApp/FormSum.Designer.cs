@@ -1,6 +1,6 @@
-﻿namespace FastClientApp.Forms
+﻿namespace FastClientApp
 {
-    partial class SumForm
+    partial class FormSum
     {
         /// <summary>
         /// Required designer variable.

@@ -20,10 +20,8 @@ namespace FastServer
         static void Main(string[] args)
         {
             var fastServer = new FastServer();
-            
-            fastServer.GlobalFilters.Add(new ExceptionFilterAttribute());           
-            fastServer.BindService(fastServer.GetType().Assembly);
-            fastServer.RegisterResolver();
+            fastServer.GlobalFilters.Add(new ExceptionFilterAttribute());
+            fastServer.BindService(typeof(Program).Assembly);
             fastServer.StartListen(1380);
 
             Console.Title = "FastServer V" + new SystemService().GetVersion();

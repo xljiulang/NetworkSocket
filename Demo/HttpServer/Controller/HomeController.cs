@@ -7,6 +7,7 @@ using System.Text;
 
 namespace HttpServer.Controller
 {
+    [Route("/")]
     public class HomeController : HttpController
     {
         public class User
@@ -15,6 +16,7 @@ namespace HttpServer.Controller
             public string Name { get; set; }
         }
 
+       
         [LogFilter("请求主页")]
         public ActionResult Index(User user, int?[] x, string[] y, int z = 4)
         {

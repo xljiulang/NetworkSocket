@@ -3,22 +3,36 @@ using NetworkSocket;
 using NetworkSocket.Core;
 using NetworkSocket.Fast;
 using FastServer.Filters;
-using FastServer.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using NetworkSocket.Validation;
+using System.Threading;
 
 namespace FastServer.Services
 {
     /// <summary>
-    /// 系统
+    /// 系统登录服务
     /// </summary>   
     public class SystemService : FastApiService
     {
-        public IUserDao UserDao { get; set; }
+        /// <summary>
+        /// 获取其它已登录的会话
+        /// </summary>
+        public IEnumerable<FastSession> OtherSessions
+        {
+            get
+            {
+                return this
+                    .CurrentContext
+                    .AllSessions
+                    .Where(item => item.TagData.TryGet<bool>("Logined"))
+                    .Where(item => item != this.CurrentContext.Session);
+            }
+        }
 
         /// <summary>
         /// 获取服务组件版本号
@@ -37,22 +51,25 @@ namespace FastServer.Services
         /// <param name="user">用户数据</param>
         /// <param name="ifAdmin"></param>
         /// <returns></returns>    
-        [Api("System.Login")]
+        [Api]
         [LogFilter("登录操作")]
-        public bool Login(User user, bool ifAdmin)
+        public LoginResult Login(UserInfo user, bool ifAdmin)
         {
-            // 调用客户端的Sort
-            var sortResult = this.CurrentContext.Session.InvokeApi<List<int>>("Sort", new List<int> { 3, 1, 2 }).Result;
-
-            if (user == null)
+            var validResult = Model.ValidFor(user);
+            if (validResult.State == false)
             {
-                throw new ArgumentNullException("user");
+                return new LoginResult { Message = validResult.ErrorMessage };
             }
 
-            // 记录客户端的登录结果
-            var state = this.UserDao.IsExist(user);
-            this.CurrentContext.Session.TagBag.Logined = state;
-            return state;
+            // 通知其它传话有新成员登录
+            foreach (var session in this.OtherSessions)
+            {
+                session.InvokeApi("LoginNotify", user.Account);
+            }
+
+            // 标记会话已登录成功
+            this.CurrentContext.Session.TagBag.Logined = true;
+            return new LoginResult { State = true };
         }
     }
 }

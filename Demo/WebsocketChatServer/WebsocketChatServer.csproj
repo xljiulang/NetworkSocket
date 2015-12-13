@@ -47,9 +47,9 @@
   <ItemGroup>
     <Compile Include="ChatWebSocketServer.cs" />
     <Compile Include="Extend.cs" />
-    <Compile Include="ExceptionFilter.cs" />
+    <Compile Include="Filters\ExceptionFilter.cs" />
     <Compile Include="JsonNetSerializer.cs" />
-    <Compile Include="NickNameFilter.cs" />
+    <Compile Include="Filters\NickNameFilter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ChatApiService.cs" />

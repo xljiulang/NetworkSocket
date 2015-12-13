@@ -1,6 +1,5 @@
 ﻿using NetworkSocket.Core;
 using NetworkSocket.Fast;
-using FastServer.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,8 +12,6 @@ namespace FastServer.Filters
     /// </summary>
     public class LogFilterAttribute : FastFilterAttribute
     {
-        public ILog Loger { get; set; }
-
         private string message;
 
         public LogFilterAttribute(string message)
@@ -25,7 +22,7 @@ namespace FastServer.Filters
         protected override void OnExecuting(ActionContext filterContext)
         {
             var log = string.Format("Time:{0} Client:{1} Action:{2} Message:{3}", DateTime.Now.ToString("mm:ss"), filterContext.Session, filterContext.Action, this.message);
-            this.Loger.Write(log);
+            Console.WriteLine(log);
         }
     }
 }
