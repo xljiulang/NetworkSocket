@@ -24,7 +24,7 @@ namespace NetworkSocket.WebSocket
         /// <param name="buffer">接收到的历史数据</param>   
         protected sealed override void OnReceive(T session, ReceiveStream buffer)
         {
-            var handshaked = session.TagData.TryGet<bool>("--HANDSHAKED--");
+            var handshaked = session.TagData.TryGet<bool>("HANDSHAKED");
             if (handshaked == false)
             {
                 this.ProcessHandshake(session, buffer);
