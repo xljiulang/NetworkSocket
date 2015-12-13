@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace WebsocketChatServer
+namespace WebsocketChatServer.Filters
 {
     /// <summary>
     /// 异常处理

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace WebsocketChatServer
+namespace WebsocketChatServer.Filters
 {
     /// <summary>
     /// 昵称设置过滤器
