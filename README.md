@@ -50,10 +50,10 @@ var server = new JsonWebSocketServer();
 server.BindService<SystemApiService>();
 server.StartListen(10010);
 // 客户端调用
- var ws = new jsonWebSocket('ws://127.0.0.1:10010/);
- ws.invokeApi("SearchUsers", ['张三'], function (data) {
-     alert(data.length == 0)
- });
+var ws = new jsonWebSocket('ws://127.0.0.1:10010/);
+ws.invokeApi("SearchUsers", ['张三'], function (data) {
+    alert(data.length == 0)
+});
 ```
 自定义协议服务
 ```
