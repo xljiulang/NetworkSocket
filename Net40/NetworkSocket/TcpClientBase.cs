@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Linq;
+using System.Threading;
 
 namespace NetworkSocket
 {
@@ -14,12 +15,19 @@ namespace NetworkSocket
     public abstract class TcpClientBase : SessionBase, ITcpClient
     {
         /// <summary>
+        /// 获取或设置断线自动重连的时间间隔 
+        /// 设置为TimeSpan.Zero表示不自动重连
+        /// </summary>
+        public TimeSpan AutoReconnect { get; set; }
+
+        /// <summary>
         /// Tcp客户端抽象类
         /// </summary>
         public TcpClientBase()
         {
             base.ReceiveHandler = this.OnReceive;
             base.DisconnectHandler = this.OnDisconnectInternal;
+            this.AutoReconnect = TimeSpan.Zero;
         }
 
         /// <summary>
@@ -101,20 +109,6 @@ namespace NetworkSocket
         }
 
         /// <summary>
-        /// 连接到最近一次连接的远程端口
-        /// 如果IsConnected为true，则返回TaskOf(false)
-        /// </summary>
-        /// <returns></returns>
-        public Task<bool> ReConnect()
-        {
-            if (this.IsConnected == true)
-            {
-                return Task.Factory.StartNew(() => false);
-            }
-            return this.Connect(this.RemoteEndPoint);
-        }
-
-        /// <summary>
         /// 当接收到远程端的数据时，将触发此方法   
         /// </summary>       
         /// <param name="buffer">接收到的历史数据</param>
@@ -129,7 +123,30 @@ namespace NetworkSocket
         {
             this.CloseInternal(false);
             this.OnDisconnect();
+            this.Reconnect();
         }
+
+        /// <summary>
+        /// 自动重连
+        /// </summary>
+        private void Reconnect()
+        {
+            if (this.AutoReconnect == TimeSpan.Zero)
+            {
+                return;
+            }
+
+            Action<bool> action = (connected) =>
+            {
+                if (connected == false)
+                {
+                    Thread.Sleep((int)this.AutoReconnect.TotalMilliseconds);
+                    this.Reconnect();
+                }
+            };
+
+            this.Connect(this.RemoteEndPoint).ContinueWith((t) => action(t.Result));
+        }        
 
         /// <summary>
         /// 当与服务器断开连接时，将触发此方法

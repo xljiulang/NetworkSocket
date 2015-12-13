@@ -316,8 +316,8 @@ namespace NetworkSocket.WebSocket
         /// <returns></returns>
         private IJsonWebSocketApiService GetJsonWebSocketApiService(ActionContext actionContext)
         {
+            var exception = default(Exception);
             var fastApiService = default(IJsonWebSocketApiService);
-            var innerException = default(Exception);
 
             try
             {
@@ -325,13 +325,13 @@ namespace NetworkSocket.WebSocket
             }
             catch (Exception ex)
             {
-                innerException = ex;
+                exception = ex;
             }
 
             if (fastApiService == null)
             {
-                var exception = new ResolveException(actionContext.Action.DeclaringService, innerException);
-                var exceptionContext = new ExceptionContext(actionContext, exception);
+                var resolveException = new ResolveException(actionContext.Action.DeclaringService, exception);
+                var exceptionContext = new ExceptionContext(actionContext, resolveException);
 
                 Common.SetRemoteException(this.JsonSerializer, exceptionContext);
                 this.ExecGlobalExceptionFilters(exceptionContext);
@@ -367,7 +367,7 @@ namespace NetworkSocket.WebSocket
         {
             var requestContext = new RequestContext(session, null, this.AllSessions);
             var exceptionConext = new ExceptionContext(requestContext, exception);
-            this.ExecGlobalExceptionFilters(exceptionConext);           
+            this.ExecGlobalExceptionFilters(exceptionConext);
         }
 
         #region IDisponse

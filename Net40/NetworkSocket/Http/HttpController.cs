@@ -71,23 +71,16 @@ namespace NetworkSocket.Http
         /// <param name="actionContext">上下文</param>      
         void IHttpController.Execute(ActionContext actionContext)
         {
-            this.CurrentContext = actionContext;
-            var filters = this.Server.FilterAttributeProvider.GetActionFilters(actionContext.Action);
-
+            var filters = Enumerable.Empty<IFilter>();
             try
             {
+                this.CurrentContext = actionContext;
+                filters = this.Server.FilterAttributeProvider.GetActionFilters(actionContext.Action);
                 this.ExecuteAction(actionContext, filters);
             }
-            catch (AggregateException exception)
+            catch (Exception ex)
             {
-                foreach (var inner in exception.InnerExceptions)
-                {
-                    this.ProcessExecutingException(actionContext, filters, inner);
-                }
-            }
-            catch (Exception exception)
-            {
-                this.ProcessExecutingException(actionContext, filters, exception);
+                this.ProcessExecutingException(actionContext, filters, ex);
             }
             finally
             {
@@ -104,14 +97,13 @@ namespace NetworkSocket.Http
         private void ProcessExecutingException(ActionContext actionContext, IEnumerable<IFilter> actionfilters, Exception exception)
         {
             var exceptionContext = new ExceptionContext(actionContext, new ApiExecuteException(exception));
-            this.ExecExceptionFilters(actionfilters, exceptionContext);
+            this.ExecAllExceptionFilters(actionfilters, exceptionContext);
 
-            if (exceptionContext.ExceptionHandled == false)
+            var result = exceptionContext.Result;
+            if (result == null)
             {
-                throw exception;
+                result = new ErrorResult { Status = 500, Errors = exception.Message };
             }
-
-            var result = exceptionContext.Result == null ? new ErrorResult { Status = 500, Errors = exception.Message } : exceptionContext.Result;
             result.ExecuteResult(actionContext);
         }
 
@@ -241,12 +233,7 @@ namespace NetworkSocket.Http
         /// <param name="actionContext">上下文</param>   
         private void ExecFiltersBeforeAction(IEnumerable<IFilter> filters, ActionContext actionContext)
         {
-            var totalFilters = this.Server
-                .GlobalFilters
-                .Cast<IFilter>()
-                .Concat(new[] { this })
-                .Concat(filters);
-
+            var totalFilters = this.GetTotalFilters(filters);
             foreach (var filter in totalFilters)
             {
                 filter.OnExecuting(actionContext);
@@ -274,13 +261,18 @@ namespace NetworkSocket.Http
         /// </summary>       
         /// <param name="filters">Api行为过滤器</param>
         /// <param name="exceptionContext">上下文</param>       
-        private void ExecExceptionFilters(IEnumerable<IFilter> filters, ExceptionContext exceptionContext)
+        private void ExecAllExceptionFilters(IEnumerable<IFilter> filters, ExceptionContext exceptionContext)
         {
             var totalFilters = this.GetTotalFilters(filters);
             foreach (var filter in totalFilters)
             {
                 filter.OnException(exceptionContext);
                 if (exceptionContext.ExceptionHandled == true) break;
+            }
+
+            if (exceptionContext.ExceptionHandled == false)
+            {
+                throw exceptionContext.Exception;
             }
         }
 

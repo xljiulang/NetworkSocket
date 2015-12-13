@@ -52,11 +52,11 @@ namespace NetworkSocket.WebSocket
         /// <param name="actionContext">上下文</param>      
         void IJsonWebSocketApiService.Execute(ActionContext actionContext)
         {
-            this.CurrentContext = actionContext;
-            var filters = this.Server.FilterAttributeProvider.GetActionFilters(actionContext.Action);
-
+            var filters = Enumerable.Empty<IFilter>();
             try
             {
+                this.CurrentContext = actionContext;
+                filters = this.Server.FilterAttributeProvider.GetActionFilters(actionContext.Action);
                 this.ExecuteAction(actionContext, filters);
             }
             catch (AggregateException exception)
@@ -86,12 +86,7 @@ namespace NetworkSocket.WebSocket
         {
             var exceptionContext = new ExceptionContext(actionContext, new ApiExecuteException(exception));
             Common.SetRemoteException(this.Server.JsonSerializer, exceptionContext);
-            this.ExecExceptionFilters(actionfilters, exceptionContext);
-
-            if (exceptionContext.ExceptionHandled == false)
-            {
-                throw exception;
-            }
+            this.ExecAllExceptionFilters(actionfilters, exceptionContext);
         }
 
         /// <summary>
@@ -176,13 +171,18 @@ namespace NetworkSocket.WebSocket
         /// </summary>       
         /// <param name="filters">Api行为过滤器</param>
         /// <param name="exceptionContext">上下文</param>       
-        private void ExecExceptionFilters(IEnumerable<IFilter> filters, ExceptionContext exceptionContext)
+        private void ExecAllExceptionFilters(IEnumerable<IFilter> filters, ExceptionContext exceptionContext)
         {
             var totalFilters = this.GetTotalFilters(filters);
             foreach (var filter in totalFilters)
             {
                 filter.OnException(exceptionContext);
                 if (exceptionContext.ExceptionHandled == true) break;
+            }
+
+            if (exceptionContext.ExceptionHandled == false)
+            {
+                throw exceptionContext.Exception;
             }
         }
 

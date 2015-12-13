@@ -28,6 +28,7 @@ namespace FastClientApp.Forms
         private async void MainForm_Load(object sender, EventArgs e)
         {
             var endPoint = new System.Net.IPEndPoint(System.Net.IPAddress.Loopback, 1380);
+            RemoteServer.Instance.AutoReconnect = TimeSpan.FromSeconds(1);
             var state = await RemoteServer.Instance.Connect(endPoint);
             var version = state ? await RemoteServer.Instance.GetVersion() : null;
             this.Text = state ? ("服务版本：" + version) : "连接服务器失败 ..";

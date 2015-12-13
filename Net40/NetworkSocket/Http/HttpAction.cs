@@ -12,7 +12,7 @@ namespace NetworkSocket.Http
     /// <summary>
     /// 表示Http的Api行为    
     /// </summary>
-    [DebuggerDisplay("ApiName = {ApiName}")]
+    [DebuggerDisplay("Route = {Route}")]
     public class HttpAction : ApiAction
     {
         /// <summary>
@@ -26,6 +26,18 @@ namespace NetworkSocket.Http
         public HttpMethod AllowMethod { get; private set; }
 
         /// <summary>
+        /// 获取方法的名称
+        /// </summary>
+        public string ActionName { get; protected set; }
+
+
+        /// <summary>
+        /// 获取控制器名称
+        /// </summary>
+        public string ControllerName { get; protected set; }
+
+
+        /// <summary>
         /// Http的Api行为 
         /// </summary>
         /// <param name="method">方法信息</param>
@@ -35,6 +47,8 @@ namespace NetworkSocket.Http
             : base(method)
         {
             this.DeclaringService = declaringType;
+            this.ActionName = this.Method.Name;
+            this.ControllerName = Regex.Replace(declaringType.Name, @"Controller$", string.Empty, RegexOptions.IgnoreCase);
             this.AllowMethod = this.GetAllowMethod(method);
             this.Route = this.GetRoute(declaringType);
         }
@@ -47,15 +61,20 @@ namespace NetworkSocket.Http
         private string GetRoute(Type declaringType)
         {
             var route = string.Empty;
-            var routeAttribute = Attribute.GetCustomAttributes(declaringType, typeof(RouteAttribute), false).Cast<RouteAttribute>().FirstOrDefault();
+            var routeAttribute = Attribute
+                .GetCustomAttributes(declaringType, typeof(RouteAttribute), false)
+                .Cast<RouteAttribute>()
+                .FirstOrDefault();
+
             if (routeAttribute != null)
             {
                 route = routeAttribute.Route;
             }
             else
             {
-                route = "/" + Regex.Replace(declaringType.Name, @"Controller$", string.Empty, RegexOptions.IgnoreCase);
+                route = "/" + this.ControllerName;
             }
+
             if (route.Length > 1 && route.EndsWith("/") == false)
             {
                 route = route + "/";

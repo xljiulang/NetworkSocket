@@ -60,23 +60,6 @@ namespace FastClientApp
         public List<Int32> Sort(List<Int32> list)
         {
             return list.OrderBy(item => item).ToList();
-        }
-
-        // 循环重连
-        protected override void OnDisconnect()
-        {
-            base.OnDisconnect();
-            this.ReConnect().ContinueWith(t => this.TryReConnect(t.Result));
-        }
-             
-
-        private void TryReConnect(bool result)
-        {
-            if (result == false)
-            {
-                Thread.Sleep(1000);
-                this.ReConnect().ContinueWith(t => this.TryReConnect(t.Result));
-            }
-        }
+        } 
     }
 }

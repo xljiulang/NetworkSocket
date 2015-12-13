@@ -30,6 +30,13 @@ namespace NetworkSocket.Fast
         /// </summary>
         private TaskSetActionTable taskSetActionTable;
 
+
+        /// <summary>
+        /// 获取或设置序列化工具
+        /// 默认是Json序列化
+        /// </summary>
+        public ISerializer Serializer { get; set; }
+
         /// <summary>
         /// 获取或设置请求等待超时时间(毫秒) 
         /// 默认30秒
@@ -46,12 +53,6 @@ namespace NetworkSocket.Fast
                 this.taskSetActionTable.TimeOut = value;
             }
         }
-
-        /// <summary>
-        /// 获取或设置序列化工具
-        /// 默认是Json序列化
-        /// </summary>
-        public ISerializer Serializer { get; set; }
 
         /// <summary>
         /// 快速构建Tcp服务端
@@ -78,7 +79,7 @@ namespace NetworkSocket.Fast
                     break;
                 }
                 // 新线程处理业务内容
-                Task.Factory.StartNew(() => this.OnRecvPacket(packet));
+                Task.Factory.StartNew(() => this.OnReceivePacket(packet));
             }
         }
 
@@ -86,7 +87,7 @@ namespace NetworkSocket.Fast
         /// 接收到服务发来的数据包
         /// </summary>
         /// <param name="packet">数据包</param>
-        private void OnRecvPacket(FastPacket packet)
+        private void OnReceivePacket(FastPacket packet)
         {
             var requestContext = new RequestContext(null, packet, null);
             if (packet.IsException == false)
@@ -281,16 +282,24 @@ namespace NetworkSocket.Fast
         }
 
         /// <summary>
-        /// 当与服务器断开连接时，将触发此方法
-        /// 并触发未完成的请求产生SocketException异常
+        /// 断开时清除数据任务列表  
+        /// 然后调用OnDisconnected
         /// </summary>
-        protected override void OnDisconnect()
+        protected sealed override void OnDisconnect()
         {
             var taskSetActions = this.taskSetActionTable.TakeAll();
             foreach (var taskSetAction in taskSetActions)
             {
                 taskSetAction.SetAction(SetTypes.SetShutdownException, null);
             }
+            this.OnDisconnected();
+        }
+
+        /// <summary>
+        /// 当与服务器断开连接后，将触发此方法
+        /// </summary>
+        protected virtual void OnDisconnected()
+        {
         }
 
         #region IDisponse

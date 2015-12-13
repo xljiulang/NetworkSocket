@@ -60,7 +60,6 @@ namespace NetworkSocket.Http
         /// </summary>
         public Encoding Charset { get; set; }
 
-
         /// <summary>
         /// 获取回复头信息
         /// </summary>
