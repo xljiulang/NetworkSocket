@@ -19,7 +19,7 @@
 
     <script type="text/javascript">
         var address = 'ws://' + location.hostname + ':83/';
-        var ws = new fastWebSocket(address);
+        var ws = new jsonWebSocket(address);
 
         // 断开连接
         ws.onclose = function (e) {
