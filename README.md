@@ -13,22 +13,27 @@ public class HomeController : HttpController
         return Json(new { state = true });
     }
 }
+// 客户端请求
+$.post("/home/index",{account:"admin",password:"123456",fAdmin:true});
 ```
 Fast协议服务
 ```
 public class MathService : FastApiService
 {
     [Api]
-    [LogFilter("求合操作")]
-    [LoginFilter]  // 需要客户端登录才能访问
-    public int GetSun(int x, int y, int z)
+    public int GetSum(int x, int y, int z)
     {
         return x + y + z;
     }
 }
+// 启动服务
+var server = new FastTcpServer();
+server.BindService<MathService>();
+server.StartListen(10086);
 // 客户端调用
 var client = new FastTcpClient();
-var sum = client.InvokeApi<Int32>("GetSun", 1, 2, 3).Result;
+client.Connect(IPAddress.Loopback, 10086);
+var sum = client.InvokeApi<Int32>("GetSum", 1, 2, 3).Result;
 ```
 jsonWebsocket协议服务
 ```
@@ -40,8 +45,12 @@ public class SystemApiService : JsonWebSocketApiService
         return new UserInfo[0];
     }
 }
+// 启动服务
+var server = new JsonWebSocketServer();
+server.BindService<SystemApiService>();
+server.StartListen(10010);
 // 客户端调用
- var ws = new fastWebSocket(address);
+ var ws = new jsonWebSocket('ws://127.0.0.1:10010/);
  ws.invokeApi("SearchUsers", ['张三'], function (data) {
      alert(data.length == 0)
  });
