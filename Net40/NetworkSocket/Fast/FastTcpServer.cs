@@ -82,7 +82,7 @@ namespace NetworkSocket.Fast
             this.TaskSetActionTable = new TaskSetActionTable();
 
             this.Serializer = new DefaultSerializer();
-            this.GlobalFilters = new GlobalFilters();
+            this.GlobalFilters = new FastGlobalFilters();
             this.DependencyResolver = new DefaultDependencyResolver();
             this.FilterAttributeProvider = new DefaultFilterAttributeProvider();
         }
@@ -230,10 +230,9 @@ namespace NetworkSocket.Fast
         private void OnRecvPacket(FastSession session, FastPacket packet)
         {
             var requestContext = new RequestContext(session, packet, this.AllSessions);
-
-            if (packet.IsException)
+            if (packet.IsException == true)
             {
-                this.ProcessRemoteException(requestContext);
+                Common.SetApiActionTaskException(this.TaskSetActionTable, requestContext);
             }
             else
             {
@@ -241,19 +240,6 @@ namespace NetworkSocket.Fast
             }
         }
 
-        /// <summary>
-        /// 处理远返回的程异常
-        /// </summary>
-        /// <param name="requestContext">请求上下文</param>
-        private void ProcessRemoteException(RequestContext requestContext)
-        {
-            var remoteException = Common.SetApiActionTaskException(this.TaskSetActionTable, requestContext);
-            if (remoteException != null)
-            {
-                var exceptionContext = new ExceptionContext(requestContext, remoteException);
-                this.ExecGlobalExceptionFilters(exceptionContext);
-            }
-        }
 
         /// <summary>
         /// 处理正常的数据请求
@@ -263,7 +249,7 @@ namespace NetworkSocket.Fast
         {
             if (requestContext.Packet.IsFromClient == false)
             {
-                Common.SetApiActionTaskResult(requestContext, this.TaskSetActionTable);
+                Common.SetApiActionTaskResult(requestContext, this.TaskSetActionTable, this.Serializer);
                 return;
             }
 
@@ -298,7 +284,7 @@ namespace NetworkSocket.Fast
                 var exception = new ApiNotExistException(requestContext.Packet.ApiName);
                 var exceptionContext = new ExceptionContext(requestContext, exception);
 
-                Common.SetRemoteException(requestContext.Session, exceptionContext);
+                Common.SendRemoteException(requestContext.Session, exceptionContext);
                 this.ExecGlobalExceptionFilters(exceptionContext);
             }
             return action;
@@ -311,27 +297,21 @@ namespace NetworkSocket.Fast
         /// <returns></returns>
         private IFastApiService GetFastApiService(ActionContext actionContext)
         {
-            var fastApiService = default(IFastApiService);
-            var innerException = default(Exception);
-
             try
             {
-                fastApiService = (IFastApiService)this.DependencyResolver.GetService(actionContext.Action.DeclaringService);
+                var serviceType = actionContext.Action.DeclaringService;
+                var instance = this.DependencyResolver.GetService(serviceType);
+                return instance as IFastApiService;
             }
             catch (Exception ex)
             {
-                innerException = ex;
-            }
-
-            if (fastApiService == null)
-            {
-                var exception = new ResolveException(actionContext.Action.DeclaringService, innerException);
+                var exception = new ResolveException(actionContext.Action.DeclaringService, ex);
                 var exceptionContext = new ExceptionContext(actionContext, exception);
 
-                Common.SetRemoteException(actionContext.Session, exceptionContext);
+                Common.SendRemoteException(actionContext.Session, exceptionContext);
                 this.ExecGlobalExceptionFilters(exceptionContext);
+                return null;
             }
-            return fastApiService;
         }
 
 

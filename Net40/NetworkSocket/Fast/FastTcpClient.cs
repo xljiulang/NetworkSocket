@@ -90,36 +90,16 @@ namespace NetworkSocket.Fast
         private void OnReceivePacket(FastPacket packet)
         {
             var requestContext = new RequestContext(null, packet, null);
-            if (packet.IsException == false)
+            if (packet.IsException == true)
             {
-                this.ProcessRequest(requestContext);
+                Common.SetApiActionTaskException(this.taskSetActionTable, requestContext);
             }
             else
             {
-                this.ProcessRemoteException(requestContext);
+                this.ProcessRequest(requestContext);
             }
         }
 
-        /// <summary>
-        /// 处理远返回的程异常
-        /// </summary>
-        /// <param name="requestContext">请求上下文</param>
-        private void ProcessRemoteException(RequestContext requestContext)
-        {
-            var remoteException = Common.SetApiActionTaskException(this.taskSetActionTable, requestContext);
-            if (remoteException == null)
-            {
-                return;
-            }
-
-            var exceptionHandled = false;
-            this.OnException(requestContext.Packet, remoteException, out exceptionHandled);
-
-            if (exceptionHandled == false)
-            {
-                throw remoteException;
-            }
-        }
 
         /// <summary>
         /// 处理正常的数据请求
@@ -129,7 +109,7 @@ namespace NetworkSocket.Fast
         {
             if (requestContext.Packet.IsFromClient)
             {
-                Common.SetApiActionTaskResult(requestContext, this.taskSetActionTable);
+                Common.SetApiActionTaskResult(requestContext, this.taskSetActionTable, this.Serializer);
                 return;
             }
 
@@ -158,7 +138,7 @@ namespace NetworkSocket.Fast
 
             var exception = new ApiNotExistException(requestContext.Packet.ApiName);
             var exceptionContext = new ExceptionContext(requestContext, exception);
-            Common.SetRemoteException(this, exceptionContext);
+            Common.SendRemoteException(this, exceptionContext);
 
             var exceptionHandled = false;
             this.OnException(requestContext.Packet, exception, out exceptionHandled);
@@ -226,7 +206,7 @@ namespace NetworkSocket.Fast
         private void ProcessExecutingException(ActionContext actionContext, Exception exception)
         {
             var exceptionContext = new ExceptionContext(actionContext, new ApiExecuteException(exception));
-            Common.SetRemoteException(this, exceptionContext);
+            Common.SendRemoteException(this, exceptionContext);
 
             var exceptionHandled = false;
             this.OnException(actionContext.Packet, exception, out exceptionHandled);
@@ -290,7 +270,8 @@ namespace NetworkSocket.Fast
             var taskSetActions = this.taskSetActionTable.TakeAll();
             foreach (var taskSetAction in taskSetActions)
             {
-                taskSetAction.SetAction(SetTypes.SetShutdownException, null);
+                var exception = new SocketException(SocketError.Shutdown.GetHashCode());
+                taskSetAction.SetException(exception);
             }
             this.OnDisconnected();
         }

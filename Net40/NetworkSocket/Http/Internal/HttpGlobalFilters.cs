@@ -9,7 +9,7 @@ namespace NetworkSocket.Http
     /// <summary>
     /// Http协议的全局过滤器提供者
     /// </summary>
-    internal class GlobalFilters : GlobalFiltersBase
+    internal class HttpGlobalFilters : GlobalFiltersBase
     {
         /// <summary>
         /// 添加过滤器

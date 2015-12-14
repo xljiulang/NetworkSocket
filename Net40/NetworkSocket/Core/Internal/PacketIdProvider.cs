@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 
-namespace NetworkSocket.Fast
+namespace NetworkSocket.Core
 {
     /// <summary>
     /// 数据包id提供者

@@ -85,7 +85,7 @@ namespace NetworkSocket.Fast
         private void ProcessExecutingException(ActionContext actionContext, IEnumerable<IFilter> filters, Exception exception)
         {
             var exceptionContext = new ExceptionContext(actionContext, new ApiExecuteException(exception));
-            Common.SetRemoteException(actionContext.Session, exceptionContext);
+            Common.SendRemoteException(actionContext.Session, exceptionContext);
             this.ExecAllExceptionFilters(filters, exceptionContext);
         }
 
@@ -109,7 +109,7 @@ namespace NetworkSocket.Fast
             if (actionContext.Result != null)
             {
                 var exceptionContext = new ExceptionContext(actionContext, actionContext.Result);
-                Common.SetRemoteException(actionContext.Session, exceptionContext);
+                Common.SendRemoteException(actionContext.Session, exceptionContext);
                 return false;
             }
 
@@ -121,7 +121,7 @@ namespace NetworkSocket.Fast
             if (actionContext.Result != null)
             {
                 var exceptionContext = new ExceptionContext(actionContext, actionContext.Result);
-                Common.SetRemoteException(actionContext.Session, exceptionContext);
+                Common.SendRemoteException(actionContext.Session, exceptionContext);
                 return false;
             }
 

@@ -5,52 +5,36 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace NetworkSocket.Fast
+namespace NetworkSocket.Core
 {
     /// <summary>
-    /// 任务行为表
-    /// 自带超时检测功能
+    /// 表示任务行为管理表
+    /// 线程安全类型
     /// </summary>
     internal class TaskSetActionTable : IDisposable
     {
         /// <summary>
-        /// 超时时间
-        /// </summary>       
-        private int timeOut = 30 * 1000;
-
-        /// <summary>
         /// 任务行为字典
         /// </summary>
-        private readonly ConcurrentDictionary<long, ITaskSetAction> table = new ConcurrentDictionary<long, ITaskSetAction>();
-
+        private readonly ConcurrentDictionary<long, ITaskSetAction> table;
 
         /// <summary>
         /// 获取或设置超时时间(毫秒)
         /// 默认30秒
         /// </summary>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public int TimeOut
-        {
-            get
-            {
-                return this.timeOut;
-            }
-            set
-            {
-                if (value <= 0)
-                {
-                    throw new ArgumentOutOfRangeException("TimeOut", "TimeOut的值必须大于0");
-                }
-                this.timeOut = value;
-            }
-        }
+        public int TimeOut { get; set; }
 
         /// <summary>
         /// 任务行为表
         /// </summary>
         public TaskSetActionTable()
         {
+            this.TimeOut = 30 * 1000;
+            this.table = new ConcurrentDictionary<long, ITaskSetAction>();
             LoopWorker.AddWork(this.CheckTaskActionTimeout);
         }
 
@@ -66,34 +50,33 @@ namespace NetworkSocket.Fast
 
             foreach (var key in this.table.Keys)
             {
-                if (this.ProcessIfTimeout(key) == false)
-                {
-                    // 遇到还没超时的对象就退出检测
-                    break;
-                }
+                if (this.ProcessTimeout(key) == false) break;
             }
         }
 
         /// <summary>
-        /// 如果超时了就处理超时并返回true
-        /// 否则返回false
+        /// 处理任务的超时情况
+        /// 如果还没有超时返回false
         /// </summary>
-        /// <param name="key">值</param>
-        private bool ProcessIfTimeout(long key)
+        /// <param name="key">任务的key</param>
+        private bool ProcessTimeout(long key)
         {
-            ITaskSetAction taskSetAction;
-            if (this.table.TryGetValue(key, out taskSetAction))
+            var taskSetAction = default(ITaskSetAction);
+            if (this.table.TryGetValue(key, out taskSetAction) == false)
             {
-                // 还没有超时
-                if (Environment.TickCount - taskSetAction.CreateTime < TimeOut)
-                {
-                    return false;
-                }
+                return true;
             }
 
+            // 还没有超时
+            if (Environment.TickCount - taskSetAction.CreateTime < TimeOut)
+            {
+                return false;
+            }
+
+            // 已超时
             if (this.table.TryRemove(key, out taskSetAction))
             {
-                taskSetAction.SetAction(SetTypes.SetTimeoutException, null);
+                taskSetAction.SetException(new TimeoutException());
             }
             return true;
         }

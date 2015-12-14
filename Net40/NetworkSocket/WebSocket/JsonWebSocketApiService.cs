@@ -1,6 +1,7 @@
 ﻿using NetworkSocket.Core;
 using NetworkSocket.Exceptions;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
@@ -85,7 +86,7 @@ namespace NetworkSocket.WebSocket
         private void ProcessExecutingException(ActionContext actionContext, IEnumerable<IFilter> actionfilters, Exception exception)
         {
             var exceptionContext = new ExceptionContext(actionContext, new ApiExecuteException(exception));
-            Common.SetRemoteException(this.Server.JsonSerializer, exceptionContext);
+            this.Server.SendRemoteException(exceptionContext);
             this.ExecAllExceptionFilters(actionfilters, exceptionContext);
         }
 
@@ -103,14 +104,14 @@ namespace NetworkSocket.WebSocket
             var action = actionContext.Action;
             var session = actionContext.Session;
             var serializer = this.Server.JsonSerializer;
-            var parameters = Common.GetAndUpdateParameterValues(actionContext);
+            var parameters = this.GetAndUpdateParameterValues(actionContext);
 
             // Api执行前
             this.ExecFiltersBeforeAction(filters, actionContext);
             if (actionContext.Result != null)
             {
                 var exceptionContext = new ExceptionContext(actionContext, actionContext.Result);
-                Common.SetRemoteException(serializer, exceptionContext);
+                this.Server.SendRemoteException(exceptionContext);
                 return false;
             }
 
@@ -122,7 +123,7 @@ namespace NetworkSocket.WebSocket
             if (actionContext.Result != null)
             {
                 var exceptionContext = new ExceptionContext(actionContext, actionContext.Result);
-                Common.SetRemoteException(serializer, exceptionContext);
+                this.Server.SendRemoteException(exceptionContext);
                 return false;
             }
 
@@ -134,6 +135,38 @@ namespace NetworkSocket.WebSocket
                 session.SendText(packetJson);
             }
             return true;
+        }
+
+        /// <summary>
+        /// 获取和更新Api行为的参数值
+        /// </summary> 
+        /// <param name="context">上下文</param>        
+        /// <exception cref="ArgumentException"></exception>    
+        /// <returns></returns>
+        private object[] GetAndUpdateParameterValues(ActionContext context)
+        {
+            var body = context.Packet.body as IList;
+            if (body == null)
+            {
+                throw new ArgumentException("body参数必须为数组");
+            }
+
+            if (body.Count != context.Action.ParameterTypes.Length)
+            {
+                throw new ArgumentException("body参数数量不正确");
+            }
+
+            var parameters = new object[body.Count];
+            var serializer = context.Session.Server.JsonSerializer;
+
+            for (var i = 0; i < body.Count; i++)
+            {
+                var bodyParameter = body[i];
+                var parameterType = context.Action.ParameterTypes[i];
+                parameters[i] = serializer.Convert(bodyParameter, parameterType);
+            }
+            context.Action.ParameterValues = parameters;
+            return parameters;
         }
 
         /// <summary>

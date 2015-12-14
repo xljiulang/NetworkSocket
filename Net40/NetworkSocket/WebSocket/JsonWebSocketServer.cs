@@ -79,7 +79,7 @@ namespace NetworkSocket.WebSocket
             this.TaskSetActionTable = new TaskSetActionTable();
 
             this.JsonSerializer = new DefaultDynamicJsonSerializer();
-            this.GlobalFilters = new GlobalFilters();
+            this.GlobalFilters = new WebSocketGlobalFilters();
             this.DependencyResolver = new DefaultDependencyResolver();
             this.FilterAttributeProvider = new DefaultFilterAttributeProvider();
         }
@@ -172,12 +172,26 @@ namespace NetworkSocket.WebSocket
 
             foreach (var type in apiServiceType)
             {
-                var actions = Common.GetServiceApiActions(type);
+                var actions = this.GetServiceApiActions(type);
                 this.apiActionList.AddRange(actions);
             }
             return this;
         }
 
+
+        /// <summary>
+        /// 获取服务类型的Api行为
+        /// </summary>
+        /// <param name="seviceType">服务类型</param>
+        /// <exception cref="ArgumentException"></exception>
+        /// <returns></returns>
+        private IEnumerable<ApiAction> GetServiceApiActions(Type seviceType)
+        {
+            return seviceType
+                .GetMethods()
+                .Where(item => Attribute.IsDefined(item, typeof(ApiAttribute)))
+                .Select(method => new ApiAction(method));
+        }
 
         /// <summary>
         /// 创建新的会话对象
@@ -252,12 +266,16 @@ namespace NetworkSocket.WebSocket
         /// <param name="requestContext">请求上下文</param>     
         private void ProcessRemoteException(RequestContext requestContext)
         {
-            var remoteException = Common.SetApiActionTaskException(this.TaskSetActionTable, requestContext);
-            if (remoteException != null)
+            var taskSetAction = this.TaskSetActionTable.Take(requestContext.Packet.id);
+            if (taskSetAction == null)
             {
-                var exceptionContext = new ExceptionContext(requestContext, remoteException);
-                this.ExecGlobalExceptionFilters(exceptionContext);
+                return;
             }
+
+            var body = requestContext.Packet.body;
+            var message = body == null ? null : body.ToString();
+            var exception = new RemoteException(message);
+            taskSetAction.SetException(exception);
         }
 
         /// <summary>
@@ -268,7 +286,7 @@ namespace NetworkSocket.WebSocket
         {
             if (requestContext.Packet.fromClient == false)
             {
-                Common.SetApiActionTaskResult(requestContext, this.TaskSetActionTable);
+                this.SetApiActionTaskResult(requestContext);
                 return;
             }
 
@@ -291,6 +309,36 @@ namespace NetworkSocket.WebSocket
         }
 
         /// <summary>
+        /// 设置Api行为返回的任务结果
+        /// </summary>
+        /// <param name="requestContext">上下文</param>      
+        /// <returns></returns>
+        private bool SetApiActionTaskResult(RequestContext requestContext)
+        {
+            var taskSetAction = this.TaskSetActionTable.Take(requestContext.Packet.id);
+            if (taskSetAction == null)
+            {
+                return true;
+            }
+
+            try
+            {
+                var body = requestContext.Packet.body;
+                var value = this.JsonSerializer.Convert(body, taskSetAction.ValueType);
+                return taskSetAction.SetResult(value);
+            }
+            catch (SerializerException ex)
+            {
+                return taskSetAction.SetException(ex);
+            }
+            catch (Exception ex)
+            {
+                return taskSetAction.SetException(new SerializerException(ex));
+            }
+        }
+
+
+        /// <summary>
         /// 获取Api行为
         /// </summary>
         /// <param name="requestContext">请求上下文</param>
@@ -302,8 +350,7 @@ namespace NetworkSocket.WebSocket
             {
                 var exception = new ApiNotExistException(requestContext.Packet.api);
                 var exceptionContext = new ExceptionContext(requestContext, exception);
-
-                Common.SetRemoteException(this.JsonSerializer, exceptionContext);
+                this.SendRemoteException(exceptionContext);
                 this.ExecGlobalExceptionFilters(exceptionContext);
             }
             return action;
@@ -316,29 +363,44 @@ namespace NetworkSocket.WebSocket
         /// <returns></returns>
         private IJsonWebSocketApiService GetJsonWebSocketApiService(ActionContext actionContext)
         {
-            var exception = default(Exception);
-            var fastApiService = default(IJsonWebSocketApiService);
-
             try
             {
-                fastApiService = (IJsonWebSocketApiService)this.DependencyResolver.GetService(actionContext.Action.DeclaringService);
+                var serviceType = actionContext.Action.DeclaringService;
+                var instance = this.DependencyResolver.GetService(serviceType);
+                return instance as IJsonWebSocketApiService;
             }
             catch (Exception ex)
             {
-                exception = ex;
-            }
-
-            if (fastApiService == null)
-            {
-                var resolveException = new ResolveException(actionContext.Action.DeclaringService, exception);
+                var resolveException = new ResolveException(actionContext.Action.DeclaringService, ex);
                 var exceptionContext = new ExceptionContext(actionContext, resolveException);
-
-                Common.SetRemoteException(this.JsonSerializer, exceptionContext);
+                this.SendRemoteException(exceptionContext);
                 this.ExecGlobalExceptionFilters(exceptionContext);
+                return null;
             }
-            return fastApiService;
         }
 
+        /// <summary>       
+        /// 将异常信息发送到远程端
+        /// </summary>
+        /// <param name="exceptionContext">上下文</param>       
+        /// <returns></returns>
+        internal bool SendRemoteException(ExceptionContext exceptionContext)
+        {
+            try
+            {
+                var packet = exceptionContext.Packet;
+                packet.state = false;
+                packet.body = exceptionContext.Exception.Message;
+
+                var packetJson = this.JsonSerializer.Serialize(packet);
+                exceptionContext.Session.SendText(packetJson);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
 
         /// <summary>
         /// 执行异常过滤器

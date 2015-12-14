@@ -80,6 +80,8 @@
     <Compile Include="Core\Internal\ApiActionList.cs" />
     <Compile Include="Core\Internal\LoopWorker.cs" />
     <Compile Include="Core\Internal\MethodReflection.cs" />
+    <Compile Include="Core\Internal\TaskSetAction.cs" />
+    <Compile Include="Core\Internal\TaskSetActionTable.cs" />
     <Compile Include="Endians.cs" />
     <Compile Include="Core\ApiAttribute.cs" />
     <Compile Include="Exceptions\ProtocolException.cs" />
@@ -108,11 +110,8 @@
     <Compile Include="Fast\IFastTcpClient.cs" />
     <Compile Include="Fast\IFastTcpServer.cs" />
     <Compile Include="Fast\Internal\Common.cs" />
-    <Compile Include="Fast\Internal\GlobalFilters.cs" />
-    <Compile Include="Fast\Internal\PacketIdProvider.cs" />
-    <Compile Include="Fast\Internal\SetTypes.cs" />
-    <Compile Include="Fast\Internal\TaskSetAction.cs" />
-    <Compile Include="Fast\Internal\TaskSetActionTable.cs" />
+    <Compile Include="Fast\Internal\FastGlobalFilters.cs" />
+    <Compile Include="Core\Internal\PacketIdProvider.cs" />
     <Compile Include="Http\HttpFilterAttribute.cs" />
     <Compile Include="Core\IFilterAttributeProvider.cs">
       <SubType>Code</SubType>
@@ -122,7 +121,7 @@
     <Compile Include="Http\HttpMIME.cs" />
     <Compile Include="Http\HttpMIMECollection.cs" />
     <Compile Include="Http\HttpPostAttribute.cs" />
-    <Compile Include="Http\Internal\GlobalFilters.cs" />
+    <Compile Include="Http\Internal\HttpGlobalFilters.cs" />
     <Compile Include="Http\Internal\MultipartHead.cs" />
     <Compile Include="Http\Result\EmptyResult.cs" />
     <Compile Include="Http\Result\ErrorResult.cs" />
@@ -207,7 +206,7 @@
     <Compile Include="WebSocket\Context\ActionContext.cs" />
     <Compile Include="WebSocket\Context\ExceptionContext.cs" />
     <Compile Include="WebSocket\Context\RequestContext.cs" />
-    <Compile Include="WebSocket\Internal\GlobalFilters.cs" />
+    <Compile Include="WebSocket\Internal\WebSocketGlobalFilters.cs" />
     <Compile Include="WebSocket\JsonWebSocketApiService.cs" />
     <Compile Include="WebSocket\JsonPacket.cs" />
     <Compile Include="WebSocket\JsonWebSocketServer.cs" />
@@ -215,10 +214,6 @@
     <Compile Include="WebSocket\JsonWebSocketFilterAttribute.cs" />
     <Compile Include="WebSocket\IJsonWebSocketApiService.cs" />
     <Compile Include="WebSocket\IJsonWebSocketServer.cs" />
-    <Compile Include="WebSocket\Internal\Common.cs" />
-    <Compile Include="WebSocket\Internal\SetTypes.cs" />
-    <Compile Include="WebSocket\Internal\TaskSetAction.cs" />
-    <Compile Include="WebSocket\Internal\TaskSetActionTable.cs" />
     <Compile Include="WebSocket\FrameCodes.cs" />
     <Compile Include="WebSocket\FrameRequest.cs" />
     <Compile Include="WebSocket\FrameResponse.cs" />

@@ -4,12 +4,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace NetworkSocket.Fast
+namespace NetworkSocket.WebSocket
 {
     /// <summary>
-    /// Fast协议的全局过滤器提供者
+    /// JsonWebSocket协议的全局过滤器提供者
     /// </summary>
-    internal class GlobalFilters : GlobalFiltersBase
+    internal class WebSocketGlobalFilters : GlobalFiltersBase
     {
         /// <summary>
         /// 添加过滤器
@@ -24,10 +24,10 @@ namespace NetworkSocket.Fast
                 throw new ArgumentNullException();
             }
 
-            var fastFilter = filter as FastFilterAttribute;
+            var fastFilter = filter as JsonWebSocketFilterAttribute;
             if (fastFilter == null)
             {
-                throw new ArgumentException("过滤器的类型要继承于" + typeof(FastFilterAttribute).Name);
+                throw new ArgumentException("过滤器的类型要继承于" + typeof(JsonWebSocketFilterAttribute).Name);
             }
             base.Add(filter);
         }

@@ -54,7 +54,7 @@ namespace NetworkSocket.Http
         {
             this.httpActionList = new HttpActionList();
             this.ModelBinder = new DefaultModelBinder();
-            this.GlobalFilters = new GlobalFilters();
+            this.GlobalFilters = new HttpGlobalFilters();
             this.MIMECollection = new HttpMIMECollection();
             this.FilterAttributeProvider = new DefaultFilterAttributeProvider();
             this.DependencyResolver = new DefaultDependencyResolver();
@@ -229,14 +229,36 @@ namespace NetworkSocket.Http
         /// <param name="requestContext">上下文</param>      
         private void ExecuteHttpAction(HttpAction action, RequestContext requestContext)
         {
-            var controller = this.DependencyResolver.GetService(action.DeclaringService) as HttpController;
             var actionContext = new ActionContext(requestContext, action);
+            var controller = GetHttpController(actionContext);
 
-            controller.Server = this;
-            ((IHttpController)controller).Execute(actionContext);
+            if (controller != null)
+            {
+                controller.Execute(actionContext);
+                this.DependencyResolver.TerminateService(controller);
+            }
+        }
 
-            // 释放资源
-            this.DependencyResolver.TerminateService(controller);
+        /// <summary>
+        /// 获取控制器的实例
+        /// </summary>
+        /// <param name="actionContext">上下文</param>
+        /// <returns></returns>
+        private IHttpController GetHttpController(ActionContext actionContext)
+        {
+            try
+            {
+                var controllerType = actionContext.Action.DeclaringService;
+                var controller = this.DependencyResolver.GetService(controllerType) as HttpController;
+                controller.Server = this;
+                return controller;
+            }
+            catch (Exception ex)
+            {
+                var httpException = new HttpException(500, ex.Message);
+                this.ProcessHttpException(httpException, actionContext);
+                return null;
+            }
         }
 
         /// <summary>
