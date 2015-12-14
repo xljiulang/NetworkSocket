@@ -1,4 +1,4 @@
-﻿using Models;
+﻿using FastModels;
 using NetworkSocket;
 using NetworkSocket.Core;
 using NetworkSocket.Fast;
@@ -73,7 +73,7 @@ namespace FastClientApp
         [Api]
         public void LoginNotify(string account)
         {
-            // 可以可以通过事件，让其它窗体来订阅
+            // 这里可以通过事件，让其它窗体来订阅
             MessageBox.Show("你的好友[" + account + "]登录了", "好友登录提示");
         }
     }

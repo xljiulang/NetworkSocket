@@ -1,4 +1,4 @@
-﻿using Models;
+﻿using FastModels;
 using NetworkSocket.Core;
 using NetworkSocket.Exceptions;
 using NetworkSocket.Fast;

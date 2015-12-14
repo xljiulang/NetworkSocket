@@ -1,5 +1,5 @@
-﻿using FastServer.Services;
-using Models;
+﻿using FastModels;
+using FastServer.Services;
 using NetworkSocket;
 using NetworkSocket.Fast;
 using System;

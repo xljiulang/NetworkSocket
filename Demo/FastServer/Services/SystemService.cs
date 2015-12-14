@@ -1,16 +1,16 @@
-﻿using Models;
+﻿using FastModels;
+using FastServer.Filters;
 using NetworkSocket;
 using NetworkSocket.Core;
 using NetworkSocket.Fast;
-using FastServer.Filters;
+using NetworkSocket.Validation;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using NetworkSocket.Validation;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace FastServer.Services
 {
@@ -61,7 +61,7 @@ namespace FastServer.Services
                 return new LoginResult { Message = validResult.ErrorMessage };
             }
 
-            // 通知其它传话有新成员登录
+            // 通知其它会话有新成员登录
             foreach (var session in this.OtherSessions)
             {
                 session.InvokeApi("LoginNotify", user.Account);

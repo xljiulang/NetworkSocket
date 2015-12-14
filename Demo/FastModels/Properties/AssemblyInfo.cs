@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // 有关程序集的常规信息通过以下特性集
 // 控制。更改这些特性值可修改
 // 与程序集关联的信息。
-[assembly: AssemblyTitle("Models")]
+[assembly: AssemblyTitle("FastModels")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Models")]
+[assembly: AssemblyProduct("FastModels")]
 [assembly: AssemblyCopyright("Copyright © chenguowei 2013-2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

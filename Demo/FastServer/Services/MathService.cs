@@ -1,7 +1,7 @@
-﻿using NetworkSocket;
+﻿using FastServer.Filters;
+using NetworkSocket;
 using NetworkSocket.Core;
 using NetworkSocket.Fast;
-using FastServer.Filters;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -19,8 +19,7 @@ namespace FastServer.Services
     public class MathService : FastApiService
     {
         /// <summary>
-        /// 求合操作
-        /// 客户端登录并验证通过后才能调用此服务
+        /// 求合操作       
         /// </summary>     
         /// <param name="x"></param>
         /// <param name="y"></param>

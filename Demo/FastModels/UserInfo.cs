@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Models
+namespace FastModels
 {
     /// <summary>
     /// 用户信息实体
