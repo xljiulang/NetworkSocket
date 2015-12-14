@@ -13,6 +13,10 @@ public class HomeController : HttpController
         return Json(new { state = true });
     }
 }
+// 启动服务
+var httpServer = new HttpServer();
+httpServer.BindController<HomeController>();
+httpServer.StartListen(7777);
 // 客户端请求
 $.post("/home/index",{account:"admin",password:"123456",fAdmin:true});
 ```
