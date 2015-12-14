@@ -44,10 +44,5 @@ namespace NetworkSocket.Fast
         {
             return this.Action.ToString();
         }
-
-        ApiAction IActionContext.Action
-        {
-            get { throw new NotImplementedException(); }
-        }
     }
 }
