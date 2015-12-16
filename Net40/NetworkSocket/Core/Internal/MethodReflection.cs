@@ -8,12 +8,12 @@ using System.Text;
 namespace NetworkSocket.Core
 {
     /// <summary>
-    /// 方法反射调用
+    /// 提供方法反射调用
     /// </summary>
     internal static class MethodReflection
     {
         /// <summary>
-        /// 生成方法的委托
+        /// 生成方法的调用委托
         /// </summary>
         /// <param name="method">方法成员信息</param>
         /// <exception cref="ArgumentException"></exception>

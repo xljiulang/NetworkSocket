@@ -15,7 +15,7 @@ namespace NetworkSocket.Core
         /// </summary>
         /// <param name="apiAction">Api行为</param>
         /// <returns></returns>
-        public virtual IEnumerable<IFilter> GetActionFilters(ApiAction apiAction)
+        public IEnumerable<IFilter> GetActionFilters(ApiAction apiAction)
         {
             var methodFilters = apiAction.GetMethodFilterAttributes();
             var classFilters = apiAction.GetClassFilterAttributes().Where(cf => cf.AllowMultiple || methodFilters.Any(mf => mf.TypeId == cf.TypeId) == false);

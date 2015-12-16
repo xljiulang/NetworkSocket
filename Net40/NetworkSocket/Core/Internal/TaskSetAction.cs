@@ -44,7 +44,7 @@ namespace NetworkSocket.Core
     /// <summary>
     /// 表示任务设置行为信息
     /// </summary>
-    [DebuggerDisplay("InitTime = {InitTime}")]
+    [DebuggerDisplay("CreateTime = {CreateTime}")]
     internal class TaskSetAction<T> : ITaskSetAction
     {
         /// <summary>

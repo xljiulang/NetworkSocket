@@ -7,7 +7,7 @@ using System.Threading;
 namespace NetworkSocket.Core
 {
     /// <summary>
-    /// 数据包id提供者
+    /// 表示数据包id提供者
     /// </summary>
     internal class PacketIdProvider
     {

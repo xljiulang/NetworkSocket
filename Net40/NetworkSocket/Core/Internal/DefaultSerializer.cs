@@ -9,7 +9,7 @@ using System.Web.Script.Serialization;
 namespace NetworkSocket.Core
 {
     /// <summary>
-    /// 默认提供的Json序列化工具
+    /// 默认提供的二进制序列化工具
     /// </summary>
     internal sealed class DefaultSerializer : ISerializer
     {

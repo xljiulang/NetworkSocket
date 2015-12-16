@@ -91,12 +91,15 @@ namespace NetworkSocket.Core
             this.IsVoidReturn = method.ReturnType.Equals(typeof(void));
             this.ParameterInfos = method.GetParameters();
             this.ParameterTypes = this.ParameterInfos.Select(item => item.ParameterType).ToArray();
-
-            this.ApiName = method.Name;
+                        
             var api = Attribute.GetCustomAttribute(method, typeof(ApiAttribute)) as ApiAttribute;
-            if (api != null && string.IsNullOrEmpty(api.Name) == false)
+            if (api != null && string.IsNullOrWhiteSpace(api.Name) == false)
             {
                 this.ApiName = api.Name;
+            }
+            else
+            {
+                this.ApiName = method.Name;
             }
         }
 

@@ -14,13 +14,14 @@ namespace NetworkSocket.Core
         /// <summary>
         /// Api行为字典
         /// </summary>
-        private readonly Dictionary<string, ApiAction> dictionary = new Dictionary<string, ApiAction>(StringComparer.CurrentCultureIgnoreCase);
+        private readonly Dictionary<string, ApiAction> dictionary;
 
         /// <summary>
         /// Api行为列表
         /// </summary>
         public ApiActionList()
         {
+            this.dictionary = new Dictionary<string, ApiAction>(StringComparer.CurrentCultureIgnoreCase);
         }
 
         /// <summary>
@@ -30,6 +31,7 @@ namespace NetworkSocket.Core
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
         public ApiActionList(IEnumerable<ApiAction> apiActions)
+            : this()
         {
             this.AddRange(apiActions);
         }

@@ -112,7 +112,7 @@ namespace NetworkSocket.Core
         public IEnumerable<ITaskSetAction> TakeAll()
         {
             var values = this.table.ToArray().Select(item => item.Value);
-            this.table.Clear();
+            this.Clear();
             return values;
         }
 
