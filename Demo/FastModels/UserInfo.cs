@@ -1,5 +1,4 @@
-﻿using NetworkSocket.Validation.Rules;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,14 +14,11 @@ namespace FastModels
         /// <summary>
         /// 账号
         /// </summary>       
-        [Required(ErrorMessage = "账号为必填项")]
-        [Length(10, MinimumLength = 5, ErrorMessage = "账号为{0}到{1}到字符")]
         public string Account { get; set; }
 
         /// <summary>
         /// 密码
         /// </summary>       
-        [Required(ErrorMessage = "密码为必填项")]
         public string Password { get; set; }
 
         /// <summary>

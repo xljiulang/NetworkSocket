@@ -185,6 +185,8 @@
     <Compile Include="Internal\TagBag.cs" />
     <Compile Include="TcpServerBase.cs" />
     <Compile Include="SessionBase.cs" />
+    <Compile Include="Validation\FluentApi.cs" />
+    <Compile Include="Validation\FluentApiExtend.cs" />
     <Compile Include="Validation\IValidRule.cs" />
     <Compile Include="Validation\Model.cs" />
     <Compile Include="Validation\Property.cs" />

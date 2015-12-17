@@ -13,11 +13,11 @@ namespace NetworkSocket.Validation.Rules
     public class NotEqualToAttribute : EqualToAttribute
     {
         /// <summary>
-        /// 验证不要和目标ID的值一致
+        /// 验证不要和目标属性的值一致
         /// </summary>       
-        /// <param name="targetId">目标id</param>
-        public NotEqualToAttribute(string targetId)
-            : base(targetId)
+        /// <param name="propertyName">目标属性</param>
+        public NotEqualToAttribute(string propertyName)
+            : base(propertyName)
         {
             this.ErrorMessage = "输入的内容不能重复";
         }

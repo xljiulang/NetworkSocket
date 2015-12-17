@@ -18,9 +18,9 @@ namespace NetworkSocket.Validation.Rules
         private string propertyName;
 
         /// <summary>
-        /// 验证是否和目标ID的值一致
+        /// 验证是否和目标属性的值一致
         /// </summary>        
-        /// <param name="propertyName">目标id</param>
+        /// <param name="propertyName">目标属性</param>
         public EqualToAttribute(string propertyName)
         {
             this.propertyName = propertyName;

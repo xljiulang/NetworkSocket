@@ -14,23 +14,25 @@ namespace NetworkSocket.Validation.Rules
         /// <summary>
         /// 获取或设置最小精度
         /// </summary>
-        public int Min { get; set; }
+        public int Min { get; private set; }
 
         /// <summary>
         /// 获取或设置最大精度
         /// </summary>
-        public int Max { get; set; }
+        public int Max { get; private set; }
 
         /// <summary>
-        /// 表示精度验证
+        /// 表示精度验证        
         /// </summary>
+        /// <param name="min">最小精度</param>
+        /// <param name="max">最大精度</param>
         public PrecisionAttribute(int min, int max)
         {
             this.Min = min;
             this.Max = max;
             this.ErrorMessage = "精度为{0}到{1}位小数";
         }
-        
+
         /// <summary>
         /// 验证属性的值是否通过
         /// </summary>

@@ -31,14 +31,13 @@ namespace NetworkSocket.Validation
                 .Where(item => item.CanRead)
                 .Where(item => item.PropertyType == typeof(Guid) || typeof(IConvertible).IsAssignableFrom(item.PropertyType))
                 .Select(item => new Property(item))
-                .Where(item => item.ValidRules.Length > 0)
                 .ToArray();
         }
 
         /// <summary>
         /// 获取类型的所有属性的get方法
         /// </summary>
-        /// <param name="type">类型</param>       
+        /// <param name="type">模型类型</param>       
         /// <exception cref="ArgumentNullException"></exception>
         /// <returns></returns>
         public static Property[] GetProperties(Type type)
@@ -80,7 +79,7 @@ namespace NetworkSocket.Validation
         /// </summary>
         /// <param name="property">属性</param>
         /// <exception cref="ArgumentException"></exception>
-        public Property(PropertyInfo property)
+        private Property(PropertyInfo property)
         {
             if (property == null)
             {
@@ -101,6 +100,7 @@ namespace NetworkSocket.Validation
             }
         }
 
+
         /// <summary>
         /// 获取属性的验证规则
         /// </summary>
@@ -114,6 +114,49 @@ namespace NetworkSocket.Validation
                 .Cast<IValidRule>()
                 .OrderBy(item => item.OrderIndex)
                 .ToArray();
+        }
+
+        /// <summary>
+        /// 增加或更新规则
+        /// </summary>
+        /// <param name="rule">验证规则</param>
+        public void SetRule(IValidRule rule)
+        {
+            if (this.Replace(rule) == false)
+            {
+                this.AddRule(rule);
+            }
+        }
+
+        /// <summary>
+        /// 增加验证规则
+        /// </summary>
+        /// <param name="rule">验证规则</param>
+        private void AddRule(IValidRule rule)
+        {
+            this.ValidRules = this.ValidRules
+                .Concat(new[] { rule })
+                .Distinct()
+                .OrderBy(item => item.OrderIndex)
+                .ToArray();
+        }
+
+        /// <summary>
+        /// 替换验证规则
+        /// </summary>
+        /// <param name="rule">验证规则</param>
+        /// <returns></returns>
+        private bool Replace(IValidRule rule)
+        {
+            for (var i = 0; i < this.ValidRules.Length; i++)
+            {
+                if (this.ValidRules[i].Equals(rule) == true)
+                {
+                    this.ValidRules[i] = rule;
+                    return true;
+                }
+            }
+            return false;
         }
 
         /// <summary>

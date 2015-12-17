@@ -15,7 +15,31 @@ namespace NetworkSocket.Validation
     public static class Model
     {
         /// <summary>
+        /// 为模型进行配置Fluent验证规则
+        /// 将和Attribute规则协同生效
+        /// </summary>
+        /// <typeparam name="T">模型类型</typeparam>
+        /// <returns></returns>
+        public static FluentApi<T> Fluent<T>()
+        {
+            return new FluentApi<T>();
+        }
+
+        /// <summary>
+        /// 为匿名模型进行配置Fluent验证规则
+        /// 将和Attribute规则协同生效
+        /// </summary>
+        /// <typeparam name="T">模型类型</typeparam>
+        /// <param name="instance">匿名实例</param>
+        /// <returns></returns>
+        public static FluentApi<T> Fluent<T>(T instance)
+        {
+            return new FluentApi<T>();
+        }
+
+        /// <summary>
         /// 验证模型
+        /// 包括Attribute规则和Fluent规则
         /// </summary>
         /// <typeparam name="T">模型类型</typeparam>
         /// <param name="model">模型实例</param>        
@@ -39,13 +63,18 @@ namespace NetworkSocket.Validation
 
             foreach (var property in validContext.Properties)
             {
+                if (property.ValidRules.Length == 0)
+                {
+                    continue;
+                }
+
                 var value = property.GetValue(model);
                 var failureRule = property.ValidRules.FirstOrDefault(r => r.IsValid(value, validContext) == false);
-
                 if (failureRule == null)
                 {
                     continue;
                 }
+
                 return new ValidResult
                 {
                     ProperyName = property.Name,
