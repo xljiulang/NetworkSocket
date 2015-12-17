@@ -133,9 +133,8 @@ namespace NetworkSocket
         /// <returns></returns>
         public short ReadInt16()
         {
-            var value = ByteConverter.ToInt16(base.GetBuffer(), this.Position, this.Endian);
-            this.Position = this.Position + sizeof(short);
-            return value;
+            var range = this.ReadByteRange(sizeof(short));
+            return ByteConverter.ToInt16(range.Buffer, range.Offset, this.Endian);
         }
 
         /// <summary>
@@ -146,9 +145,8 @@ namespace NetworkSocket
         /// <returns></returns>
         public uint ReadUInt16()
         {
-            var value = ByteConverter.ToUInt16(base.GetBuffer(), this.Position, this.Endian);
-            this.Position = this.Position + sizeof(ushort);
-            return value;
+            var range = this.ReadByteRange(sizeof(ushort));
+            return ByteConverter.ToUInt16(range.Buffer, range.Offset, this.Endian);
         }
 
         /// <summary>
@@ -159,9 +157,8 @@ namespace NetworkSocket
         /// <returns></returns>
         public int ReadInt32()
         {
-            var value = ByteConverter.ToInt32(base.GetBuffer(), this.Position, this.Endian);
-            this.Position = this.Position + sizeof(int);
-            return value;
+            var range = this.ReadByteRange(sizeof(int));
+            return ByteConverter.ToInt32(range.Buffer, range.Offset, this.Endian);
         }
 
         /// <summary>
@@ -172,9 +169,8 @@ namespace NetworkSocket
         /// <returns></returns>
         public uint ReadUInt32()
         {
-            var value = ByteConverter.ToUInt32(base.GetBuffer(), this.Position, this.Endian);
-            this.Position = this.Position + sizeof(uint);
-            return value;
+            var range = this.ReadByteRange(sizeof(uint));
+            return ByteConverter.ToUInt32(range.Buffer, range.Offset, this.Endian);
         }
 
         /// <summary>
@@ -185,9 +181,8 @@ namespace NetworkSocket
         /// <returns></returns>
         public long ReadInt64()
         {
-            var value = ByteConverter.ToInt64(base.GetBuffer(), this.Position, this.Endian);
-            this.Position = this.Position + sizeof(long);
-            return value;
+            var range = this.ReadByteRange(sizeof(long));
+            return ByteConverter.ToInt64(range.Buffer, range.Offset, this.Endian);
         }
 
         /// <summary>
@@ -198,9 +193,8 @@ namespace NetworkSocket
         /// <returns></returns>
         public ulong ReadUInt64()
         {
-            var value = ByteConverter.ToUInt64(base.GetBuffer(), this.Position, this.Endian);
-            this.Position = this.Position + sizeof(ulong);
-            return value;
+            var range = this.ReadByteRange(sizeof(ulong));
+            return ByteConverter.ToUInt64(range.Buffer, range.Offset, this.Endian);
         }
 
         /// <summary>
@@ -221,9 +215,10 @@ namespace NetworkSocket
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         public byte[] ReadArray(int count)
         {
+            var range = this.ReadByteRange(count);
             var bytes = new byte[count];
-            this.CopyTo(this.Position, bytes, 0, count);
-            this.Position = this.Position + count;
+
+            Buffer.BlockCopy(range.Buffer, range.Offset, bytes, 0, count);
             return bytes;
         }
 
@@ -255,14 +250,53 @@ namespace NetworkSocket
             {
                 throw new ArgumentNullException();
             }
-            if (count + this.Position > this.Length)
+
+            var range = this.ReadByteRange(count);
+            return encode.GetString(range.Buffer, range.Offset, range.Count);
+        }
+
+
+        /// <summary>
+        /// 从流中读取count字节的范围标记
+        /// 并将流内的位置向前推进count个字节
+        /// </summary>
+        /// <param name="count">字节数</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        public ByteRange ReadByteRange(int count)
+        {
+            var range = new ByteRange(base.GetBuffer(), this.Position, count);
+            this.Position = this.Position + count;
+            return range;
+        }
+
+        /// <summary>
+        /// 清空所有数据    
+        /// 等同SetLength(0L)
+        /// </summary>
+        /// <returns></returns>
+        public void Clear()
+        {
+            base.SetLength(0L);
+        }
+
+        /// <summary>
+        /// 从开始位置清除数据        
+        /// </summary>
+        /// <param name="count">清除的字节数</param>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        public void Clear(int count)
+        {
+            if (count < 0 || count > this.Length)
             {
                 throw new ArgumentOutOfRangeException();
             }
-
-            var value = encode.GetString(base.GetBuffer(), this.Position, count);
-            this.Position = this.Position + count;
-            return value;
+            var length = this.Length - count;
+            if (length > 0)
+            {
+                this.CopyTo(count, base.GetBuffer(), 0, length);
+            }
+            base.SetLength(length);
         }
 
         /// <summary>
@@ -302,32 +336,6 @@ namespace NetworkSocket
         public void CopyTo(int srcOffset, byte[] dstArray, int dstOffset, int count)
         {
             Buffer.BlockCopy(base.GetBuffer(), srcOffset, dstArray, dstOffset, count);
-        }
-
-        /// <summary>
-        /// 清空所有数据    
-        /// 等同SetLength(0L)
-        /// </summary>
-        /// <returns></returns>
-        public void Clear()
-        {
-            base.SetLength(0L);
-        }
-
-        /// <summary>
-        /// 从开始位置清除数据        
-        /// </summary>
-        /// <param name="count">清除的字节数</param>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public void Clear(int count)
-        {
-            if (count < 0 || count > this.Length)
-            {
-                throw new ArgumentOutOfRangeException();
-            }
-            var newLength = this.Length - count;
-            Buffer.BlockCopy(base.GetBuffer(), count, base.GetBuffer(), 0, newLength);
-            base.SetLength(newLength);
         }
 
         /// <summary>
