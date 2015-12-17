@@ -14,7 +14,7 @@ namespace NetworkSocket.Http
         /// <summary>
         /// 会话对象
         /// </summary>
-        private SessionBase session;
+        private HttpSession session;
 
         /// <summary>
         /// 是否已写头信息
@@ -100,7 +100,7 @@ namespace NetworkSocket.Http
         /// 表示http回复
         /// </summary>
         /// <param name="session">会话</param>
-        public HttpResponse(SessionBase session)
+        public HttpResponse(HttpSession session)
         {
             this.session = session;
 
@@ -139,16 +139,22 @@ namespace NetworkSocket.Http
         /// <summary>
         /// 生成头部数据
         /// </summary>
-        /// <param name="contentLength"></param>
+        /// <param name="contentLength">内容长度</param>
         /// <returns></returns>
         private byte[] GetHeaderBytes(int contentLength)
         {
             var header = new StringBuilder()
                    .AppendFormat("HTTP/1.1 {0} {1}", this.Status, this.StatusDescription).AppendLine()
-                   .AppendLine(this.GenerateContentType())
-                   .AppendFormat("Content-Length: {0}", contentLength).AppendLine()
-                   .AppendFormat("Date: {0}", DateTime.Now.ToUniversalTime().ToString("r")).AppendLine()
-                   .AppendLine("Server: NetworkSocket.HttpServer");
+                   .AppendLine(this.GenerateContentType());
+
+            if (contentLength > -1)
+            {
+                header.AppendFormat("Content-Length: {0}", contentLength).AppendLine();
+            }
+
+            header
+                .AppendFormat("Date: {0}", DateTime.Now.ToUniversalTime().ToString("r")).AppendLine()
+                .AppendLine("Server: NetworkSocket.HttpServer");
 
             var keys = this.Headers.AllKeys.Where(item => IsIgnoreKey(item) == false).ToArray();
             foreach (var key in keys)
@@ -160,6 +166,15 @@ namespace NetworkSocket.Http
                 }
             }
             return Encoding.ASCII.GetBytes(header.AppendLine().ToString());
+        }
+
+        /// <summary>
+        /// 输出头数据
+        /// </summary>
+        /// <returns></returns>
+        public bool WriteHeader()
+        {
+            return this.WriteHeader(-1);
         }
 
         /// <summary>
@@ -181,7 +196,7 @@ namespace NetworkSocket.Http
         /// <summary>
         /// 输出内容
         /// </summary>
-        /// <param name="range"></param>
+        /// <param name="range">内容</param>
         /// <returns></returns>
         public bool WriteContent(ByteRange range)
         {
@@ -234,6 +249,15 @@ namespace NetworkSocket.Http
             {
                 return false;
             }
+        }
+
+        /// <summary>
+        /// 获取封装的Http会话对象
+        /// </summary>
+        /// <returns></returns>
+        public HttpSession GetSession()
+        {
+            return this.session;
         }
 
         /// <summary>

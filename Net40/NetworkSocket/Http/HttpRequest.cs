@@ -151,6 +151,15 @@ namespace NetworkSocket.Http
         }
 
         /// <summary>
+        /// 是否为event-stream请求
+        /// </summary>
+        /// <returns></returns>
+        public bool IsEventStreamRequest()
+        {
+            return StringEquals(this.Headers["Accept"], "text/event-stream");
+        }
+
+        /// <summary>
         /// Content-Type是否为
         /// application/x-www-form-urlencoded
         /// </summary>

@@ -10,15 +10,26 @@ namespace NetworkSocket.Http
     /// <summary>
     /// 表示Http监听服务抽象类
     /// </summary>
-    public abstract class HttpServerBase : TcpServerBase<SessionBase>
+    public abstract class HttpServerBase : TcpServerBase<HttpSession>
     {
+        /// <summary>
+        /// 获取所有可http事件推送会话
+        /// </summary>
+        public IEnumerable<HttpSession> EventSessions
+        {
+            get
+            {
+                return this.AllSessions.Where(item => item.IsEventStream);
+            }
+        }
+
         /// <summary>
         /// 创建新会话
         /// </summary>
         /// <returns></returns>
-        protected sealed override SessionBase OnCreateSession()
+        protected sealed override HttpSession OnCreateSession()
         {
-            return new SessionBase();
+            return new HttpSession();
         }
 
         /// <summary>
@@ -26,7 +37,7 @@ namespace NetworkSocket.Http
         /// </summary>
         /// <param name="session">会话</param>
         /// <param name="buffer">数据</param>
-        protected sealed override void OnReceive(SessionBase session, ReceiveStream buffer)
+        protected sealed override void OnReceive(HttpSession session, ReceiveStream buffer)
         {
             try
             {
@@ -51,7 +62,7 @@ namespace NetworkSocket.Http
         /// </summary>
         /// <param name="session">产生异常的会话</param>
         /// <param name="exception">异常</param>
-        protected override void OnException(SessionBase session, Exception exception)
+        protected override void OnException(HttpSession session, Exception exception)
         {
             if (session == null)
             {

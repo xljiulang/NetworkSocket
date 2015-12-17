@@ -112,6 +112,7 @@
     <Compile Include="Fast\Internal\Common.cs" />
     <Compile Include="Fast\Internal\FastGlobalFilters.cs" />
     <Compile Include="Core\Internal\PacketIdProvider.cs" />
+    <Compile Include="Http\HttpEvent.cs" />
     <Compile Include="Http\HttpFilterAttribute.cs" />
     <Compile Include="Core\IFilterAttributeProvider.cs">
       <SubType>Code</SubType>
@@ -121,11 +122,13 @@
     <Compile Include="Http\HttpMIME.cs" />
     <Compile Include="Http\HttpMIMECollection.cs" />
     <Compile Include="Http\HttpPostAttribute.cs" />
+    <Compile Include="Http\HttpSession.cs" />
     <Compile Include="Http\Internal\HttpGlobalFilters.cs" />
     <Compile Include="Http\Internal\MultipartHead.cs" />
     <Compile Include="Http\Result\EmptyResult.cs" />
     <Compile Include="Http\Result\ErrorResult.cs" />
     <Compile Include="Http\Result\FileResult.cs" />
+    <Compile Include="Http\Result\EventResult.cs" />
     <Compile Include="Http\RouteAttribute.cs" />
     <Compile Include="Http\HttpAction.cs" />
     <Compile Include="Http\Context\ActionContext.cs" />

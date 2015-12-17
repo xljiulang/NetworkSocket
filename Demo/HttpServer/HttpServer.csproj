@@ -41,7 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Controller\HomeController.cs" />
+    <Compile Include="Controller\EventController.cs" />
     <Compile Include="Controller\PowerController.cs" />
     <Compile Include="Filters\ExceptionFilterAttribute.cs" />
     <Compile Include="Filters\LogFilterAttribute.cs" />

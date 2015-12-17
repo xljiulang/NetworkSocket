@@ -46,7 +46,6 @@ namespace NetworkSocket.Http
         /// </summary>
         public IDependencyResolver DependencyResolver { get; set; }
 
-
         /// <summary>
         /// Http服务
         /// </summary>
@@ -266,7 +265,7 @@ namespace NetworkSocket.Http
         /// </summary>
         /// <param name="session">产生异常的会话</param>
         /// <param name="exception">异常</param>
-        protected sealed override void OnException(SessionBase session, Exception exception)
+        protected sealed override void OnException(HttpSession session, Exception exception)
         {
             var response = session == null ? null : new HttpResponse(session);
             var requestContext = new RequestContext(null, response);

@@ -26,6 +26,12 @@
                 }
             });
         }
+
+        // 事件订阅
+        var es = new EventSource("/event/index");
+        es.onmessage = function (e) {
+            win.alert('来自服务器推送', e.data);
+        }
     </script>
 
     <style type="text/css">
@@ -33,7 +39,7 @@
     </style>
 </head>
 
-<body>   
+<body>
     <div class="container-fluid">
         <div class="text-right">
             <div class="btn-group text-left">
