@@ -48,40 +48,20 @@ namespace NetworkSocket.Validation
         {
             if (model == null)
             {
-                return new ValidResult
-                {
-                    State = false,
-                    ErrorMessage = "模型不能为null .."
-                };
+                return ValidResult.False("模型不能为null ..");
             }
 
-            var validContext = new ValidContext
+            var context = new ValidContext(model, Property.GetProperties(typeof(T)));
+            foreach (var property in context.Properties)
             {
-                Instance = model,
-                Properties = Property.GetProperties(typeof(T))
-            };
-
-            foreach (var property in validContext.Properties)
-            {
-                if (property.ValidRules.Length == 0)
+                var failureRule = property.GetFailureRule(context);
+                if (failureRule != null)
                 {
-                    continue;
+                    var message = failureRule.FormatErrorMessage(null);
+                    return ValidResult.False(message, property.Source);
                 }
-
-                var value = property.GetValue(model);
-                var failureRule = property.ValidRules.FirstOrDefault(r => r.IsValid(value, validContext) == false);
-                if (failureRule == null)
-                {
-                    continue;
-                }
-
-                return new ValidResult
-                {
-                    ProperyName = property.Name,
-                    ErrorMessage = failureRule.FormatErrorMessage(null)
-                };
             }
-            return new ValidResult { State = true };
+            return ValidResult.True();
         }
     }
 }

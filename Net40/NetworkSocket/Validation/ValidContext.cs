@@ -20,5 +20,23 @@ namespace NetworkSocket.Validation
         /// 获取或设置实例类型的属性
         /// </summary>
         public Property[] Properties { get; set; }
+
+        /// <summary>
+        /// 验证上下文
+        /// </summary>
+        public ValidContext()
+        {
+        }
+
+        /// <summary>
+        /// 验证上下文
+        /// </summary>
+        /// <param name="instance">模型的实例</param>
+        /// <param name="properties">实例类型的属性</param>
+        public ValidContext(object instance, Property[] properties)
+        {
+            this.Instance = instance;
+            this.Properties = properties;
+        }
     }
 }

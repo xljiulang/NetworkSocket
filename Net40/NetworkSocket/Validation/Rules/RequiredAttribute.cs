@@ -38,25 +38,5 @@ namespace NetworkSocket.Validation.Rules
         {
             return base.IsValid(value);
         }
-
-        /// <summary>
-        /// 是否相等
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
-        public override bool Equals(object obj)
-        {
-            var attribute = obj as Attribute;
-            return attribute != null && attribute.TypeId == this.TypeId;
-        }
-
-        /// <summary>
-        /// 获取哈希码
-        /// </summary>
-        /// <returns></returns>
-        public override int GetHashCode()
-        {
-            return this.TypeId.GetHashCode();
-        }
     }
 }

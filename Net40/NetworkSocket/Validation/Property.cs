@@ -21,13 +21,13 @@ namespace NetworkSocket.Validation
         private static readonly ConcurrentDictionary<Type, Property[]> propertyCached = new ConcurrentDictionary<Type, Property[]>();
 
         /// <summary>
-        /// 获取有类型带有验证规则特性的属性
+        /// 获取模型类型的属性
         /// </summary>
-        /// <param name="type"></param>
+        /// <param name="modelType"></param>
         /// <returns></returns>
-        private static Property[] GetTypeValidPropertys(Type type)
+        private static Property[] GetTypeProperties(Type modelType)
         {
-            return type.GetProperties()
+            return modelType.GetProperties()
                 .Where(item => item.CanRead)
                 .Where(item => item.PropertyType == typeof(Guid) || typeof(IConvertible).IsAssignableFrom(item.PropertyType))
                 .Select(item => new Property(item))
@@ -37,27 +37,25 @@ namespace NetworkSocket.Validation
         /// <summary>
         /// 获取类型的所有属性的get方法
         /// </summary>
-        /// <param name="type">模型类型</param>       
+        /// <param name="modelType">模型类型</param>       
         /// <exception cref="ArgumentNullException"></exception>
         /// <returns></returns>
-        public static Property[] GetProperties(Type type)
+        public static Property[] GetProperties(Type modelType)
         {
-            if (type == null)
+            if (modelType == null)
             {
                 throw new ArgumentNullException();
             }
-            return propertyCached.GetOrAdd(type, (t) => GetTypeValidPropertys(t));
+            return propertyCached.GetOrAdd(modelType, (t) => Property.GetTypeProperties(t));
         }
+
+
+
 
         /// <summary>
         /// 属性的Get方法
         /// </summary>
         private Func<object, object[], object> getter;
-
-        /// <summary>
-        /// 属性的Set方法
-        /// </summary>
-        private Func<object, object[], object> setter;
 
         /// <summary>
         /// 获取属性名
@@ -86,27 +84,18 @@ namespace NetworkSocket.Validation
                 throw new ArgumentNullException();
             }
 
-            this.Name = property.Name;
             this.Source = property;
-            this.ValidRules = GetValidRules(property);
-
-            if (property.CanRead == true)
-            {
-                this.getter = MethodReflection.CreateInvoker(property.GetGetMethod());
-            }
-            if (property.CanWrite == true)
-            {
-                this.setter = MethodReflection.CreateInvoker(property.GetSetMethod());
-            }
+            this.Name = property.Name;
+            this.ValidRules = this.GetValidRules(property);
+            this.getter = MethodReflection.CreateInvoker(property.GetGetMethod());
         }
-
 
         /// <summary>
         /// 获取属性的验证规则
         /// </summary>
         /// <param name="property">属性</param>        
         /// <returns></returns>
-        private static IValidRule[] GetValidRules(PropertyInfo property)
+        private IValidRule[] GetValidRules(PropertyInfo property)
         {
             return Attribute
                 .GetCustomAttributes(property, false)
@@ -120,8 +109,14 @@ namespace NetworkSocket.Validation
         /// 增加或更新规则
         /// </summary>
         /// <param name="rule">验证规则</param>
+        /// <exception cref="ArgumentNullException"></exception>
         public void SetRule(IValidRule rule)
         {
+            if (rule == null)
+            {
+                throw new ArgumentNullException();
+            }
+
             if (this.Replace(rule) == false)
             {
                 this.AddRule(rule);
@@ -134,9 +129,9 @@ namespace NetworkSocket.Validation
         /// <param name="rule">验证规则</param>
         private void AddRule(IValidRule rule)
         {
-            this.ValidRules = this.ValidRules
+            this.ValidRules = this
+                .ValidRules
                 .Concat(new[] { rule })
-                .Distinct()
                 .OrderBy(item => item.OrderIndex)
                 .ToArray();
         }
@@ -150,7 +145,7 @@ namespace NetworkSocket.Validation
         {
             for (var i = 0; i < this.ValidRules.Length; i++)
             {
-                if (this.ValidRules[i].Equals(rule) == true)
+                if (this.ValidRules[i].GetType() == rule.GetType())
                 {
                     this.ValidRules[i] = rule;
                     return true;
@@ -174,16 +169,19 @@ namespace NetworkSocket.Validation
         }
 
         /// <summary>
-        /// 设置属性的值
+        /// 获取验证不通过的第一个规则
+        /// 都通过则返回null
         /// </summary>
-        /// <param name="instance">实例</param>
-        /// <param name="value">值</param>
-        public void SetValue(object instance, object value)
+        /// <param name="context">上下文</param>
+        /// <returns></returns>
+        public IValidRule GetFailureRule(ValidContext context)
         {
-            if (this.setter != null)
+            if (this.ValidRules.Length == 0)
             {
-                this.setter.Invoke(instance, new[] { value });
+                return null;
             }
+            var value = this.GetValue(context.Instance);
+            return this.ValidRules.FirstOrDefault(r => r.IsValid(value, context) == false);
         }
 
         /// <summary>
