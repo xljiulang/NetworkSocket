@@ -53,7 +53,7 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="buffer">所有收到的数据</param>  
         /// <returns></returns>
-        public unsafe static FrameRequest From(ReceiveStream buffer)
+        public unsafe static FrameRequest Parse(IReceiveStream buffer)
         {
             if (buffer.Length < 2)
             {

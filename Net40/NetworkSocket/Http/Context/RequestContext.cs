@@ -30,10 +30,10 @@ namespace NetworkSocket.Http
 
         /// <summary>
         /// 请求上下文
-        /// </summary>
-        /// <param name="request">请求上下文对象</param>
-        /// <param name="response">回复上下文对象</param>        
-        internal RequestContext(HttpRequest request, HttpResponse response)
+        /// </summary>        
+        /// <param name="request">请求对象</param>
+        /// <param name="response">回复对象</param>        
+        public RequestContext( HttpRequest request, HttpResponse response)
         {
             this.Request = request;
             this.Response = response;

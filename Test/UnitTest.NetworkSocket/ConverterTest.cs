@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NetworkSocket;
+using NetworkSocket.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;

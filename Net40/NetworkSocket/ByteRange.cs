@@ -12,7 +12,7 @@ namespace NetworkSocket
     /// </summary>
     [DebuggerDisplay("Offset = {Offset}, Count = {Count}")]
     [DebuggerTypeProxy(typeof(DebugView))]
-    public sealed class ByteRange
+    public sealed class ByteRange : IByteRange
     {
         /// <summary>
         /// 获取偏移量
@@ -80,7 +80,7 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="size">新的ByteRange大小</param>
         /// <returns></returns>
-        public IEnumerable<ByteRange> SplitBySize(int size)
+        public IEnumerable<IByteRange> SplitBySize(int size)
         {
             if (size >= this.Count)
             {

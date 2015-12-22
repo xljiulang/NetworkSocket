@@ -1,0 +1,133 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Web在线群聊</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link type="text/css" href="/js/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <link type="text/css" href="/js/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet" />
+    <link type="text/css" href="/js/window/window.css" rel="stylesheet" />
+
+    <script src="/js/jquery-1.7.1.min.js"></script>
+    <script src="/js/json2.js"></script>
+    <script src="/js/swfobject.js"></script>
+    <script src="/js/web_socket.js"></script>
+    <script src="/js/jsonWebSocket.js"></script>
+
+    <script src="/js/window/window.js"></script>
+    <script src="/js/bootstrap/js/bootstrap.min.js"></script>
+    <script src="/js/chatUI.js"></script>
+
+    <script type="text/javascript">
+        var address = 'ws://' + location.host;
+        var ws = new jsonWebSocket(address);
+
+        // 断开连接
+        ws.onclose = function (e) {
+            chatUI.showDisConnected();
+        };
+
+        // 连接成功，加载成员列表
+        ws.onopen = function (e) {
+            chatUI.showConnected();
+            ws.invokeApi("getAllMembers", [], function (data) {
+                chatUI.showAllMembers(data);
+            });
+        };
+
+        // 收到其它人发言
+        // 昵称 消息 时间
+        ws.bindApi("OnChatMessage", function (name, message, time) {
+            chatUI.showOthersChatMessage(name, message, time);
+        });
+
+        // 其它成员上线或离线
+        // 状态 昵称 成员
+        ws.bindApi("OnMemberChange", function (action, name, members) {
+            chatUI.showAllMembers(members);
+            win.alertEx("[" + name + (action ? "]上线了" : "]下线了"));
+        });
+
+        // 设置聊天昵称
+        function setNickName(dom) {
+            var name = $(dom).prev().val();
+            ws.invokeApi("setNickName", [name], function (data) {
+                chatUI.showNickName(data);
+            });
+        }
+
+        // 发表聊天内容
+        function sendChatMessage(dom) {
+            var message = $(dom).prev().val();
+            ws.invokeApi("chatMessage", [message], function (data) {
+                chatUI.showSelfChatMessage(dom);
+            }, function (ex) {
+                win.alertEx(ex);
+            });
+        }
+    </script>
+
+    <style type="text/css">
+        body { padding: 10px; }
+        ul { margin: 0; padding: 10px; }
+        .box { border: 1px solid #ddd; }
+        .box > .title { line-height: 32px; background: #ddd; padding: 0 8px; }
+        .list { height: 360px; overflow-y: scroll; }
+        .member-list > li { padding: 0 6px; }
+
+        .chat-list > li { padding: 6px; margin: 10px 0; }
+        .chat-list > li > div { display: inline; border-radius: 6px; }
+        .chat-list > li p { color: blue; }
+
+        .template { display: none; }
+    </style>
+</head>
+
+<body>
+    <ul>
+        <li class="template">
+            <div>
+                <span></span>
+                <span></span>
+                <div></div>
+            </div>
+        </li>
+    </ul>
+
+    <div class="container-fluid">
+        <div class="alert alert-block alert-error fade in hide">
+            <button type="button" class="close" data-dismiss="alert">×</button>
+            <h4 class="alert-heading">连接服务失败！</h4>
+            <p>请检测服务是否已开启 ..</p>
+        </div>
+
+        <div class="alert alert-block alert-success fade in hide">
+            <h4 class="alert-heading" style="margin-bottom: 10px;">连接服务成功！</h4>
+            <span>请设置聊天昵称然后开始聊天</span>
+            <input type="text" placeholder="昵称" style="margin: 0px;" />
+            <button class="btn btn-warning" onclick="setNickName(this);">设置昵称</button>
+        </div>
+
+        <div class="row-fluid">
+            <div class="span8">
+                <div class="box">
+                    <div class="title">聊天栏</div>
+                    <ul class="list chat-list" style="list-style: none;">
+                    </ul>
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <textarea placeholder="你想说什么?" style="margin: 0; width: 80%; height: 40px; resize: none;"></textarea>
+                    <button type="button" class="btn btn-info btn-large" onclick="sendChatMessage(this);">发送</button>
+                </div>
+            </div>
+            <div class="span4">
+                <div class="box">
+                    <div class="title">在线成员列表</div>
+                    <ul class="list member-list" style="list-style: decimal;">
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

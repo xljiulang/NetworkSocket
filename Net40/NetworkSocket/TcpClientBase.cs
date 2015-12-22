@@ -10,24 +10,61 @@ namespace NetworkSocket
 {
     /// <summary>
     /// 表示Tcp客户端抽象类
-    /// 所有Tcp客户端都派生于此类
     /// </summary>   
-    public abstract class TcpClientBase : SessionBase, ITcpClient
+    public abstract class TcpClientBase : IWrapper, IDisposable
     {
+        /// <summary>
+        /// 会话对象
+        /// </summary>
+        private TcpSession session = new TcpSession();
+
+        /// <summary>
+        /// 获取远程终结点
+        /// </summary>
+        public IPEndPoint RemoteEndPoint
+        {
+            get
+            {
+                return this.session.RemoteEndPoint;
+            }
+        }
+
+        /// <summary>
+        /// 获取是否已连接到远程端
+        /// </summary>
+        public bool IsConnected
+        {
+            get
+            {
+                return this.session.IsConnected;
+            }
+        }
+
+        /// <summary>
+        /// 获取用户附加数据
+        /// </summary>
+        public ITag Tag
+        {
+            get
+            {
+                return this.session.Tag;
+            }
+        }
+
         /// <summary>
         /// 获取或设置断线自动重连的时间间隔 
         /// 设置为TimeSpan.Zero表示不自动重连
         /// </summary>
         public TimeSpan AutoReconnect { get; set; }
 
+
         /// <summary>
         /// Tcp客户端抽象类
         /// </summary>
         public TcpClientBase()
         {
-            base.ReceiveHandler = this.OnReceive;
-            base.DisconnectHandler = this.OnDisconnectInternal;
-            this.AutoReconnect = TimeSpan.Zero;
+            this.session.ReceiveHandler = this.ReceiveHandler;
+            this.session.DisconnectHandler = this.DisconnectHandler;
         }
 
         /// <summary>
@@ -82,6 +119,7 @@ namespace NetworkSocket
             return taskSource.Task;
         }
 
+
         /// <summary>
         /// 连接完成事件
         /// </summary>
@@ -95,8 +133,8 @@ namespace NetworkSocket
 
             if (result == true)
             {
-                base.Bind(socket);
-                base.TryReceiveAsync();
+                this.session.Bind(socket);
+                this.session.TryReceiveAsync();
             }
             else
             {
@@ -108,28 +146,44 @@ namespace NetworkSocket
             taskSource.TrySetResult(result);
         }
 
+
+        /// <summary>
+        /// 接收处理
+        /// </summary>
+        private void ReceiveHandler()
+        {
+            this.OnReceive(this.session.RecvStream);
+        }
+
+        /// <summary>
+        /// 关闭连接处理
+        /// </summary>
+        private void DisconnectHandler()
+        {
+            this.session.Close(false);
+            this.OnDisconnected();
+            this.ReconnectLoop();
+        }
+
         /// <summary>
         /// 当接收到远程端的数据时，将触发此方法   
         /// </summary>       
         /// <param name="buffer">接收到的历史数据</param>
         /// <returns></returns>
-        protected abstract void OnReceive(ReceiveStream buffer);
+        protected abstract void OnReceive(IReceiveStream buffer);
 
 
         /// <summary>
-        /// 关闭连接并触发关闭事件
-        /// </summary>
-        private void OnDisconnectInternal()
+        /// 当与服务器断开连接后，将触发此方法
+        /// </summary>       
+        protected virtual void OnDisconnected()
         {
-            this.CloseInternal(false);
-            this.OnDisconnect();
-            this.Reconnect();
         }
 
         /// <summary>
-        /// 自动重连
+        /// 循环尝试间隔地重连
         /// </summary>
-        private void Reconnect()
+        private void ReconnectLoop()
         {
             if (this.AutoReconnect == TimeSpan.Zero)
             {
@@ -141,18 +195,58 @@ namespace NetworkSocket
                 if (connected == false)
                 {
                     Thread.Sleep((int)this.AutoReconnect.TotalMilliseconds);
-                    this.Reconnect();
+                    this.ReconnectLoop();
                 }
             };
 
             this.Connect(this.RemoteEndPoint).ContinueWith((t) => action(t.Result));
-        }        
+        }
 
         /// <summary>
-        /// 当与服务器断开连接时，将触发此方法
-        /// </summary>       
-        protected virtual void OnDisconnect()
+        /// 异步发送数据
+        /// </summary>
+        /// <param name="byteRange">数据范围</param>  
+        /// <exception cref="ArgumentNullException"></exception>        
+        /// <exception cref="SocketException"></exception>
+        public void Send(IByteRange byteRange)
         {
+            this.session.Send(byteRange);
+        }
+
+        /// <summary>     
+        /// 等待缓冲区数据发送完成
+        /// 然后断开和远程端的连接   
+        /// </summary>     
+        public void Close()
+        {
+            this.session.Close(true);
+        }
+
+          /// <summary>
+        /// 设置会话的心跳包
+        /// </summary>
+        /// <param name="keepAlivePeriod">时间间隔</param>
+        /// <returns></returns>
+        public bool TrySetKeepAlive(TimeSpan keepAlivePeriod)
+        {
+            return this.session.TrySetKeepAlive(keepAlivePeriod);
+        }
+
+        /// <summary>
+        /// 还原到包装前
+        /// </summary>
+        /// <returns></returns>
+        public ISession UnWrap()
+        {
+            return this.session;
+        }
+
+        /// <summary>
+        /// 释放资源
+        /// </summary>
+        public virtual void Dispose()
+        {
+            this.session.Dispose();
         }
     }
 }

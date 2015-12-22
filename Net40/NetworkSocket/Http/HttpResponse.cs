@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NetworkSocket.Util;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -9,12 +10,12 @@ namespace NetworkSocket.Http
     /// <summary>
     /// 表示Http回复对象
     /// </summary>
-    public class HttpResponse
+    public class HttpResponse : IWrapper
     {
         /// <summary>
         /// 会话对象
         /// </summary>
-        private HttpSession session;
+        private ISession session;
 
         /// <summary>
         /// 是否已写头信息
@@ -100,7 +101,7 @@ namespace NetworkSocket.Http
         /// 表示http回复
         /// </summary>
         /// <param name="session">会话</param>
-        public HttpResponse(HttpSession session)
+        public HttpResponse(ISession session)
         {
             this.session = session;
 
@@ -252,20 +253,20 @@ namespace NetworkSocket.Http
         }
 
         /// <summary>
-        /// 获取封装的Http会话对象
-        /// </summary>
-        /// <returns></returns>
-        public HttpSession GetSession()
-        {
-            return this.session;
-        }
-
-        /// <summary>
         /// 主动关闭连接
         /// </summary>
         public void End()
         {
             this.session.Close();
         }
+
+        /// <summary>
+        /// 还原到包装前
+        /// </summary>
+        /// <returns></returns>
+        ISession IWrapper.UnWrap()
+        {
+            return this.session;
+        } 
     }
 }

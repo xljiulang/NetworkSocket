@@ -34,33 +34,33 @@ namespace NetworkSocket.Http
         {
             if (File.Exists(this.FileName) == true)
             {
-                this.ExecuteFileResult(context);
+                this.ExecuteResult(context.Response);
             }
             else
             {
                 var result = new ErrorResult { Status = 404, Errors = "找不到文件：" + this.FileName };
-                result.ExecuteResult(context);
+                result.ExecuteResult(context.Response);
             }
         }
 
         /// <summary>
         /// 输出文件
         /// </summary>
-        /// <param name="context">上下文</param>
-        private void ExecuteFileResult(RequestContext context)
+        /// <param name="response">回复对象</param>
+        public void ExecuteResult(HttpResponse response)
         {
             if (string.IsNullOrEmpty(this.ContentType))
             {
                 this.ContentType = "application/ocelet-stream";
             }
-            context.Response.Charset = null;
-            context.Response.ContentType = this.ContentType;
-            context.Response.ContentDisposition = this.ContentDisposition;
+            response.Charset = null;
+            response.ContentType = this.ContentType;
+            response.ContentDisposition = this.ContentDisposition;
 
             using (var stream = new FileStream(this.FileName, FileMode.Open, FileAccess.Read))
             {
                 const int size = 8 * 1024;
-                var state = context.Response.WriteHeader((int)stream.Length);
+                var state = response.WriteHeader((int)stream.Length);
 
                 while (state == true)
                 {
@@ -72,7 +72,7 @@ namespace NetworkSocket.Http
                     }
 
                     var content = new ByteRange(bytes, 0, length);
-                    state = context.Response.WriteContent(content);
+                    state = response.WriteContent(content);
                 }
             }
         }

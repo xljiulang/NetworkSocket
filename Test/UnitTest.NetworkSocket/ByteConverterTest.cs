@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Linq;
 using System.Net;
+using NetworkSocket.Util;
 
 namespace UnitTest.NetworkSocket
 {

@@ -25,7 +25,20 @@ namespace NetworkSocket.WebSocket
         /// <summary>
         /// 获取所有会话对象
         /// </summary>
-        public IEnumerable<JsonWebSocketSession> AllSessions { get; private set; }
+        public ISessionManager AllSessions { get; private set; }
+
+        /// <summary>
+        /// 获取所有JsonWebSocket会话对象
+        /// </summary>
+        public IEnumerable<JsonWebSocketSession> JsonWebSocketSessions
+        {
+            get
+            {
+                return this
+                    .AllSessions
+                    .FilterWrappers<JsonWebSocketSession>();
+            }
+        }
 
         /// <summary>
         /// 请求上下文
@@ -33,7 +46,7 @@ namespace NetworkSocket.WebSocket
         /// <param name="session">当前会话对象</param>
         /// <param name="packet">数据包对象</param>
         /// <param name="allSessions">所有会话对象</param>
-        internal RequestContext(JsonWebSocketSession session, JsonPacket packet, IEnumerable<JsonWebSocketSession> allSessions)
+        internal RequestContext(JsonWebSocketSession session, JsonPacket packet, ISessionManager allSessions)
         {
             this.Session = session;
             this.Packet = packet;

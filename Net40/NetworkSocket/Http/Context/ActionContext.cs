@@ -30,14 +30,38 @@ namespace NetworkSocket.Http
         public HttpAction Action { get; private set; }
 
         /// <summary>
+        /// 获取当前会话对象
+        /// </summary>
+        public ISession Session { get; private set; }
+
+        /// <summary>
+        /// 获取所有会话对象
+        /// </summary>
+        public ISessionManager AllSessions { get; private set; }
+
+        /// <summary>
+        /// 获取所有SSE会话对象
+        /// </summary>
+        public IEnumerable<HttpEventSession> EventSession
+        {
+            get
+            {
+                return this.AllSessions.FilterWrappers<HttpEventSession>();
+            }
+        }
+
+        /// <summary>
         /// Api行为上下文
         /// </summary>
-        /// <param name="context">请求上下文</param>
+        /// <param name="requestContext">请求上下文</param>
         /// <param name="action">Api行为</param>
-        public ActionContext(RequestContext context, HttpAction action)
-            : base(context.Request, context.Response)
+        /// <param name="context">上下文</param>
+        public ActionContext(RequestContext requestContext, HttpAction action, IContenxt context)
+            : base(requestContext.Request, requestContext.Response)
         {
             this.Action = action;
+            this.Session = context.Session;
+            this.AllSessions = context.AllSessions;
         }
 
         /// <summary>

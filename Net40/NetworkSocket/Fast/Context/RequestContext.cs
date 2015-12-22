@@ -25,7 +25,20 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 获取所有会话对象
         /// </summary>
-        public IEnumerable<FastSession> AllSessions { get; private set; }
+        public ISessionManager AllSessions { get; private set; }
+
+        /// <summary>
+        /// 获取所有fast协议会话对象
+        /// </summary>
+        public IEnumerable<FastSession> FastSessions
+        {
+            get
+            {
+                return this
+                    .AllSessions
+                    .FilterWrappers<FastSession>();
+            }
+        }
 
         /// <summary>
         /// 请求上下文
@@ -33,7 +46,7 @@ namespace NetworkSocket.Fast
         /// <param name="session">当前会话对象</param>
         /// <param name="packet">数据包对象</param>
         /// <param name="allSessions">所有会话对象</param>
-        internal RequestContext(FastSession session, FastPacket packet, IEnumerable<FastSession> allSessions)
+        internal RequestContext(FastSession session, FastPacket packet, ISessionManager allSessions)
         {
             this.Session = session;
             this.Packet = packet;

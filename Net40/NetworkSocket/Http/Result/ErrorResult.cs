@@ -49,8 +49,17 @@ namespace NetworkSocket.Http
         /// <param name="context">上下文</param>
         public override void ExecuteResult(RequestContext context)
         {
-            context.Response.Status = this.Status;
-            context.Response.Write(this.Errors);
+            this.ExecuteResult(context.Response);
+        }
+
+        /// <summary>
+        /// 执行结果
+        /// </summary>
+        /// <param name="response">回复对象</param>
+        public void ExecuteResult(HttpResponse response)
+        {
+            response.Status = this.Status;
+            response.Write(this.Errors);
         }
     }
 }

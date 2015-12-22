@@ -27,10 +27,10 @@ namespace NetworkSocket.Http
         /// <summary>
         /// 异常上下文
         /// </summary>
-        /// <param name="context">请求上下文</param>
+        /// <param name="actionContext">api行为上下文</param>
         /// <param name="exception">异常</param>
-        public ExceptionContext(ActionContext context, Exception exception)
-            : base(context.Request, context.Response)
+        public ExceptionContext(ActionContext actionContext, Exception exception)
+            : base(actionContext.Request, actionContext.Response)
         {
             this.Exception = exception;
         }
@@ -38,10 +38,10 @@ namespace NetworkSocket.Http
         /// <summary>
         /// 异常上下文
         /// </summary>
-        /// <param name="context">请求上下文</param>
+        /// <param name="requestContext">请求上下文</param>
         /// <param name="exception">异常</param>
-        public ExceptionContext(RequestContext context, Exception exception)
-            : base(context.Request, context.Response)
+        public ExceptionContext(RequestContext requestContext, Exception exception)
+            : base(requestContext.Request, requestContext.Response)
         {
             this.Exception = exception;
         }

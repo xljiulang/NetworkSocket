@@ -13,7 +13,7 @@ namespace NetworkSocket.Fast
     /// <summary>
     /// 表示Fast协议的tcp客户端
     /// </summary>
-    public class FastTcpClient : TcpClientBase, IFastTcpClient
+    public class FastTcpClient : TcpClientBase
     {
         /// <summary>
         /// 所有Api行为
@@ -69,11 +69,15 @@ namespace NetworkSocket.Fast
         /// 当接收到远程端的数据时，将触发此方法
         /// </summary>
         /// <param name="buffer">接收到的历史数据</param>        
-        protected sealed override void OnReceive(ReceiveStream buffer)
+        protected sealed override void OnReceive(IReceiveStream buffer)
         {
             while (true)
             {
-                var packet = FastPacket.From(buffer);
+                var packet = default(FastPacket);
+                if (FastPacket.Parse(buffer, out packet) == false)
+                {
+                    buffer.Clear();
+                }
                 if (packet == null)
                 {
                     break;
@@ -138,7 +142,7 @@ namespace NetworkSocket.Fast
 
             var exception = new ApiNotExistException(requestContext.Packet.ApiName);
             var exceptionContext = new ExceptionContext(requestContext, exception);
-            Common.SendRemoteException(this, exceptionContext);
+            Common.SendRemoteException(this.UnWrap(), exceptionContext);
 
             var exceptionHandled = false;
             this.OnException(requestContext.Packet, exception, out exceptionHandled);
@@ -206,7 +210,7 @@ namespace NetworkSocket.Fast
         private void ProcessExecutingException(ActionContext actionContext, Exception exception)
         {
             var exceptionContext = new ExceptionContext(actionContext, new ApiExecuteException(exception));
-            Common.SendRemoteException(this, exceptionContext);
+            Common.SendRemoteException(this.UnWrap(), exceptionContext);
 
             var exceptionHandled = false;
             this.OnException(actionContext.Packet, exception, out exceptionHandled);
@@ -234,7 +238,6 @@ namespace NetworkSocket.Fast
         /// <param name="parameters">参数列表</param>          
         /// <exception cref="SocketException"></exception> 
         /// <exception cref="SerializerException"></exception> 
-        /// <exception cref="ProtocolException"></exception>
         public void InvokeApi(string api, params object[] parameters)
         {
             var packet = new FastPacket(api, this.packetIdProvider.NewId(), true);
@@ -251,21 +254,19 @@ namespace NetworkSocket.Fast
         /// <param name="parameters">参数</param>
         /// <exception cref="SocketException"></exception>        
         /// <exception cref="SerializerException"></exception>
-        /// <exception cref="ProtocolException"></exception>
         /// <returns>远程数据任务</returns>    
         public Task<T> InvokeApi<T>(string api, params object[] parameters)
         {
             var id = this.packetIdProvider.NewId();
             var packet = new FastPacket(api, id, true);
             packet.SetBodyParameters(this.Serializer, parameters);
-            return Common.InvokeApi<T>(this, this.taskSetActionTable, this.Serializer, packet);
+            return Common.InvokeApi<T>(this.UnWrap(), this.taskSetActionTable, this.Serializer, packet);
         }
 
         /// <summary>
         /// 断开时清除数据任务列表  
-        /// 然后调用OnDisconnected
         /// </summary>
-        protected sealed override void OnDisconnect()
+        protected override void OnDisconnected()
         {
             var taskSetActions = this.taskSetActionTable.TakeAll();
             foreach (var taskSetAction in taskSetActions)
@@ -273,37 +274,21 @@ namespace NetworkSocket.Fast
                 var exception = new SocketException(SocketError.Shutdown.GetHashCode());
                 taskSetAction.SetException(exception);
             }
-            this.OnDisconnected();
         }
 
-        /// <summary>
-        /// 当与服务器断开连接后，将触发此方法
-        /// </summary>
-        protected virtual void OnDisconnected()
-        {
-        }
-
-        #region IDisponse
         /// <summary>
         /// 释放资源
         /// </summary>
-        /// <param name="disposing">是否也释放托管资源</param>
-        protected override void Dispose(bool disposing)
+        public override void Dispose()
         {
-            base.Dispose(disposing);
+            base.Dispose();
+
             this.taskSetActionTable.Dispose();
-
-            if (disposing)
-            {
-                this.apiActionList = null;
-
-                this.taskSetActionTable.Clear();
-                this.taskSetActionTable = null;
-
-                this.packetIdProvider = null;
-                this.Serializer = null;
-            }
+            this.apiActionList = null;
+            this.taskSetActionTable.Clear();
+            this.taskSetActionTable = null;
+            this.packetIdProvider = null;
+            this.Serializer = null;
         }
-        #endregion
     }
 }

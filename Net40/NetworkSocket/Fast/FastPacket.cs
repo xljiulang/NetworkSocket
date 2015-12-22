@@ -1,5 +1,6 @@
 ﻿using NetworkSocket.Core;
 using NetworkSocket.Exceptions;
+using NetworkSocket.Util;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -14,6 +15,12 @@ namespace NetworkSocket.Fast
     [DebuggerDisplay("ApiName = {ApiName}")]
     public sealed class FastPacket
     {
+        /// <summary>
+        /// 获取fast协议封包标记
+        /// 字符表示为$
+        /// </summary>
+        public static readonly byte Mark = 36;
+
         /// <summary>
         /// 获取封包的字节长度
         /// </summary>
@@ -96,7 +103,7 @@ namespace NetworkSocket.Fast
         /// 将Body的数据解析为参数
         /// </summary>        
         /// <returns></returns>
-        public List<byte[]> GetBodyParameters()
+        public IList<byte[]> GetBodyParameters()
         {
             var parameterList = new List<byte[]>();
 
@@ -125,22 +132,16 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 转换为ByteRange
         /// </summary>
-        /// <exception cref="ProtocolException"></exception>
         /// <returns></returns>
         public ByteRange ToByteRange()
         {
             var apiNameBytes = Encoding.UTF8.GetBytes(this.ApiName);
-            var headLength = apiNameBytes.Length + 15;
+            var headLength = apiNameBytes.Length + 16;
             this.TotalBytes = this.Body == null ? headLength : headLength + this.Body.Length;
-
-            const int packegMaxSize = 10 * 1204 * 1024; // 10M
-            if (this.TotalBytes > packegMaxSize)
-            {
-                throw new ProtocolException("数据包太大");
-            }
 
             this.ApiNameLength = (byte)apiNameBytes.Length;
             var builder = new ByteBuilder(Endians.Big);
+            builder.Add(FastPacket.Mark);
             builder.Add(this.TotalBytes);
             builder.Add(this.ApiNameLength);
             builder.Add(apiNameBytes);
@@ -151,47 +152,61 @@ namespace NetworkSocket.Fast
             return builder.ToByteRange();
         }
 
+        /// <summary>
+        /// 字符串显示
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return this.ApiName;
+        }
+
+
 
         /// <summary>
         /// 解析一个数据包       
         /// 不足一个封包时返回null
         /// </summary>
         /// <param name="buffer">接收到的历史数据</param>
-        /// <exception cref="ProtocolException"></exception>
+        /// <param name="packet">数据包</param>
         /// <returns></returns>
-        public static FastPacket From(ReceiveStream buffer)
+        public static bool Parse(IReceiveStream buffer, out FastPacket packet)
         {
-            if (buffer.Length < 4)
+            if (buffer.Length < 1 || buffer[0] != FastPacket.Mark)
             {
-                return null;
+                packet = null;
+                return false;
             }
 
-            buffer.Position = 0;
+            if (buffer.Length < 5)
+            {
+                packet = null;
+                return true;
+            }
+
+            buffer.Position = 1;
+            const int packetMinSize = 16;
             var totalBytes = buffer.ReadInt32();
-            const int packegMaxSize = 10 * 1204 * 1024; // 10M
-            if (totalBytes > packegMaxSize)
-            {
-                throw new ProtocolException();
-            }
 
-            // 少于15字节是异常数据，清除收到的所有数据
-            const int packetMinSize = 15;
             if (totalBytes < packetMinSize)
             {
-                throw new ProtocolException();
+                packet = null;
+                return false;
             }
 
             // 数据包未接收完整
             if (buffer.Length < totalBytes)
             {
-                return null;
+                packet = null;
+                return true;
             }
 
             // api名称数据长度
             var apiNameLength = buffer.ReadByte();
             if (totalBytes < apiNameLength + packetMinSize)
             {
-                throw new ProtocolException();
+                packet = null;
+                return false;
             }
 
             // api名称数据
@@ -209,23 +224,14 @@ namespace NetworkSocket.Fast
             buffer.Clear(totalBytes);
 
             var apiName = Encoding.UTF8.GetString(apiNameBytes);
-            var packet = new FastPacket(apiName, id, isFromClient)
+            packet = new FastPacket(apiName, id, isFromClient)
             {
                 TotalBytes = totalBytes,
                 ApiNameLength = apiNameLength,
                 IsException = isException,
                 Body = body
             };
-            return packet;
-        }
-
-        /// <summary>
-        /// 字符串显示
-        /// </summary>
-        /// <returns></returns>
-        public override string ToString()
-        {
-            return this.ApiName;
+            return true;
         }
     }
 }

@@ -38,11 +38,11 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 获取关联的服务器实例
         /// </summary>
-        private FastTcpServer Server
+        private FastMiddleware Server
         {
             get
             {
-                return currentContext.Session.Server;
+                return currentContext.Session.Middleware;
             }
         }
 
@@ -85,7 +85,7 @@ namespace NetworkSocket.Fast
         private void ProcessExecutingException(ActionContext actionContext, IEnumerable<IFilter> filters, Exception exception)
         {
             var exceptionContext = new ExceptionContext(actionContext, new ApiExecuteException(exception));
-            Common.SendRemoteException(actionContext.Session, exceptionContext);
+            Common.SendRemoteException(actionContext.Session.UnWrap(), exceptionContext);
             this.ExecAllExceptionFilters(filters, exceptionContext);
         }
 
@@ -109,7 +109,7 @@ namespace NetworkSocket.Fast
             if (actionContext.Result != null)
             {
                 var exceptionContext = new ExceptionContext(actionContext, actionContext.Result);
-                Common.SendRemoteException(actionContext.Session, exceptionContext);
+                Common.SendRemoteException(actionContext.Session.UnWrap(), exceptionContext);
                 return false;
             }
 
@@ -121,7 +121,7 @@ namespace NetworkSocket.Fast
             if (actionContext.Result != null)
             {
                 var exceptionContext = new ExceptionContext(actionContext, actionContext.Result);
-                Common.SendRemoteException(actionContext.Session, exceptionContext);
+                Common.SendRemoteException(actionContext.Session.UnWrap(), exceptionContext);
                 return false;
             }
 
@@ -129,7 +129,7 @@ namespace NetworkSocket.Fast
             if (action.IsVoidReturn == false && session.IsConnected)
             {
                 packet.Body = serializer.Serialize(apiResult);
-                session.Send(packet.ToByteRange());
+                session.UnWrap().Send(packet.ToByteRange());
             }
             return true;
         }

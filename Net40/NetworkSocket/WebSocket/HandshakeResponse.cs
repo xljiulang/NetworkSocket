@@ -10,27 +10,21 @@ namespace NetworkSocket.WebSocket
     /// <summary>
     /// 表示Websocket的握手回复
     /// </summary>
-    public class HandshakeResponse : Response
+    public class HandshakeResponse : WebsocketResponse
     {
         /// <summary>
-        /// 握手请求
+        /// Sec-WebSocket-Key
         /// </summary>
-        private HttpRequest request;
+        private string secValue;
 
         /// <summary>
         /// 表示握手回复
         /// </summary>
-        /// <param name="request">握手请求</param>
-        /// <exception cref="ArgumentNullException"></exception>
-        public HandshakeResponse(HttpRequest request)
+        /// <param name="secValue">Sec-WebSocket-Key</param>
+        public HandshakeResponse(string secValue)
         {
-            if (request == null)
-            {
-                throw new ArgumentNullException();
-            }
-            this.request = request;
+            this.secValue = secValue;
         }
-
 
         /// <summary>
         /// 生成回复的key
@@ -38,9 +32,8 @@ namespace NetworkSocket.WebSocket
         /// <returns></returns>
         private string CreateResponseKey()
         {
-            var secKey = this.request.Headers["Sec-WebSocket-Key"];
             var guid = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
-            var bytes = SHA1.Create().ComputeHash(Encoding.UTF8.GetBytes(secKey + guid));
+            var bytes = SHA1.Create().ComputeHash(Encoding.UTF8.GetBytes(this.secValue + guid));
             return Convert.ToBase64String(bytes);
         }
 
@@ -48,7 +41,7 @@ namespace NetworkSocket.WebSocket
         /// 转换为二进制数据
         /// </summary>
         /// <returns></returns>
-        public override ByteRange ToByteRange()
+        public override IByteRange ToByteRange()
         {
             var builder = new StringBuilder();
             builder.AppendLine("HTTP/1.1 101 Switching Protocols");

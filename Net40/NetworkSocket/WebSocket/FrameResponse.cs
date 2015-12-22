@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NetworkSocket.Util;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,7 +9,7 @@ namespace NetworkSocket.WebSocket
     /// <summary>
     /// 表示WebSocket帧类型回复对象
     /// </summary>
-    public class FrameResponse : Response
+    public class FrameResponse : WebsocketResponse
     {
         /// <summary>
         /// 获取帧类型
@@ -36,7 +37,7 @@ namespace NetworkSocket.WebSocket
         /// 转换为ByteRange
         /// </summary>
         /// <returns></returns>
-        public override ByteRange ToByteRange()
+        public override IByteRange ToByteRange()
         {
             var builder = new ByteBuilder(Endians.Big);
 

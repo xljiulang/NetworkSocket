@@ -39,11 +39,11 @@ namespace NetworkSocket.WebSocket
         /// <summary>
         /// 获取关联的服务器实例
         /// </summary>
-        private JsonWebSocketServer Server
+        private JsonWebSocketMiddleware Server
         {
             get
             {
-                return currentContext.Session.Server;
+                return currentContext.Session.Middleware;
             }
         }
 
@@ -132,7 +132,7 @@ namespace NetworkSocket.WebSocket
             {
                 packet.body = apiResult;
                 var packetJson = serializer.Serialize(packet);
-                session.SendText(packetJson);
+                session.UnWrap().SendText(packetJson);
             }
             return true;
         }
@@ -157,7 +157,7 @@ namespace NetworkSocket.WebSocket
             }
 
             var parameters = new object[body.Count];
-            var serializer = context.Session.Server.JsonSerializer;
+            var serializer = context.Session.Middleware.JsonSerializer;
 
             for (var i = 0; i < body.Count; i++)
             {

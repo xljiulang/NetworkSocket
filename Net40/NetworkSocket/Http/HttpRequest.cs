@@ -208,23 +208,23 @@ namespace NetworkSocket.Http
         /// 解析连接请求信息
         /// 如果数据未完整则返回null
         /// </summary>
-        /// <param name="buffer">接收到的原始数量</param>
-        /// <param name="localEndpoint">服务器的本地终结点</param>
-        /// <param name="remoteEndpoint">远程端的IP和端口</param>
+        /// <param name="context">上下文</param>   
+        /// <param name="request">http请求</param>
         /// <exception cref="HttpException"></exception>
         /// <returns></returns>
-        public static HttpRequest Parse(ReceiveStream buffer, IPEndPoint localEndpoint, IPEndPoint remoteEndpoint)
+        public static bool Parse(IContenxt context, out HttpRequest request)
         {
-            buffer.Position = 0;
+            context.Buffer.Position = 0;
             var doubleCrlf = Encoding.ASCII.GetBytes("\r\n\r\n");
-            var headerIndex = buffer.IndexOf(doubleCrlf);
+            var headerIndex = context.Buffer.IndexOf(doubleCrlf);
             if (headerIndex < 0)
             {
-                return null; // 数据未完整
+                request = null;
+                return false;
             }
 
             var headerLength = headerIndex + doubleCrlf.Length;
-            var headerString = buffer.ReadString(headerLength, Encoding.ASCII);
+            var headerString = context.Buffer.ReadString(headerLength, Encoding.ASCII);
             const string pattern = @"^(?<method>[^\s]+)\s(?<path>[^\s]+)\sHTTP\/1\.1\r\n" +
                 @"((?<field_name>[^:\r\n]+):\s(?<field_value>[^\r\n]*)\r\n)+" +
                 @"\r\n";
@@ -232,27 +232,29 @@ namespace NetworkSocket.Http
             var match = Regex.Match(headerString, pattern, RegexOptions.IgnoreCase);
             if (match.Success == false)
             {
-                throw new HttpException(400, "请求中有语法问题，或不能满足请求");
+                request = null;
+                return false;
             }
 
             var httpMethod = GetHttpMethod(match.Groups["method"].Value);
             var httpHeader = new HttpHeader(match.Groups["field_name"].Captures, match.Groups["field_value"].Captures);
             var contentLength = httpHeader.TryGet<int>("Content-Length");
 
-            if (httpMethod == HttpMethod.POST && buffer.Length - headerLength < contentLength)
+            if (httpMethod == HttpMethod.POST && context.Buffer.Length - headerLength < contentLength)
             {
-                return null; // 数据未完整
+                request = null; // 数据未完整
+                return true;
             }
 
-            var request = new HttpRequest
+            request = new HttpRequest
             {
-                LocalEndPoint = localEndpoint,
-                RemoteEndPoint = remoteEndpoint,
+                LocalEndPoint = context.Session.LocalEndPoint,
+                RemoteEndPoint = context.Session.RemoteEndPoint,
                 HttpMethod = httpMethod,
                 Headers = httpHeader
             };
 
-            request.Url = new Uri("http://localhost:" + localEndpoint.Port + match.Groups["path"].Value);
+            request.Url = new Uri("http://localhost:" + context.Session.LocalEndPoint.Port + match.Groups["path"].Value);
             request.Path = request.Url.AbsolutePath;
             request.Query = new HttpNameValueCollection(HttpUtility.UrlDecode(request.Url.Query.TrimStart('?')));
 
@@ -264,13 +266,13 @@ namespace NetworkSocket.Http
             }
             else
             {
-                request.InputStrem = buffer.ReadArray(contentLength);
-                buffer.Position = headerLength;
-                HttpRequest.GeneratePostFormAndFiles(request, buffer);
+                request.InputStrem = context.Buffer.ReadArray(contentLength);
+                context.Buffer.Position = headerLength;
+                HttpRequest.GeneratePostFormAndFiles(request, context.Buffer);
             }
 
-            buffer.Clear(headerLength + contentLength);
-            return request;
+            context.Buffer.Clear(headerLength + contentLength);
+            return true;
         }
 
 
@@ -295,7 +297,7 @@ namespace NetworkSocket.Http
         /// </summary>
         /// <param name="request"></param>
         /// <param name="buffer"></param>      
-        private static void GeneratePostFormAndFiles(HttpRequest request, ReceiveStream buffer)
+        private static void GeneratePostFormAndFiles(HttpRequest request, IReceiveStream buffer)
         {
             var boundary = default(string);
             if (request.IsApplicationFormRequest() == true)
@@ -339,7 +341,7 @@ namespace NetworkSocket.Http
         /// <param name="request"></param>
         /// <param name="buffer"></param>   
         /// <param name="boundary">边界</param>
-        private static void GenerateMultipartFormAndFiles(HttpRequest request, ReceiveStream buffer, string boundary)
+        private static void GenerateMultipartFormAndFiles(HttpRequest request, IReceiveStream buffer, string boundary)
         {
             var doubleCrlf = Encoding.ASCII.GetBytes("\r\n\r\n");
             var boundaryBytes = Encoding.ASCII.GetBytes("\r\n--" + boundary);

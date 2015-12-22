@@ -63,7 +63,7 @@ namespace NetworkSocket.Http
         /// <summary>
         /// 获取http服务实例
         /// </summary>
-        public HttpServer Server { get; internal set; }
+        public HttpMiddleware Server { get; internal set; }
 
         /// <summary>
         /// 执行Api行为

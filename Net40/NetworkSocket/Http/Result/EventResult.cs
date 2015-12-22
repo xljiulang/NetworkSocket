@@ -38,16 +38,16 @@ namespace NetworkSocket.Http
         /// <param name="context">上下文</param>
         public override void ExecuteResult(RequestContext context)
         {
-            var response = context.Response;
-            var session = response.GetSession();
+            context.Response.ContentType = "text/event-stream";
+            context.Response.WriteHeader();
 
-            response.ContentType = "text/event-stream";
-            response.WriteHeader();
-            session.IsEventStream = true;
+            var session =((IWrapper) context.Response).UnWrap();
+            var wapper = new HttpEventSession(session);
+            session.SetProtocolWrapper("sse", wapper);
 
             if (this.httpEvent != null)
             {
-                session.SendEvent(this.httpEvent);
+                wapper.SendEvent(this.httpEvent);
             }
         }
     }
