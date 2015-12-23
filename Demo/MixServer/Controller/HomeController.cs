@@ -37,6 +37,15 @@ namespace MixServer.Controller
         }
 
         /// <summary>
+        /// WebApi示例
+        /// </summary>
+        /// <returns></returns>
+        public ActionResult WebApi()
+        {
+            return View();
+        }
+
+        /// <summary>
         /// 启动fastClient
         /// </summary>
         /// <returns></returns>
@@ -64,13 +73,24 @@ namespace MixServer.Controller
         [HttpPost]
         public ActionResult Message(string message)
         {
-            this.CurrentContext
+            var fastClients = this.CurrentContext
                 .AllSessions
                 .FilterWrappers<FastSession>()
-                .ToList()
-                .ForEach(item => item.InvokeApi("HttpNotify", message));
+                .ToList();
+            if (fastClients.Count == 0)
+            {
+                return Json("请先运行FastClient.exe");
+            }
+            else
+            {
+                fastClients.ForEach(item => item.InvokeApi("HttpNotify", message));
+                return Json("已成功推给" + fastClients.Count + "个FastClient");
+            }
+        }
 
-            return new EmptyResult();
-        }       
+        public ActionResult Middleware()
+        {
+            return View();
+        }
     }
 }

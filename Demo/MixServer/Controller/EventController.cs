@@ -37,7 +37,27 @@ namespace MixServer.Controller
             {
                 return new EventResult();
             }
-            return Content("不是有效的SSE请求 ..");
+            else
+            {
+                return View();
+            }
+        }
+
+        /// <summary>
+        /// 用户提交了文章
+        /// </summary>
+        /// <param name="article"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public ActionResult Index(string article)
+        {
+            var httpEvent = new HttpEvent { Data = article };
+            this.CurrentContext
+                .EventSession
+                .ToList()
+                .ForEach(item => item.SendEvent(httpEvent));
+
+            return Json("你的文章已推荐给所有人");
         }
     }
 }

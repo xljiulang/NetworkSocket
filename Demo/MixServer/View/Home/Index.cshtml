@@ -1,25 +1,17 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <title>欢迎使用NetworkSocket</title>
+    <title>NetworkSocket</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <link type="text/css" href="/js/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
     <link type="text/css" href="/js/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet" />
     <link type="text/css" href="/js/window/window.css" rel="stylesheet" />
-    <link rel="shortcut icon" href="favicon.ico">
 
     <script src="/js/jquery-1.7.1.min.js"></script>
     <script src="/js/window/window.js"></script>
     <script src="/js/bootstrap/js/bootstrap.min.js"></script>
 
     <script type="text/javascript">
-        // 事件订阅
-        var es = new EventSource("/event/index");
-        es.onmessage = function (e) {
-            win.alert('来自服务器推送', e.data);
-        }
-
         function runApp() {
             $.post("/home/runfastapp", {}, function (data) {
                 if (!data.state) {
@@ -29,7 +21,9 @@
         }
 
         function sendMessage(message) {
-            $.post("/home/message", { message: message });
+            $.post("/home/message", { message: message }, function (data) {
+                win.alertEx(data);
+            });
         }
     </script>
 
@@ -39,16 +33,119 @@
 </head>
 
 <body>
+    <h2 class="text-center">NetworkSocket 让通讯更简单</h2>
+
+    <blockquote class="pull-right">
+        <small><cite title="Source Title">关注NetworkSocket1.6</cite></small>
+    </blockquote>
+
+    <blockquote>
+        <p>NetworkSocket简介</p>
+    </blockquote>
+    <p style="margin: 0 0 50px 24px;">这是一个通讯服务和协议完全分离的框架，单端口允许多种通讯协议并存，除了内置的Http、WebSocket、Flex策略和Fast中间件，开发者还可以开发自己的中间件并安装到通讯服务。</p>
+
+
+
+    <blockquote>
+        <p>NetworkSocket体验</p>
+    </blockquote>
     <div class="container-fluid">
-        <p>
-            <a href="/chat/index">WebSocket聊天</a>
-        </p>
-        <p>
-            <a href="javascript:void(0)" onclick="runApp();">启动Fast客户端</a>
-            <span>，然后再从http直接</span>
-            <a href="javascript:void(0)" onclick="sendMessage('这消息来自于浏览器');">推送一些信息</a>
-            <span>到Fast客户端</span>
-        </p>
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>功能</th>
+                    <th>操作</th>
+                    <th>说明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <span class="label label-info">静态Http服务</span>
+                    </td>
+                    <td></td>
+                    <td>
+                        <span>正如你所看到这个页面一样，这个页面在服务器上实际是一个静态的包含html代码的文件</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <span class="label label-info">WebApi服务</span>
+                    </td>
+                    <td>
+                        <a href="/home/webapi" target="_blank"><code>体验一下</code></a>
+                    </td>
+                    <td>
+                        <span>此功能可以满足让客户端（比如手机App）使用http组件（比如httpClient）来获取一些json数据</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <span class="label label-info">Http SSE服务</span>
+                    </td>
+                    <td>
+                        <a href="/event/index" target="_blank"><code>体验一下</code></a>
+                    </td>
+                    <td>
+                        <span>Server Send Event是html5的一个新功能，服务器可以推送包含数据的事件给浏览器</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <span class="label label-info">Flex策略服务</span>
+                    </td>
+                    <td></td>
+                    <td>
+                        <span>Flex的socket在连接到目标服务器的某个端口的之前，Flex的socket先开启另一个连接，分别向843和目标端口获取策略文件，然后分析策略文件才选择是否真正地连接到目标端口。策略服务是返回策略文件功能的服务</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <span class="label label-info">WebSocket服务</span>
+                    </td>
+                    <td>
+                        <a href="/chat/index" target="_blank"><code>体验一下</code></a>
+                    </td>
+                    <td>
+                        <span>WebSocket是html5的一个功能，在低版本的浏览器器，可以借助flash来帮助浏览器实现WebSocket的客户端功能。</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <span class="label label-info">.Net内双工通讯服务</span>
+                    </td>
+                    <td>
+                        <a href="javascript:void(0)" onclick="runApp();"><code>体验一下</code></a>
+                    </td>
+                    <td>
+                        <span>NetworkSocket内置的FastMiddleware中间件和FastTcpClient可以在.Net下很方便的构建一个双工通讯的应用。</span>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <span class="label label-info">其它自定义的Tcp通讯服务</span>
+                    </td>
+                    <td>
+                        <a href="/home/middleware" target="_blank"><code>如何编写</code></a>
+                    </td>
+                    <td>
+                        <span>您可以实现IMiddleware接口，用于解析自定义的Tcp通讯协议，中间件让出一片天地让您自由发挥</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <span class="label label-info">共用一个端口的多种协议混合服务</span>
+                    </td>
+                    <td>
+                        <a href="javascript:void(0)" onclick="sendMessage('这消息来自于浏览器');"><code>体验一下</code></a>
+                    </td>
+                    <td>
+                        <span>正如本DEMO一样，只占用了1212端口，但支持了http、sse、websocket、fast和flex策略服务，而且还可以再添加其它Middleware来支持更多功能</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 </body>
 </html>

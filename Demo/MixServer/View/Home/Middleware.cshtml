@@ -1,0 +1,54 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>中间件示例</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link type="text/css" href="/js/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <link type="text/css" href="/js/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet" />
+    <link type="text/css" href="/js/window/window.css" rel="stylesheet" />
+
+    <script src="/js/jquery-1.7.1.min.js"></script>
+    <script src="/js/window/window.js"></script>
+    <script src="/js/bootstrap/js/bootstrap.min.js"></script>
+
+
+    <style type="text/css">
+        body { padding: 10px; }
+    </style>
+</head>
+
+<body>
+    <div><span class="label label-info">服务器代码</span></div>
+    <div class="cnblogs_code">
+        <pre><span style="color: #0000ff;">    class</span><span style="color: #000000;"> MyMiddleware : IMiddleware
+    {
+        </span><span style="color: #808080;">///</span> <span style="color: #808080;">&lt;summary&gt;</span>
+        <span style="color: #808080;">///</span><span style="color: #008000;"> 下一个中间件
+        </span><span style="color: #808080;">///</span> <span style="color: #808080;">&lt;/summary&gt;</span>
+        <span style="color: #0000ff;">public</span> IMiddleware Next { <span style="color: #0000ff;">private</span> <span style="color: #0000ff;">get</span>; <span style="color: #0000ff;">set</span><span style="color: #000000;">; }
+
+        </span><span style="color: #808080;">///</span> <span style="color: #808080;">&lt;summary&gt;</span>
+        <span style="color: #808080;">///</span><span style="color: #008000;"> 执行中间件
+        </span><span style="color: #808080;">///</span> <span style="color: #808080;">&lt;/summary&gt;</span>
+        <span style="color: #808080;">///</span> <span style="color: #808080;">&lt;param name="context"&gt;</span><span style="color: #008000;">上下文</span><span style="color: #808080;">&lt;/param&gt;</span>
+        <span style="color: #808080;">///</span> <span style="color: #808080;">&lt;returns&gt;&lt;/returns&gt;</span>
+        <span style="color: #0000ff;">public</span><span style="color: #000000;"> Task Invoke(IContenxt context)
+        {
+            </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">true</span><span style="color: #000000;">)
+            {
+                </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">new</span> Task(() =&gt;<span style="color: #000000;">
+                {
+                    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 在这里做你的事</span>
+<span style="color: #000000;">                });
+            }
+            </span><span style="color: #0000ff;">else</span><span style="color: #000000;">
+            {
+                </span><span style="color: #008000;">//</span><span style="color: #008000;"> 让下一个中间件来处理</span>
+                <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">this</span><span style="color: #000000;">.Next.Invoke(context);
+            }
+        }
+    }</span></pre>
+    </div>
+    <p>&nbsp;</p>
+</body>
+</html>

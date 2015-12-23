@@ -47,6 +47,7 @@
     <Compile Include="Controller\ChatController.cs" />
     <Compile Include="Controller\EventController.cs" />
     <Compile Include="ApiService\WebSocketChatService.cs" />
+    <Compile Include="Controller\WebApiController.cs" />
     <Compile Include="GlobalFilters\WebSockeGlobalFilter.cs" />
     <Compile Include="GlobalFilters\FastGlobalFilter.cs" />
     <Compile Include="GlobalFilters\HttpGlobalFilter.cs" />
@@ -57,6 +58,7 @@
     <Compile Include="ApiService\FastMathService.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <None Include="View\Home\Middleware.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Net40\NetworkSocket\NetworkSocket.csproj">
@@ -69,7 +71,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="View\Chat\index.cshtml" />
+    <None Include="View\Chat\Index.cshtml" />
     <Content Include="js\chatUI.js" />
     <Content Include="js\bootstrap\css\bootstrap-ie6.min.css" />
     <Content Include="js\bootstrap\css\bootstrap-responsive.min.css" />
@@ -90,6 +92,8 @@
     <Content Include="js\web_socket.js" />
     <Content Include="js\window\window.css" />
     <Content Include="js\window\window.js" />
+    <None Include="View\Home\WebApi.cshtml" />
+    <None Include="View\Event\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <None Include="View\Home\Index.cshtml" />

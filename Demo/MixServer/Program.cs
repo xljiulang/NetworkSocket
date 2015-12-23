@@ -18,11 +18,13 @@ namespace MixServer
     {
         static void Main(string[] args)
         {
+            Console.Title = "混合协议通讯服务器";
+
             var listener = new TcpListener();
             Config.ConfigMiddleware(listener);
             Config.ConfigValidation();
             listener.Start(1212);
-          
+
             if (Directory.Exists("js") == false)
             {
                 Directory.SetCurrentDirectory("../../");
