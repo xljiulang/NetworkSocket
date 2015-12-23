@@ -53,6 +53,7 @@
         <table class="table table-bordered table-striped">
             <thead>
                 <tr>
+                    <th>序号 </th>
                     <th>功能</th>
                     <th>操作</th>
                     <th>说明</th>
@@ -60,6 +61,7 @@
             </thead>
             <tbody>
                 <tr>
+                    <td><span class="badge badge-info">1</span></td>
                     <td>
                         <span class="label label-info">静态Http服务</span>
                     </td>
@@ -69,6 +71,7 @@
                     </td>
                 </tr>
                 <tr>
+                    <td><span class="badge badge-info">2</span></td>
                     <td>
                         <span class="label label-info">WebApi服务</span>
                     </td>
@@ -80,6 +83,7 @@
                     </td>
                 </tr>
                 <tr>
+                    <td><span class="badge badge-info">3</span></td>
                     <td>
                         <span class="label label-info">Http SSE服务</span>
                     </td>
@@ -91,6 +95,7 @@
                     </td>
                 </tr>
                 <tr>
+                    <td><span class="badge badge-info">4</span></td>
                     <td>
                         <span class="label label-info">Flex策略服务</span>
                     </td>
@@ -100,6 +105,7 @@
                     </td>
                 </tr>
                 <tr>
+                    <td><span class="badge badge-info">5</span></td>
                     <td>
                         <span class="label label-info">WebSocket服务</span>
                     </td>
@@ -111,6 +117,7 @@
                     </td>
                 </tr>
                 <tr>
+                    <td><span class="badge badge-info">6</span></td>
                     <td>
                         <span class="label label-info">.Net内双工通讯服务</span>
                     </td>
@@ -118,13 +125,14 @@
                         <a href="javascript:void(0)" onclick="runApp();"><code>体验一下</code></a>
                     </td>
                     <td>
-                        <span>NetworkSocket内置的FastMiddleware中间件和FastTcpClient可以在.Net下很方便的构建一个双工通讯的应用</span>
+                        <span>内置的FastMiddleware中间件和FastTcpClient可以在.Net下很方便的构建一个双工通讯的应用</span>
                     </td>
                 </tr>
 
                 <tr>
+                    <td><span class="badge badge-info">7</span></td>
                     <td>
-                        <span class="label label-info">其它自定义的Tcp通讯服务</span>
+                        <span class="label label-info">自定义协议通讯服务</span>
                     </td>
                     <td>
                         <a href="/home/middleware" target="_blank"><code>如何编写</code></a>
@@ -134,14 +142,15 @@
                     </td>
                 </tr>
                 <tr>
+                    <td><span class="badge badge-info">8</span></td>
                     <td>
-                        <span class="label label-info">共用一个端口的多种协议混合服务</span>
+                        <span class="label label-info">单端口多协议混合服务</span>
                     </td>
                     <td>
                         <a href="javascript:void(0)" onclick="sendMessage('这消息来自于浏览器');"><code>体验一下</code></a>
                     </td>
                     <td>
-                        <span>正如本DEMO的MixServer一样，只用了1212端口，却支持了http、sse、websocket、fast和flex策略服务，而且还可以再添加其它Middleware来支持更多功能</span>
+                        <span>正如本DEMO一样，服务端只用了1212端口，却支持了http、sse、websocket、fast和flex策略服务，而且还可以再添加其它Middleware来支持更多功能</span>
                     </td>
                 </tr>
             </tbody>

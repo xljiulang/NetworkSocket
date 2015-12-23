@@ -78,6 +78,10 @@ namespace FastClient
         }
 
 
+        /// <summary>
+        /// 浏览器器发来的通知
+        /// </summary>
+        /// <param name="message">消息内容</param>
         [Api]
         public void HttpNotify(string message)
         {
