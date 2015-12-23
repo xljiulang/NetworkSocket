@@ -19,7 +19,7 @@ namespace MixServer.AppStart
             listener.Use<HttpMiddleware>().GlobalFilters.Add(new HttpGlobalFilter());           
             listener.Use<JsonWebSocketMiddleware>().GlobalFilters.Add(new WebSockeGlobalFilter());
             listener.Use<FastMiddleware>().GlobalFilters.Add(new FastGlobalFilter());
-
+          
             listener.Events.OnDisconnected += Events_OnDisconnected;
         }
 

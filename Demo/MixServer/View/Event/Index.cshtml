@@ -12,7 +12,7 @@
 
     <script type="text/javascript">
         // 事件订阅
-        var es = new EventSource("/event/index");
+        var es = new EventSource("/event/source");
         es.onmessage = function (e) {
             win.alert('新文章通知', e.data);
         }
@@ -30,7 +30,7 @@
 
 <body>
     <div><span class="label label-info">场景假设</span></div>
-    <p>用户A在浏览器上发表了文章，服务器直接将文章推送给所有在线的浏览器用户</p>
+    <p>用户A在浏览器上发表了文章，服务器直接将文章推送给所有在线的浏览器用户，你得浏览器多开此页面才能体现效果</p>
 
     <div><span class="label label-info">发表文章</span></div>
     <textarea style="resize: none; height: 40px;">奶茶妹真的怀了 ..</textarea>
@@ -39,20 +39,13 @@
 
     <div><span class="label label-info">服务器代码</span></div>
     <div class="cnblogs_code">
-        <pre>        <span style="color: #808080;">///</span> <span style="color: #808080;">&lt;summary&gt;</span>
+        <pre><span style="color: #808080;">        ///</span> <span style="color: #808080;">&lt;summary&gt;</span>
         <span style="color: #808080;">///</span><span style="color: #008000;"> 服务器事件订阅
         </span><span style="color: #808080;">///</span> <span style="color: #808080;">&lt;/summary&gt;</span>
         <span style="color: #808080;">///</span> <span style="color: #808080;">&lt;returns&gt;&lt;/returns&gt;</span>
         <span style="color: #0000ff;">public</span><span style="color: #000000;"> ActionResult Index()
         {
-            </span><span style="color: #0000ff;">if</span> (Request.IsEventStreamRequest() == <span style="color: #0000ff;">true</span><span style="color: #000000;">)
-            {
-                </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">new</span><span style="color: #000000;"> EventResult();
-            }
-            </span><span style="color: #0000ff;">else</span><span style="color: #000000;">
-            {
-                </span><span style="color: #0000ff;">return</span><span style="color: #000000;"> View();
-            }
+            </span><span style="color: #0000ff;">return</span><span style="color: #000000;"> View();
         }
 
         </span><span style="color: #808080;">///</span> <span style="color: #808080;">&lt;summary&gt;</span>
@@ -70,9 +63,23 @@
                 .ForEach(item </span>=&gt;<span style="color: #000000;"> item.SendEvent(httpEvent));
 
             </span><span style="color: #0000ff;">return</span> Json(<span style="color: #800000;">"</span><span style="color: #800000;">你的文章已推荐给所有人</span><span style="color: #800000;">"</span><span style="color: #000000;">);
+        }
+
+        </span><span style="color: #808080;">///</span> <span style="color: #808080;">&lt;summary&gt;</span>
+        <span style="color: #808080;">///</span><span style="color: #008000;"> SSE请求
+        </span><span style="color: #808080;">///</span> <span style="color: #808080;">&lt;/summary&gt;</span>
+        <span style="color: #808080;">///</span> <span style="color: #808080;">&lt;returns&gt;&lt;/returns&gt;</span>
+        <span style="color: #0000ff;">public</span><span style="color: #000000;"> ActionResult Source()
+        {
+            </span><span style="color: #0000ff;">if</span> (Request.IsEventStreamRequest() == <span style="color: #0000ff;">true</span><span style="color: #000000;">)
+            {
+                </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">new</span><span style="color: #000000;"> EventResult();
+            }
+            </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">new</span><span style="color: #000000;"> EmptyResult();
         }</span></pre>
     </div>
     <p>&nbsp;</p>
+
 
     <div><span class="label label-info">javascript</span></div>
     <div class="cnblogs_code">

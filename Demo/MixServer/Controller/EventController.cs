@@ -33,14 +33,7 @@ namespace MixServer.Controller
         /// <returns></returns>
         public ActionResult Index()
         {
-            if (Request.IsEventStreamRequest() == true)
-            {
-                return new EventResult();
-            }
-            else
-            {
-                return View();
-            }
+            return View();
         }
 
         /// <summary>
@@ -58,6 +51,19 @@ namespace MixServer.Controller
                 .ForEach(item => item.SendEvent(httpEvent));
 
             return Json("你的文章已推荐给所有人");
+        }
+
+        /// <summary>
+        /// SSE请求
+        /// </summary>
+        /// <returns></returns>
+        public ActionResult Source()
+        {
+            if (Request.IsEventStreamRequest() == true)
+            {
+                return new EventResult();
+            }
+            return new EmptyResult();
         }
     }
 }

@@ -37,7 +37,7 @@ namespace MixServer.Controller
         }
 
         /// <summary>
-        /// WebApi示例
+        /// WebApi示例页面
         /// </summary>
         /// <returns></returns>
         public ActionResult WebApi()
@@ -77,9 +77,10 @@ namespace MixServer.Controller
                 .AllSessions
                 .FilterWrappers<FastSession>()
                 .ToList();
+
             if (fastClients.Count == 0)
             {
-                return Json("请先运行FastClient.exe");
+                return Json("请先运行项目FastClient");
             }
             else
             {
@@ -88,6 +89,10 @@ namespace MixServer.Controller
             }
         }
 
+        /// <summary>
+        /// 中间件编写代码示例页面
+        /// </summary>
+        /// <returns></returns>
         public ActionResult Middleware()
         {
             return View();

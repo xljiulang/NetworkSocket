@@ -169,5 +169,14 @@ namespace NetworkSocket.WebSocket
         {
             return this.session.UnWrap();
         }
+
+        /// <summary>
+        /// 字符串显示
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return this.RemoteEndPoint == null ? string.Empty : this.RemoteEndPoint.ToString();
+        }
     }
 }
