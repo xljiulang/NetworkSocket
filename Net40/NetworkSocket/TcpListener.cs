@@ -11,28 +11,6 @@ using System.Threading.Tasks;
 namespace NetworkSocket
 {
     /// <summary>
-    /// 表示连接后的委托
-    /// </summary>
-    /// <param name="sender">服务</param>
-    /// <param name="context">上下文</param>
-    public delegate void ConnectedHandler(object sender, IContenxt context);
-
-    /// <summary>
-    /// 表示断开连接后的委托
-    /// </summary>
-    /// <param name="sender">服务</param>
-    /// <param name="context">上下文</param>
-    public delegate void DisconnectedHandler(object sender, IContenxt context);
-
-    /// <summary>
-    /// 表示异常时的委托
-    /// </summary>
-    /// <param name="sender">服务</param>
-    /// <param name="exception">异常</param>
-    public delegate void ExceptionHandler(object sender, Exception exception);
-
-
-    /// <summary>
     /// 表示Tcp服务器
     /// </summary>
     public class TcpListener : IListener
@@ -65,21 +43,6 @@ namespace NetworkSocket
         private LinkedList<IMiddleware> middlewares = new LinkedList<IMiddleware>();
 
 
-        /// <summary>
-        /// 会话连接后事件
-        /// </summary>
-        public event ConnectedHandler OnConnected;
-
-        /// <summary>
-        /// 会话断开后事件
-        /// </summary>
-        public event DisconnectedHandler OnDisconnected;
-
-        /// <summary>
-        /// 服务异常事件
-        /// </summary>
-        public event ExceptionHandler OnException;
-
 
         /// <summary>
         /// 获取或设置会话的心跳检测时间间隔
@@ -97,6 +60,10 @@ namespace NetworkSocket
         /// </summary>
         public IPEndPoint LocalEndPoint { get; private set; }
 
+        /// <summary>
+        /// 获取事件对象
+        /// </summary>
+        public Events Events { get; private set; }
 
         /// <summary>
         /// Tcp服务
@@ -104,6 +71,7 @@ namespace NetworkSocket
         public TcpListener()
         {
             this.middlewares.AddLast(new LastMiddlerware());
+            this.Events = new Events();
         }
 
         /// <summary>
@@ -215,12 +183,28 @@ namespace NetworkSocket
             {
                 this.BuildSession(socket);
             }
-            else if (this.OnException != null)
+            else
             {
                 var exception = new SocketException((int)socketError);
-                this.OnException(this, exception);
+                this.Events.RaiseException(this, exception);
             }
         }
+
+        /// <summary>
+        /// 创建上下文对象
+        /// </summary>
+        /// <param name="session">当前会话</param>
+        /// <returns></returns>
+        private IContenxt CreateContext(TcpSession session)
+        {
+            return new Context
+            {
+                Session = session,
+                Buffer = session.RecvBuffer,
+                AllSessions = this.workSessions
+            };
+        }
+
 
         /// <summary>
         /// 生成一个会话对象
@@ -228,11 +212,8 @@ namespace NetworkSocket
         /// <param name="socket">要绑定的socket</param>
         private void BuildSession(Socket socket)
         {
-            var session = this.freeSessions.Take();
-            if (session == null)
-            {
-                session = new TcpSession();
-            }
+            // 创建会话
+            var session = this.freeSessions.Take() ?? new TcpSession();
 
             // 绑定处理委托
             session.ReceiveHandler = () => this.OnSessionRequest(session);
@@ -244,11 +225,9 @@ namespace NetworkSocket
             this.workSessions.Add(session);
 
             // 通知已连接
-            if (this.OnConnected != null)
-            {
-                var context = new Context(session, session.RecvStream, this.workSessions);
-                this.OnConnected(this, context);
-            }
+            var context = this.CreateContext(session);
+            this.Events.RaiseConnected(this, context);
+
             // 开始接收数据
             session.TryReceiveAsync();
         }
@@ -262,12 +241,8 @@ namespace NetworkSocket
         {
             if (this.workSessions.Remove(session) == true)
             {
-                if (this.OnDisconnected != null)
-                {
-                    var context = new Context(session, session.RecvStream, this.workSessions);
-                    this.OnDisconnected(this, context);
-                }
-
+                var context = this.CreateContext(session);
+                this.Events.RaiseDisconnected(this, context);
                 session.Close(false);
                 this.freeSessions.Add(session);
             }
@@ -283,18 +258,16 @@ namespace NetworkSocket
         {
             try
             {
-                var context = new Context(session, session.RecvStream, this.workSessions);
+                var context = this.CreateContext(session);
                 var task = this.middlewares.First.Value.Invoke(context);
                 if (task.Status == TaskStatus.Created) task.Start();
             }
             catch (Exception ex)
             {
-                if (this.OnException != null)
-                {
-                    this.OnException(this, ex);
-                }
+                this.Events.RaiseException(this, ex);
             }
         }
+
 
         #region IDisposable
         /// <summary>
@@ -333,6 +306,7 @@ namespace NetworkSocket
             {
                 this.listenSocket.Dispose();
             }
+
             this.acceptArg.Dispose();
             this.workSessions.Dispose();
             this.freeSessions.Dispose();
@@ -341,12 +315,15 @@ namespace NetworkSocket
             if (disposing == true)
             {
                 this.listenSocket = null;
-                this.acceptArg = null;
-                this.LocalEndPoint = null;
-                this.IsListening = false;
+                this.acceptArg = null;            
                 this.middlewares = null;
                 this.workSessions = null;
                 this.freeSessions = null;
+
+                this.LocalEndPoint = null;
+                this.IsListening = false;
+                this.KeepAlivePeriod = TimeSpan.Zero;
+                this.Events = null;
             }
         }
         #endregion

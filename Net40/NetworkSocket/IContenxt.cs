@@ -19,11 +19,11 @@ namespace NetworkSocket
         /// <summary>
         /// 获取当前会话收到的历史数据
         /// </summary>
-        IReceiveStream Buffer { get; }
+        IReceiveBuffer Buffer { get; }
 
         /// <summary>
         /// 获取所有会话对象
         /// </summary>
-        ISessionManager AllSessions { get; }
+        ISessionProvider AllSessions { get; }
     }
 }

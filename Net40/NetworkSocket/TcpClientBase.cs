@@ -152,7 +152,7 @@ namespace NetworkSocket
         /// </summary>
         private void ReceiveHandler()
         {
-            this.OnReceive(this.session.RecvStream);
+            this.OnReceive(this.session.RecvBuffer);
         }
 
         /// <summary>
@@ -170,7 +170,7 @@ namespace NetworkSocket
         /// </summary>       
         /// <param name="buffer">接收到的历史数据</param>
         /// <returns></returns>
-        protected abstract void OnReceive(IReceiveStream buffer);
+        protected abstract void OnReceive(IReceiveBuffer buffer);
 
 
         /// <summary>

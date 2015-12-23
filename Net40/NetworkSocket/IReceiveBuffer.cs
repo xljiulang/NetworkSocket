@@ -8,7 +8,7 @@ namespace NetworkSocket
     /// <summary>
     /// 定义收到的数据流接口
     /// </summary>
-    public interface IReceiveStream
+    public interface IReceiveBuffer
     {
         /// <summary>
         /// 获取同步锁对象

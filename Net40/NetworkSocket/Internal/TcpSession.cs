@@ -99,7 +99,7 @@ namespace NetworkSocket
         /// <summary>
         /// 获取接收到的未处理数据
         /// </summary>      
-        public ReceiveStream RecvStream { get; private set; }
+        public ReceiveBuffer RecvBuffer{ get; private set; }
 
         /// <summary>
         /// 获取本机终结点
@@ -122,7 +122,7 @@ namespace NetworkSocket
             this.recvArg.Completed += this.RecvCompleted;
 
             this.Tag = new Tag();
-            this.RecvStream = new ReceiveStream();
+            this.RecvBuffer = new ReceiveBuffer();
 
             BufferSetter.SetBuffer(this.sendArg);
             BufferSetter.SetBuffer(this.recvArg);
@@ -149,7 +149,7 @@ namespace NetworkSocket
             this.socketClosed = false;
 
             this.recvArg.SocketError = SocketError.Success;
-            this.RecvStream.Clear();
+            this.RecvBuffer.Clear();
 
             this.pendingSendCount = 0;
             this.sendArg.SocketError = SocketError.Success;
@@ -273,11 +273,11 @@ namespace NetworkSocket
                 return;
             }
 
-            lock (this.RecvStream.SyncRoot)
+            lock (this.RecvBuffer.SyncRoot)
             {
-                this.RecvStream.Seek(0, SeekOrigin.End);
-                this.RecvStream.Write(arg.Buffer, arg.Offset, arg.BytesTransferred);
-                this.RecvStream.Seek(0, SeekOrigin.Begin);
+                this.RecvBuffer.Seek(0, SeekOrigin.End);
+                this.RecvBuffer.Write(arg.Buffer, arg.Offset, arg.BytesTransferred);
+                this.RecvBuffer.Seek(0, SeekOrigin.Begin);
                 this.ReceiveHandler();
             }
 
@@ -498,12 +498,13 @@ namespace NetworkSocket
         protected virtual void Dispose(bool disposing)
         {
             this.Close(false);
+            this.RecvBuffer.Dispose();
             this.sendArg.Dispose();
             this.recvArg.Dispose();
 
             if (disposing)
             {
-                this.RecvStream = null;
+                this.RecvBuffer = null;
                 this.recvArg = null;
 
                 this.byteRangeQueue = null;

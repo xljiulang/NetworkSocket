@@ -14,7 +14,7 @@ namespace NetworkSocket
     /// </summary>
     [DebuggerDisplay("Position = {Position}, Length = {Length}, Endian = {Endian}")]
     [DebuggerTypeProxy(typeof(DebugView))]
-    internal class ReceiveStream : MemoryStream, IReceiveStream
+    internal class ReceiveBuffer : MemoryStream, IReceiveBuffer
     {
         /// <summary>
         /// 获取同步锁对象
@@ -82,7 +82,7 @@ namespace NetworkSocket
         /// <summary>
         /// 会话接收到的历史数据
         /// </summary>
-        public ReceiveStream()
+        public ReceiveBuffer()
         {
             this.SyncRoot = new object();
             this.Endian = Endians.Big;
@@ -408,13 +408,13 @@ namespace NetworkSocket
             /// <summary>
             /// 查看的对象
             /// </summary>
-            private ReceiveStream view;
+            private ReceiveBuffer view;
 
             /// <summary>
             /// 调试视图
             /// </summary>
             /// <param name="view">查看的对象</param>
-            public DebugView(ReceiveStream view)
+            public DebugView(ReceiveBuffer view)
             {
                 this.view = view;
             }

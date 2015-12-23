@@ -37,7 +37,7 @@ namespace NetworkSocket.Http
         /// <summary>
         /// 获取所有会话对象
         /// </summary>
-        public ISessionManager AllSessions { get; private set; }
+        public ISessionProvider AllSessions { get; private set; }
 
         /// <summary>
         /// 获取所有SSE会话对象

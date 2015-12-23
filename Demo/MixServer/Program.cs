@@ -22,7 +22,7 @@ namespace MixServer
             Config.ConfigMiddleware(listener);
             Config.ConfigValidation();
             listener.Start(1212);
-
+          
             if (Directory.Exists("js") == false)
             {
                 Directory.SetCurrentDirectory("../../");

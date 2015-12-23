@@ -297,7 +297,7 @@ namespace NetworkSocket.Http
         /// </summary>
         /// <param name="request"></param>
         /// <param name="buffer"></param>      
-        private static void GeneratePostFormAndFiles(HttpRequest request, IReceiveStream buffer)
+        private static void GeneratePostFormAndFiles(HttpRequest request, IReceiveBuffer buffer)
         {
             var boundary = default(string);
             if (request.IsApplicationFormRequest() == true)
@@ -341,7 +341,7 @@ namespace NetworkSocket.Http
         /// <param name="request"></param>
         /// <param name="buffer"></param>   
         /// <param name="boundary">边界</param>
-        private static void GenerateMultipartFormAndFiles(HttpRequest request, IReceiveStream buffer, string boundary)
+        private static void GenerateMultipartFormAndFiles(HttpRequest request, IReceiveBuffer buffer, string boundary)
         {
             var doubleCrlf = Encoding.ASCII.GetBytes("\r\n\r\n");
             var boundaryBytes = Encoding.ASCII.GetBytes("\r\n--" + boundary);

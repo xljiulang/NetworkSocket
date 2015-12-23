@@ -11,31 +11,18 @@ namespace NetworkSocket
     internal class Context : IContenxt
     {
         /// <summary>
-        /// 获取当前会话对象
+        /// 获取或设置当前会话对象
         /// </summary>
-        public ISession Session { get; private set; }
+        public ISession Session { get;  set; }
 
         /// <summary>
-        /// 获取当前会话收到的历史数据对象
+        /// 获取或设置当前会话收到的历史数据对象
         /// </summary>
-        public IReceiveStream Buffer { get; private set; }
+        public IReceiveBuffer Buffer { get;  set; }
 
         /// <summary>
-        /// 获取所有会话对象
+        /// 获取或设置所有会话对象
         /// </summary>
-        public ISessionManager AllSessions { get; private set; }
-
-        /// <summary>
-        /// 上下文对象
-        /// </summary>
-        /// <param name="session">当前会话对象</param>
-        /// <param name="buffer">当前会话收到的历史数据对象</param>
-        /// <param name="allSessions">所有会话对象</param>       
-        public Context(ISession session, IReceiveStream buffer, ISessionManager allSessions)
-        {
-            this.Session = session;
-            this.Buffer = buffer;
-            this.AllSessions = allSessions;
-        }
+        public ISessionProvider AllSessions { get;  set; }         
     }
 }

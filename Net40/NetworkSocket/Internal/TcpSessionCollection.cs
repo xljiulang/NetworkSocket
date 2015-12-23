@@ -14,7 +14,7 @@ namespace NetworkSocket
     /// </summary>   
     [DebuggerDisplay("Count = {Count}")]
     [DebuggerTypeProxy(typeof(SessionCollectionDebugView))]
-    internal class TcpSessionCollection : ICollection<TcpSession>, ISessionManager, IDisposable
+    internal class TcpSessionCollection : ICollection<TcpSession>, ISessionProvider, IDisposable
     {
         /// <summary>
         /// 线程安全字典

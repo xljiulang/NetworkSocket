@@ -170,7 +170,7 @@ namespace NetworkSocket.Fast
         /// <param name="buffer">接收到的历史数据</param>
         /// <param name="packet">数据包</param>
         /// <returns></returns>
-        public static bool Parse(IReceiveStream buffer, out FastPacket packet)
+        public static bool Parse(IReceiveBuffer buffer, out FastPacket packet)
         {
             if (buffer.Length < 1 || buffer[0] != FastPacket.Mark)
             {
