@@ -11,10 +11,15 @@ namespace NetworkSocket
     public interface IListener : IDisposable
     {
         /// <summary>
+        /// 使用中间件
+        /// </summary>
+        /// <param name="middleware">中间件</param>
+        void Use(IMiddleware middleware);
+
+        /// <summary>
         /// 开始启动监听       
         /// </summary>
-        /// <param name="server">服务</param>
         /// <param name="port">端口</param>
-        void Start(IServer server ,int port);
+        void Start(int port);
     }
 }

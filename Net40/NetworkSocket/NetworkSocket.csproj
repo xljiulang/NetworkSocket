@@ -150,7 +150,6 @@
     <Compile Include="Internal\TcpSessionCollection.cs" />
     <Compile Include="Internal\TcpSessionQueue.cs" />
     <Compile Include="IReceiveStream.cs" />
-    <Compile Include="IServer.cs" />
     <Compile Include="ISession.cs" />
     <Compile Include="ISessionManager.cs" />
     <Compile Include="ITag.cs" />
@@ -158,7 +157,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TcpClientBase.cs" />
     <Compile Include="TcpListener.cs" />
-    <Compile Include="TcpServer.cs" />
     <Compile Include="Util\ByteBuilder.cs" />
     <Compile Include="Util\ByteConverter.cs" />
     <Compile Include="Util\Converter.cs" />

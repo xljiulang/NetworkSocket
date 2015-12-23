@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using Models;
 
-namespace MixServer.Service
+namespace MixServer.ApiService
 {
     /// <summary>
     /// jsonWebSocket在线聊天Api服务

@@ -18,12 +18,10 @@ namespace MixServer
     {
         static void Main(string[] args)
         {
-            var server = new TcpServer();
-            Config.ConfigMiddleware(server);
-            Config.ConfigValidation();
-
             var listener = new TcpListener();
-            listener.Start(server, 1212);
+            Config.ConfigMiddleware(listener);
+            Config.ConfigValidation();
+            listener.Start(1212);
 
             if (Directory.Exists("js") == false)
             {

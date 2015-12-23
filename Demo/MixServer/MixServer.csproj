@@ -41,12 +41,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AppStart\ServerConfig.cs" />
+    <Compile Include="AppStart\MiddlewareConfig.cs" />
     <Compile Include="AppStart\ValidationConfig.cs" />
     <Compile Include="Controller\HomeController.cs" />
     <Compile Include="Controller\ChatController.cs" />
     <Compile Include="Controller\EventController.cs" />
-    <Compile Include="Service\WebSocketChatService.cs" />
+    <Compile Include="ApiService\WebSocketChatService.cs" />
     <Compile Include="GlobalFilters\WebSockeGlobalFilter.cs" />
     <Compile Include="GlobalFilters\FastGlobalFilter.cs" />
     <Compile Include="GlobalFilters\HttpGlobalFilter.cs" />
@@ -54,7 +54,7 @@
     <Compile Include="Filters\FastLogFilter.cs" />
     <Compile Include="Filters\FastLoginFilter.cs" />
     <Compile Include="Filters\WebSocketNickNameFilter.cs" />
-    <Compile Include="Service\FastMathService.cs" />
+    <Compile Include="ApiService\FastMathService.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

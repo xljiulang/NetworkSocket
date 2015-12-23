@@ -12,7 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MixServer.Service
+namespace MixServer.ApiService
 {
     /// <summary>
     /// fast协议Api服务  

@@ -1,28 +1,42 @@
-﻿
+﻿using NetworkSocket.Exceptions;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading.Tasks;
-using System.Linq;
-using System.Threading;
-using NetworkSocket.Exceptions;
-
 
 namespace NetworkSocket
 {
     /// <summary>
-    /// 表示Tcp监听器   
-    /// </summary>  
-    [DebuggerDisplay("IsListening = {IsListening}")]
+    /// 表示连接后的委托
+    /// </summary>
+    /// <param name="sender">服务</param>
+    /// <param name="context">上下文</param>
+    public delegate void ConnectedHandler(object sender, IContenxt context);
+
+    /// <summary>
+    /// 表示断开连接后的委托
+    /// </summary>
+    /// <param name="sender">服务</param>
+    /// <param name="context">上下文</param>
+    public delegate void DisconnectedHandler(object sender, IContenxt context);
+
+    /// <summary>
+    /// 表示异常时的委托
+    /// </summary>
+    /// <param name="sender">服务</param>
+    /// <param name="exception">异常</param>
+    public delegate void ExceptionHandler(object sender, Exception exception);
+
+
+    /// <summary>
+    /// 表示Tcp服务器
+    /// </summary>
     public class TcpListener : IListener
     {
-        /// <summary>
-        /// 服务实例
-        /// </summary>
-        private IServer server;
-
         /// <summary>
         /// 用于监听的socket
         /// </summary>
@@ -33,6 +47,45 @@ namespace NetworkSocket
         /// </summary>
         private SocketAsyncEventArgs acceptArg = new SocketAsyncEventArgs();
 
+
+
+        /// <summary>
+        /// 已回收的会话对象
+        /// </summary>        
+        private TcpSessionQueue freeSessions = new TcpSessionQueue();
+
+        /// <summary>
+        /// 所有工作中的会话对象
+        /// </summary>
+        private TcpSessionCollection workSessions = new TcpSessionCollection();
+
+        /// <summary>
+        /// 所有中间件
+        /// </summary>
+        private LinkedList<IMiddleware> middlewares = new LinkedList<IMiddleware>();
+
+
+        /// <summary>
+        /// 会话连接后事件
+        /// </summary>
+        public event ConnectedHandler OnConnected;
+
+        /// <summary>
+        /// 会话断开后事件
+        /// </summary>
+        public event DisconnectedHandler OnDisconnected;
+
+        /// <summary>
+        /// 服务异常事件
+        /// </summary>
+        public event ExceptionHandler OnException;
+
+
+        /// <summary>
+        /// 获取或设置会话的心跳检测时间间隔
+        /// TimeSpan.Zero为不检测
+        /// </summary>
+        public TimeSpan KeepAlivePeriod { get; set; }
 
         /// <summary>
         /// 获取是否已处在监听中
@@ -46,34 +99,70 @@ namespace NetworkSocket
 
 
         /// <summary>
-        /// Tcp监听器  
-        /// </summary> 
+        /// Tcp服务
+        /// </summary>
         public TcpListener()
         {
-            this.server = new TcpServer();
+            this.middlewares.AddLast(new LastMiddlerware());
+        }
+
+        /// <summary>
+        /// 使用中间件
+        /// </summary>
+        /// <typeparam name="TMiddleware">中间值类型</typeparam>
+        /// <returns></returns>
+        public TMiddleware Use<TMiddleware>() where TMiddleware : IMiddleware
+        {
+            var middleware = Activator.CreateInstance<TMiddleware>();
+            return this.Use(middleware);
+        }
+
+        /// <summary>
+        /// 使用中间件
+        /// </summary>
+        /// <typeparam name="TMiddleware">中间值类型</typeparam>
+        /// <param name="middleware">中间件实例</param>
+        /// <returns></returns>
+        public TMiddleware Use<TMiddleware>(TMiddleware middleware) where TMiddleware : IMiddleware
+        {
+            this.Use((IMiddleware)middleware);
+            return middleware;
+        }
+
+        /// <summary>
+        /// 使用中间件
+        /// </summary>
+        /// <param name="middleware">中间件</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        public void Use(IMiddleware middleware)
+        {
+            if (middleware == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            this.middlewares.AddBefore(this.middlewares.Last, middleware);
+            var node = this.middlewares.First;
+            while (node.Next != null)
+            {
+                node.Value.Next = node.Next.Value;
+                node = node.Next;
+            }
         }
 
         /// <summary>
         /// 开始启动监听
         /// 如果IsListening为true，将不产生任何作用
         /// </summary>
-        /// <param name="server">服务实例</param>
         /// <param name="port">本机tcp端口</param>
-        /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="SocketException"></exception>
-        public void Start(IServer server, int port)
+        public void Start(int port)
         {
-            if (this.IsListening)
+            if (this.IsListening == true)
             {
                 return;
             }
 
-            if (server == null)
-            {
-                throw new ArgumentNullException("server");
-            }
-
-            this.server = server;
             var localEndPoint = new IPEndPoint(IPAddress.Any, port);
             this.listenSocket = new Socket(localEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             this.listenSocket.Bind(localEndPoint);
@@ -111,8 +200,100 @@ namespace NetworkSocket
         {
             var socket = arg.AcceptSocket;
             var error = arg.SocketError;
-            this.server.OnAccept(socket, error);
+            this.OnAccept(socket, error);
             this.AcceptSocketAsync(arg);
+        }
+
+        /// <summary>
+        /// 当接收到Socket连接时
+        /// </summary>
+        /// <param name="socket">socket</param>
+        /// <param name="socketError">状态</param>
+        private void OnAccept(Socket socket, SocketError socketError)
+        {
+            if (socketError == SocketError.Success)
+            {
+                this.BuildSession(socket);
+            }
+            else if (this.OnException != null)
+            {
+                var exception = new SocketException((int)socketError);
+                this.OnException(this, exception);
+            }
+        }
+
+        /// <summary>
+        /// 生成一个会话对象
+        /// </summary>
+        /// <param name="socket">要绑定的socket</param>
+        private void BuildSession(Socket socket)
+        {
+            var session = this.freeSessions.Take();
+            if (session == null)
+            {
+                session = new TcpSession();
+            }
+
+            // 绑定处理委托
+            session.ReceiveHandler = () => this.OnSessionRequest(session);
+            session.DisconnectHandler = () => this.RecyceSession(session);
+            session.CloseHandler = () => this.RecyceSession(session);
+
+            session.Bind(socket);
+            session.TrySetKeepAlive(this.KeepAlivePeriod);
+            this.workSessions.Add(session);
+
+            // 通知已连接
+            if (this.OnConnected != null)
+            {
+                var context = new Context(session, session.RecvStream, this.workSessions);
+                this.OnConnected(this, context);
+            }
+            // 开始接收数据
+            session.TryReceiveAsync();
+        }
+
+        /// <summary>
+        /// 回收复用会话对象
+        /// 关闭会话并通知连接断开
+        /// </summary>
+        /// <param name="session">会话对象</param>
+        private void RecyceSession(TcpSession session)
+        {
+            if (this.workSessions.Remove(session) == true)
+            {
+                if (this.OnDisconnected != null)
+                {
+                    var context = new Context(session, session.RecvStream, this.workSessions);
+                    this.OnDisconnected(this, context);
+                }
+
+                session.Close(false);
+                this.freeSessions.Add(session);
+            }
+        }
+
+
+        /// <summary>
+        /// 收到会话对象的请求            
+        /// </summary>
+        /// <param name="session">会话对象</param>
+        /// <returns></returns>
+        private void OnSessionRequest(TcpSession session)
+        {
+            try
+            {
+                var context = new Context(session, session.RecvStream, this.workSessions);
+                var task = this.middlewares.First.Value.Invoke(context);
+                if (task.Status == TaskStatus.Created) task.Start();
+            }
+            catch (Exception ex)
+            {
+                if (this.OnException != null)
+                {
+                    this.OnException(this, ex);
+                }
+            }
         }
 
         #region IDisposable
@@ -148,21 +329,27 @@ namespace NetworkSocket
         /// <param name="disposing">是否也释放托管资源</param>
         protected virtual void Dispose(bool disposing)
         {
-            if (this.listenSocket != null)
+            if (this.IsListening == true)
             {
                 this.listenSocket.Dispose();
             }
             this.acceptArg.Dispose();
-            this.server.Dispose();
+            this.workSessions.Dispose();
+            this.freeSessions.Dispose();
+            this.middlewares.Clear();
 
-            if (disposing)
+            if (disposing == true)
             {
                 this.listenSocket = null;
                 this.acceptArg = null;
                 this.LocalEndPoint = null;
                 this.IsListening = false;
+                this.middlewares = null;
+                this.workSessions = null;
+                this.freeSessions = null;
             }
         }
         #endregion
+
     }
 }
