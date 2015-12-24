@@ -3,7 +3,7 @@
 <br>PM> `Install-Package NetworkSocket`
 
 ##### 下载帮助文档
-[V1.6.0文档](http://files.cnblogs.com/files/kewei/V1.6.0.0doc.rar)
+[V1.6.0文档](http://files.cnblogs.com/files/kewei/V1.6.0.0doc.rar)，希望有好心人愿意无偿托管帮助文档
 
 ##### 服务端代码
 ```
