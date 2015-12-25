@@ -14,9 +14,14 @@ namespace NetworkSocket.Core
     internal static class LoopWorker
     {
         /// <summary>
-        /// 工作事件
+        /// 同步锁
         /// </summary>
-        private static event Action WorkEvent;
+        private static readonly object syncRoot = new object();
+
+        /// <summary>
+        /// 工作内容
+        /// </summary>
+        private static readonly List<Action> actions = new List<Action>();
 
         /// <summary>
         /// 表示构造器
@@ -34,9 +39,12 @@ namespace NetworkSocket.Core
             var spinWait = new SpinWait();
             while (true)
             {
-                if (WorkEvent != null)
+                lock (syncRoot)
                 {
-                    WorkEvent.Invoke();
+                    foreach (var item in actions)
+                    {
+                        item.Invoke();
+                    }
                 }
                 spinWait.SpinOnce();
             }
@@ -46,18 +54,34 @@ namespace NetworkSocket.Core
         /// 添加工作
         /// </summary>
         /// <param name="work">工作</param>
+        /// <exception cref="ArgumentNullException"></exception>
         public static void AddWork(Action work)
         {
-            WorkEvent += work;
+            if (work == null)
+            {
+                throw new ArgumentNullException();
+            }
+            lock (syncRoot)
+            {
+                actions.Add(work);
+            }
         }
 
         /// <summary>
         /// 删除工作
         /// </summary>
         /// <param name="work">工作</param>
+        /// <exception cref="ArgumentNullException"></exception>
         public static void RemoveWork(Action work)
         {
-            WorkEvent -= work;
+            if (work == null)
+            {
+                throw new ArgumentNullException();
+            }
+            lock (syncRoot)
+            {
+                actions.Remove(work);
+            }
         }
     }
 }

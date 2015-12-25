@@ -53,9 +53,10 @@ namespace NetworkSocket
         /// <param name="context"></param>
         internal void RaiseConnected(object sender, IContenxt context)
         {
-            if (this.OnConnected != null)
+            var @event = this.OnConnected;
+            if (@event != null)
             {
-                this.OnConnected(sender, context);
+                @event.Invoke(sender, context);
             }
         }
 
@@ -66,9 +67,10 @@ namespace NetworkSocket
         /// <param name="context"></param>
         internal void RaiseDisconnected(object sender, IContenxt context)
         {
-            if (this.OnDisconnected != null)
+            var @event = this.OnDisconnected;
+            if (@event != null)
             {
-                this.OnDisconnected(sender, context);
+                @event.Invoke(sender, context);
             }
         }
 
@@ -79,9 +81,10 @@ namespace NetworkSocket
         /// <param name="exception"></param>
         internal void RaiseException(object sender, Exception exception)
         {
-            if (this.OnException != null)
+            var @event = this.OnException;
+            if (@event != null)
             {
-                this.OnException(sender, exception);
+                @event.Invoke(sender, exception);
             }
         }
     }
