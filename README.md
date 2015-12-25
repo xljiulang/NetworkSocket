@@ -2,8 +2,8 @@
 程序包管理器控制台：
 <br>PM> `Install-Package NetworkSocket`
 
-##### 下载帮助文档
-[V1.6.0文档](http://files.cnblogs.com/files/kewei/V1.6.0.0doc.rar)
+##### 在线帮助文档
+非常感谢网友[少林扫地僧](http://zhangyihui.cnblogs.com/)无偿提供文档托管，[点击关注他的博客](http://zhangyihui.cnblogs.com/)，[V1.6.0文档在线](http://networksocket.nginx.online/html/G_NetworkSocket.htm)
 
 ##### 服务端代码
 ```
