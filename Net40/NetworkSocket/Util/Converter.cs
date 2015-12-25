@@ -119,21 +119,36 @@ namespace NetworkSocket.Util
         {
             /// <summary>
             /// 转换单元列表
-            /// </summary>
-            private readonly List<IConvert> converts = new List<IConvert>();
+            /// </summary>           
+            private readonly LinkedList<IConvert> linkedList = new LinkedList<IConvert>();
 
             /// <summary>
-            /// 插入到指定位置
+            /// 通过类型查找节点
             /// </summary>
             /// <typeparam name="T">类型</typeparam>
-            /// <param name="index">索引</param>
-            private void Insert<T>(int index) where T : IConvert
+            /// <returns></returns>
+            private LinkedListNode<IConvert> FindNode<T>() where T : IConvert
             {
-                if (this.converts.Any(item => item.GetType() == typeof(T)) == false)
+                var node = this.linkedList.First;
+                while (node != null)
                 {
-                    var convert = Activator.CreateInstance<T>();
-                    this.converts.Insert(index, convert);
+                    if (node.Value.GetType() == typeof(T))
+                    {
+                        return node;
+                    }
+                    node = node.Next;
                 }
+                return null;
+            }
+
+            /// <summary>
+            /// 是否已存在T类型的转换单元
+            /// </summary>
+            /// <typeparam name="T">转换单元类型</typeparam>
+            /// <returns></returns>
+            private bool ExistConvert<T>() where T : IConvert
+            {
+                return this.FindNode<T>() != null;
             }
 
             /// <summary>
@@ -143,24 +158,10 @@ namespace NetworkSocket.Util
             /// <returns></returns>
             public ContertItems AddFrist<T>() where T : IConvert
             {
-                this.Insert<T>(0);
-                return this;
-            }
-
-            /// <summary>
-            /// 添加到指定转换单元之后
-            /// </summary>
-            /// <typeparam name="TSource">要被替换掉的转换单元</typeparam>
-            /// <typeparam name="TDest">替换后的转换单元</typeparam>
-            /// <returns></returns>
-            public ContertItems AddBefore<TSource, TDest>()
-                where TSource : IConvert
-                where TDest : IConvert
-            {
-                var index = this.converts.FindIndex(item => item.GetType() == typeof(TSource));
-                if (index > -1)
+                if (this.ExistConvert<T>() == false)
                 {
-                    this.Insert<TDest>(index);
+                    var convert = Activator.CreateInstance<T>();
+                    this.linkedList.AddFirst(convert);
                 }
                 return this;
             }
@@ -168,17 +169,37 @@ namespace NetworkSocket.Util
             /// <summary>
             /// 添加到指定转换单元之后
             /// </summary>
-            /// <typeparam name="TSource">要被替换掉的转换单元</typeparam>
-            /// <typeparam name="TDest">替换后的转换单元</typeparam>
+            /// <typeparam name="TSource">已存在的转换单元</typeparam>
+            /// <typeparam name="TDest">新加入的转换单元</typeparam>
+            /// <returns></returns>
+            public ContertItems AddBefore<TSource, TDest>()
+                where TSource : IConvert
+                where TDest : IConvert
+            {
+                var node = this.FindNode<TSource>();
+                if (node != null && this.ExistConvert<TDest>() == false)
+                {
+                    var convert = Activator.CreateInstance<TDest>();
+                    this.linkedList.AddBefore(node, convert);
+                }
+                return this;
+            }
+
+            /// <summary>
+            /// 添加到指定转换单元之后
+            /// </summary>
+            /// <typeparam name="TSource">已存在的转换单元</typeparam>
+            /// <typeparam name="TDest">新加入的转换单元</typeparam>
             /// <returns></returns>
             public ContertItems AddAfter<TSource, TDest>()
                 where TSource : IConvert
                 where TDest : IConvert
             {
-                var index = this.converts.FindIndex(item => item.GetType() == typeof(TSource));
-                if (index > -1)
+                var node = this.FindNode<TSource>();
+                if (node != null && this.ExistConvert<TDest>() == false)
                 {
-                    this.Insert<TDest>(index + 1);
+                    var convert = Activator.CreateInstance<TDest>();
+                    this.linkedList.AddAfter(node, convert);
                 }
                 return this;
             }
@@ -190,10 +211,10 @@ namespace NetworkSocket.Util
             /// <returns></returns>
             public ContertItems AddLast<T>() where T : IConvert
             {
-                if (this.converts.Any(item => item.GetType() == typeof(T)) == false)
+                if (this.ExistConvert<T>() == false)
                 {
                     var convert = Activator.CreateInstance<T>();
-                    this.converts.Add(convert);
+                    this.linkedList.AddLast(convert);
                 }
                 return this;
             }
@@ -205,10 +226,10 @@ namespace NetworkSocket.Util
             /// <returns></returns>
             public ContertItems Remove<T>() where T : IConvert
             {
-                var convert = this.converts.FirstOrDefault(item => item.GetType() == typeof(T));
-                if (convert != null)
+                var node = this.FindNode<T>();
+                if (node != null)
                 {
-                    this.converts.Remove(convert);
+                    this.linkedList.Remove(node);
                 }
                 return this;
             }
@@ -223,11 +244,11 @@ namespace NetworkSocket.Util
                 where TSource : IConvert
                 where TDest : IConvert
             {
-                var index = this.converts.FindIndex(item => item.GetType() == typeof(TSource));
-                if (index > -1 && this.converts.Any(item => item.GetType() == typeof(TDest)) == false)
+                var node = this.FindNode<TSource>();
+                if (node != null && this.ExistConvert<TDest>() == false)
                 {
                     var convert = Activator.CreateInstance<TDest>();
-                    this.converts[index] = convert;
+                    node.Value = convert;
                 }
                 return this;
             }
@@ -238,7 +259,7 @@ namespace NetworkSocket.Util
             /// <returns></returns>
             public IEnumerator GetEnumerator()
             {
-                return this.converts.GetEnumerator();
+                return this.linkedList.GetEnumerator();
             }
 
             #region DebugView
@@ -269,7 +290,7 @@ namespace NetworkSocket.Util
                 {
                     get
                     {
-                        return view.converts.ToArray();
+                        return view.linkedList.ToArray();
                     }
                 }
             }
