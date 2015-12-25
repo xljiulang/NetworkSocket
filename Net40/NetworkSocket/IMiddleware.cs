@@ -17,7 +17,8 @@ namespace NetworkSocket
         IMiddleware Next { set; }
 
         /// <summary>
-        /// 执行中间件          
+        /// 当IListener收到会话的请求后
+        /// 提供IContenxt并执行此方法
         /// </summary>
         /// <param name="context">上下文</param>
         /// <returns></returns>

@@ -55,7 +55,7 @@ namespace NetworkSocket.Fast
         }
 
         /// <summary>
-        /// 快速构建Tcp服务端
+        /// Fast协议的tcp客户端
         /// </summary>
         public FastTcpClient()
         {

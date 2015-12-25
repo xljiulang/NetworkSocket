@@ -120,7 +120,7 @@ namespace NetworkSocket.Http
         /// <param name="requestContext">上下文</param>
         private void ProcessStaticFileRequest(string extension, RequestContext requestContext)
         {
-            var contenType = this.MIMECollection.GetContentType(extension);
+            var contenType = this.MIMECollection[extension];
             var file = requestContext.Request.Url.AbsolutePath.TrimStart('/').Replace(@"/", @"\");
 
             if (string.IsNullOrWhiteSpace(contenType) == true)

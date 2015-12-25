@@ -193,7 +193,7 @@ namespace NetworkSocket.Http
         protected virtual FileResult File(string fileName)
         {
             var extension = Path.GetExtension(fileName);
-            var contenType = this.Server.MIMECollection.GetContentType(extension);
+            var contenType = this.Server.MIMECollection[extension];
             return this.File(fileName, contenType);
         }
 

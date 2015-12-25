@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -24,18 +25,23 @@ namespace NetworkSocket.Http
         /// <summary>
         /// 文件扩展类型
         /// </summary>
-        /// <param name="extension">扩展名</param>
+        /// <param name="extension">扩展名，比如.txt</param>
         /// <param name="contentType">类型</param>
         /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentException"></exception>
         public HttpMIME(string extension, string contentType)
         {
             if (string.IsNullOrWhiteSpace(extension))
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("extension");
             }
             if (string.IsNullOrWhiteSpace(contentType))
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("contentType");
+            }
+            if (Path.GetExtension(extension) != extension)
+            {
+                throw new ArgumentException("extension");
             }
             this.Extension = extension;
             this.ContentType = contentType;
@@ -48,6 +54,6 @@ namespace NetworkSocket.Http
         public override string ToString()
         {
             return this.Extension + " " + this.ContentType;
-        }
+        }      
     }
 }

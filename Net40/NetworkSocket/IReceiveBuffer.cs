@@ -6,7 +6,7 @@ using System.Text;
 namespace NetworkSocket
 {
     /// <summary>
-    /// 定义收到的数据流接口
+    /// 定义会话收到的所有数据流接口
     /// </summary>
     public interface IReceiveBuffer
     {

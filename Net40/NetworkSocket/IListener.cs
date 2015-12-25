@@ -6,7 +6,7 @@ using System.Text;
 namespace NetworkSocket
 {
     /// <summary>
-    /// 定义监听者的行为
+    /// 定义监听服务的行为
     /// </summary>
     public interface IListener : IDisposable
     {

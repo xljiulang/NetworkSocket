@@ -7,7 +7,7 @@ using System.Text;
 namespace NetworkSocket
 {
     /// <summary>
-    /// 定义Socket的上下文
+    /// 定义会话请求的上下文
     /// </summary>
     public interface IContenxt
     {

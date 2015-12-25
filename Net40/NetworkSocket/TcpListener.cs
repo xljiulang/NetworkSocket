@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace NetworkSocket
 {
     /// <summary>
-    /// 表示Tcp服务器
+    /// 表示Tcp监听服务
     /// </summary>
     public class TcpListener : IListener
     {
@@ -66,7 +66,7 @@ namespace NetworkSocket
         public Events Events { get; private set; }
 
         /// <summary>
-        /// Tcp服务
+        /// Tcp监听服务
         /// </summary>
         public TcpListener()
         {

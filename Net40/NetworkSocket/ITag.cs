@@ -6,12 +6,12 @@ using System.Text;
 namespace NetworkSocket
 {
     /// <summary>
-    /// 定义用户附加数据的接口
+    /// 定义会话附加数据的接口
     /// </summary>
     public interface ITag
     {
         /// <summary>
-        /// 设置用户数据
+        /// 设置附加数据
         /// </summary>
         /// <param name="key">键(不区分大小写)</param>
         /// <param name="value">用户数据</param>

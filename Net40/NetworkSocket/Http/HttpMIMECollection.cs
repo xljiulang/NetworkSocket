@@ -14,15 +14,9 @@ namespace NetworkSocket.Http
     public class HttpMIMECollection : ICollection<HttpMIME>
     {
         /// <summary>
-        /// 同步锁
-        /// </summary>
-        private object syncRoot = new object();
-
-        /// <summary>
         /// 保存MIME的字典
         /// </summary>
-        private Dictionary<string, string> mimes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
+        private readonly Dictionary<string, string> mimes;
 
         /// <summary>
         /// 获取元素数量
@@ -34,6 +28,31 @@ namespace NetworkSocket.Http
                 return this.mimes.Count;
             }
         }
+
+        /// <summary>
+        /// 通过扩展名获取ContentType
+        /// </summary>
+        /// <param name="extension">扩展名</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <returns></returns>
+        public string this[string extension]
+        {
+            get
+            {
+                string contentType;
+                this.mimes.TryGetValue(extension, out contentType);
+                return contentType;
+            }
+        }
+
+        /// <summary>
+        /// 文件扩展类型集合
+        /// </summary>
+        public HttpMIMECollection()
+        {
+            this.mimes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        }
+
 
         /// <summary>
         /// 填充一些常用的扩展类型
@@ -80,44 +99,54 @@ namespace NetworkSocket.Http
         /// <summary>
         /// 添加扩展类型
         /// </summary>
-        /// <param name="item">扩展类型</param>
+        /// <param name="extension">扩展名</param>
+        /// <param name="contentType">内容类型</param>
         /// <exception cref="ArgumentNullException"></exception>
-        public void Add(HttpMIME item)
+        /// <exception cref="ArgumentException"></exception>
+        public void Add(string extension, string contentType)
         {
-            if (item == null)
-            {
-                throw new ArgumentNullException();
-            }
-            this.mimes[item.Extension] = item.ContentType;
+            var mime = new HttpMIME(extension, contentType);
+            this.Add(mime);
         }
 
         /// <summary>
         /// 添加扩展类型
         /// </summary>
-        /// <param name="extension">扩展名</param>
-        /// <param name="contentType">内容类型</param>
+        /// <param name="mime">扩展类型</param>
         /// <exception cref="ArgumentNullException"></exception>
-        public void Add(string extension, string contentType)
+        public void Add(HttpMIME mime)
         {
-            if (string.IsNullOrWhiteSpace(extension))
+            if (mime == null)
             {
                 throw new ArgumentNullException();
             }
-            if (string.IsNullOrWhiteSpace(contentType))
-            {
-                throw new ArgumentNullException();
-            }
-            this.mimes[extension] = contentType;
+            this.mimes[mime.Extension] = mime.ContentType;
         }
 
         /// <summary>
         /// 删除
         /// </summary>
-        /// <param name="item"></param>
+        /// <param name="extension">扩展名</param>
+        /// <exception cref="ArgumentNullException"></exception>
         /// <returns></returns>
-        bool ICollection<HttpMIME>.Remove(HttpMIME item)
+        public bool Remove(string extension)
         {
-            return item != null && this.mimes.Remove(item.Extension);
+            return this.mimes.Remove(extension);
+        }
+
+        /// <summary>
+        /// 删除
+        /// </summary>
+        /// <param name="mime">扩展类型</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <returns></returns>
+        public bool Remove(HttpMIME mime)
+        {
+            if (mime == null)
+            {
+                throw new ArgumentNullException();
+            }
+            return this.mimes.Remove(mime.Extension);
         }
 
         /// <summary>
@@ -126,23 +155,7 @@ namespace NetworkSocket.Http
         public void Clear()
         {
             this.mimes.Clear();
-        }
-
-        /// <summary>
-        /// 获取扩展的类型
-        /// </summary>
-        /// <param name="extension">扩展名</param>
-        /// <returns></returns>
-        public string GetContentType(string extension)
-        {
-            if (string.IsNullOrEmpty(extension))
-            {
-                return null;
-            }
-            string contentType;
-            this.mimes.TryGetValue(extension, out contentType);
-            return contentType;
-        }
+        }        
 
         /// <summary>
         /// 是否包含

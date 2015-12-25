@@ -51,6 +51,13 @@ namespace NetworkSocket
         bool? IsProtocol(string protocol);
 
         /// <summary>
+        /// 设置会话的协议名和会话包装对象
+        /// </summary>
+        /// <param name="protocol">协议</param>
+        /// <param name="wrapper">会话的包装对象</param>
+        void SetProtocolWrapper(string protocol, IWrapper wrapper);
+
+        /// <summary>
         /// 异步发送数据
         /// </summary>
         /// <param name="byteRange">数据范围</param>  
@@ -60,12 +67,5 @@ namespace NetworkSocket
         /// 断开和远程端的连接
         /// </summary>
         void Close();
-
-        /// <summary>
-        /// 设置会话的协议名和会话包装对象
-        /// </summary>
-        /// <param name="protocol">协议</param>
-        /// <param name="wrapper">会话的包装对象</param>
-        void SetProtocolWrapper(string protocol, IWrapper wrapper);
     }
 }
