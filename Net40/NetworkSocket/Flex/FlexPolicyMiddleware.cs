@@ -29,6 +29,7 @@ namespace NetworkSocket.Flex
                 return this.Next.Invoke(context);
             }
 
+            context.Buffer.Position = 0;
             var request = context.Buffer.ReadString(Encoding.ASCII);
             if (request == "<policy-file-request/>\0")
             {
