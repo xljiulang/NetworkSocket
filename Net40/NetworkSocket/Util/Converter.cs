@@ -254,6 +254,14 @@ namespace NetworkSocket.Util
             }
 
             /// <summary>
+            /// 清除所有转换单元
+            /// </summary>
+            public void Clear()
+            {
+                this.linkedList.Clear();
+            }
+
+            /// <summary>
             /// 获取迭代器
             /// </summary>
             /// <returns></returns>
