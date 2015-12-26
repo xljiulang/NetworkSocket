@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 namespace NetworkSocket.Flex
 {
     /// <summary>
-    /// 表示Flex通讯策略XML文件中间件
+    /// 表示Silverlight通讯策略XML文件中间件
     /// </summary>
-    public class FlexPolicyMiddleware : IMiddleware
+    public class SilverlightPolicyMiddleware : IMiddleware
     {
         /// <summary>
         /// 下一个中间件
@@ -31,7 +31,7 @@ namespace NetworkSocket.Flex
 
             context.Buffer.Position = 0;
             var request = context.Buffer.ReadString(Encoding.ASCII);
-            if (string.Equals(request, "<policy-file-request/>\0", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(request, "<policy-file-request/>", StringComparison.OrdinalIgnoreCase))
             {
                 return new Task(() => this.SendPolicyXML(context));
             }
@@ -47,7 +47,7 @@ namespace NetworkSocket.Flex
             try
             {
                 var policyXml = this.GeneratePolicyXml();
-                var bytes = Encoding.UTF8.GetBytes(policyXml.ToCharArray());
+                var bytes = Encoding.UTF8.GetBytes(policyXml);
                 context.Session.Send(new ByteRange(bytes));
             }
             catch (Exception)
@@ -66,10 +66,20 @@ namespace NetworkSocket.Flex
         protected virtual string GeneratePolicyXml()
         {
             return new StringBuilder()
-                .AppendLine("<cross-domain-policy>")
-                .AppendLine("<allow-access-from domain=\"*\" to-ports=\"*\"/>")
-                .AppendLine("</cross-domain-policy>\0")
-                .ToString();
+               .AppendLine("<?xml version=\"1.0\" encoding=\"utf-8\" ?>")
+               .AppendLine("<access-policy>")
+               .AppendLine("<cross-domain-access>")
+               .AppendLine("<policy>")
+               .AppendLine("<allow-from>")
+               .AppendLine("<domain uri=\"*\"/>")
+               .AppendLine("</allow-from>")
+               .AppendLine("<grant-to>")
+               .AppendLine("<socket-resource port=\"4502-4534\" protocol=\"tcp\"/>")
+               .AppendLine("</grant-to>")
+               .AppendLine("</policy>")
+               .AppendLine("</cross-domain-access>")
+               .AppendLine("</access-policy>")
+               .ToString();
         }
     }
 }
