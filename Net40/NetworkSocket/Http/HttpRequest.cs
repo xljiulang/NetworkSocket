@@ -1,4 +1,6 @@
-﻿using System;
+﻿using NetworkSocket.Exceptions;
+using NetworkSocket.Util;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
@@ -35,9 +37,9 @@ namespace NetworkSocket.Http
         public HttpFile[] Files { get; private set; }
 
         /// <summary>
-        /// 获取请求的流
+        /// 获取Post的内容
         /// </summary>
-        public byte[] InputStrem { get; private set; }
+        public byte[] Body { get; private set; }
 
         /// <summary>
         /// 获取请求方法
@@ -237,7 +239,7 @@ namespace NetworkSocket.Http
             }
 
             var httpMethod = GetHttpMethod(match.Groups["method"].Value);
-            var httpHeader = new HttpHeader(match.Groups["field_name"].Captures, match.Groups["field_value"].Captures);
+            var httpHeader = HttpHeader.Parse(match.Groups["field_name"].Captures, match.Groups["field_value"].Captures);
             var contentLength = httpHeader.TryGet<int>("Content-Length");
 
             if (httpMethod == HttpMethod.POST && context.Buffer.Length - headerLength < contentLength)
@@ -256,17 +258,17 @@ namespace NetworkSocket.Http
 
             request.Url = new Uri("http://localhost:" + context.Session.LocalEndPoint.Port + match.Groups["path"].Value);
             request.Path = request.Url.AbsolutePath;
-            request.Query = new HttpNameValueCollection(HttpUtility.UrlDecode(request.Url.Query.TrimStart('?')));
+            request.Query = HttpNameValueCollection.Parse(request.Url.Query.TrimStart('?'), false);
 
             if (httpMethod == HttpMethod.GET)
             {
-                request.InputStrem = new byte[0];
+                request.Body = new byte[0];
                 request.Form = new HttpNameValueCollection();
                 request.Files = new HttpFile[0];
             }
             else
             {
-                request.InputStrem = context.Buffer.ReadArray(contentLength);
+                request.Body = context.Buffer.ReadArray(contentLength);
                 context.Buffer.Position = headerLength;
                 HttpRequest.GeneratePostFormAndFiles(request, context.Buffer);
             }
@@ -306,7 +308,7 @@ namespace NetworkSocket.Http
             }
             else if (request.IsMultipartFormRequest(out boundary) == true)
             {
-                if (request.InputStrem.Length >= boundary.Length)
+                if (request.Body.Length >= boundary.Length)
                 {
                     HttpRequest.GenerateMultipartFormAndFiles(request, buffer, boundary);
                 }
@@ -330,8 +332,8 @@ namespace NetworkSocket.Http
         /// <param name="request"></param>
         private static void GenerateApplicationForm(HttpRequest request)
         {
-            var formString = HttpUtility.UrlDecode(Encoding.UTF8.GetString(request.InputStrem));
-            request.Form = new HttpNameValueCollection(formString);
+            var formString = HttpUtility.UrlDecode(request.Body, Encoding.UTF8);
+            request.Form = HttpNameValueCollection.Parse(formString, true);
             request.Files = new HttpFile[0];
         }
 
@@ -375,7 +377,8 @@ namespace NetworkSocket.Http
                 }
                 else
                 {
-                    var value = HttpUtility.UrlDecode(buffer.ReadString(bodyLength, Encoding.UTF8));
+                    var byes = buffer.ReadArray(bodyLength);
+                    var value = HttpUtility.UrlDecode(byes, Encoding.UTF8);
                     form.Add(mHead.Name, value);
                 }
                 buffer.Position = buffer.Position + boundaryBytes.Length;

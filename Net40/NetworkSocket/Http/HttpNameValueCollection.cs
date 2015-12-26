@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NetworkSocket.Util;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
@@ -15,11 +16,6 @@ namespace NetworkSocket.Http
     public class HttpNameValueCollection : NameValueCollection
     {
         /// <summary>
-        /// 参数
-        /// </summary>
-        private string parameters;
-
-        /// <summary>
         /// 表示可通过键或索引访问的集合
         /// </summary>
         public HttpNameValueCollection()
@@ -28,45 +24,35 @@ namespace NetworkSocket.Http
         }
 
         /// <summary>
-        /// 表示可通过键或索引访问的集合
+        /// 从参数字符串生成键或索引集合
+        /// 如果参数未解码过，则将被解码再处理
         /// </summary>
-        /// <param name="parameters">参数</param>
-        public HttpNameValueCollection(string parameters)
-            : base(StringComparer.OrdinalIgnoreCase)
+        /// <param name="parameters">http请求参数</param>
+        /// <param name="decoded">参数是否已解码过</param>
+        /// <returns></returns>
+        public static HttpNameValueCollection Parse(string parameters, bool decoded)
         {
-            this.parameters = parameters;
-            this.AddAsKeyValue(parameters);
-        }
-
-        /// <summary>
-        /// 填充集合
-        /// </summary>
-        /// <param name="parameters"></param>
-        private void AddAsKeyValue(string parameters)
-        {
+            var collection = new HttpNameValueCollection();
             if (string.IsNullOrWhiteSpace(parameters) == true)
             {
-                return;
+                return collection;
             }
 
-            var kvs = parameters.Split(new char[] { '&' }, StringSplitOptions.RemoveEmptyEntries);
-            foreach (var item in kvs)
+            if (decoded == false)
+            {
+                parameters = HttpUtility.UrlDecode(parameters, Encoding.UTF8);
+            }
+
+            var keyValues = parameters.Split(new char[] { '&' }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var item in keyValues)
             {
                 var kv = item.Split(new char[] { '=' }, StringSplitOptions.RemoveEmptyEntries);
                 if (kv.Length == 2)
                 {
-                    base.Add(kv.FirstOrDefault(), kv.LastOrDefault());
+                    collection.Add(kv[0], kv[1]);
                 }
             }
-        }
-
-        /// <summary>
-        /// 转换为字符串
-        /// </summary>
-        /// <returns></returns>
-        public override string ToString()
-        {
-            return this.parameters;
+            return collection;
         }
 
         /// <summary>

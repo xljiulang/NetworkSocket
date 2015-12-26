@@ -1,5 +1,6 @@
 ﻿using NetworkSocket.Core;
 using NetworkSocket.Exceptions;
+using NetworkSocket.Util;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -205,7 +206,7 @@ namespace NetworkSocket.Http
         /// <returns></returns>
         protected virtual FileResult File(string fileName, string contenType)
         {
-            var contentDisposition = "attachment; filename=" + HttpUtility.UrlEncode(fileName);
+            var contentDisposition = "attachment; filename=" + HttpUtility.UrlEncode(fileName, this.Response.Charset);
             return this.File(fileName, contenType, contentDisposition);
         }
 
