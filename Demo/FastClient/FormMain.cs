@@ -39,7 +39,7 @@ namespace FastClient
             var connected = await Client.Instance.Connect(remoteEndPoint);
             var version = connected ? await Client.Instance.GetVersion() : null;
 
-            this.Text = connected ? ("服务器版本：" + version) : "连接服务器失败 ..";
+            this.Text = connected ? ("通讯库版本：" + version) : "连接服务器失败 ..";
             this.btn_Login.Enabled = this.btn_Pass.Enabled = connected;
         }
 
