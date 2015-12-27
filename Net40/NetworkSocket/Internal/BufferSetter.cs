@@ -12,6 +12,17 @@ namespace NetworkSocket
     internal static class BufferSetter
     {
         /// <summary>
+        /// 获取SocketAsyncEventArgs的缓存区大小(8k)
+        /// </summary>
+        public static readonly int ItemSize = 8 * 1024;
+
+        /// <summary>
+        /// 获取每个缓冲区SocketAsyncEventArgs的数量(256) 
+        /// </summary>
+        public static readonly int ItemCount = 256;
+
+
+        /// <summary>
         /// 同步锁
         /// </summary>
         private static readonly object syncRoot = new object();
@@ -19,37 +30,22 @@ namespace NetworkSocket
         /// <summary>
         /// 缓冲区块列表
         /// </summary>
-        private static List<BufferBlock> bufferBlockList = new List<BufferBlock>();
-
-
-        /// <summary>
-        /// 获取SocketAsyncEventArgs的缓存区大小(8k)
-        /// </summary>
-        public const int ARG_BUFFER_SIZE = 8 * 1024;
+        private static readonly LinkedList<BufferBlock> linkedList = new LinkedList<BufferBlock>();
 
         /// <summary>
-        /// 获取接收或发送的缓冲区连续内存块大小(2M) 
-        /// </summary>
-        public const int BUFFER_BLOCK_SIZE = ARG_BUFFER_SIZE * 256;
-
-
-        /// <summary>
-        /// 获取缓冲区内存块的数量 
-        /// </summary>
-        public static int BufferBlockCount
-        {
-            get
-            {
-                return bufferBlockList.Count;
-            }
-        }
-
-        /// <summary>
-        /// 静态构造器
+        /// 设置SocketAsyncEventArgs缓冲区
         /// </summary>
         static BufferSetter()
         {
-            bufferBlockList.Add(new BufferBlock());
+            BufferSetter.CreateBufferBlock();
+        }
+
+        /// <summary>
+        /// 添加一个缓冲块
+        /// </summary>
+        private static void CreateBufferBlock()
+        {
+            BufferSetter.linkedList.AddLast(new BufferBlock(ItemSize, ItemCount));
         }
 
         /// <summary>
@@ -59,56 +55,60 @@ namespace NetworkSocket
         /// <exception cref="OutOfMemoryException"></exception>
         public static void SetBuffer(SocketAsyncEventArgs arg)
         {
-            lock (syncRoot)
+            lock (BufferSetter.syncRoot)
             {
-                var lastBlock = bufferBlockList[BufferBlockCount - 1];
-                if (lastBlock.CanSetBuffer == false)
+                while (BufferSetter.linkedList.Last.Value.SetBuffer(arg) == false)
                 {
-                    bufferBlockList.Add(new BufferBlock());
-                    lastBlock = bufferBlockList[BufferBlockCount - 1];
+                    BufferSetter.CreateBufferBlock();
                 }
-                lastBlock.SetBuffer(arg);
             }
         }
 
-
         /// <summary>
         /// 表示缓冲区数据块
-        /// 非线程安全类型
         /// </summary>
         private class BufferBlock
         {
             /// <summary>
-            /// 偏移量
+            /// SocketAsyncEventArgs对象缓冲区大小
             /// </summary>
-            private int offset = 0;
+            private readonly int itemSize;
 
             /// <summary>
             /// 数据内容
             /// </summary>
-            private byte[] buffer = new byte[BUFFER_BLOCK_SIZE];
-
+            private readonly byte[] buffer;
 
             /// <summary>
-            /// 获取是否可以设置Buffer
+            /// 有效数据的位置
             /// </summary>
-            public bool CanSetBuffer
-            {
-                get
-                {
-                    return offset < BUFFER_BLOCK_SIZE;
-                }
-            }
+            private int position = 0;
 
+            /// <summary>
+            /// 缓冲区数据块
+            /// </summary>
+            /// <param name="itemSize">SocketAsyncEventArgs缓冲区大小</param>
+            /// <param name="itemCount">SocketAsyncEventArgs数量</param>
+            public BufferBlock(int itemSize, int itemCount)
+            {
+                this.itemSize = itemSize;
+                this.buffer = new byte[itemSize * itemCount];
+            }
 
             /// <summary>
             /// 设置SocketAsyncEventArgs缓存区
             /// </summary>        
             /// <param name="arg">SocketAsyncEventArgs对象</param>
-            public void SetBuffer(SocketAsyncEventArgs arg)
+            /// <returns></returns>
+            public bool SetBuffer(SocketAsyncEventArgs arg)
             {
-                arg.SetBuffer(this.buffer, this.offset, ARG_BUFFER_SIZE);
-                this.offset = this.offset + ARG_BUFFER_SIZE;
+                if (this.position == this.buffer.Length)
+                {
+                    return false;
+                }
+                arg.SetBuffer(this.buffer, this.position, this.itemSize);
+                this.position = this.position + this.itemSize;
+                return true;
             }
         }
     }

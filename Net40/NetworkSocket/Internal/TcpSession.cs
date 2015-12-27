@@ -304,7 +304,7 @@ namespace NetworkSocket
                 throw new SocketException((int)SocketError.NotConnected);
             }
 
-            var byteRanges = byteRange.SplitBySize(BufferSetter.ARG_BUFFER_SIZE);
+            var byteRanges = byteRange.SplitBySize(BufferSetter.ItemSize);
             foreach (var range in byteRanges)
             {
                 this.SendByteRange(range);
