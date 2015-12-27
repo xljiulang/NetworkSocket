@@ -92,8 +92,8 @@ namespace NetworkSocket.WebSocket
         /// <returns></returns>
         private void BindService()
         {
-            var jsonWebSockeApiServices = Assembly
-                .GetEntryAssembly()
+            var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly();
+            var jsonWebSockeApiServices = assembly
                 .GetTypes()
                 .Where(item =>
                     item.IsAbstract == false

@@ -99,7 +99,8 @@ namespace NetworkSocket.Fast
         /// </summary>
         private void BindService()
         {
-            var fastApiServices = Assembly.GetEntryAssembly().GetTypes().Where(item =>
+            var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly();
+            var fastApiServices = assembly.GetTypes().Where(item =>
                 item.IsAbstract == false
                 && item.IsInterface == false
                 && typeof(IFastApiService).IsAssignableFrom(item));

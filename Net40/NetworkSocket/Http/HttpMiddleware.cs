@@ -68,8 +68,8 @@ namespace NetworkSocket.Http
         /// <returns></returns>
         private void BindController()
         {
-            var controllers = Assembly
-                .GetEntryAssembly()
+            var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly();
+            var controllers = assembly
                 .GetTypes()
                 .Where(item => item.IsAbstract == false)
                 .Where(item => typeof(HttpController).IsAssignableFrom(item));
