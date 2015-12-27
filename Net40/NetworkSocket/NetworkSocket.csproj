@@ -137,6 +137,7 @@
     <Compile Include="IContenxt.cs" />
     <Compile Include="IListener.cs" />
     <Compile Include="IMiddleware.cs" />
+    <Compile Include="Internal\DomainAssembly.cs" />
     <Compile Include="Internal\BufferSetter.cs" />
     <Compile Include="Internal\Context.cs" />
     <Compile Include="Internal\LastMiddlerware.cs" />

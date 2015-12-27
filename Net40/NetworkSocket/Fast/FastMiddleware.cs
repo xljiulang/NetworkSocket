@@ -91,15 +91,15 @@ namespace NetworkSocket.Fast
             this.DependencyResolver = new DefaultDependencyResolver();
             this.FilterAttributeProvider = new DefaultFilterAttributeProvider();
 
-            this.BindService();
+            DomainAssembly.GetAssemblies().ForEach(item => this.BindService(item));  
         }
 
         /// <summary>
         /// 绑定程序集下所有实现IFastApiService的服务
         /// </summary>
-        private void BindService()
-        {
-            var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly();
+        /// <param name="assembly">程序集</param>
+        private void BindService(Assembly assembly)
+        { 
             var fastApiServices = assembly.GetTypes().Where(item =>
                 item.IsAbstract == false
                 && item.IsInterface == false

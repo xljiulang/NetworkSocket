@@ -59,16 +59,15 @@ namespace NetworkSocket.Http
             this.DependencyResolver = new DefaultDependencyResolver();
 
             this.MIMECollection.FillBasicMIME();
-            this.BindController();
+            DomainAssembly.GetAssemblies().ForEach(item => this.BindController(item));
         }
 
         /// <summary>
-        /// 绑定程序集下的所有控制器         
+        /// 绑定程序集下的所有控制器
         /// </summary>
-        /// <returns></returns>
-        private void BindController()
+        /// <param name="assembly">程序集</param>
+        private void BindController(Assembly assembly)
         {
-            var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly();
             var controllers = assembly
                 .GetTypes()
                 .Where(item => item.IsAbstract == false)
@@ -213,7 +212,7 @@ namespace NetworkSocket.Http
             var exceptionConext = new ExceptionContext(requestContext, exception);
             this.ExecGlobalExceptionFilters(exceptionConext);
 
-            if (exceptionConext.Result != null )
+            if (exceptionConext.Result != null)
             {
                 exceptionConext.Result.ExecuteResult(requestContext);
             }

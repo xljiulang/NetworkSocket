@@ -83,16 +83,15 @@ namespace NetworkSocket.WebSocket
             this.DependencyResolver = new DefaultDependencyResolver();
             this.FilterAttributeProvider = new DefaultFilterAttributeProvider();
 
-            this.BindService();
+            DomainAssembly.GetAssemblies().ForEach(item => this.BindService(item));           
         }
 
         /// <summary>
         /// 绑定程序集下所有实现的服务
         /// </summary>
-        /// <returns></returns>
-        private void BindService()
-        {
-            var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly();
+        /// <param name="assembly">程序集</param>
+        private void BindService(Assembly assembly)
+        {             
             var jsonWebSockeApiServices = assembly
                 .GetTypes()
                 .Where(item =>
