@@ -7,7 +7,6 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Web;
 
 namespace NetworkSocket.Http
 {
@@ -216,16 +215,20 @@ namespace NetworkSocket.Http
         /// <returns></returns>
         public static bool Parse(IContenxt context, out HttpRequest request)
         {
-            context.Buffer.Position = 0;
-            var doubleCrlf = Encoding.ASCII.GetBytes("\r\n\r\n");
-            var headerIndex = context.Buffer.IndexOf(doubleCrlf);
-            if (headerIndex < 0)
+            var headerLength = 0;
+            request = null;
+
+            if (Protocol.IsHttp(context.Buffer, out headerLength) == false)
             {
-                request = null;
                 return false;
             }
 
-            var headerLength = headerIndex + doubleCrlf.Length;
+            if (headerLength <= 0)
+            {
+                return true;
+            }
+
+            context.Buffer.Position = 0;
             var headerString = context.Buffer.ReadString(headerLength, Encoding.ASCII);
             const string pattern = @"^(?<method>[^\s]+)\s(?<path>[^\s]+)\sHTTP\/1\.1\r\n" +
                 @"((?<field_name>[^:\r\n]+):\s(?<field_value>[^\r\n]*)\r\n)+" +
@@ -234,7 +237,6 @@ namespace NetworkSocket.Http
             var match = Regex.Match(headerString, pattern, RegexOptions.IgnoreCase);
             if (match.Success == false)
             {
-                request = null;
                 return false;
             }
 
@@ -244,8 +246,7 @@ namespace NetworkSocket.Http
 
             if (httpMethod == HttpMethod.POST && context.Buffer.Length - headerLength < contentLength)
             {
-                request = null; // 数据未完整
-                return true;
+                return true; // 数据未完整
             }
 
             request = new HttpRequest
@@ -276,6 +277,8 @@ namespace NetworkSocket.Http
             context.Buffer.Clear(headerLength + contentLength);
             return true;
         }
+
+
 
 
         /// <summary>

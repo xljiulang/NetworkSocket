@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -61,6 +62,11 @@ namespace NetworkSocket
         public IPEndPoint LocalEndPoint { get; private set; }
 
         /// <summary>
+        /// 获取服务器证书
+        /// </summary>
+        public X509Certificate Certificate { get; private set; }
+
+        /// <summary>
         /// 获取事件对象
         /// </summary>
         public Events Events { get; private set; }
@@ -72,6 +78,21 @@ namespace NetworkSocket
         {
             this.middlewares.AddLast(new LastMiddlerware());
             this.Events = new Events();
+        }
+
+        /// <summary>
+        /// Tcp监听服务
+        /// </summary>
+        /// <param name="certificate">服务器证书</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        public TcpListener(X509Certificate certificate)
+            : this()
+        {
+            if (certificate == null)
+            {
+                throw new ArgumentNullException("certificate");
+            }
+            this.Certificate = certificate;
         }
 
         /// <summary>
@@ -195,7 +216,7 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="session">当前会话</param>
         /// <returns></returns>
-        private IContenxt CreateContext(TcpSession session)
+        private IContenxt CreateContext(TcpSessionBase session)
         {
             return new Context
             {
@@ -205,6 +226,24 @@ namespace NetworkSocket
             };
         }
 
+        /// <summary>
+        /// 创建会话对象
+        /// </summary>
+        /// <returns></returns>
+        private TcpSessionBase CreateSession()
+        {
+            var session = this.freeSessions.Take();
+            if (session != null)
+            {
+                return session;
+            }
+
+            if (this.Certificate != null)
+            {
+                return new SslTcpSession(this.Certificate);
+            }
+            return new IocpTcpSession();
+        }
 
         /// <summary>
         /// 生成一个会话对象
@@ -213,7 +252,7 @@ namespace NetworkSocket
         private void BuildSession(Socket socket)
         {
             // 创建会话
-            var session = this.freeSessions.Take() ?? new TcpSession();
+            var session = this.CreateSession();
 
             // 绑定处理委托
             session.ReceiveHandler = () => this.OnSessionRequest(session);
@@ -229,15 +268,15 @@ namespace NetworkSocket
             this.Events.RaiseConnected(this, context);
 
             // 开始接收数据
-            session.TryReceiveAsync();
+            session.LoopReceive();
         }
-
+       
         /// <summary>
         /// 回收复用会话对象
         /// 关闭会话并通知连接断开
         /// </summary>
         /// <param name="session">会话对象</param>
-        private void RecyceSession(TcpSession session)
+        private void RecyceSession(TcpSessionBase session)
         {
             if (this.workSessions.Remove(session) == true)
             {
@@ -254,7 +293,7 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="session">会话对象</param>
         /// <returns></returns>
-        private void OnSessionRequest(TcpSession session)
+        private void OnSessionRequest(TcpSessionBase session)
         {
             try
             {
@@ -315,7 +354,7 @@ namespace NetworkSocket
             if (disposing == true)
             {
                 this.listenSocket = null;
-                this.acceptArg = null;            
+                this.acceptArg = null;
                 this.middlewares = null;
                 this.workSessions = null;
                 this.freeSessions = null;

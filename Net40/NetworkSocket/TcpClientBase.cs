@@ -5,6 +5,8 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Linq;
 using System.Threading;
+using System.Net.Security;
+using System.Security.Authentication;
 
 namespace NetworkSocket
 {
@@ -16,7 +18,7 @@ namespace NetworkSocket
         /// <summary>
         /// 会话对象
         /// </summary>
-        private TcpSession session = new TcpSession();
+        private TcpSessionBase session;
 
         /// <summary>
         /// 获取远程终结点
@@ -63,8 +65,40 @@ namespace NetworkSocket
         /// </summary>
         public TcpClientBase()
         {
-            this.session.ReceiveHandler = this.ReceiveHandler;
-            this.session.DisconnectHandler = this.DisconnectHandler;
+            this.session = new IocpTcpSession();
+            this.BindHandler(this.session);
+        }
+
+        /// <summary>
+        /// SSL支持的Tcp客户端抽象类
+        /// </summary>
+        /// <param name="targetHost">目标主机</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        public TcpClientBase(string targetHost)
+            : this(targetHost, null)
+        {
+        }
+
+        /// <summary>
+        /// SSL支持的Tcp客户端抽象类
+        /// </summary>  
+        /// <param name="targetHost">目标主机</param>
+        /// <param name="certificateValidationCallback">远程证书验证回调</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        public TcpClientBase(string targetHost, RemoteCertificateValidationCallback certificateValidationCallback)
+        {
+            this.session = new SslTcpSession(targetHost, certificateValidationCallback);
+            this.BindHandler(this.session);
+        }
+
+        /// <summary>
+        /// 绑定会话的处理方法
+        /// </summary>
+        /// <param name="session">会话</param>
+        private void BindHandler(TcpSessionBase session)
+        {
+            session.ReceiveHandler = this.ReceiveHandler;
+            session.DisconnectHandler = this.DisconnectHandler;
         }
 
         /// <summary>
@@ -98,6 +132,7 @@ namespace NetworkSocket
         /// 连接到远程终端 
         /// </summary>
         /// <param name="remoteEndPoint">远程ip和端口</param> 
+        /// <exception cref="AuthenticationException"></exception>
         /// <returns></returns>
         public Task<bool> Connect(IPEndPoint remoteEndPoint)
         {
@@ -134,7 +169,7 @@ namespace NetworkSocket
             if (result == true)
             {
                 this.session.Bind(socket);
-                this.session.TryReceiveAsync();
+                this.session.LoopReceive();
             }
             else
             {
@@ -222,7 +257,7 @@ namespace NetworkSocket
             this.session.Close(true);
         }
 
-          /// <summary>
+        /// <summary>
         /// 设置会话的心跳包
         /// </summary>
         /// <param name="keepAlivePeriod">时间间隔</param>

@@ -14,12 +14,12 @@ namespace NetworkSocket
     /// </summary>   
     [DebuggerDisplay("Count = {Count}")]
     [DebuggerTypeProxy(typeof(SessionCollectionDebugView))]
-    internal class TcpSessionCollection : ICollection<TcpSession>, ISessionProvider, IDisposable
+    internal class TcpSessionCollection : ICollection<TcpSessionBase>, ISessionProvider, IDisposable
     {
         /// <summary>
         /// 线程安全字典
         /// </summary>
-        private readonly ConcurrentDictionary<int, TcpSession> dic = new ConcurrentDictionary<int, TcpSession>();
+        private readonly ConcurrentDictionary<int, TcpSessionBase> dic = new ConcurrentDictionary<int, TcpSessionBase>();
 
         /// <summary>
         /// 获取元素数量 
@@ -49,7 +49,7 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="session">会话</param>
         /// <returns></returns>
-        public void Add(TcpSession session)
+        public void Add(TcpSessionBase session)
         {
             if (session != null)
             {
@@ -71,7 +71,7 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="session">会话</param>
         /// <returns></returns>
-        public bool Contains(TcpSession session)
+        public bool Contains(TcpSessionBase session)
         {
             if (session == null)
             {
@@ -86,7 +86,7 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="array"></param>
         /// <param name="arrayIndex"></param>
-        public void CopyTo(TcpSession[] array, int arrayIndex)
+        public void CopyTo(TcpSessionBase[] array, int arrayIndex)
         {
             var index = 0;
             var kvs = this.dic.ToArray();
@@ -110,7 +110,7 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="session">会话对象</param>
         /// <returns></returns>
-        public bool Remove(TcpSession session)
+        public bool Remove(TcpSessionBase session)
         {
             if (session == null)
             {
@@ -147,7 +147,7 @@ namespace NetworkSocket
         /// 获取枚举器
         /// </summary>
         /// <returns></returns>
-        public IEnumerator<TcpSession> GetEnumerator()
+        public IEnumerator<TcpSessionBase> GetEnumerator()
         {
             var enumerator = this.dic.GetEnumerator();
             while (enumerator.MoveNext())
@@ -205,7 +205,7 @@ namespace NetworkSocket
         /// 查看的内容
         /// </summary>
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-        public TcpSession[] Values
+        public TcpSessionBase[] Values
         {
             get
             {

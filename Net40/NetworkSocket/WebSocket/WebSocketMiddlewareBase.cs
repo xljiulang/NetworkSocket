@@ -135,9 +135,9 @@ namespace NetworkSocket.WebSocket
         /// <returns></returns>
         private Task OnWebSocketFrameRequest(IContenxt context)
         {
+            var requests = this.GenerateWebSocketRequest(context);
             return new Task(() =>
             {
-                var requests = this.GenerateWebSocketRequest(context);
                 foreach (var request in requests)
                 {
                     this.OnWebSocketRequest(context, request);
@@ -150,19 +150,19 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="context">上下文</param>
         /// <returns></returns>
-        private IEnumerable<FrameRequest> GenerateWebSocketRequest(IContenxt context)
+        private IList<FrameRequest> GenerateWebSocketRequest(IContenxt context)
         {
+            var list = new List<FrameRequest>();
             while (true)
             {
                 var request = FrameRequest.Parse(context.Buffer);
                 if (request == null)
                 {
-                    yield break;
+                    return list;
                 }
-                yield return request;
+                list.Add(request);
             }
         }
-
 
         /// <summary>
         /// 收到到数据帧请求

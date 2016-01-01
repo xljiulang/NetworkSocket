@@ -21,7 +21,7 @@ namespace FastClient
         /// <summary>
         /// 唯一实例
         /// </summary>
-        private static readonly Lazy<Client> instance = new Lazy<Client>(() => new Client());
+        private static readonly Lazy<Client> instance = new Lazy<Client>(() => new Client("localhost"));
 
         /// <summary>
         /// 获取唯一实例
@@ -33,6 +33,16 @@ namespace FastClient
                 return instance.Value;
             }
         }
+
+        /// <summary>
+        /// SSL客户端
+        /// </summary>
+        /// <param name="targetHost"></param>
+        public Client(string targetHost)
+            : base(targetHost, (a, b, c, d) => true)
+        {
+        }
+
         /// <summary>
         /// 获取服务组件版本号
         /// </summary>       

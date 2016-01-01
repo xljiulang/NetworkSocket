@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Security;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
@@ -58,6 +59,37 @@ namespace NetworkSocket.Fast
         /// Fast协议的tcp客户端
         /// </summary>
         public FastTcpClient()
+        {
+            this.Init();
+        }
+
+        /// <summary>
+        /// SSL支持的Fast协议的tcp客户端
+        /// </summary>
+        /// <param name="targetHost">目标主机</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        public FastTcpClient(string targetHost)
+            : base(targetHost)
+        {
+            this.Init();
+        }
+
+        /// <summary>
+        /// SSL支持的Fast协议的tcp客户端
+        /// </summary>  
+        /// <param name="targetHost">目标主机</param>
+        /// <param name="certificateValidationCallback">远程证书验证回调</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        public FastTcpClient(string targetHost, RemoteCertificateValidationCallback certificateValidationCallback)
+            : base(targetHost, certificateValidationCallback)
+        {
+            this.Init();
+        }
+
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        private void Init()
         {
             this.apiActionList = new ApiActionList(Common.GetServiceApiActions(this.GetType()));
             this.packetIdProvider = new PacketIdProvider();

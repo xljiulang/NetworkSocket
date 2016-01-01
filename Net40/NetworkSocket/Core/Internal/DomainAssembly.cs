@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace NetworkSocket
+namespace NetworkSocket.Core
 {
     /// <summary>
     /// 当前程序域内的程序集

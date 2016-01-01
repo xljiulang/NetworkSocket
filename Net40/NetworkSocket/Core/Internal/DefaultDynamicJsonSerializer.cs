@@ -33,6 +33,7 @@ namespace NetworkSocket.Core
             try
             {
                 var serializer = new JavaScriptSerializer();
+                serializer.MaxJsonLength = int.MaxValue;
                 return serializer.Serialize(model);
             }
             catch (Exception ex)
@@ -95,6 +96,7 @@ namespace NetworkSocket.Core
             public static dynamic Parse(string json)
             {
                 var serializer = new JavaScriptSerializer();
+                serializer.MaxJsonLength = int.MaxValue;
                 serializer.RegisterConverters(new JavaScriptConverter[] { new DynamicJsonConverter() });
                 return serializer.Deserialize(json, typeof(object));
             }

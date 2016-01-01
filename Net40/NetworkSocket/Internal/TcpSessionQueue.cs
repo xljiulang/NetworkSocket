@@ -16,7 +16,7 @@ namespace NetworkSocket
         /// <summary>
         /// 队列
         /// </summary>
-        private readonly ConcurrentQueue<TcpSession> queue = new ConcurrentQueue<TcpSession>();
+        private readonly ConcurrentQueue<TcpSessionBase> queue = new ConcurrentQueue<TcpSessionBase>();
 
         /// <summary>
         /// 获取会话对象数量
@@ -33,7 +33,7 @@ namespace NetworkSocket
         /// 添加会话对象
         /// </summary>
         /// <param name="session">会话对象</param>
-        public void Add(TcpSession session)
+        public void Add(TcpSessionBase session)
         {
             this.queue.Enqueue(session);
         }
@@ -43,14 +43,14 @@ namespace NetworkSocket
         /// 如果取出失败则返回null
         /// </summary>
         /// <returns></returns>
-        public TcpSession Take()
+        public TcpSessionBase Take()
         {
-            TcpSession session;
+            TcpSessionBase session;
             if (this.queue.TryDequeue(out session))
             {
                 return session;
             }
-            return default(TcpSession);
+            return default(TcpSessionBase);
         }
 
         /// <summary>

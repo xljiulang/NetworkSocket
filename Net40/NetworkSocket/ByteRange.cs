@@ -115,6 +115,16 @@ namespace NetworkSocket
         }
 
         /// <summary>
+        /// 从ArraySegment隐式转换
+        /// </summary>
+        /// <param name="arraySegment"></param>
+        /// <returns></returns>
+        public static implicit operator ByteRange(ArraySegment<byte> arraySegment)
+        {
+            return new ByteRange(arraySegment.Array, arraySegment.Offset, arraySegment.Count);
+        }
+
+        /// <summary>
         /// 调试视图
         /// </summary>
         private class DebugView

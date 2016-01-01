@@ -278,6 +278,7 @@ namespace NetworkSocket
         /// <returns></returns>
         public void Clear()
         {
+            this.Position = 0;
             base.SetLength(0L);
         }
 
@@ -297,6 +298,8 @@ namespace NetworkSocket
             {
                 this.CopyTo(count, base.GetBuffer(), 0, length);
             }
+
+            this.Position = 0;
             base.SetLength(length);
         }
 

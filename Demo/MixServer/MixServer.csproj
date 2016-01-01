@@ -58,6 +58,7 @@
     <Compile Include="ApiService\FastMathService.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <None Include="ssl.cer" />
     <None Include="View\Home\Middleware.cshtml" />
   </ItemGroup>
   <ItemGroup>

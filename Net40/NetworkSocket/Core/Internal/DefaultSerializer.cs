@@ -29,6 +29,7 @@ namespace NetworkSocket.Core
             try
             {
                 var serializer = new JavaScriptSerializer();
+                serializer.MaxJsonLength = int.MaxValue;
                 var json = serializer.Serialize(model);
                 return Encoding.UTF8.GetBytes(json);
             }
@@ -56,6 +57,7 @@ namespace NetworkSocket.Core
             {
                 var json = Encoding.UTF8.GetString(bytes);
                 var serializer = new JavaScriptSerializer();
+                serializer.MaxJsonLength = int.MaxValue;
                 return serializer.Deserialize(json, type);
             }
             catch (Exception ex)

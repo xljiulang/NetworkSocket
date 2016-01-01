@@ -7,9 +7,9 @@ using System.Text;
 namespace NetworkSocket
 {
     /// <summary>
-    /// 提供设置SocketAsyncEventArgs缓冲区
+    /// 提供设置SocketAsyncEventArgs缓冲区或申请缓冲区
     /// </summary>
-    internal static class BufferSetter
+    internal static class BufferManager
     {
         /// <summary>
         /// 获取SocketAsyncEventArgs的缓存区大小(8k)
@@ -35,9 +35,9 @@ namespace NetworkSocket
         /// <summary>
         /// 设置SocketAsyncEventArgs缓冲区
         /// </summary>
-        static BufferSetter()
+        static BufferManager()
         {
-            BufferSetter.CreateBufferBlock();
+            BufferManager.CreateBufferBlock();
         }
 
         /// <summary>
@@ -45,24 +45,36 @@ namespace NetworkSocket
         /// </summary>
         private static void CreateBufferBlock()
         {
-            BufferSetter.linkedList.AddLast(new BufferBlock(ItemSize, ItemCount));
+            BufferManager.linkedList.AddLast(new BufferBlock(ItemSize, ItemCount));
+        }
+
+        /// <summary>
+        /// 申请一个缓冲区
+        /// </summary>        
+        /// <returns></returns>
+        public static ByteRange GetBuffer()
+        {
+            lock (BufferManager.syncRoot)
+            {
+                ByteRange buffer;
+                while ((buffer = BufferManager.linkedList.Last.Value.AllocBuffer()) == null)
+                {
+                    BufferManager.CreateBufferBlock();
+                }
+                return buffer;
+            }
         }
 
         /// <summary>
         /// 设置SocketAsyncEventArgs缓存区
         /// </summary>        
         /// <param name="arg">SocketAsyncEventArgs对象</param>
-        /// <exception cref="OutOfMemoryException"></exception>
         public static void SetBuffer(SocketAsyncEventArgs arg)
         {
-            lock (BufferSetter.syncRoot)
-            {
-                while (BufferSetter.linkedList.Last.Value.SetBuffer(arg) == false)
-                {
-                    BufferSetter.CreateBufferBlock();
-                }
-            }
+            var buffer = BufferManager.GetBuffer();
+            arg.SetBuffer(buffer.Buffer, buffer.Offset, buffer.Count);
         }
+
 
         /// <summary>
         /// 表示缓冲区数据块
@@ -70,7 +82,7 @@ namespace NetworkSocket
         private class BufferBlock
         {
             /// <summary>
-            /// SocketAsyncEventArgs对象缓冲区大小
+            /// 缓冲区大小
             /// </summary>
             private readonly int itemSize;
 
@@ -87,8 +99,8 @@ namespace NetworkSocket
             /// <summary>
             /// 缓冲区数据块
             /// </summary>
-            /// <param name="itemSize">SocketAsyncEventArgs缓冲区大小</param>
-            /// <param name="itemCount">SocketAsyncEventArgs数量</param>
+            /// <param name="itemSize">缓冲区大小</param>
+            /// <param name="itemCount">缓冲区数量</param>
             public BufferBlock(int itemSize, int itemCount)
             {
                 this.itemSize = itemSize;
@@ -96,19 +108,19 @@ namespace NetworkSocket
             }
 
             /// <summary>
-            /// 设置SocketAsyncEventArgs缓存区
-            /// </summary>        
-            /// <param name="arg">SocketAsyncEventArgs对象</param>
+            /// 分配一个缓冲区
+            /// 当内存块满时返回null
+            /// </summary>
             /// <returns></returns>
-            public bool SetBuffer(SocketAsyncEventArgs arg)
+            public ByteRange AllocBuffer()
             {
                 if (this.position == this.buffer.Length)
                 {
-                    return false;
+                    return null;
                 }
-                arg.SetBuffer(this.buffer, this.position, this.itemSize);
+                var byteRange = new ByteRange(this.buffer, this.position, this.itemSize);
                 this.position = this.position + this.itemSize;
-                return true;
+                return byteRange;
             }
         }
     }

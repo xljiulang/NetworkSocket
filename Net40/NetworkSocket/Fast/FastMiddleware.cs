@@ -91,7 +91,7 @@ namespace NetworkSocket.Fast
             this.DependencyResolver = new DefaultDependencyResolver();
             this.FilterAttributeProvider = new DefaultFilterAttributeProvider();
 
-            DomainAssembly.GetAssemblies().ForEach(item => this.BindService(item));  
+            DomainAssembly.GetAssemblies().ForEach(item => this.BindService(item));
         }
 
         /// <summary>
@@ -99,7 +99,7 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="assembly">程序集</param>
         private void BindService(Assembly assembly)
-        { 
+        {
             var fastApiServices = assembly.GetTypes().Where(item =>
                 item.IsAbstract == false
                 && item.IsInterface == false
@@ -170,21 +170,21 @@ namespace NetworkSocket.Fast
         /// <param name="context">上下文</param>
         /// <param name="fastPacket">数据包</param>
         /// <returns></returns>
-        private IEnumerable<FastPacket> GenerateFastPackets(IContenxt context, FastPacket fastPacket)
+        private IList<FastPacket> GenerateFastPackets(IContenxt context, FastPacket fastPacket)
         {
-            yield return fastPacket;
+            var list = new List<FastPacket> { fastPacket };
             while (true)
             {
                 var packet = default(FastPacket);
                 if (FastPacket.Parse(context.Buffer, out packet) == false)
                 {
-                    yield break;
+                    return list;
                 }
                 if (packet == null)
                 {
-                    yield break;
+                    return list;
                 }
-                yield return packet;
+                list.Add(packet);
             }
         }
 
@@ -299,6 +299,6 @@ namespace NetworkSocket.Fast
             {
                 throw exceptionContext.Exception;
             }
-        }  
+        }
     }
 }
