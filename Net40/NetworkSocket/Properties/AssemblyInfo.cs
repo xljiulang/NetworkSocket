@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // 有关程序集的常规信息通过以下
 // 特性集控制。更改这些特性值可修改
 // 与程序集关联的信息。
-[assembly: AssemblyTitle("Socket IO Complete")]
-[assembly: AssemblyDescription("Socket完成端口组件")]
+[assembly: AssemblyTitle("NetworkSocket")]
+[assembly: AssemblyDescription("抽象中间件通讯框架")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("https://github.com/xljiulang/NetworkSocket")]
 [assembly: AssemblyProduct("NetworkSocket")]
-[assembly: AssemblyCopyright("Copyright © Chen Guowei 2013-2015")]
+[assembly: AssemblyCopyright("Copyright © Chen Guowei 2013-2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 [assembly: InternalsVisibleTo("UnitTest.NetworkSocket,PublicKey=0024000004800000940000000602000000240000525341310004000001000100a1876d6d847bfe6491a9bf93262a5dc197e8c46ab9fec73eb87f2d25e2b8b88f260302c0ce561eb7117cdd6ac0c7095027bfef2911e397a42475d17332c925f0635280451923d87d57a09f149b4544a115bc8679432f2db2ee1fea3672be1a77908fd1efbf2ba408239d92850360c1abea9dbf2724d5b66bc907ccba893d36a2")]
@@ -33,5 +33,5 @@ using System.Runtime.InteropServices;
 // 可以指定所有这些值，也可以使用“内部版本号”和“修订号”的默认值，
 // 方法是按如下所示使用“*”:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.6.1.0")]
-[assembly: AssemblyFileVersion("1.6.1.0")]
+[assembly: AssemblyVersion("1.6.2.0")]
+[assembly: AssemblyFileVersion("1.6.2.0")]
