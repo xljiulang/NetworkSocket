@@ -80,7 +80,7 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="size">新的ByteRange大小</param>
         /// <returns></returns>
-        public IEnumerable<IByteRange> SplitBySize(int size)
+        public IEnumerable<ByteRange> SplitBySize(int size)
         {
             if (size >= this.Count)
             {

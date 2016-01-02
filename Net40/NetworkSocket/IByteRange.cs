@@ -24,12 +24,5 @@ namespace NetworkSocket
         /// 获取字节数组
         /// </summary>
         byte[] Buffer { get; }
-
-        /// <summary>
-        /// 分割为大小相等的ByteRange集合
-        /// </summary>
-        /// <param name="size">新的ByteRange大小</param>
-        /// <returns></returns>
-        IEnumerable<IByteRange> SplitBySize(int size);
     }
 }

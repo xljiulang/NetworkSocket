@@ -198,30 +198,20 @@ namespace NetworkSocket
                 throw new SocketException((int)SocketError.NotConnected);
             }
 
-            this.SendByteRange(byteRange);
-        }
-
-        /// <summary>
-        /// 发送一个小于缓冲区的数据范围
-        /// </summary>
-        /// <param name="byteRange">数据范围</param>
-        private bool SendByteRange(IByteRange byteRange)
-        {
             // 如果发送过程已停止，则本次直接发送
             if (Interlocked.CompareExchange(ref this.PendingSendCount, 1, 0) == 0)
             {
-                return this.TrySendByteRangeAsync(byteRange);
+                this.TrySendByteRangeAsync(byteRange);
             }
-
-            // 添加数据到缓存区
-            this.PendingSendByteRanges.Enqueue(byteRange);
-
-            // 如果发送过程已停止，则启动发送缓存中的数据
-            if (Interlocked.Increment(ref this.PendingSendCount) == 1)
+            else
             {
-                return this.TrySendByteRangeAsync(null);
+                this.PendingSendByteRanges.Enqueue(byteRange);
+                // 如果发送过程已停止，则启动发送缓存中的数据
+                if (Interlocked.Increment(ref this.PendingSendCount) == 1)
+                {
+                    this.TrySendByteRangeAsync(null);
+                }
             }
-            return true;
         }
 
         /// <summary>
@@ -229,15 +219,15 @@ namespace NetworkSocket
         /// 发送完成将触发SendCompleted方法
         /// <param name="byteRange">数据范围，为null则从缓冲中区获取</param>
         /// </summary>
-        private bool TrySendByteRangeAsync(IByteRange byteRange)
+        private void TrySendByteRangeAsync(IByteRange byteRange)
         {
             if (byteRange == null && this.PendingSendByteRanges.TryDequeue(out byteRange) == false)
             {
                 Interlocked.Exchange(ref this.PendingSendCount, 0);
-                return false;
+                return;
             }
 
-            return base.TryInvokeAction(() =>
+            base.TryInvokeAction(() =>
                 this.sslStream.BeginWrite(
                 byteRange.Buffer,
                 byteRange.Offset,
