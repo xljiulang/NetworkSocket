@@ -45,6 +45,16 @@ namespace NetworkSocket
         /// </summary>
         private IByteRange bufferRange = BufferManager.GetBuffer();
 
+        /// <summary>
+        /// 获取会话是否提供SSL/TLS安全
+        /// </summary>
+        public override bool IsSecurity
+        {
+            get
+            {
+                return true;
+            }
+        }
 
         /// <summary>
         /// 表示SSL服务器会话对象
@@ -105,7 +115,7 @@ namespace NetworkSocket
                     this.sslStream.BeginAuthenticateAsServer(
                     this.certificate,
                     this.EndAuthenticateAsServer,
-                    null), () => ((ISession)this).Close());
+                    null), ((ISession)this).Close);
             }
         }
 

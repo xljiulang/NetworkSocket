@@ -71,6 +71,11 @@ namespace NetworkSocket
         }
 
         /// <summary>
+        /// 获取会话是否提供SSL/TLS安全
+        /// </summary>
+        public abstract bool IsSecurity { get; }        
+
+        /// <summary>
         /// 获取用户附加数据
         /// </summary>
         public ITag Tag { get; private set; }

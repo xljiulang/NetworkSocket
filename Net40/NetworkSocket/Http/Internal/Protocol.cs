@@ -16,11 +16,6 @@ namespace NetworkSocket.Http
         private static readonly byte Space = 32;
 
         /// <summary>
-        /// 双换行
-        /// </summary>
-        private static readonly byte[] DoubelCrlf = Encoding.ASCII.GetBytes("\r\n\r\n");
-
-        /// <summary>
         /// 支持的http方法
         /// </summary>
         private static readonly string[] MethodNames = Enum.GetNames(typeof(HttpMethod));
@@ -29,6 +24,11 @@ namespace NetworkSocket.Http
         /// 支持的http方法最大长度
         /// </summary>
         private static readonly int MedthodMaxLength = MethodNames.Max(m => m.Length);
+
+        /// <summary>
+        /// 获取双换行
+        /// </summary>
+        public static readonly byte[] DoubleCrlf = Encoding.ASCII.GetBytes("\r\n\r\n");
 
 
         /// <summary>
@@ -49,14 +49,14 @@ namespace NetworkSocket.Http
             }
 
             buffer.Position = 0;
-            var headerIndex = buffer.IndexOf(Protocol.DoubelCrlf);
+            var headerIndex = buffer.IndexOf(Protocol.DoubleCrlf);
             if (headerIndex < 0)
             {
                 headerLength = 0;
                 return true;
             }
 
-            headerLength = headerIndex + Protocol.DoubelCrlf.Length;
+            headerLength = headerIndex + Protocol.DoubleCrlf.Length;
             return true;
         }
 

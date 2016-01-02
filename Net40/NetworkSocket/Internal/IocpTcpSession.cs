@@ -28,6 +28,17 @@ namespace NetworkSocket
         private SocketAsyncEventArgs recvArg = new SocketAsyncEventArgs();
 
         /// <summary>
+        /// 获取会话是否提供SSL/TLS安全
+        /// </summary>
+        public override bool IsSecurity
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
         /// IOCP的Tcp会话对象  
         /// </summary>  
         public IocpTcpSession()
@@ -73,7 +84,7 @@ namespace NetworkSocket
                 {
                     this.RecvCompleted(this.Socket, this.recvArg);
                 }
-            });
+            }, this.DisconnectHandler);
         }
 
         /// <summary>
@@ -192,7 +203,7 @@ namespace NetworkSocket
             {
                 this.TrySendByteRangeAsync(null);
             }
-        }      
+        }
 
         /// <summary>
         /// 释放资源
@@ -207,7 +218,7 @@ namespace NetworkSocket
 
             if (disposing == true)
             {
-                this.recvArg = null;               
+                this.recvArg = null;
                 this.sendArg = null;
             }
         }

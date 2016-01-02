@@ -24,7 +24,7 @@ namespace NetworkSocket.Flex
         /// <returns></returns>
         Task IMiddleware.Invoke(IContenxt context)
         {
-            if (context.Session.Protocol != null || context.Buffer.Length != 23)
+            if (context.Session.Protocol != null || context.Buffer.Length != 22)
             {
                 return this.Next.Invoke(context);
             }

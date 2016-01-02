@@ -127,9 +127,7 @@ namespace NetworkSocket
         /// <returns></returns>
         public IEnumerable<TWapper> FilterWrappers<TWapper>() where TWapper : class, IWrapper
         {
-            return this
-                .Select(item => item.Wrapper as TWapper)
-                .Where(item => item != null);
+            return this.Select(item => item.Wrapper).OfType<TWapper>();
         }
 
         /// <summary>

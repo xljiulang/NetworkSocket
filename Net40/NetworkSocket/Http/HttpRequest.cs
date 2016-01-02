@@ -257,7 +257,9 @@ namespace NetworkSocket.Http
                 Headers = httpHeader
             };
 
-            request.Url = new Uri("http://localhost:" + context.Session.LocalEndPoint.Port + match.Groups["path"].Value);
+            var scheme = context.Session.IsSecurity ? "https" : "http";
+            var url = string.Format("{0}://localhost:{1}{2}", scheme, context.Session.LocalEndPoint.Port, match.Groups["path"].Value);
+            request.Url = new Uri(url);
             request.Path = request.Url.AbsolutePath;
             request.Query = HttpNameValueCollection.Parse(request.Url.Query.TrimStart('?'), false);
 
@@ -277,8 +279,6 @@ namespace NetworkSocket.Http
             context.Buffer.Clear(headerLength + contentLength);
             return true;
         }
-
-
 
 
         /// <summary>
@@ -348,7 +348,6 @@ namespace NetworkSocket.Http
         /// <param name="boundary">边界</param>
         private static void GenerateMultipartFormAndFiles(HttpRequest request, IReceiveBuffer buffer, string boundary)
         {
-            var doubleCrlf = Encoding.ASCII.GetBytes("\r\n\r\n");
             var boundaryBytes = Encoding.ASCII.GetBytes("\r\n--" + boundary);
             var maxPosition = buffer.Length - Encoding.ASCII.GetBytes("--\r\n").Length;
 
@@ -358,8 +357,8 @@ namespace NetworkSocket.Http
             buffer.Position = buffer.Position + boundaryBytes.Length;
             while (buffer.Position < maxPosition)
             {
-                var headLength = buffer.IndexOf(doubleCrlf) + doubleCrlf.Length;
-                if (headLength < doubleCrlf.Length)
+                var headLength = buffer.IndexOf(Protocol.DoubleCrlf) + Protocol.DoubleCrlf.Length;
+                if (headLength < Protocol.DoubleCrlf.Length)
                 {
                     break;
                 }

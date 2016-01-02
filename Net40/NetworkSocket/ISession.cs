@@ -33,6 +33,11 @@ namespace NetworkSocket
         bool IsConnected { get; }
 
         /// <summary>
+        /// 获取会话是否提供SSL/TLS安全
+        /// </summary>
+        bool IsSecurity { get; }
+
+        /// <summary>
         /// 获取会话的协议名
         /// </summary>
         string Protocol { get; }
