@@ -164,6 +164,7 @@
     <Compile Include="Util\Converts\ArrayConvert.cs" />
     <Compile Include="Util\Converts\DictionaryConvert.cs" />
     <Compile Include="Util\Converts\DynamicObjectConvert.cs" />
+    <Compile Include="Util\Converts\NotSupportedConvert.cs" />
     <Compile Include="Util\Converts\NoConvert.cs" />
     <Compile Include="Util\Converts\NullableConvert.cs" />
     <Compile Include="Util\Converts\NullConvert.cs" />

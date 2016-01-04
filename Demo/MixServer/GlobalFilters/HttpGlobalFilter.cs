@@ -13,7 +13,7 @@ namespace MixServer.GlobalFilters
     {
         protected override void OnException(ExceptionContext filterContext)
         {
-            filterContext.ExceptionHandled = true;           ;
+            filterContext.ExceptionHandled = true;
         }
     }
 }

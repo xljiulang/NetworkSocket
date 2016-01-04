@@ -12,21 +12,26 @@ namespace NetworkSocket.Util.Converts
     public class ArrayConvert : IConvert
     {
         /// <summary>
-        /// 将value转换为目标类型
-        /// 并将转换所得的值放到result
-        /// 如果不支持转换，则返回false
+        /// 转换器实例
         /// </summary>
-        /// <param name="converter">转换器实例</param>
+        public Converter Converter { get; set; }
+
+        /// <summary>
+        /// 下一个转换单元
+        /// </summary>
+        public IConvert NextConvert { get; set; }
+
+        /// <summary>
+        /// 将value转换为目标类型
+        /// </summary>
         /// <param name="value">要转换的值</param>
         /// <param name="targetType">转换的目标类型</param>
-        /// <param name="result">转换结果</param>
-        /// <returns>如果不支持转换，则返回false</returns>
-        public virtual bool Convert(Converter converter, object value, Type targetType, out object result)
+        /// <returns></returns>
+        public object Convert(object value, Type targetType)
         {
             if (targetType.IsArray == false)
             {
-                result = null;
-                return false;
+                return this.NextConvert.Convert(value, targetType);
             }
 
             var items = value as IEnumerable;
@@ -34,8 +39,7 @@ namespace NetworkSocket.Util.Converts
 
             if (items == null)
             {
-                result = Array.CreateInstance(elementType, 0);
-                return true;
+                return Array.CreateInstance(elementType, 0);
             }
 
             var length = 0;
@@ -57,13 +61,11 @@ namespace NetworkSocket.Util.Converts
             var array = Array.CreateInstance(elementType, length);
             foreach (var item in items)
             {
-                var itemCast = converter.Convert(item, elementType);
+                var itemCast = this.Converter.Convert(item, elementType);
                 array.SetValue(itemCast, index);
                 index = index + 1;
             }
-
-            result = array;
-            return true;
+            return array;
         }
     }
 }

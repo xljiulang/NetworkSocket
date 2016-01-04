@@ -11,15 +11,21 @@ namespace NetworkSocket.Util
     public interface IConvert
     {
         /// <summary>
-        /// 将value转换为目标类型
-        /// 并将转换所得的值放到result
-        /// 如果不支持转换，则返回false
+        /// 设置转换器
         /// </summary>
-        /// <param name="converter">转换器实例</param>
+        Converter Converter { set; }
+
+        /// <summary>
+        /// 设置下一个转换单元
+        /// </summary>
+        IConvert NextConvert { set; }
+
+        /// <summary>
+        /// 将value转换为目标类型
+        /// </summary>
         /// <param name="value">要转换的值</param>
         /// <param name="targetType">转换的目标类型</param>
-        /// <param name="result">转换结果</param>
-        /// <returns>如果不支持转换，则返回false</returns>
-        bool Convert(Converter converter, object value, Type targetType, out object result);
+        /// <returns></returns>
+        object Convert(object value, Type targetType);
     }
 }

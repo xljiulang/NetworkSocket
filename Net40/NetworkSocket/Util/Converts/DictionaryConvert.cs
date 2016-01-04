@@ -11,22 +11,27 @@ namespace NetworkSocket.Util.Converts
     public class DictionaryConvert : IConvert
     {
         /// <summary>
-        /// 将value转换为目标类型
-        /// 并将转换所得的值放到result
-        /// 如果不支持转换，则返回false
+        /// 转换器实例
         /// </summary>
-        /// <param name="converter">转换器实例</param>
+        public Converter Converter { get; set; }
+
+        /// <summary>
+        /// 下一个转换单元
+        /// </summary>
+        public IConvert NextConvert { get; set; }
+
+        /// <summary>
+        /// 将value转换为目标类型
+        /// </summary>
         /// <param name="value">要转换的值</param>
         /// <param name="targetType">转换的目标类型</param>
-        /// <param name="result">转换结果</param>
-        /// <returns>如果不支持转换，则返回false</returns>
-        public virtual bool Convert(Converter converter, object value, Type targetType, out object result)
+        /// <returns></returns>
+        public object Convert(object value, Type targetType)
         {
             var dic = value as IDictionary<string, object>;
             if (dic == null)
             {
-                result = null;
-                return false;
+                return this.NextConvert.Convert(value, targetType);
             }
 
             var instance = Activator.CreateInstance(targetType);
@@ -37,13 +42,12 @@ namespace NetworkSocket.Util.Converts
                 var key = dic.Keys.FirstOrDefault(k => string.Equals(k, set.Name, StringComparison.OrdinalIgnoreCase));
                 if (key != null)
                 {
-                    var targetValue = converter.Convert(dic[key], set.Type);
+                    var targetValue = this.Converter.Convert(dic[key], set.Type);
                     set.SetValue(instance, targetValue);
                 }
             }
 
-            result = instance;
-            return true;
+            return instance;
         }
     }
 }

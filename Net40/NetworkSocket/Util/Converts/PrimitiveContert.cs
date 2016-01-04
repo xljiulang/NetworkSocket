@@ -12,44 +12,46 @@ namespace NetworkSocket.Util.Converts
     public class PrimitiveContert : IConvert
     {
         /// <summary>
-        /// 将value转换为目标类型
-        /// 并将转换所得的值放到result
-        /// 如果不支持转换，则返回false
+        /// 转换器实例
         /// </summary>
-        /// <param name="converter">转换器实例</param>
+        public Converter Converter { get; set; }
+
+        /// <summary>
+        /// 下一个转换单元
+        /// </summary>
+        public IConvert NextConvert { get; set; }
+
+        /// <summary>
+        /// 将value转换为目标类型
+        /// </summary>
         /// <param name="value">要转换的值</param>
         /// <param name="targetType">转换的目标类型</param>
-        /// <param name="result">转换结果</param>
-        /// <returns>如果不支持转换，则返回false</returns>
-        public virtual bool Convert(Converter converter, object value, Type targetType, out object result)
+        /// <returns></returns>
+        public object Convert(object value, Type targetType)
         {
             var valueString = value.ToString();
             if (targetType.IsEnum == true)
             {
-                result = Enum.Parse(targetType, valueString, true);
-                return true;
+                return Enum.Parse(targetType, valueString, true);
+            }
+
+            if (typeof(string) == targetType)
+            {
+                return valueString;
+            }
+
+            if (typeof(Guid) == targetType)
+            {
+                return Guid.Parse(valueString);
             }
 
             var convertible = value as IConvertible;
             if (convertible != null && typeof(IConvertible).IsAssignableFrom(targetType) == true)
             {
-                result = convertible.ToType(targetType, null);
-                return true;
+                return convertible.ToType(targetType, null);
             }
 
-            if (typeof(Guid) == targetType)
-            {
-                result = Guid.Parse(valueString);
-                return true;
-            }
-            else if (typeof(string) == targetType)
-            {
-                result = valueString;
-                return true;
-            }
-
-            result = null;
-            return false;
+            return this.NextConvert.Convert(value, targetType);
         }
     }
 }

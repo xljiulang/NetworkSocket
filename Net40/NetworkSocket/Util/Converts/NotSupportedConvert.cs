@@ -6,9 +6,9 @@ using System.Text;
 namespace NetworkSocket.Util.Converts
 {
     /// <summary>
-    /// 表示不作转换的转换单元
+    /// 表示最后一个转换单元
     /// </summary>
-    public class NoConvert : IConvert
+    internal class NotSupportedConvert : IConvert
     {
         /// <summary>
         /// 转换器实例
@@ -28,17 +28,8 @@ namespace NetworkSocket.Util.Converts
         /// <returns></returns>
         public object Convert(object value, Type targetType)
         {
-            if (targetType == typeof(object))
-            {
-                return value;
-            }
-
-            if (value != null && targetType == value.GetType())
-            {
-                return value;
-            }
-
-            return this.NextConvert.Convert(value, targetType);
+            var message = string.Format("不支持将{0}转换为{1}", value, targetType.Name);
+            throw new NotSupportedException(message);
         }
     }
 }

@@ -58,7 +58,7 @@ namespace NetworkSocket.Util
         /// </summary>
         public Converter()
         {
-            this.Items = new ContertItems()
+            this.Items = new ContertItems(this)
                 .AddLast<NoConvert>()
                 .AddLast<NullConvert>()
                 .AddLast<PrimitiveContert>()
@@ -96,18 +96,7 @@ namespace NetworkSocket.Util
             {
                 throw new ArgumentNullException("targetType");
             }
-
-            object result;
-            foreach (IConvert item in this.Items)
-            {
-                if (item.Convert(this, value, targetType, out result) == true)
-                {
-                    return result;
-                }
-            }
-
-            var message = string.Format("不支持将{0}转换为{1}", value, targetType.Name);
-            throw new NotSupportedException(message);
+            return this.Items.First.Convert(value, targetType);
         }
 
 
@@ -115,12 +104,38 @@ namespace NetworkSocket.Util
         /// 表示转换器的转换单元合集
         /// </summary>
         [DebuggerTypeProxy(typeof(DebugView))]
-        public class ContertItems : IEnumerable
+        public class ContertItems
         {
+            /// <summary>
+            /// 转换器实例
+            /// </summary>
+            private readonly Converter converter;
+
             /// <summary>
             /// 转换单元列表
             /// </summary>           
             private readonly LinkedList<IConvert> linkedList = new LinkedList<IConvert>();
+
+            /// <summary>
+            /// 获取第一个转换单元
+            /// </summary>
+            internal IConvert First
+            {
+                get
+                {
+                    return this.linkedList.First.Value;
+                }
+            }
+
+            /// <summary>
+            /// 转换单元合集
+            /// </summary>
+            /// <param name="converter">转换器实例</param>
+            public ContertItems(Converter converter)
+            {
+                this.converter = converter;
+                this.linkedList.AddLast(new NotSupportedConvert());
+            }
 
             /// <summary>
             /// 通过类型查找节点
@@ -152,6 +167,22 @@ namespace NetworkSocket.Util
             }
 
             /// <summary>
+            /// 初始化各转换单元
+            /// </summary>
+            /// <returns></returns>
+            private ContertItems ReInitItems()
+            {
+                var node = this.linkedList.First;
+                while (node.Next != null)
+                {
+                    node.Value.NextConvert = node.Next.Value;
+                    node.Value.Converter = this.converter;
+                    node = node.Next;
+                }
+                return this;
+            }
+
+            /// <summary>
             /// 添加一个转换单元到最前面
             /// </summary>
             /// <typeparam name="T">转换单元类型</typeparam>
@@ -163,7 +194,7 @@ namespace NetworkSocket.Util
                     var convert = Activator.CreateInstance<T>();
                     this.linkedList.AddFirst(convert);
                 }
-                return this;
+                return this.ReInitItems();
             }
 
             /// <summary>
@@ -182,7 +213,7 @@ namespace NetworkSocket.Util
                     var convert = Activator.CreateInstance<TDest>();
                     this.linkedList.AddBefore(node, convert);
                 }
-                return this;
+                return this.ReInitItems();
             }
 
             /// <summary>
@@ -201,7 +232,7 @@ namespace NetworkSocket.Util
                     var convert = Activator.CreateInstance<TDest>();
                     this.linkedList.AddAfter(node, convert);
                 }
-                return this;
+                return this.ReInitItems();
             }
 
             /// <summary>
@@ -211,12 +242,7 @@ namespace NetworkSocket.Util
             /// <returns></returns>
             public ContertItems AddLast<T>() where T : IConvert
             {
-                if (this.ExistConvert<T>() == false)
-                {
-                    var convert = Activator.CreateInstance<T>();
-                    this.linkedList.AddLast(convert);
-                }
-                return this;
+                return this.AddBefore<NotSupportedConvert, T>();
             }
 
             /// <summary>
@@ -231,7 +257,7 @@ namespace NetworkSocket.Util
                 {
                     this.linkedList.Remove(node);
                 }
-                return this;
+                return this.ReInitItems();
             }
 
             /// <summary>
@@ -250,7 +276,7 @@ namespace NetworkSocket.Util
                     var convert = Activator.CreateInstance<TDest>();
                     node.Value = convert;
                 }
-                return this;
+                return this.ReInitItems(); ;
             }
 
             /// <summary>
@@ -259,15 +285,7 @@ namespace NetworkSocket.Util
             public void Clear()
             {
                 this.linkedList.Clear();
-            }
-
-            /// <summary>
-            /// 获取迭代器
-            /// </summary>
-            /// <returns></returns>
-            public IEnumerator GetEnumerator()
-            {
-                return this.linkedList.GetEnumerator();
+                this.linkedList.AddLast(new NotSupportedConvert());
             }
 
             #region DebugView
@@ -298,7 +316,7 @@ namespace NetworkSocket.Util
                 {
                     get
                     {
-                        return view.linkedList.ToArray();
+                        return view.linkedList.Where(item => item.GetType() != typeof(NotSupportedConvert)).ToArray();
                     }
                 }
             }
