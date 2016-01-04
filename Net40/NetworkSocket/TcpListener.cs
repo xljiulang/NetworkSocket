@@ -212,21 +212,6 @@ namespace NetworkSocket
         }
 
         /// <summary>
-        /// 创建上下文对象
-        /// </summary>
-        /// <param name="session">当前会话</param>
-        /// <returns></returns>
-        private IContenxt CreateContext(TcpSessionBase session)
-        {
-            return new Context
-            {
-                Session = session,
-                Buffer = session.RecvBuffer,
-                AllSessions = this.workSessions
-            };
-        }
-
-        /// <summary>
         /// 创建会话对象
         /// </summary>
         /// <returns></returns>
@@ -246,18 +231,31 @@ namespace NetworkSocket
         }
 
         /// <summary>
+        /// 创建上下文对象
+        /// </summary>
+        /// <param name="session">当前会话</param>
+        /// <returns></returns>
+        private IContenxt CreateContext(TcpSessionBase session)
+        {
+            return new Context
+            {
+                Session = session,
+                Buffer = session.RecvBuffer,
+                AllSessions = this.workSessions
+            };
+        }
+
+        /// <summary>
         /// 生成一个会话对象
         /// </summary>
         /// <param name="socket">要绑定的socket</param>
         private void BuildSession(Socket socket)
         {
-            // 创建会话
+            // 创建会话，绑定处理委托
             var session = this.CreateSession();
-
-            // 绑定处理委托
-            session.ReceiveHandler = () => this.OnSessionRequest(session);
-            session.DisconnectHandler = () => this.RecyceSession(session);
-            session.CloseHandler = () => this.RecyceSession(session);
+            session.ReceiveHandler = this.InvokeSession;
+            session.DisconnectHandler = this.RecyceSession;
+            session.CloseHandler = this.RecyceSession;
 
             session.Bind(socket);
             session.TrySetKeepAlive(this.KeepAlivePeriod);
@@ -270,7 +268,25 @@ namespace NetworkSocket
             // 开始接收数据
             session.LoopReceive();
         }
-       
+
+        /// <summary>
+        /// 执行会话请求处理
+        /// </summary>
+        /// <param name="session">会话对象</param>
+        private void InvokeSession(TcpSessionBase session)
+        {
+            try
+            {
+                var context = this.CreateContext(session);
+                var task = this.middlewares.First.Value.Invoke(context);
+                if (task.Status == TaskStatus.Created) task.Start();
+            }
+            catch (Exception ex)
+            {
+                this.Events.RaiseException(this, ex);
+            }
+        }
+
         /// <summary>
         /// 回收复用会话对象
         /// 关闭会话并通知连接断开
@@ -286,27 +302,6 @@ namespace NetworkSocket
                 this.freeSessions.Add(session);
             }
         }
-
-
-        /// <summary>
-        /// 收到会话对象的请求            
-        /// </summary>
-        /// <param name="session">会话对象</param>
-        /// <returns></returns>
-        private void OnSessionRequest(TcpSessionBase session)
-        {
-            try
-            {
-                var context = this.CreateContext(session);
-                var task = this.middlewares.First.Value.Invoke(context);
-                if (task.Status == TaskStatus.Created) task.Start();
-            }
-            catch (Exception ex)
-            {
-                this.Events.RaiseException(this, ex);
-            }
-        }
-
 
         #region IDisposable
         /// <summary>

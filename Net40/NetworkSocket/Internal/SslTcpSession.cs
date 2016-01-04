@@ -152,7 +152,7 @@ namespace NetworkSocket
                 this.bufferRange.Offset,
                 this.bufferRange.Count,
                 this.EndRead,
-                null), this.DisconnectHandler);
+                null), () => this.DisconnectHandler(this));
         }
 
         /// <summary>
@@ -164,7 +164,7 @@ namespace NetworkSocket
             var read = base.TryInvokeFunc(() => this.sslStream.EndRead(asyncResult));
             if (read <= 0)
             {
-                this.DisconnectHandler();
+                this.DisconnectHandler(this);
                 return;
             }
 
@@ -173,7 +173,7 @@ namespace NetworkSocket
                 this.RecvBuffer.Seek(0, SeekOrigin.End);
                 this.RecvBuffer.Write(this.bufferRange.Buffer, this.bufferRange.Offset, read);
                 this.RecvBuffer.Seek(0, SeekOrigin.Begin);
-                this.ReceiveHandler();
+                this.ReceiveHandler(this);
             }
 
             // 重新进行一次接收
@@ -246,7 +246,7 @@ namespace NetworkSocket
             {
                 Interlocked.Exchange(ref this.PendingSendCount, 0);
             }
-            else if (Interlocked.Decrement(ref this.PendingSendCount) > 0L)
+            else if (Interlocked.Decrement(ref this.PendingSendCount) > 0)
             {
                 this.TrySendByteRangeAsync(null);
             }

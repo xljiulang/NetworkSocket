@@ -26,16 +26,15 @@ namespace NetworkSocket
         private object socketRoot = new object();
 
 
+        /// <summary>
+        /// 获取绑定的Socket对象
+        /// </summary>        
+        protected Socket Socket { get; private set; }
 
         /// <summary>
         /// 获取或设置等待发送的数量
         /// </summary>
         protected int PendingSendCount = 0;
-
-        /// <summary>
-        /// 获取绑定的Socket对象
-        /// </summary>        
-        protected Socket Socket { get; private set; }
 
         /// <summary>
         /// 获取待发送的ByeRange集合
@@ -46,17 +45,17 @@ namespace NetworkSocket
         /// <summary>
         /// 处理和分析收到的数据的委托
         /// </summary>
-        public Action ReceiveHandler;
+        public Action<TcpSessionBase> ReceiveHandler;
 
         /// <summary>
         /// 连接断开委托   
         /// </summary>
-        public Action DisconnectHandler;
+        public Action<TcpSessionBase> DisconnectHandler;
 
         /// <summary>
         /// 关闭时的委托
         /// </summary>
-        public Action CloseHandler;
+        public Action<TcpSessionBase> CloseHandler;
 
 
         /// <summary>
@@ -73,7 +72,7 @@ namespace NetworkSocket
         /// <summary>
         /// 获取会话是否提供SSL/TLS安全
         /// </summary>
-        public abstract bool IsSecurity { get; }        
+        public abstract bool IsSecurity { get; }
 
         /// <summary>
         /// 获取用户附加数据
@@ -197,7 +196,7 @@ namespace NetworkSocket
 
             if (this.CloseHandler != null)
             {
-                this.CloseHandler.Invoke();
+                this.CloseHandler(this);
             }
         }
 
@@ -388,7 +387,7 @@ namespace NetworkSocket
             if (disposing)
             {
                 this.socketRoot = null;
-                this.Socket = null;                
+                this.Socket = null;
                 this.PendingSendByteRanges = null;
                 this.Tag = null;
                 this.RecvBuffer = null;

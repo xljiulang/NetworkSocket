@@ -83,7 +83,7 @@ namespace NetworkSocket
                 {
                     this.RecvCompleted(this.Socket, this.recvArg);
                 }
-            }, this.DisconnectHandler);
+            }, () => this.DisconnectHandler(this));
         }
 
         /// <summary>
@@ -95,7 +95,7 @@ namespace NetworkSocket
         {
             if (arg.BytesTransferred == 0 || arg.SocketError != SocketError.Success)
             {
-                this.DisconnectHandler();
+                this.DisconnectHandler(this);
                 return;
             }
 
@@ -104,7 +104,7 @@ namespace NetworkSocket
                 this.RecvBuffer.Seek(0, SeekOrigin.End);
                 this.RecvBuffer.Write(arg.Buffer, arg.Offset, arg.BytesTransferred);
                 this.RecvBuffer.Seek(0, SeekOrigin.Begin);
-                this.ReceiveHandler();
+                this.ReceiveHandler(this);
             }
 
             // 重新进行一次接收
@@ -182,7 +182,7 @@ namespace NetworkSocket
             {
                 Interlocked.Exchange(ref this.PendingSendCount, 0);
             }
-            else if (Interlocked.Decrement(ref this.PendingSendCount) > 0L)
+            else if (Interlocked.Decrement(ref this.PendingSendCount) > 0)
             {
                 this.TrySendByteRangeAsync(null);
             }

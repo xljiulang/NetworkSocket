@@ -185,19 +185,21 @@ namespace NetworkSocket
         /// <summary>
         /// 接收处理
         /// </summary>
-        private void ReceiveHandler()
+        /// <param name="session">会话</param>
+        private void ReceiveHandler(TcpSessionBase session)
         {
-            this.OnReceive(this.session.RecvBuffer);
+            this.OnReceive(session.RecvBuffer);
         }
 
         /// <summary>
         /// 关闭连接处理
         /// </summary>
-        private void DisconnectHandler()
+        /// <param name="session">会话</param>
+        private void DisconnectHandler(TcpSessionBase session)
         {
-            this.session.Close(false);
+            session.Close(false);
             this.OnDisconnected();
-            this.ReconnectLoop();
+            ReconnectLoop();
         }
 
         /// <summary>
