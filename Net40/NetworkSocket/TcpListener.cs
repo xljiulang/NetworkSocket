@@ -279,7 +279,7 @@ namespace NetworkSocket
             {
                 var context = this.CreateContext(session);
                 var task = this.middlewares.First.Value.Invoke(context);
-                if (task.Status == TaskStatus.Created) task.Start();
+                if (task != null && task.Status == TaskStatus.Created) task.Start();
             }
             catch (Exception ex)
             {

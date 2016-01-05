@@ -137,7 +137,7 @@ namespace NetworkSocket.Fast
         /// <returns></returns>
         public override string ToString()
         {
-            return this.RemoteEndPoint == null ? string.Empty : this.RemoteEndPoint.ToString();
+            return this.session.ToString();
         }
     }
 }
