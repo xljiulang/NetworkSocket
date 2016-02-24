@@ -199,7 +199,7 @@ namespace NetworkSocket
         {
             session.Close(false);
             this.OnDisconnected();
-            ReconnectLoop();
+            this.ReconnectLoop();
         }
 
         /// <summary>

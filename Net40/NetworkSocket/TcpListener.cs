@@ -147,6 +147,19 @@ namespace NetworkSocket
         /// <exception cref="SocketException"></exception>
         public void Start(int port)
         {
+            var backlog = 1024;
+            this.Start(port, backlog);
+        }
+
+        /// <summary>
+        /// 开始启动监听
+        /// 如果IsListening为true，将不产生任何作用
+        /// </summary>
+        /// <param name="port">本机tcp端口</param>
+        /// <param name="backlog">挂起连接队列的最大长度</param>
+        /// <exception cref="SocketException"></exception>
+        public void Start(int port,int backlog)
+        {
             if (this.IsListening == true)
             {
                 return;
@@ -155,7 +168,7 @@ namespace NetworkSocket
             var localEndPoint = new IPEndPoint(IPAddress.Any, port);
             this.listenSocket = new Socket(localEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             this.listenSocket.Bind(localEndPoint);
-            this.listenSocket.Listen(100);
+            this.listenSocket.Listen(backlog);
 
             this.acceptArg = new SocketAsyncEventArgs();
             this.acceptArg.Completed += (sender, e) => this.AcceptSocketCompleted(e);
