@@ -9,6 +9,9 @@ namespace MixServer.AppStart
 {
     public static partial class Config
     {
+        /// <summary>
+        /// 配置模型验证
+        /// </summary>
         public static void ConfigValidation()
         {
             Model.Fluent<UserInfo>()

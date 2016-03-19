@@ -13,12 +13,16 @@ namespace MixServer.AppStart
 {
     public static partial class Config
     {
+        /// <summary>
+        /// 配置中间件
+        /// </summary>
+        /// <param name="listener"></param>
         public static void ConfigMiddleware(TcpListener listener)
         {           
             listener.Use<HttpMiddleware>().GlobalFilters.Add(new HttpGlobalFilter());
             listener.Use<JsonWebSocketMiddleware>().GlobalFilters.Add(new WebSockeGlobalFilter());
             listener.Use<FastMiddleware>().GlobalFilters.Add(new FastGlobalFilter());
-
+            listener.Use<FlexPolicyMiddleware>();
             listener.Events.OnDisconnected += Events_OnDisconnected;
         }
 
