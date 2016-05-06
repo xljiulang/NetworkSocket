@@ -31,6 +31,23 @@ namespace NetworkSocket
         }
 
         /// <summary>
+        /// 获取或设置值
+        /// </summary>
+        /// <param name="key">键</param>
+        /// <returns></returns>
+        public object this[string key]
+        {
+            get
+            {
+                return this.TryGet(key);
+            }
+            set
+            {
+                this.Set(key, value);
+            }
+        }
+
+        /// <summary>
         /// 设置用户数据
         /// </summary>
         /// <param name="key">键(不区分大小写)</param>

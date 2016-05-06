@@ -11,6 +11,13 @@ namespace NetworkSocket
     public interface ITag
     {
         /// <summary>
+        /// 获取或设置值
+        /// </summary>
+        /// <param name="key">键</param>
+        /// <returns></returns>
+        object this[string key] { get; set; }
+
+        /// <summary>
         /// 设置附加数据
         /// </summary>
         /// <param name="key">键(不区分大小写)</param>

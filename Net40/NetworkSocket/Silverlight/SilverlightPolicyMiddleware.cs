@@ -5,7 +5,7 @@ using System.Text;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
-namespace NetworkSocket.Flex
+namespace NetworkSocket.Silverlight
 {
     /// <summary>
     /// 表示Silverlight通讯策略XML文件中间件

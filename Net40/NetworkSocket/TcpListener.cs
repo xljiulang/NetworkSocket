@@ -72,12 +72,18 @@ namespace NetworkSocket
         public Events Events { get; private set; }
 
         /// <summary>
+        /// 获取会话提供者
+        /// </summary>
+        public ISessionProvider SessionProvider { get; private set; }
+
+        /// <summary>
         /// Tcp监听服务
         /// </summary>
         public TcpListener()
         {
             this.middlewares.AddLast(new LastMiddlerware());
             this.Events = new Events();
+            this.SessionProvider = this.workSessions;
         }
 
         /// <summary>
@@ -158,14 +164,25 @@ namespace NetworkSocket
         /// <param name="port">本机tcp端口</param>
         /// <param name="backlog">挂起连接队列的最大长度</param>
         /// <exception cref="SocketException"></exception>
-        public void Start(int port,int backlog)
+        public void Start(int port, int backlog)
+        {
+            var localEndPoint = new IPEndPoint(IPAddress.Any, port);
+            this.Start(localEndPoint, backlog);
+        }
+
+        /// <summary>
+        /// 开始启动监听
+        /// 如果IsListening为true，将不产生任何作用
+        /// </summary>
+        /// <param name="localEndPoint">本机ip和端口</param>
+        /// <param name="backlog">挂起连接队列的最大长度</param>
+        /// <exception cref="SocketException"></exception>
+        public void Start(IPEndPoint localEndPoint, int backlog)
         {
             if (this.IsListening == true)
             {
                 return;
             }
-
-            var localEndPoint = new IPEndPoint(IPAddress.Any, port);
             this.listenSocket = new Socket(localEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             this.listenSocket.Bind(localEndPoint);
             this.listenSocket.Listen(backlog);

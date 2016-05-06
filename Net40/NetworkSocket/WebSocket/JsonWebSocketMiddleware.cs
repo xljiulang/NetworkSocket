@@ -83,7 +83,7 @@ namespace NetworkSocket.WebSocket
             this.DependencyResolver = new DefaultDependencyResolver();
             this.FilterAttributeProvider = new DefaultFilterAttributeProvider();
 
-            DomainAssembly.GetAssemblies().ForEach(item => this.BindService(item));           
+            DomainAssembly.GetAssemblies().ForEach(item => this.BindService(item));
         }
 
         /// <summary>
@@ -91,7 +91,7 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="assembly">程序集</param>
         private void BindService(Assembly assembly)
-        {             
+        {
             var jsonWebSockeApiServices = assembly
                 .GetTypes()
                 .Where(item =>
@@ -144,7 +144,7 @@ namespace NetworkSocket.WebSocket
                 return;
             }
 
-            var session = context.Session.Wrapper as JsonWebSocketSession;
+            var session = (JsonWebSocketSession)context.Session.Wrapper;
             var requestContext = new RequestContext(session, jsonPacket, context.AllSessions);
             if (jsonPacket.state == false)
             {
@@ -180,7 +180,7 @@ namespace NetworkSocket.WebSocket
             }
             catch (Exception ex)
             {
-                var session = context.Session.Wrapper as JsonWebSocketSession;
+                var session = (JsonWebSocketSession)context.Session.Wrapper;
                 var requestContext = new RequestContext(session, null, context.AllSessions);
                 var exceptionConext = new ExceptionContext(requestContext, ex);
                 this.ExecGlobalExceptionFilters(exceptionConext);

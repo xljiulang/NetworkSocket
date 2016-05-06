@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 
 namespace NetworkSocket
@@ -17,9 +18,10 @@ namespace NetworkSocket
         void Use(IMiddleware middleware);
 
         /// <summary>
-        /// 开始启动监听       
+        /// 开始启动监听        
         /// </summary>
-        /// <param name="port">端口</param>
-        void Start(int port);
+        /// <param name="localEndPoint">本机ip和端口</param>
+        /// <param name="backlog">挂起连接队列的最大长度</param>
+        void Start(IPEndPoint localEndPoint, int backlog);
     }
 }

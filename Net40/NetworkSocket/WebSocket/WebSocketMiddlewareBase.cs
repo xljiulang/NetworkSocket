@@ -196,7 +196,7 @@ namespace NetworkSocket.WebSocket
                 case FrameCodes.Ping:
                     try
                     {
-                        var session = context.Session.Wrapper as WebSocketSession;
+                        var session = (WebSocketSession)context.Session.Wrapper;
                         session.Send(new FrameResponse(FrameCodes.Pong, frameRequest.Content));
                     }
                     catch (Exception)
