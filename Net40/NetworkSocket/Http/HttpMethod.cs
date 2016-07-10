@@ -15,10 +15,26 @@ namespace NetworkSocket.Http
         /// <summary>
         /// Get
         /// </summary>
-        GET = 1,
+        GET = 0x1,
+
         /// <summary>
         /// Post
         /// </summary>
-        POST = 2,
+        POST = 0x2,
+
+        /// <summary>
+        /// PUT
+        /// </summary>
+        PUT = 0x4,
+
+        /// <summary>
+        /// DELETE
+        /// </summary>
+        DELETE = 0x8,
+
+        /// <summary>
+        /// 所有方法
+        /// </summary>
+        ALL = GET | POST | PUT | DELETE
     }
 }

@@ -58,12 +58,12 @@ namespace NetworkSocket.Http
         /// <summary>
         /// 获取监听的本地IP和端口
         /// </summary>
-        public IPEndPoint LocalEndPoint { get; private set; }
+        public EndPoint LocalEndPoint { get; private set; }
 
         /// <summary>
         /// 获取远程端的IP和端口
         /// </summary>
-        public IPEndPoint RemoteEndPoint { get; private set; }
+        public EndPoint RemoteEndPoint { get; private set; }
 
         /// <summary>
         /// Http请求信息
@@ -258,24 +258,25 @@ namespace NetworkSocket.Http
             };
 
             var scheme = context.Session.IsSecurity ? "https" : "http";
-            var url = string.Format("{0}://localhost:{1}{2}", scheme, context.Session.LocalEndPoint.Port, match.Groups["path"].Value);
+            var url = string.Format("{0}://{1}{2}", scheme, context.Session.LocalEndPoint, match.Groups["path"].Value);
             request.Url = new Uri(url);
             request.Path = request.Url.AbsolutePath;
-            request.Query = HttpNameValueCollection.Parse(request.Url.Query.TrimStart('?'), false);
+            request.Query = HttpNameValueCollection.Parse(request.Url.Query.TrimStart('?'));
 
-            if (httpMethod == HttpMethod.GET)
+            switch (httpMethod)
             {
-                request.Body = new byte[0];
-                request.Form = new HttpNameValueCollection();
-                request.Files = new HttpFile[0];
-            }
-            else
-            {
-                request.Body = context.Buffer.ReadArray(contentLength);
-                context.Buffer.Position = headerLength;
-                HttpRequest.GeneratePostFormAndFiles(request, context.Buffer);
-            }
+                case HttpMethod.GET:
+                    request.Body = new byte[0];
+                    request.Form = new HttpNameValueCollection();
+                    request.Files = new HttpFile[0];
+                    break;
 
+                default:
+                    request.Body = context.Buffer.ReadArray(contentLength);
+                    context.Buffer.Position = headerLength;
+                    HttpRequest.GeneratePostFormAndFiles(request, context.Buffer);
+                    break;
+            }
             context.Buffer.Clear(headerLength + contentLength);
             return true;
         }
@@ -335,8 +336,8 @@ namespace NetworkSocket.Http
         /// <param name="request"></param>
         private static void GenerateApplicationForm(HttpRequest request)
         {
-            var formString = HttpUtility.UrlDecode(request.Body, Encoding.UTF8);
-            request.Form = HttpNameValueCollection.Parse(formString, true);
+            var body = Encoding.UTF8.GetString(request.Body);
+            request.Form = HttpNameValueCollection.Parse(body);
             request.Files = new HttpFile[0];
         }
 

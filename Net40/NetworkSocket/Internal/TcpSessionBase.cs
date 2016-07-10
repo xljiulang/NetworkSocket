@@ -97,12 +97,12 @@ namespace NetworkSocket
         /// <summary>
         /// 获取本机终结点
         /// </summary>
-        public IPEndPoint LocalEndPoint { get; private set; }
+        public EndPoint LocalEndPoint { get; private set; }
 
         /// <summary>
         /// 获取远程终结点
         /// </summary>
-        public IPEndPoint RemoteEndPoint { get; private set; }
+        public EndPoint RemoteEndPoint { get; private set; }
 
 
         /// <summary>

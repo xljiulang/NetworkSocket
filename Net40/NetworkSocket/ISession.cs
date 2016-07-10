@@ -20,12 +20,12 @@ namespace NetworkSocket
         /// <summary>
         /// 获取本机终结点
         /// </summary>
-        IPEndPoint LocalEndPoint { get; }
+        EndPoint LocalEndPoint { get; }
 
         /// <summary>
         /// 获取远程终结点
         /// </summary>
-        IPEndPoint RemoteEndPoint { get; }
+        EndPoint RemoteEndPoint { get; }
 
         /// <summary>
         /// 获取是否已连接到远程端

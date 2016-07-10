@@ -32,7 +32,7 @@ namespace NetworkSocket.WebSocket
         /// <summary>
         /// 获取远程终结点
         /// </summary>
-        public IPEndPoint RemoteEndPoint
+        public EndPoint RemoteEndPoint
         {
             get
             {
@@ -43,7 +43,7 @@ namespace NetworkSocket.WebSocket
         /// <summary>
         /// 获取本机终结点
         /// </summary>
-        public IPEndPoint LocalEndPoint
+        public EndPoint LocalEndPoint
         {
             get
             {

@@ -37,7 +37,7 @@ namespace NetworkSocket.Http
         /// <summary>
         /// 获取远程终结点
         /// </summary>
-        public IPEndPoint RemoteEndPoint
+        public EndPoint RemoteEndPoint
         {
             get
             {

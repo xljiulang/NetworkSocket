@@ -25,12 +25,10 @@ namespace NetworkSocket.Http
 
         /// <summary>
         /// 从参数字符串生成键或索引集合
-        /// 如果参数未解码过，则将被解码再处理
         /// </summary>
-        /// <param name="parameters">http请求参数</param>
-        /// <param name="decoded">参数是否已解码过</param>
+        /// <param name="parameters">http请求原始参数</param>
         /// <returns></returns>
-        public static HttpNameValueCollection Parse(string parameters, bool decoded)
+        public static HttpNameValueCollection Parse(string parameters)
         {
             var collection = new HttpNameValueCollection();
             if (string.IsNullOrWhiteSpace(parameters) == true)
@@ -38,19 +36,13 @@ namespace NetworkSocket.Http
                 return collection;
             }
 
-            if (decoded == false)
-            {
-                parameters = HttpUtility.UrlDecode(parameters, Encoding.UTF8);
-            }
-
             var keyValues = parameters.Split(new char[] { '&' }, StringSplitOptions.RemoveEmptyEntries);
             foreach (var item in keyValues)
             {
                 var kv = item.Split(new char[] { '=' }, StringSplitOptions.RemoveEmptyEntries);
-                if (kv.Length == 2)
-                {
-                    collection.Add(kv[0], kv[1]);
-                }
+                var key = HttpUtility.UrlDecode(kv[0], Encoding.UTF8);
+                var value = kv.Length == 2 ? HttpUtility.UrlDecode(kv[1], Encoding.UTF8) : null;
+                collection.Add(key, value);
             }
             return collection;
         }

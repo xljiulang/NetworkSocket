@@ -12,11 +12,6 @@ namespace NetworkSocket.Http
     internal class HttpActionList
     {
         /// <summary>
-        /// 全部http方法
-        /// </summary>
-        private const HttpMethod HttpMethod_ALL = HttpMethod.GET | HttpMethod.POST;
-
-        /// <summary>
         /// Api行为字典
         /// </summary>
         private readonly Dictionary<int, HttpAction> dictionary = new Dictionary<int, HttpAction>();
@@ -67,18 +62,17 @@ namespace NetworkSocket.Http
             var route = request.Url.AbsolutePath.ToLower();
             var apiAction = default(HttpAction);
 
-            if (request.HttpMethod == HttpMethod.POST)
+            var methodKey = route.GetHashCode() ^ request.HttpMethod.GetHashCode();
+            if (this.dictionary.TryGetValue(methodKey, out apiAction))
             {
-                var postKey = route.GetHashCode() ^ HttpMethod.POST.GetHashCode();
-                if (this.dictionary.TryGetValue(postKey, out apiAction))
-                {
-                    return apiAction;
-                }
+                return apiAction;
             }
-
-            var allKey = route.GetHashCode() ^ HttpMethod_ALL.GetHashCode();
-            this.dictionary.TryGetValue(allKey, out apiAction);
-            return apiAction;
+            else
+            {
+                methodKey = route.GetHashCode() ^ HttpMethod.ALL.GetHashCode();
+                this.dictionary.TryGetValue(methodKey, out apiAction);
+                return apiAction;
+            }
         }
     }
 }

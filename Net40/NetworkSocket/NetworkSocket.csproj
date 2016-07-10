@@ -108,13 +108,17 @@
     <Compile Include="Http\HttpEventSession.cs" />
     <Compile Include="Http\HttpFile.cs" />
     <Compile Include="Http\HttpFilterAttribute.cs" />
+    <Compile Include="Http\HttpDeleteAttribute.cs" />
+    <Compile Include="Http\HttpPutAttribute.cs" />
     <Compile Include="Http\HttpHeader.cs" />
     <Compile Include="Http\HttpMethod.cs" />
+    <Compile Include="Http\HttpMethodFilterAttribute.cs" />
     <Compile Include="Http\HttpMiddleware.cs" />
     <Compile Include="Http\HttpMiddlewareBase.cs" />
     <Compile Include="Http\HttpMIME.cs" />
     <Compile Include="Http\HttpMIMECollection.cs" />
     <Compile Include="Http\HttpNameValueCollection.cs" />
+    <Compile Include="Http\HttpGetAttribute.cs" />
     <Compile Include="Http\HttpPostAttribute.cs" />
     <Compile Include="Http\HttpRequest.cs" />
     <Compile Include="Http\HttpResponse.cs" />

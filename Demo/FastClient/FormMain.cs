@@ -35,8 +35,7 @@ namespace FastClient
             // 断开自动重连间隔一秒
             Client.Instance.AutoReconnect = TimeSpan.FromSeconds(1);
 
-            var remoteEndPoint = new IPEndPoint(IPAddress.Loopback, 1212);
-            var connected = await Client.Instance.Connect(remoteEndPoint);
+            var connected = await Client.Instance.Connect("locahost", 1212);
             var version = connected ? await Client.Instance.GetVersion() : null;
 
             this.Text = connected ? ("通讯库版本：" + version) : "连接服务器失败 ..";

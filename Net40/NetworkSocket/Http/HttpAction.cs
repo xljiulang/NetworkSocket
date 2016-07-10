@@ -90,11 +90,12 @@ namespace NetworkSocket.Http
         /// <returns></returns>
         private HttpMethod GetAllowMethod(MethodInfo method)
         {
-            if (Attribute.IsDefined(method, typeof(HttpPostAttribute), false) == true)
+            var methodAttribute = Attribute.GetCustomAttribute(method, typeof(HttpMethodFilterAttribute)) as HttpMethodFilterAttribute;
+            if (methodAttribute != null)
             {
-                return HttpMethod.POST;
+                return methodAttribute.Method;
             }
-            return HttpMethod.GET | HttpMethod.POST;
+            return HttpMethod.ALL;
         }
 
         /// <summary>
