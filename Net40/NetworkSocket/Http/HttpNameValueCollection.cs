@@ -24,6 +24,16 @@ namespace NetworkSocket.Http
         }
 
         /// <summary>
+        /// 返回是否包含键
+        /// </summary>
+        /// <param name="key">键</param>
+        /// <returns></returns>
+        public bool ContainsKey(string key)
+        {
+            return this.AllKeys.Any(k => k.Equals(key, StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
         /// 从参数字符串生成键或索引集合
         /// </summary>
         /// <param name="parameters">http请求原始参数</param>

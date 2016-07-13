@@ -82,12 +82,14 @@ namespace NetworkSocket.Http
         {
             get
             {
-                var value = this.Query[key];
-                if (string.IsNullOrEmpty(value) == true)
+                if (this.Query.ContainsKey(key))
                 {
-                    value = this.Form[key];
+                    return this.Query[key];
                 }
-                return value;
+                else
+                {
+                    return this.Form[key];
+                }
             }
         }
 
