@@ -155,12 +155,20 @@ namespace NetworkSocket.WebSocket
             var list = new List<FrameRequest>();
             while (true)
             {
-                var request = FrameRequest.Parse(context.Buffer);
-                if (request == null)
+                try
                 {
+                    var request = FrameRequest.Parse(context.Buffer);
+                    if (request == null)
+                    {
+                        return list;
+                    }
+                    list.Add(request);
+                }
+                catch (NotSupportedException)
+                {
+                    context.Session.Close();
                     return list;
                 }
-                list.Add(request);
             }
         }
 

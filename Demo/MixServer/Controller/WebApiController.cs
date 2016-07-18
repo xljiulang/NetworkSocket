@@ -21,7 +21,7 @@ namespace MixServer.Controller
             return Json(new { assembly = names.Name, version = names.Version.ToString() });
         }
 
-        [HttpPost]
+        [HttpPost]       
         public JsonResult Login(string account, string password)
         {
             return Json(new { account, password });

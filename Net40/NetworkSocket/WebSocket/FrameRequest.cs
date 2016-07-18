@@ -52,6 +52,7 @@ namespace NetworkSocket.WebSocket
         /// 返回请求数据包
         /// </summary>
         /// <param name="buffer">所有收到的数据</param>  
+        /// <exception cref="NotSupportedException"></exception>
         /// <returns></returns>
         public unsafe static FrameRequest Parse(IReceiveBuffer buffer)
         {
@@ -75,22 +76,25 @@ namespace NetworkSocket.WebSocket
 
             if (mask == false || Enum.IsDefined(typeof(FrameCodes), frameCode) == false || rsv != 0)
             {
-                return null;
+                throw new NotSupportedException();
             }
 
+            var contentSize = 0;
             var contentLength = (int)byte1.Take(1, 7);
             buffer.Position = 2;
 
             if (contentLength == 127)
             {
+                contentSize = 4;
                 contentLength = (int)buffer.ReadUInt64();
             }
             else if (contentLength == 126)
             {
+                contentSize = 2;
                 contentLength = (int)buffer.ReadUInt16();
             }
 
-            var packetLength = 6 + contentLength;
+            var packetLength = 6 + contentSize + contentLength;
             if (buffer.Length < packetLength)
             {
                 return null;
