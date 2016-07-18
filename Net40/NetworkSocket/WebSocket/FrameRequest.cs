@@ -85,7 +85,7 @@ namespace NetworkSocket.WebSocket
 
             if (contentLength == 127)
             {
-                contentSize = 4;
+                contentSize = 8;
                 contentLength = (int)buffer.ReadUInt64();
             }
             else if (contentLength == 126)
