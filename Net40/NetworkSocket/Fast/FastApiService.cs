@@ -1,11 +1,14 @@
 ﻿using NetworkSocket.Core;
 using NetworkSocket.Exceptions;
+using NetworkSocket.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace NetworkSocket.Fast
 {
@@ -18,7 +21,7 @@ namespace NetworkSocket.Fast
         /// 线程唯一上下文
         /// </summary>
         [ThreadStatic]
-        private static ActionContext currentContext;
+        private static ActionContext threadContext;
 
         /// <summary>
         /// 获取当前Api行为上下文
@@ -27,11 +30,11 @@ namespace NetworkSocket.Fast
         {
             get
             {
-                return currentContext;
+                return threadContext;
             }
             private set
             {
-                currentContext = value;
+                threadContext = value;
             }
         }
 
@@ -42,7 +45,7 @@ namespace NetworkSocket.Fast
         {
             get
             {
-                return currentContext.Session.Middleware;
+                return threadContext.Session.Middleware;
             }
         }
 
@@ -59,20 +62,13 @@ namespace NetworkSocket.Fast
                 filters = this.Server.FilterAttributeProvider.GetActionFilters(actionContext.Action);
                 this.ExecuteAction(actionContext, filters);
             }
-            catch (AggregateException exception)
+            catch (AggregateException ex)
             {
-                foreach (var inner in exception.InnerExceptions)
-                {
-                    this.ProcessExecutingException(actionContext, filters, inner);
-                }
+                this.ProcessExecutingException(actionContext, filters, ex.InnerException);
             }
-            catch (Exception exception)
+            catch (Exception ex)
             {
-                this.ProcessExecutingException(actionContext, filters, exception);
-            }
-            finally
-            {
-                this.CurrentContext = null;
+                this.ProcessExecutingException(actionContext, filters, ex);
             }
         }
 
@@ -96,7 +92,7 @@ namespace NetworkSocket.Fast
         /// <param name="actionContext">上下文</param>       
         /// <param name="filters">过滤器</param>
         /// <returns>当正常执行输出Api的结果时返回true</returns>
-        private bool ExecuteAction(ActionContext actionContext, IEnumerable<IFilter> filters)
+        private void ExecuteAction(ActionContext actionContext, IEnumerable<IFilter> filters)
         {
             var action = actionContext.Action;
             var packet = actionContext.Packet;
@@ -110,30 +106,57 @@ namespace NetworkSocket.Fast
             {
                 var exceptionContext = new ExceptionContext(actionContext, actionContext.Result);
                 Common.SendRemoteException(actionContext.Session.UnWrap(), exceptionContext);
-                return false;
+                return;
             }
 
             // 执行Api            
             var apiResult = action.Execute(this, parameters);
 
-            // Api执行后
-            this.ExecFiltersAfterAction(filters, actionContext);
-            if (actionContext.Result != null)
-            {
-                var exceptionContext = new ExceptionContext(actionContext, actionContext.Result);
-                Common.SendRemoteException(actionContext.Session.UnWrap(), exceptionContext);
-                return false;
-            }
+            // 执行Api完成后
+            Action<object> continuationAction = (result) =>
+            {               
+                this.ExecFiltersAfterAction(filters, actionContext);
 
-            // 返回数据
-            if (action.IsVoidReturn == false && session.IsConnected)
+                if (actionContext.Result != null)
+                {
+                    var exceptionContext = new ExceptionContext(actionContext, actionContext.Result);
+                    Common.SendRemoteException(actionContext.Session.UnWrap(), exceptionContext);
+                }
+                else if (action.IsVoidReturn == false && session.IsConnected)  // 返回数据
+                {
+                    packet.Body = serializer.Serialize(result);
+                    session.UnWrap().Send(packet.ToByteRange());
+                }
+            };
+
+            var apiResultTask = apiResult as Task;
+            if (apiResultTask == null)
             {
-                packet.Body = serializer.Serialize(apiResult);
-                session.UnWrap().Send(packet.ToByteRange());
+                continuationAction(apiResult);
             }
-            return true;
+            else
+            {
+                apiResultTask.ContinueWith(task =>
+                {
+                    try
+                    {
+                        this.CurrentContext = actionContext;
+                        var result = TaskResult.GetResult(task, action.ReturnType);
+                        continuationAction(result);
+                    }
+                    catch (AggregateException ex)
+                    {
+                        var exceptionContext = new ExceptionContext(actionContext, ex.InnerException);
+                        Common.SendRemoteException(actionContext.Session.UnWrap(), exceptionContext);
+                    }
+                    catch (Exception ex)
+                    {
+                        var exceptionContext = new ExceptionContext(actionContext, ex);
+                        Common.SendRemoteException(actionContext.Session.UnWrap(), exceptionContext);
+                    }
+                }, TaskScheduler.Current);
+            }
         }
-
 
         /// <summary>
         /// 在Api行为前 执行过滤器

@@ -22,7 +22,7 @@ namespace NetworkSocket.Http
         /// 线程唯一上下文
         /// </summary>
         [ThreadStatic]
-        private static ActionContext currentContext;
+        private static ActionContext threadContext;
 
         /// <summary>
         /// 获取当前Api行为上下文
@@ -31,11 +31,11 @@ namespace NetworkSocket.Http
         {
             get
             {
-                return currentContext;
+                return threadContext;
             }
             private set
             {
-                currentContext = value;
+                threadContext = value;
             }
         }
 
@@ -79,13 +79,13 @@ namespace NetworkSocket.Http
                 filters = this.Server.FilterAttributeProvider.GetActionFilters(actionContext.Action);
                 this.ExecuteAction(actionContext, filters);
             }
+            catch (AggregateException ex)
+            {
+                this.ProcessExecutingException(actionContext, filters, ex.InnerException);
+            }
             catch (Exception ex)
             {
                 this.ProcessExecutingException(actionContext, filters, ex);
-            }
-            finally
-            {
-                this.CurrentContext = null;
             }
         }
 
@@ -115,7 +115,7 @@ namespace NetworkSocket.Http
         /// <param name="actionContext">上下文</param>       
         /// <param name="filters">过滤器</param>
         /// <returns>如果输出Api的返回结果就返回true</returns>
-        private bool ExecuteAction(ActionContext actionContext, IEnumerable<IFilter> filters)
+        private void ExecuteAction(ActionContext actionContext, IEnumerable<IFilter> filters)
         {
             // Api参数准备
             var parameters = this.GetAndUpdateParameterValues(actionContext);
@@ -125,26 +125,56 @@ namespace NetworkSocket.Http
             if (actionContext.Result != null)
             {
                 actionContext.Result.ExecuteResult(actionContext);
-                return false;
+                return;
             }
 
             // 执行Action              
-            var apiResult = actionContext.Action.Execute(this, parameters) as ActionResult;
-            if (apiResult == null) // 直接在方法体里return null
-            {
-                throw new Exception("ActionResult不能为null，请使用EmptyResult替代");
-            }
+            var apiResult = actionContext.Action.Execute(this, parameters);
 
-            // Action执行后
-            this.ExecFiltersAfterAction(filters, actionContext);
-            if (actionContext.Result != null)
-            {
-                actionContext.Result.ExecuteResult(actionContext);
-                return false;
-            }
+            // 执行Api完成后
+            Action<ActionResult> continuationAction = (result) =>
+            {                
+                this.ExecFiltersAfterAction(filters, actionContext);
 
-            apiResult.ExecuteResult(actionContext);
-            return true;
+                if (actionContext.Result != null)
+                {
+                    actionContext.Result.ExecuteResult(actionContext);
+                }
+                else
+                {
+                    if (result == null)
+                    {
+                        result = new EmptyResult();
+                    }
+                    result.ExecuteResult(actionContext);
+                }
+            };
+
+            var apiResultTask = apiResult as Task;
+            if (apiResultTask == null)
+            {
+                continuationAction(apiResult as ActionResult);
+            }
+            else
+            {
+                apiResultTask.ContinueWith(task =>
+                {
+                    try
+                    {
+                        this.CurrentContext = actionContext;
+                        var result = TaskResult.GetResult(task, actionContext.Action.ReturnType) as ActionResult;
+                        continuationAction(result);
+                    }
+                    catch (AggregateException ex)
+                    {
+                        this.ProcessExecutingException(actionContext, filters, ex.InnerException);
+                    }
+                    catch (Exception ex)
+                    {
+                        this.ProcessExecutingException(actionContext, filters, ex);
+                    }
+                }, TaskScheduler.Current);
+            }
         }
 
 

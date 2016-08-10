@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace NetworkSocket.Http
 {
@@ -119,6 +120,25 @@ namespace NetworkSocket.Http
                 return false;
             }
             return obj.GetHashCode() == this.GetHashCode() && obj is HttpAction;
+        }
+
+        /// <summary>
+        /// 是否可以创建为一个HttpAction
+        /// </summary>
+        /// <param name="method">方法 </param>
+        /// <returns></returns>
+        public static bool IsSupport(MethodInfo method)
+        {
+            if (typeof(ActionResult).IsAssignableFrom(method.ReturnType))
+            {
+                return true;
+            }
+            else if (method.ReturnType.IsGenericType && method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>))
+            {
+                var actionType = method.ReturnType.GetGenericArguments().First();
+                return typeof(ActionResult).IsAssignableFrom(actionType);
+            }
+            return false;
         }
     }
 }

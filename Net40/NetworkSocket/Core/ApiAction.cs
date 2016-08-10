@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace NetworkSocket.Core
 {
@@ -32,22 +33,22 @@ namespace NetworkSocket.Core
         /// <summary>
         /// 获取Api行为的方法成员返回类型是否为void
         /// </summary>
-        public bool IsVoidReturn { get; private set; }
+        public bool IsVoidReturn { get; protected set; }
 
         /// <summary>
         /// Api行为的方法成员返回类型
         /// </summary>
-        public Type ReturnType { get; private set; }
+        public Type ReturnType { get; protected set; }
 
         /// <summary>
         /// 获取Api行为的参数信息
         /// </summary>
-        public ParameterInfo[] ParameterInfos { get; private set; }
+        public ParameterInfo[] ParameterInfos { get; protected set; }
 
         /// <summary>
         /// 获取Api行为的方法成员参数类型
         /// </summary>
-        public Type[] ParameterTypes { get; private set; }
+        public Type[] ParameterTypes { get; protected set; }
 
         /// <summary>
         /// 获取Api行为的参数值
@@ -88,10 +89,10 @@ namespace NetworkSocket.Core
 
             this.DeclaringService = method.DeclaringType;
             this.ReturnType = method.ReturnType;
-            this.IsVoidReturn = method.ReturnType.Equals(typeof(void));
+            this.IsVoidReturn = method.ReturnType.Equals(typeof(void)) || method.ReturnType.Equals(typeof(Task));
             this.ParameterInfos = method.GetParameters();
             this.ParameterTypes = this.ParameterInfos.Select(item => item.ParameterType).ToArray();
-                        
+
             var api = Attribute.GetCustomAttribute(method, typeof(ApiAttribute)) as ApiAttribute;
             if (api != null && string.IsNullOrWhiteSpace(api.Name) == false)
             {

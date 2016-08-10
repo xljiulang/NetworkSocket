@@ -90,7 +90,7 @@ namespace NetworkSocket.Http
         {
             return controller
                 .GetMethods()
-                .Where(item => typeof(ActionResult).IsAssignableFrom(item.ReturnType))
+                .Where(item => HttpAction.IsSupport(item))
                 .Select(method => new HttpAction(method, controller));
         }
 

@@ -142,6 +142,18 @@ namespace NetworkSocket
                 return taskSource.Task;
             }
 
+            var dnsEndpoint = remoteEndPoint as DnsEndPoint;
+            if (dnsEndpoint != null)
+            {
+                var ip = Dns.GetHostAddresses(dnsEndpoint.Host).Where(item => item.AddressFamily == AddressFamily.InterNetwork).FirstOrDefault();
+                if (ip == null)
+                {
+                    taskSource.TrySetResult(false);
+                    return taskSource.Task;
+                }
+                remoteEndPoint = new IPEndPoint(ip, dnsEndpoint.Port);
+            }
+
             var socket = new Socket(remoteEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             var connectArg = new SocketAsyncEventArgs { RemoteEndPoint = remoteEndPoint, UserToken = taskSource };
             connectArg.Completed += this.ConnectCompleted;

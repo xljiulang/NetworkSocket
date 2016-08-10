@@ -176,6 +176,7 @@
     <Compile Include="Util\Converts\PropertySetter.cs" />
     <Compile Include="Util\IConvert.cs" />
     <Compile Include="Util\LimitedTask.cs" />
+    <Compile Include="Util\TaskResult.cs" />
     <Compile Include="Util\TcpSnapshot.cs" />
     <Compile Include="Util\HttpUtility.cs" />
     <Compile Include="Validation\FluentApi.cs" />

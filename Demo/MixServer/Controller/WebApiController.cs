@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Diagnostics;
 using NetworkSocket.Fast;
+using System.Threading.Tasks;
 
 namespace MixServer.Controller
 {
@@ -21,9 +22,10 @@ namespace MixServer.Controller
             return Json(new { assembly = names.Name, version = names.Version.ToString() });
         }
 
-        [HttpPost]       
-        public JsonResult Login(string account, string password)
+        [HttpPost]
+        public async Task<JsonResult> Login(string account, string password)
         {
+            await Task.Delay(TimeSpan.FromSeconds(2));
             return Json(new { account, password });
         }
     }

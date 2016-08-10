@@ -1,5 +1,6 @@
 ﻿using NetworkSocket.Core;
 using NetworkSocket.Exceptions;
+using NetworkSocket.Util;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,6 +8,7 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace NetworkSocket.WebSocket
 {
@@ -19,7 +21,7 @@ namespace NetworkSocket.WebSocket
         /// 线程唯一上下文
         /// </summary>
         [ThreadStatic]
-        private static ActionContext currentContext;
+        private static ActionContext threadContext;
 
         /// <summary>
         /// 获取当前Api行为上下文
@@ -28,11 +30,11 @@ namespace NetworkSocket.WebSocket
         {
             get
             {
-                return currentContext;
+                return threadContext;
             }
             private set
             {
-                currentContext = value;
+                threadContext = value;
             }
         }
 
@@ -43,7 +45,7 @@ namespace NetworkSocket.WebSocket
         {
             get
             {
-                return currentContext.Session.Middleware;
+                return threadContext.Session.Middleware;
             }
         }
 
@@ -60,20 +62,13 @@ namespace NetworkSocket.WebSocket
                 filters = this.Server.FilterAttributeProvider.GetActionFilters(actionContext.Action);
                 this.ExecuteAction(actionContext, filters);
             }
-            catch (AggregateException exception)
+            catch (AggregateException ex)
             {
-                foreach (var inner in exception.InnerExceptions)
-                {
-                    this.ProcessExecutingException(actionContext, filters, inner);
-                }
+                this.ProcessExecutingException(actionContext, filters, ex.InnerException);
             }
-            catch (Exception exception)
+            catch (Exception ex)
             {
-                this.ProcessExecutingException(actionContext, filters, exception);
-            }
-            finally
-            {
-                this.CurrentContext = null;
+                this.ProcessExecutingException(actionContext, filters, ex);
             }
         }
 
@@ -98,7 +93,7 @@ namespace NetworkSocket.WebSocket
         /// <param name="filters">过滤器</param>
         /// <exception cref="ArgumentException"></exception>
         /// <returns>当正常执行输出Api的结果时返回true</returns>
-        private bool ExecuteAction(ActionContext actionContext, IEnumerable<IFilter> filters)
+        private void ExecuteAction(ActionContext actionContext, IEnumerable<IFilter> filters)
         {
             var packet = actionContext.Packet;
             var action = actionContext.Action;
@@ -112,29 +107,55 @@ namespace NetworkSocket.WebSocket
             {
                 var exceptionContext = new ExceptionContext(actionContext, actionContext.Result);
                 this.Server.SendRemoteException(exceptionContext);
-                return false;
+                return;
             }
 
             // 执行Api            
             var apiResult = action.Execute(this, parameters);
 
-            // Api执行后
-            this.ExecFiltersAfterAction(filters, actionContext);
-            if (actionContext.Result != null)
+            // 执行Api完成后
+            Action<object> continuationAction = (result) =>
             {
-                var exceptionContext = new ExceptionContext(actionContext, actionContext.Result);
-                this.Server.SendRemoteException(exceptionContext);
-                return false;
-            }
+                this.ExecFiltersAfterAction(filters, actionContext);
 
-            // 返回数据
-            if (action.IsVoidReturn == false && session.IsConnected)
+                if (actionContext.Result != null)
+                {
+                    var exceptionContext = new ExceptionContext(actionContext, actionContext.Result);
+                    this.Server.SendRemoteException(exceptionContext);
+                }
+                else if (action.IsVoidReturn == false && session.IsConnected)  // 返回数据
+                {
+                    packet.body = result;
+                    var packetJson = serializer.Serialize(packet);
+                    session.UnWrap().SendText(packetJson);
+                }
+            };
+
+            var apiResultTask = apiResult as Task;
+            if (apiResultTask == null)
             {
-                packet.body = apiResult;
-                var packetJson = serializer.Serialize(packet);
-                session.UnWrap().SendText(packetJson);
+                continuationAction(apiResult);
             }
-            return true;
+            else
+            {
+                apiResultTask.ContinueWith(task =>
+                {
+                    try
+                    {
+                        this.CurrentContext = actionContext;
+                        var result = TaskResult.GetResult(task, action.ReturnType);
+                        continuationAction(result);
+                    }
+                    catch (AggregateException ex)
+                    {
+                        this.ProcessExecutingException(actionContext, filters, ex.InnerException);
+                    }
+                    catch (Exception ex)
+                    {
+                        this.ProcessExecutingException(actionContext, filters, ex);
+                    }
+                }, TaskScheduler.Current);
+            }
         }
 
         /// <summary>
