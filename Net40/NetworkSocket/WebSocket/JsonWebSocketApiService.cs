@@ -95,10 +95,7 @@ namespace NetworkSocket.WebSocket
         /// <returns>当正常执行输出Api的结果时返回true</returns>
         private void ExecuteAction(ActionContext actionContext, IEnumerable<IFilter> filters)
         {
-            var packet = actionContext.Packet;
-            var action = actionContext.Action;
-            var session = actionContext.Session;
-            var serializer = this.Server.JsonSerializer;
+            // 参数准备
             var parameters = this.GetAndUpdateParameterValues(actionContext);
 
             // Api执行前
@@ -111,8 +108,7 @@ namespace NetworkSocket.WebSocket
             }
 
             // 执行Api            
-            var apiResult = action.Execute(this, parameters);
-            TaskWrapper.Parse(apiResult, action.ReturnType).ContinueWith(task =>
+            actionContext.Action.ExecuteAsWrapper(this, parameters).ContinueWith(task =>
             {
                 try
                 {
@@ -125,11 +121,11 @@ namespace NetworkSocket.WebSocket
                         var exceptionContext = new ExceptionContext(actionContext, actionContext.Result);
                         this.Server.SendRemoteException(exceptionContext);
                     }
-                    else if (action.IsVoidReturn == false && session.IsConnected)  // 返回数据
+                    else if (actionContext.Action.IsVoidReturn == false && actionContext.Session.IsConnected)  // 返回数据
                     {
-                        packet.body = result;
-                        var packetJson = serializer.Serialize(packet);
-                        session.UnWrap().SendText(packetJson);
+                        actionContext.Packet.body = result;
+                        var packetJson = this.Server.JsonSerializer.Serialize(actionContext.Packet);
+                        actionContext.Session.UnWrap().SendText(packetJson);
                     }
                 }
                 catch (AggregateException ex)

@@ -129,8 +129,7 @@ namespace NetworkSocket.Http
             }
 
             // 执行Action              
-            var apiResult = actionContext.Action.Execute(this, parameters);
-            TaskWrapper.Parse(apiResult, actionContext.Action.ReturnType).ContinueWith(task =>
+            actionContext.Action.ExecuteAsWrapper(this, parameters).ContinueWith(task =>
             {
                 try
                 {
@@ -144,10 +143,7 @@ namespace NetworkSocket.Http
                     }
                     else
                     {
-                        if (result == null)
-                        {
-                            result = new EmptyResult();
-                        }
+                        if (result == null) result = new EmptyResult();
                         result.ExecuteResult(actionContext);
                     }
                 }

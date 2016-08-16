@@ -146,6 +146,19 @@ namespace NetworkSocket.Core
         }
 
         /// <summary>
+        /// 执行Api行为
+        /// 并将结果转换为ITaskWrapper
+        /// </summary>
+        /// <param name="service">服务实例</param>
+        /// <param name="parameters">参数实例</param>
+        /// <returns></returns>
+        public ITaskWrapper ExecuteAsWrapper(object service, params object[] parameters)
+        {
+            var result = this.Execute(service, parameters);
+            return TaskWrapper.Parse(result, this.ReturnType);
+        }
+
+        /// <summary>
         /// 字符串显示
         /// </summary>
         /// <returns></returns>

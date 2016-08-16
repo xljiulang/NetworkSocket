@@ -94,11 +94,8 @@ namespace NetworkSocket.Fast
         /// <returns>当正常执行输出Api的结果时返回true</returns>
         private void ExecuteAction(ActionContext actionContext, IEnumerable<IFilter> filters)
         {
-            var action = actionContext.Action;
-            var packet = actionContext.Packet;
-            var session = actionContext.Session;
-            var serializer = this.Server.Serializer;
-            var parameters = Common.GetAndUpdateParameterValues(serializer, actionContext);
+            // 参数准备
+            var parameters = Common.GetAndUpdateParameterValues(this.Server.Serializer, actionContext);
 
             // Api执行前
             this.ExecFiltersBeforeAction(filters, actionContext);
@@ -110,8 +107,7 @@ namespace NetworkSocket.Fast
             }
 
             // 执行Api            
-            var apiResult = action.Execute(this, parameters);
-            TaskWrapper.Parse(apiResult, action.ReturnType).ContinueWith(task =>
+            actionContext.Action.ExecuteAsWrapper(this, parameters).ContinueWith(task =>
             {
                 try
                 {
@@ -124,10 +120,10 @@ namespace NetworkSocket.Fast
                         var exceptionContext = new ExceptionContext(actionContext, actionContext.Result);
                         Common.SendRemoteException(actionContext.Session.UnWrap(), exceptionContext);
                     }
-                    else if (action.IsVoidReturn == false && session.IsConnected)  // 返回数据
+                    else if (actionContext.Action.IsVoidReturn == false && actionContext.Session.IsConnected)  // 返回数据
                     {
-                        packet.Body = serializer.Serialize(result);
-                        session.UnWrap().Send(packet.ToByteRange());
+                        actionContext.Packet.Body = this.Server.Serializer.Serialize(result);
+                        actionContext.Session.UnWrap().Send(actionContext.Packet.ToByteRange());
                     }
                 }
                 catch (AggregateException ex)

@@ -11,7 +11,7 @@ namespace NetworkSocket.Core
     /// <summary>
     /// Task包装
     /// </summary>
-    internal class TaskWrapper
+    internal class TaskWrapper : ITaskWrapper
     {
         /// <summary>
         /// 安全字典
@@ -88,8 +88,8 @@ namespace NetworkSocket.Core
             }
             else
             {
-                var invoker = TaskWrapper.dic.GetOrAdd(this.valueType, (type) => TaskWrapper.CreateTaskResultInvoker(type));
-                return invoker.Invoke(this.task);
+                var resultInvoker = TaskWrapper.dic.GetOrAdd(this.valueType, (type) => TaskWrapper.CreateTaskResultInvoker(type));
+                return resultInvoker(this.task);
             }
         }
 
@@ -98,12 +98,13 @@ namespace NetworkSocket.Core
         /// </summary>
         /// <param name="action">行为</param>
         /// <exception cref="ArgumentNullException"></exception>
-        public TaskWrapper ContinueWith(Action<TaskWrapper> action)
+        public ITaskWrapper ContinueWith(Action<ITaskWrapper> action)
         {
             if (action == null)
             {
                 throw new ArgumentNullException();
             }
+
             if (this.task == null)
             {
                 action(this);
@@ -113,22 +114,6 @@ namespace NetworkSocket.Core
                 this.task.ContinueWith(t => action(this));
             }
             return this;
-        }
-
-        /// <summary>
-        /// 取消包装
-        /// </summary>
-        /// <returns></returns>
-        public Task UnWrap()
-        {
-            if (this.task == null)
-            {
-                return new Task<object>(() => this.value);
-            }
-            else
-            {
-                return this.task;
-            }
         }
     }
 }
