@@ -111,51 +111,36 @@ namespace NetworkSocket.Fast
 
             // 执行Api            
             var apiResult = action.Execute(this, parameters);
-
-            // 执行Api完成后
-            Action<object> continuationAction = (result) =>
-            {               
-                this.ExecFiltersAfterAction(filters, actionContext);
-
-                if (actionContext.Result != null)
+            TaskWrapper.Parse(apiResult, action.ReturnType).ContinueWith(task =>
+            {
+                try
                 {
-                    var exceptionContext = new ExceptionContext(actionContext, actionContext.Result);
+                    this.CurrentContext = actionContext;
+                    var result = task.GetResult();
+                    this.ExecFiltersAfterAction(filters, actionContext);
+
+                    if (actionContext.Result != null)
+                    {
+                        var exceptionContext = new ExceptionContext(actionContext, actionContext.Result);
+                        Common.SendRemoteException(actionContext.Session.UnWrap(), exceptionContext);
+                    }
+                    else if (action.IsVoidReturn == false && session.IsConnected)  // 返回数据
+                    {
+                        packet.Body = serializer.Serialize(result);
+                        session.UnWrap().Send(packet.ToByteRange());
+                    }
+                }
+                catch (AggregateException ex)
+                {
+                    var exceptionContext = new ExceptionContext(actionContext, ex.InnerException);
                     Common.SendRemoteException(actionContext.Session.UnWrap(), exceptionContext);
                 }
-                else if (action.IsVoidReturn == false && session.IsConnected)  // 返回数据
+                catch (Exception ex)
                 {
-                    packet.Body = serializer.Serialize(result);
-                    session.UnWrap().Send(packet.ToByteRange());
+                    var exceptionContext = new ExceptionContext(actionContext, ex);
+                    Common.SendRemoteException(actionContext.Session.UnWrap(), exceptionContext);
                 }
-            };
-
-            var apiResultTask = apiResult as Task;
-            if (apiResultTask == null)
-            {
-                continuationAction(apiResult);
-            }
-            else
-            {
-                apiResultTask.ContinueWith(task =>
-                {
-                    try
-                    {
-                        this.CurrentContext = actionContext;
-                        var result = TaskResult.GetResult(task, action.ReturnType);
-                        continuationAction(result);
-                    }
-                    catch (AggregateException ex)
-                    {
-                        var exceptionContext = new ExceptionContext(actionContext, ex.InnerException);
-                        Common.SendRemoteException(actionContext.Session.UnWrap(), exceptionContext);
-                    }
-                    catch (Exception ex)
-                    {
-                        var exceptionContext = new ExceptionContext(actionContext, ex);
-                        Common.SendRemoteException(actionContext.Session.UnWrap(), exceptionContext);
-                    }
-                }, TaskScheduler.Current);
-            }
+            });
         }
 
         /// <summary>

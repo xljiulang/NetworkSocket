@@ -112,50 +112,35 @@ namespace NetworkSocket.WebSocket
 
             // 执行Api            
             var apiResult = action.Execute(this, parameters);
-
-            // 执行Api完成后
-            Action<object> continuationAction = (result) =>
+            TaskWrapper.Parse(apiResult, action.ReturnType).ContinueWith(task =>
             {
-                this.ExecFiltersAfterAction(filters, actionContext);
-
-                if (actionContext.Result != null)
+                try
                 {
-                    var exceptionContext = new ExceptionContext(actionContext, actionContext.Result);
-                    this.Server.SendRemoteException(exceptionContext);
+                    this.CurrentContext = actionContext;
+                    var result = task.GetResult();
+                    this.ExecFiltersAfterAction(filters, actionContext);
+
+                    if (actionContext.Result != null)
+                    {
+                        var exceptionContext = new ExceptionContext(actionContext, actionContext.Result);
+                        this.Server.SendRemoteException(exceptionContext);
+                    }
+                    else if (action.IsVoidReturn == false && session.IsConnected)  // 返回数据
+                    {
+                        packet.body = result;
+                        var packetJson = serializer.Serialize(packet);
+                        session.UnWrap().SendText(packetJson);
+                    }
                 }
-                else if (action.IsVoidReturn == false && session.IsConnected)  // 返回数据
+                catch (AggregateException ex)
                 {
-                    packet.body = result;
-                    var packetJson = serializer.Serialize(packet);
-                    session.UnWrap().SendText(packetJson);
+                    this.ProcessExecutingException(actionContext, filters, ex.InnerException);
                 }
-            };
-
-            var apiResultTask = apiResult as Task;
-            if (apiResultTask == null)
-            {
-                continuationAction(apiResult);
-            }
-            else
-            {
-                apiResultTask.ContinueWith(task =>
+                catch (Exception ex)
                 {
-                    try
-                    {
-                        this.CurrentContext = actionContext;
-                        var result = TaskResult.GetResult(task, action.ReturnType);
-                        continuationAction(result);
-                    }
-                    catch (AggregateException ex)
-                    {
-                        this.ProcessExecutingException(actionContext, filters, ex.InnerException);
-                    }
-                    catch (Exception ex)
-                    {
-                        this.ProcessExecutingException(actionContext, filters, ex);
-                    }
-                }, TaskScheduler.Current);
-            }
+                    this.ProcessExecutingException(actionContext, filters, ex);
+                }
+            });
         }
 
         /// <summary>

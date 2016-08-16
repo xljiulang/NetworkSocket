@@ -130,51 +130,36 @@ namespace NetworkSocket.Http
 
             // 执行Action              
             var apiResult = actionContext.Action.Execute(this, parameters);
-
-            // 执行Api完成后
-            Action<ActionResult> continuationAction = (result) =>
-            {                
-                this.ExecFiltersAfterAction(filters, actionContext);
-
-                if (actionContext.Result != null)
-                {
-                    actionContext.Result.ExecuteResult(actionContext);
-                }
-                else
-                {
-                    if (result == null)
-                    {
-                        result = new EmptyResult();
-                    }
-                    result.ExecuteResult(actionContext);
-                }
-            };
-
-            var apiResultTask = apiResult as Task;
-            if (apiResultTask == null)
+            TaskWrapper.Parse(apiResult, actionContext.Action.ReturnType).ContinueWith(task =>
             {
-                continuationAction(apiResult as ActionResult);
-            }
-            else
-            {
-                apiResultTask.ContinueWith(task =>
+                try
                 {
-                    try
+                    this.CurrentContext = actionContext;
+                    var result = task.GetResult() as ActionResult;
+                    this.ExecFiltersAfterAction(filters, actionContext);
+
+                    if (actionContext.Result != null)
                     {
-                        this.CurrentContext = actionContext;
-                        var result = TaskResult.GetResult(task, actionContext.Action.ReturnType) as ActionResult;
-                        continuationAction(result);
+                        actionContext.Result.ExecuteResult(actionContext);
                     }
-                    catch (AggregateException ex)
+                    else
                     {
-                        this.ProcessExecutingException(actionContext, filters, ex.InnerException);
+                        if (result == null)
+                        {
+                            result = new EmptyResult();
+                        }
+                        result.ExecuteResult(actionContext);
                     }
-                    catch (Exception ex)
-                    {
-                        this.ProcessExecutingException(actionContext, filters, ex);
-                    }
-                }, TaskScheduler.Current);
-            }
+                }
+                catch (AggregateException ex)
+                {
+                    this.ProcessExecutingException(actionContext, filters, ex.InnerException);
+                }
+                catch (Exception ex)
+                {
+                    this.ProcessExecutingException(actionContext, filters, ex);
+                }
+            });
         }
 
 

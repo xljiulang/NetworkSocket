@@ -77,6 +77,7 @@
     <Compile Include="Core\Internal\PacketIdProvider.cs" />
     <Compile Include="Core\Internal\TaskSetAction.cs" />
     <Compile Include="Core\Internal\TaskSetActionTable.cs" />
+    <Compile Include="Core\Internal\TaskWrapper.cs" />
     <Compile Include="Core\ISerializer.cs" />
     <Compile Include="Endians.cs" />
     <Compile Include="Events.cs" />
@@ -176,7 +177,6 @@
     <Compile Include="Util\Converts\PropertySetter.cs" />
     <Compile Include="Util\IConvert.cs" />
     <Compile Include="Util\LimitedTask.cs" />
-    <Compile Include="Util\TaskResult.cs" />
     <Compile Include="Util\TcpSnapshot.cs" />
     <Compile Include="Util\HttpUtility.cs" />
     <Compile Include="Validation\FluentApi.cs" />
