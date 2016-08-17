@@ -19,7 +19,7 @@ namespace NetworkSocket.Validation
         /// <summary>
         /// 获取或设置实例类型的属性
         /// </summary>
-        public Property[] Properties { get; set; }
+        public RuleProperty[] Properties { get; set; }
 
         /// <summary>
         /// 验证上下文
@@ -33,7 +33,7 @@ namespace NetworkSocket.Validation
         /// </summary>
         /// <param name="instance">模型的实例</param>
         /// <param name="properties">实例类型的属性</param>
-        public ValidContext(object instance, Property[] properties)
+        public ValidContext(object instance, RuleProperty[] properties)
         {
             this.Instance = instance;
             this.Properties = properties;

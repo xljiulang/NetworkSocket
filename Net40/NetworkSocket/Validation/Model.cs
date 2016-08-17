@@ -51,14 +51,14 @@ namespace NetworkSocket.Validation
                 return ValidResult.False("模型不能为null ..");
             }
 
-            var context = new ValidContext(model, Property.GetProperties(typeof(T)));
+            var context = new ValidContext(model, RuleProperty.GetGetProperties(typeof(T)));
             foreach (var property in context.Properties)
             {
                 var failureRule = property.GetFailureRule(context);
                 if (failureRule != null)
                 {
                     var message = failureRule.FormatErrorMessage(null);
-                    return ValidResult.False(message, property.Source);
+                    return ValidResult.False(message, property.Info);
                 }
             }
             return ValidResult.True();

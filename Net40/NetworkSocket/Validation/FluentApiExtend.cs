@@ -23,7 +23,7 @@ namespace NetworkSocket.Validation
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="NotSupportedException"></exception>
         /// <returns></returns>
-        public static Property GetProperty<T, TKey>(Expression<Func<T, TKey>> keySelector)
+        public static RuleProperty GetProperty<T, TKey>(Expression<Func<T, TKey>> keySelector)
         {
             if (keySelector == null)
             {
@@ -47,9 +47,9 @@ namespace NetworkSocket.Validation
                 throw new ArgumentException("表达式选择的字段不是属性 ..", "keySelector");
             }
 
-            var property = Property
-                .GetProperties(typeof(T))
-                .FirstOrDefault(item => item.Source == propertyInfo);
+            var property = RuleProperty
+                .GetGetProperties(typeof(T))
+                .FirstOrDefault(item => item.Info == propertyInfo);
 
             if (property == null)
             {

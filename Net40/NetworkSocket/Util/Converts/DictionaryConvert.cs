@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NetworkSocket.Reflection;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -35,14 +36,19 @@ namespace NetworkSocket.Util.Converts
             }
 
             var instance = Activator.CreateInstance(targetType);
-            var setters = PropertySetter.GetPropertySetters(targetType);
+            var setters = Property.GetProperties(targetType);
 
             foreach (var set in setters)
             {
+                if (set.Info.CanWrite == false)
+                {
+                    continue;
+                }
+
                 var key = dic.Keys.FirstOrDefault(k => string.Equals(k, set.Name, StringComparison.OrdinalIgnoreCase));
                 if (key != null)
                 {
-                    var targetValue = this.Converter.Convert(dic[key], set.Type);
+                    var targetValue = this.Converter.Convert(dic[key], set.Info.PropertyType);
                     set.SetValue(instance, targetValue);
                 }
             }

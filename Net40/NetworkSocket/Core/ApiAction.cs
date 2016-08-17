@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NetworkSocket.Reflection;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -14,11 +15,6 @@ namespace NetworkSocket.Core
     [DebuggerDisplay("ApiName = {ApiName}")]
     public class ApiAction
     {
-        /// <summary>
-        /// Api行为的方法成员调用委托
-        /// </summary>
-        private Func<object, object[], object> methodInvoker;
-
         /// <summary>
         /// 参数值
         /// </summary>
@@ -69,7 +65,7 @@ namespace NetworkSocket.Core
         /// <summary>
         /// 获取方法成员信息
         /// </summary>
-        public MethodInfo Method { get; private set; }
+        public Method Method { get; private set; }
 
         /// <summary>
         /// 获取声明该成员的服务类型
@@ -84,9 +80,7 @@ namespace NetworkSocket.Core
         /// <exception cref="ArgumentException"></exception>
         public ApiAction(MethodInfo method)
         {
-            this.Method = method;
-            this.methodInvoker = MethodReflection.CreateInvoker(method);
-
+            this.Method = new Method(method);
             this.DeclaringService = method.DeclaringType;
             this.ReturnType = method.ReturnType;
             this.IsVoidReturn = method.ReturnType.Equals(typeof(void)) || method.ReturnType.Equals(typeof(Task));
@@ -113,7 +107,7 @@ namespace NetworkSocket.Core
         /// <returns></returns>
         public bool IsDefined(Type type, bool inherit)
         {
-            return this.Method.IsDefined(type, inherit) || this.DeclaringService.IsDefined(type, inherit);
+            return this.Method.Info.IsDefined(type, inherit) || this.DeclaringService.IsDefined(type, inherit);
         }
 
         /// <summary>
@@ -122,7 +116,7 @@ namespace NetworkSocket.Core
         /// <returns></returns>
         public virtual IEnumerable<FilterAttribute> GetMethodFilterAttributes()
         {
-            return Attribute.GetCustomAttributes(this.Method, typeof(FilterAttribute), true).Cast<FilterAttribute>();
+            return Attribute.GetCustomAttributes(this.Method.Info, typeof(FilterAttribute), true).Cast<FilterAttribute>();
         }
 
         /// <summary>
@@ -142,7 +136,7 @@ namespace NetworkSocket.Core
         /// <returns></returns>
         public object Execute(object service, params object[] parameters)
         {
-            return this.methodInvoker.Invoke(service, parameters);
+            return this.Method.Invoke(service, parameters);
         }
 
         /// <summary>

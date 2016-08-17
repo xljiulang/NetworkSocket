@@ -27,7 +27,7 @@ namespace NetworkSocket.Core
         {
             if (taskType.IsGenericType && taskType.GetGenericTypeDefinition() == typeof(Task<>))
             {
-                // lambda = task => (object)(((Task<T>)task).Result)
+                // task => (object)(((Task<T>)task).Result)
                 var arg = Expression.Parameter(typeof(Task));
                 var castArg = Expression.Convert(arg, taskType);
                 var fieldAccess = Expression.Property(castArg, "Result");
@@ -35,8 +35,10 @@ namespace NetworkSocket.Core
                 var lambda = Expression.Lambda<Func<Task, object>>(castResult, arg);
                 return lambda.Compile();
             }
-
-            return task => null;
+            else
+            {
+                return task => null;
+            }
         }
 
         /// <summary>
@@ -58,7 +60,6 @@ namespace NetworkSocket.Core
         /// 值的类型
         /// </summary>
         private readonly Type valueType;
-
         /// <summary>
         /// 值转换为task
         /// </summary>

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NetworkSocket.Reflection;
+using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
@@ -36,14 +37,19 @@ namespace NetworkSocket.Util.Converts
             }
 
             var instance = Activator.CreateInstance(targetType);
-            var setters = PropertySetter.GetPropertySetters(targetType);
+            var setters = Property.GetProperties(targetType);
 
             foreach (var set in setters)
             {
+                if (set.Info.CanWrite == false)
+                {
+                    continue;
+                }
+
                 object targetValue;
                 if (this.TryGetValue(dynamicObject, set.Name, out targetValue) == true)
                 {
-                    targetValue = this.Converter.Convert(targetValue, set.Type);
+                    targetValue = this.Converter.Convert(targetValue, set.Info.PropertyType);
                     set.SetValue(instance, targetValue);
                 }
             }

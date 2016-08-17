@@ -60,13 +60,13 @@ namespace NetworkSocket.Http
             }
 
             var instance = Activator.CreateInstance(targetType);
-            var setters = PropertySetter.GetPropertySetters(targetType);
+            var setters = BinderProperty.GetSetProperties(targetType);
             foreach (var setter in setters)
             {
                 var value = request.GetValues(setter.Name).FirstOrDefault();
                 if (value != null)
                 {
-                    var valueCast = Converter.Cast(value, setter.Type);
+                    var valueCast = Converter.Cast(value, setter.Info.PropertyType);
                     setter.SetValue(instance, valueCast);
                 }
             }
