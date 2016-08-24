@@ -52,7 +52,7 @@ namespace NetworkSocket.Core
     /// 表示任务设置行为信息
     /// </summary>
     [DebuggerDisplay("CreateTime = {CreateTime}")]
-    internal class TaskSetAction<T> : ITaskSetAction
+    internal class TaskSetAction<T> : ITaskSetAction, IDisposable
     {
         /// <summary>
         /// 定时器
@@ -100,11 +100,11 @@ namespace NetworkSocket.Core
         /// <param name="state"></param>
         private void TimerCallback(object state)
         {
+            this.timer.Dispose();
             if (this.OnTimeout != null)
             {
                 this.OnTimeout(this);
             }
-            this.timer.Dispose();
         }
 
         /// <summary>
@@ -125,6 +125,14 @@ namespace NetworkSocket.Core
         {
             this.timer.Dispose();
             return this.taskSource.TrySetException(ex);
+        }
+
+        /// <summary>
+        /// 释放资源
+        /// </summary>
+        public void Dispose()
+        {
+            this.timer.Dispose();
         }
     }
 }
