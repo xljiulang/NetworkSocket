@@ -60,12 +60,8 @@ namespace NetworkSocket.Fast
             {
                 this.CurrentContext = actionContext;
                 filters = this.Server.FilterAttributeProvider.GetActionFilters(actionContext.Action);
-                this.ExecuteAction(actionContext, filters);
-            }
-            catch (AggregateException ex)
-            {
-                this.ProcessExecutingException(actionContext, filters, ex.InnerException);
-            }
+                this.ExecuteActionAsync(actionContext, filters);
+            }           
             catch (Exception ex)
             {
                 this.ProcessExecutingException(actionContext, filters, ex);
@@ -92,7 +88,7 @@ namespace NetworkSocket.Fast
         /// <param name="actionContext">上下文</param>       
         /// <param name="filters">过滤器</param>
         /// <returns>当正常执行输出Api的结果时返回true</returns>
-        private void ExecuteAction(ActionContext actionContext, IEnumerable<IFilter> filters)
+        private void ExecuteActionAsync(ActionContext actionContext, IEnumerable<IFilter> filters)
         {
             // 参数准备
             var parameters = Common.GetAndUpdateParameterValues(this.Server.Serializer, actionContext);

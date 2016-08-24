@@ -14,7 +14,7 @@ namespace NetworkSocket.Core
     /// 表示任务行为管理表
     /// 线程安全类型
     /// </summary>
-    internal class TaskSetActionTable : IDisposable
+    internal class TaskSetActionTable
     {
         /// <summary>
         /// 任务行为字典
@@ -22,86 +22,47 @@ namespace NetworkSocket.Core
         private readonly ConcurrentDictionary<long, ITaskSetAction> table;
 
         /// <summary>
-        /// 获取或设置超时时间(毫秒)
-        /// 默认30秒
-        /// </summary>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public int TimeOut { get; set; }
-
-        /// <summary>
         /// 任务行为表
         /// </summary>
         public TaskSetActionTable()
         {
-            this.TimeOut = 30 * 1000;
             this.table = new ConcurrentDictionary<long, ITaskSetAction>();
-            LoopWorker.AddWork(this.CheckTaskActionTimeout);
-        }
-
-        /// <summary>
-        /// 检测任务行为的超时
-        /// </summary>       
-        private void CheckTaskActionTimeout()
-        {
-            if (this.table.Count == 0)
-            {
-                return;
-            }
-
-            foreach (var key in this.table.Keys)
-            {
-                if (this.ProcessTimeout(key) == false) break;
-            }
-        }
-
-        /// <summary>
-        /// 处理任务的超时情况
-        /// 如果还没有超时返回false
-        /// </summary>
-        /// <param name="key">任务的key</param>
-        private bool ProcessTimeout(long key)
-        {
-            var taskSetAction = default(ITaskSetAction);
-            if (this.table.TryGetValue(key, out taskSetAction) == false)
-            {
-                return true;
-            }
-
-            // 还没有超时
-            if (Environment.TickCount - taskSetAction.CreateTime < TimeOut)
-            {
-                return false;
-            }
-
-            // 已超时
-            if (this.table.TryRemove(key, out taskSetAction))
-            {
-                taskSetAction.SetException(new TimeoutException());
-            }
-            return true;
         }
 
         /// <summary>
         /// 添加回调信息记录       
-        /// </summary>
-        /// <param name="key">键值</param>
+        /// </summary>        
         /// <param name="taskSetAction">设置行为</param>       
         /// <returns></returns>
-        public void Add(long key, ITaskSetAction taskSetAction)
+        public void Add(ITaskSetAction taskSetAction)
         {
-            this.table.TryAdd(key, taskSetAction);
+            taskSetAction.OnTimeout = this.OnTaskSetActionTimeOut;
+            this.table.TryAdd(taskSetAction.Id, taskSetAction);
+        }
+
+        /// <summary>
+        /// 任务超时处理
+        /// </summary>
+        /// <param name="taskSetAction">任务</param>
+        private void OnTaskSetActionTimeOut(ITaskSetAction taskSetAction)
+        {
+            var storeTask = this.Take(taskSetAction.Id);
+            if (storeTask != null)
+            {
+                storeTask.SetException(new TimeoutException());
+            }
         }
 
         /// <summary>      
-        /// 获取并移除与key匹配值
+        /// 获取并移除与id匹配值
         /// 如果没有匹配项，返回null
         /// </summary>
-        /// <param name="key">键值</param>
+        /// <param name="id">任务id</param>
         /// <returns></returns>
-        public ITaskSetAction Take(long key)
+        public ITaskSetAction Take(long id)
         {
             ITaskSetAction taskSetAction;
-            this.table.TryRemove(key, out taskSetAction);
+            this.table.TryRemove(id, out taskSetAction);
             return taskSetAction;
         }
 
@@ -122,14 +83,6 @@ namespace NetworkSocket.Core
         public void Clear()
         {
             this.table.Clear();
-        }
-
-        /// <summary>
-        /// 释放资源
-        /// </summary>
-        public void Dispose()
-        {
-            LoopWorker.RemoveWork(this.CheckTaskActionTimeout);
         }
     }
 }

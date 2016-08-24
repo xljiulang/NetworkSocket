@@ -36,17 +36,7 @@ namespace NetworkSocket.WebSocket
         /// 默认30秒
         /// </summary>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public int TimeOut
-        {
-            get
-            {
-                return this.TaskSetActionTable.TimeOut;
-            }
-            set
-            {
-                this.TaskSetActionTable.TimeOut = value;
-            }
-        }
+        public  TimeSpan TimeOut{get;set;}         
 
         /// <summary>
         /// 获取或设置序列化工具       
@@ -78,6 +68,7 @@ namespace NetworkSocket.WebSocket
             this.PacketIdProvider = new PacketIdProvider();
             this.TaskSetActionTable = new TaskSetActionTable();
 
+            this.TimeOut = TimeSpan.FromSeconds(30);
             this.JsonSerializer = new DefaultDynamicJsonSerializer();
             this.GlobalFilters = new WebSocketGlobalFilters();
             this.DependencyResolver = new DefaultDependencyResolver();

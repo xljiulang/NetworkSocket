@@ -111,13 +111,14 @@ namespace NetworkSocket.Fast
         /// <param name="taskSetActionTable">任务行为表</param>
         /// <param name="serializer">序列化工具</param>      
         /// <param name="packet">封包</param>      
+        /// <param name="timeout">超时时间</param>
         /// <exception cref="SocketException"></exception>   
         /// <returns></returns>
-        public static Task<T> InvokeApi<T>(ISession session, TaskSetActionTable taskSetActionTable, ISerializer serializer, FastPacket packet)
+        public static Task<T> InvokeApi<T>(ISession session, TaskSetActionTable taskSetActionTable, ISerializer serializer, FastPacket packet, TimeSpan timeout)
         {
             var taskSource = new TaskCompletionSource<T>();
-            var taskSetAction = new TaskSetAction<T>(taskSource);
-            taskSetActionTable.Add(packet.Id, taskSetAction);
+            var taskSetAction = new TaskSetAction<T>(taskSource, packet.Id, timeout);
+            taskSetActionTable.Add(taskSetAction);
 
             session.Send(packet.ToByteRange());
             return taskSource.Task;

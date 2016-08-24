@@ -242,7 +242,7 @@ namespace NetworkSocket
             {
                 if (connected == false)
                 {
-                    Thread.Sleep((int)this.AutoReconnect.TotalMilliseconds);
+                    Thread.Sleep(this.AutoReconnect);
                     this.ReconnectLoop();
                 }
             };

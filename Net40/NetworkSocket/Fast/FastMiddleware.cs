@@ -38,17 +38,7 @@ namespace NetworkSocket.Fast
         /// 默认30秒
         /// </summary>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public int TimeOut
-        {
-            get
-            {
-                return this.TaskSetActionTable.TimeOut;
-            }
-            set
-            {
-                this.TaskSetActionTable.TimeOut = value;
-            }
-        }
+        public  TimeSpan TimeOut { get; set; }
 
         /// <summary>
         /// 下一个中间件
@@ -86,11 +76,12 @@ namespace NetworkSocket.Fast
             this.PacketIdProvider = new PacketIdProvider();
             this.TaskSetActionTable = new TaskSetActionTable();
 
+            this.TimeOut = TimeSpan.FromSeconds(30); ;
             this.Serializer = new DefaultSerializer();
             this.GlobalFilters = new FastGlobalFilters();
             this.DependencyResolver = new DefaultDependencyResolver();
             this.FilterAttributeProvider = new DefaultFilterAttributeProvider();
-
+            
             DomainAssembly.GetAssemblies().ForEach(item => this.BindService(item));
         }
 

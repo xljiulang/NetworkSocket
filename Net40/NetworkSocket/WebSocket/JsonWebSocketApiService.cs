@@ -60,12 +60,8 @@ namespace NetworkSocket.WebSocket
             {
                 this.CurrentContext = actionContext;
                 filters = this.Server.FilterAttributeProvider.GetActionFilters(actionContext.Action);
-                this.ExecuteAction(actionContext, filters);
-            }
-            catch (AggregateException ex)
-            {
-                this.ProcessExecutingException(actionContext, filters, ex.InnerException);
-            }
+                this.ExecuteActionAsync(actionContext, filters);
+            }           
             catch (Exception ex)
             {
                 this.ProcessExecutingException(actionContext, filters, ex);
@@ -93,7 +89,7 @@ namespace NetworkSocket.WebSocket
         /// <param name="filters">过滤器</param>
         /// <exception cref="ArgumentException"></exception>
         /// <returns>当正常执行输出Api的结果时返回true</returns>
-        private void ExecuteAction(ActionContext actionContext, IEnumerable<IFilter> filters)
+        private void ExecuteActionAsync(ActionContext actionContext, IEnumerable<IFilter> filters)
         {
             // 参数准备
             var parameters = this.GetAndUpdateParameterValues(actionContext);

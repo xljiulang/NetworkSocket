@@ -143,8 +143,8 @@ namespace NetworkSocket.WebSocket
 
             // 登记TaskSetAction       
             var taskSource = new TaskCompletionSource<T>();
-            var taskSetAction = new TaskSetAction<T>(taskSource);
-            this.Middleware.TaskSetActionTable.Add(packet.id, taskSetAction);
+            var taskSetAction = new TaskSetAction<T>(taskSource, packet.id, this.Middleware.TimeOut);
+            this.Middleware.TaskSetActionTable.Add(taskSetAction);
 
             var packetJson = this.Middleware.JsonSerializer.Serialize(packet);
             this.session.SendText(packetJson);

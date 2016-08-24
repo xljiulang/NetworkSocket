@@ -43,23 +43,14 @@ namespace NetworkSocket.Fast
         /// 默认30秒
         /// </summary>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public int TimeOut
-        {
-            get
-            {
-                return this.taskSetActionTable.TimeOut;
-            }
-            set
-            {
-                this.taskSetActionTable.TimeOut = value;
-            }
-        }
+        public TimeSpan TimeOut { get; set; }
 
         /// <summary>
         /// Fast协议的tcp客户端
         /// </summary>
         public FastTcpClient()
         {
+            this.TimeOut = TimeSpan.FromSeconds(30);
             this.Init();
         }
 
@@ -146,17 +137,16 @@ namespace NetworkSocket.Fast
             if (requestContext.Packet.IsFromClient)
             {
                 Common.SetApiActionTaskResult(requestContext, this.taskSetActionTable, this.Serializer);
-                return;
             }
-
-            var action = this.GetApiAction(requestContext);
-            if (action == null)
+            else
             {
-                return;
+                var action = this.GetApiAction(requestContext);
+                if (action != null)
+                {
+                    var actionContext = new ActionContext(requestContext, action);
+                    this.TryExecuteAction(actionContext);
+                }
             }
-
-            var actionContext = new ActionContext(requestContext, action);
-            this.TryExecuteAction(actionContext);
         }
 
         /// <summary>
@@ -197,18 +187,11 @@ namespace NetworkSocket.Fast
         {
             try
             {
-                this.ExecuteAction(actionContext);
+                this.ExecuteActionAsync(actionContext);
             }
-            catch (AggregateException exception)
+            catch (Exception ex)
             {
-                foreach (var inner in exception.InnerExceptions)
-                {
-                    this.ProcessExecutingException(actionContext, inner);
-                }
-            }
-            catch (Exception exception)
-            {
-                this.ProcessExecutingException(actionContext, exception);
+                this.ProcessExecutingException(actionContext, ex);
             }
         }
 
@@ -218,19 +201,32 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="actionContext">上下文</param>   
         /// <exception cref="SerializerException"></exception>
-        private void ExecuteAction(ActionContext actionContext)
+        private void ExecuteActionAsync(ActionContext actionContext)
         {
-            var action = actionContext.Action;
-            var packet = actionContext.Packet;
-
+            // 参数准备
             var parameters = Common.GetAndUpdateParameterValues(this.Serializer, actionContext);
-            var apiResult = action.Execute(this, action.ParameterValues);
 
-            if (action.IsVoidReturn == false && this.IsConnected)
+            // 执行Api
+            actionContext.Action.ExecuteAsWrapper(this, actionContext.Action.ParameterValues).ContinueWith(task =>
             {
-                packet.Body = this.Serializer.Serialize(apiResult);
-                this.Send(packet.ToByteRange());
-            }
+                try
+                {
+                    var result = task.GetResult();
+                    if (actionContext.Action.IsVoidReturn == false && this.IsConnected)
+                    {
+                        actionContext.Packet.Body = this.Serializer.Serialize(result);
+                        this.Send(actionContext.Packet.ToByteRange());
+                    }
+                }
+                catch (AggregateException ex)
+                {
+                    this.ProcessExecutingException(actionContext, ex.InnerException);
+                }
+                catch (Exception ex)
+                {
+                    this.ProcessExecutingException(actionContext, ex);
+                }
+            });
         }
 
 
@@ -292,7 +288,7 @@ namespace NetworkSocket.Fast
             var id = this.packetIdProvider.NewId();
             var packet = new FastPacket(api, id, true);
             packet.SetBodyParameters(this.Serializer, parameters);
-            return Common.InvokeApi<T>(this.UnWrap(), this.taskSetActionTable, this.Serializer, packet);
+            return Common.InvokeApi<T>(this.UnWrap(), this.taskSetActionTable, this.Serializer, packet, this.TimeOut);
         }
 
         /// <summary>
@@ -315,7 +311,6 @@ namespace NetworkSocket.Fast
         {
             base.Dispose();
 
-            this.taskSetActionTable.Dispose();
             this.apiActionList = null;
             this.taskSetActionTable.Clear();
             this.taskSetActionTable = null;

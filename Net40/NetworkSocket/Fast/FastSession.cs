@@ -23,7 +23,7 @@ namespace NetworkSocket.Fast
         /// 获取中间件实例
         /// </summary>
         internal FastMiddleware Middleware { get; private set; }
-        
+
 
         /// <summary>
         /// 获取用户数据字典
@@ -74,7 +74,7 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="session">会话对象</param>
         /// <param name="middleware">中间件实例</param>
-        public FastSession(ISession session,FastMiddleware middleware)
+        public FastSession(ISession session, FastMiddleware middleware)
         {
             this.session = session;
             this.Middleware = middleware;
@@ -87,7 +87,7 @@ namespace NetworkSocket.Fast
         {
             this.session.Close();
         }
-        
+
         /// <summary>
         /// 调用远程端实现的Api        
         /// </summary>        
@@ -118,7 +118,7 @@ namespace NetworkSocket.Fast
             var id = this.Middleware.PacketIdProvider.NewId();
             var packet = new FastPacket(api, id, false);
             packet.SetBodyParameters(this.Middleware.Serializer, parameters);
-            return Common.InvokeApi<T>(this.session, this.Middleware.TaskSetActionTable, this.Middleware.Serializer, packet);
+            return Common.InvokeApi<T>(this.session, this.Middleware.TaskSetActionTable, this.Middleware.Serializer, packet, this.Middleware.TimeOut);
         }
 
 
