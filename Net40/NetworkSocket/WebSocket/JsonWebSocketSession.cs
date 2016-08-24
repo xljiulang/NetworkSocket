@@ -141,14 +141,11 @@ namespace NetworkSocket.WebSocket
                 body = parameters
             };
 
-            // 登记TaskSetAction       
-            var taskSource = new TaskCompletionSource<T>();
-            var taskSetAction = new TaskSetAction<T>(taskSource, packet.id, this.Middleware.TimeOut);
-            this.Middleware.TaskSetActionTable.Add(taskSetAction);
-
+            // 登记TaskSetAction             
+            var task = this.Middleware.TaskSetActionTable.Create<T>(packet.id, this.Middleware.TimeOut);
             var packetJson = this.Middleware.JsonSerializer.Serialize(packet);
             this.session.SendText(packetJson);
-            return taskSource.Task;
+            return task;
         }
 
 

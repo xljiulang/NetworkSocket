@@ -116,12 +116,9 @@ namespace NetworkSocket.Fast
         /// <returns></returns>
         public static Task<T> InvokeApi<T>(ISession session, TaskSetActionTable taskSetActionTable, ISerializer serializer, FastPacket packet, TimeSpan timeout)
         {
-            var taskSource = new TaskCompletionSource<T>();
-            var taskSetAction = new TaskSetAction<T>(taskSource, packet.Id, timeout);
-            taskSetActionTable.Add(taskSetAction);
-
+            var task = taskSetActionTable.Create<T>(packet.Id, timeout);
             session.Send(packet.ToByteRange());
-            return taskSource.Task;
+            return task;
         }
 
         /// <summary>

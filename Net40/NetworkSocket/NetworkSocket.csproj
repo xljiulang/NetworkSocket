@@ -73,7 +73,7 @@
     <Compile Include="Core\Internal\DefaultSerializer.cs" />
     <Compile Include="Core\Internal\GlobalFiltersBase.cs" />
     <Compile Include="Core\Internal\PacketIdProvider.cs" />
-    <Compile Include="Core\Internal\TaskSetAction.cs" />
+    <Compile Include="Core\Internal\ITaskSetAction.cs" />
     <Compile Include="Core\Internal\TaskSetActionTable.cs" />
     <Compile Include="Core\Internal\TaskWrapper.cs" />
     <Compile Include="Core\ISerializer.cs" />
