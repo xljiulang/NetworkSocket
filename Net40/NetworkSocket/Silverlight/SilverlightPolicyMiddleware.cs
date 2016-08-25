@@ -33,7 +33,7 @@ namespace NetworkSocket.Silverlight
             var request = context.Buffer.ReadString(Encoding.ASCII);
             if (string.Equals(request, "<policy-file-request/>", StringComparison.OrdinalIgnoreCase))
             {
-                return new Task(() => this.SendPolicyXML(context));
+                return new Task(() => this.SendPolicyXMLAsync(context));
             }
             return this.Next.Invoke(context);
         }
@@ -42,13 +42,13 @@ namespace NetworkSocket.Silverlight
         /// 发送策略文件
         /// </summary>
         /// <param name="context">上下文</param>
-        private void SendPolicyXML(IContenxt context)
+        private void SendPolicyXMLAsync(IContenxt context)
         {
             try
             {
                 var policyXml = this.GeneratePolicyXml();
                 var bytes = Encoding.UTF8.GetBytes(policyXml);
-                context.Session.Send(new ByteRange(bytes));
+                context.Session.SendAsync(new ByteRange(bytes));
             }
             catch (Exception)
             {

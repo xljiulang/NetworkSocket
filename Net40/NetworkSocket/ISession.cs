@@ -63,10 +63,16 @@ namespace NetworkSocket
         void SetProtocolWrapper(string protocol, IWrapper wrapper);
 
         /// <summary>
+        /// 同步发送数据
+        /// </summary>
+        /// <param name="byteRange">数据范围</param>
+        void Send(IByteRange byteRange);
+
+        /// <summary>
         /// 异步发送数据
         /// </summary>
         /// <param name="byteRange">数据范围</param>  
-        void Send(IByteRange byteRange);
+        void SendAsync(IByteRange byteRange);
 
         /// <summary>      
         /// 断开和远程端的连接

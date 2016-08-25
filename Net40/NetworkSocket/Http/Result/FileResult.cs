@@ -59,19 +59,19 @@ namespace NetworkSocket.Http
 
             using (var stream = new FileStream(this.FileName, FileMode.Open, FileAccess.Read))
             {
-                const int size = 8 * 1024;               
-                var state = response.WriteHeader((int)stream.Length);
+                const int size = 8 * 1024;
+                var state = response.WriteHeader((int)stream.Length, false);
+                var bytes = new byte[size];
 
                 while (state == true)
                 {
-                    var bytes = new byte[size];
                     var length = stream.Read(bytes, 0, size);
                     if (length == 0)
                     {
                         break;
                     }
                     var content = new ByteRange(bytes, 0, length);
-                    state = response.WriteContent(content);
+                    state = response.WriteContent(content, false);
                 }
             }
         }

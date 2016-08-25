@@ -83,7 +83,7 @@ namespace NetworkSocket.Http
         /// <param name="httpEvent">http事件</param>
         /// <exception cref="ArgumentNullException"></exception>
         /// <returns></returns>
-        public bool SendEvent(HttpEvent httpEvent)
+        public bool SendEventAsync(HttpEvent httpEvent)
         {
             if (httpEvent == null)
             {
@@ -93,7 +93,7 @@ namespace NetworkSocket.Http
             try
             {
                 var bytes = Encoding.UTF8.GetBytes(httpEvent.ToString());
-                this.session.Send(new ByteRange(bytes));
+                this.session.SendAsync(new ByteRange(bytes));
                 return true;
             }
             catch (Exception)

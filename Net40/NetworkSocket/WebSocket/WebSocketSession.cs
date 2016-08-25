@@ -77,9 +77,9 @@ namespace NetworkSocket.WebSocket
         /// <exception cref="SocketException"></exception>
         /// <exception cref="ArgumentNullException"></exception>   
         /// <param name="response">回复内容</param>
-        public void Send(WebsocketResponse response)
+        public void SendAsync(WebsocketResponse response)
         {
-            this.session.Send(response.ToByteRange());
+            this.session.SendAsync(response.ToByteRange());
         }
 
         /// <summary>
@@ -87,11 +87,11 @@ namespace NetworkSocket.WebSocket
         /// </summary>     
         /// <param name="content">文本内容</param>
         /// <exception cref="SocketException"></exception>
-        public void SendText(string content)
+        public void SendTextAsync(string content)
         {
             var bytes = content == null ? new byte[0] : Encoding.UTF8.GetBytes(content);
             var response = new FrameResponse(FrameCodes.Text, bytes);
-            this.Send(response);
+            this.SendAsync(response);
         }
 
         /// <summary>
@@ -99,10 +99,10 @@ namespace NetworkSocket.WebSocket
         /// </summary>       
         /// <param name="content">二进制数据</param>
         /// <exception cref="SocketException"></exception>
-        public void SendBinary(byte[] content)
+        public void SendBinaryAsync(byte[] content)
         {
             var response = new FrameResponse(FrameCodes.Binary, content);
-            this.Send(response);
+            this.SendAsync(response);
         }
 
 
@@ -132,7 +132,7 @@ namespace NetworkSocket.WebSocket
 
             try
             {
-                this.Send(response);
+                this.SendAsync(response);
             }
             catch (Exception)
             {
@@ -148,9 +148,9 @@ namespace NetworkSocket.WebSocket
         /// 远程将回复pong
         /// </summary>
         /// <param name="contents">内容</param>
-        public void Ping(byte[] contents)
+        public void PingAsync(byte[] contents)
         {
-            this.Send(new FrameResponse(FrameCodes.Ping, contents));
+            this.SendAsync(new FrameResponse(FrameCodes.Ping, contents));
         }
 
         /// <summary>

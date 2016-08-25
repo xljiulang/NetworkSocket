@@ -215,7 +215,7 @@ namespace NetworkSocket.Fast
                     if (actionContext.Action.IsVoidReturn == false && this.IsConnected)
                     {
                         actionContext.Packet.Body = this.Serializer.Serialize(result);
-                        this.Send(actionContext.Packet.ToByteRange());
+                        this.SendAsync(actionContext.Packet.ToByteRange());
                     }
                 }
                 catch (AggregateException ex)
@@ -270,7 +270,7 @@ namespace NetworkSocket.Fast
         {
             var packet = new FastPacket(api, this.packetIdProvider.NewId(), true);
             packet.SetBodyParameters(this.Serializer, parameters);
-            this.Send(packet.ToByteRange());
+            this.SendAsync(packet.ToByteRange());
         }
 
         /// <summary>

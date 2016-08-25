@@ -48,7 +48,7 @@ namespace MixServer.Controller
             this.CurrentContext
                 .EventSession
                 .ToList()
-                .ForEach(item => item.SendEvent(httpEvent));
+                .ForEach(item => item.SendEventAsync(httpEvent));
 
             return Json("你的文章已推荐给所有人");
         }

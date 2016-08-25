@@ -251,14 +251,25 @@ namespace NetworkSocket
         }
 
         /// <summary>
+        /// 同步发送数据
+        /// </summary>
+        /// <param name="byteRange">数据范围</param>  
+        /// <exception cref="ArgumentNullException"></exception>        
+        /// <exception cref="SocketException"></exception>
+        public virtual void Send(IByteRange byteRange)
+        {
+            this.session.Send(byteRange);
+        }
+
+        /// <summary>
         /// 异步发送数据
         /// </summary>
         /// <param name="byteRange">数据范围</param>  
         /// <exception cref="ArgumentNullException"></exception>        
         /// <exception cref="SocketException"></exception>
-        public void Send(IByteRange byteRange)
+        public virtual void SendAsync(IByteRange byteRange)
         {
-            this.session.Send(byteRange);
+            this.session.SendAsync(byteRange);
         }
 
         /// <summary>     

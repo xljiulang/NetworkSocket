@@ -146,6 +146,12 @@ namespace NetworkSocket
         /// 异步发送数据
         /// </summary>
         /// <param name="byteRange">数据范围</param>         
+        public abstract void SendAsync(IByteRange byteRange);
+
+        /// <summary>
+        /// 同步发送数据
+        /// </summary>
+        /// <param name="byteRange">数据范围</param>
         public abstract void Send(IByteRange byteRange);
 
         /// <summary>

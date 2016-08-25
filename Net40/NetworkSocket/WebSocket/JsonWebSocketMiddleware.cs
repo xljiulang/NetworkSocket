@@ -312,7 +312,7 @@ namespace NetworkSocket.WebSocket
                 packet.body = exceptionContext.Exception.Message;
 
                 var packetJson = this.JsonSerializer.Serialize(packet);
-                exceptionContext.Session.UnWrap().SendText(packetJson);
+                exceptionContext.Session.UnWrap().SendTextAsync(packetJson);
                 return true;
             }
             catch (Exception)

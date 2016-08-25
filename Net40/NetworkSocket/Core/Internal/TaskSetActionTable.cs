@@ -142,8 +142,7 @@ namespace NetworkSocket.Core
             /// <param name="state"></param>
             private void OnTimerCallback(object state)
             {
-                this.table.Take(this.Id);
-                this.timer.Dispose();
+                this.table.Take(this.Id);             
                 this.SetException(new TimeoutException());
                 this.table = null;
             }

@@ -111,6 +111,26 @@ namespace NetworkSocket
             this.TryReceiveAsync();
         }
 
+        /// <summary>
+        /// 同步发送数据
+        /// </summary>
+        /// <param name="byteRange">数据范围</param>
+        /// <exception cref="ArgumentNullException"></exception>        
+        /// <exception cref="SocketException"></exception>
+        public override void Send(IByteRange byteRange)
+        {
+            if (byteRange == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            if (this.IsConnected == false)
+            {
+                throw new SocketException((int)SocketError.NotConnected);
+            }
+
+            this.Socket.Send(byteRange.Buffer, byteRange.Offset, byteRange.Count, SocketFlags.None);
+        }
 
         /// <summary>
         /// 异步发送数据
@@ -118,7 +138,7 @@ namespace NetworkSocket
         /// <param name="byteRange">数据范围</param>  
         /// <exception cref="ArgumentNullException"></exception>        
         /// <exception cref="SocketException"></exception>
-        public override void Send(IByteRange byteRange)
+        public override void SendAsync(IByteRange byteRange)
         {
             if (byteRange == null)
             {
@@ -204,7 +224,7 @@ namespace NetworkSocket
                 this.recvArg = null;
                 this.sendArg = null;
             }
-        }
+        }      
     }
 }
 

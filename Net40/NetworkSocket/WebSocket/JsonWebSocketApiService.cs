@@ -121,7 +121,7 @@ namespace NetworkSocket.WebSocket
                     {
                         actionContext.Packet.body = result;
                         var packetJson = this.Server.JsonSerializer.Serialize(actionContext.Packet);
-                        actionContext.Session.UnWrap().SendText(packetJson);
+                        actionContext.Session.UnWrap().SendTextAsync(packetJson);
                     }
                 }
                 catch (AggregateException ex)

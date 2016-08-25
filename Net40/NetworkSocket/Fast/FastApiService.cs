@@ -119,7 +119,7 @@ namespace NetworkSocket.Fast
                     else if (actionContext.Action.IsVoidReturn == false && actionContext.Session.IsConnected)  // 返回数据
                     {
                         actionContext.Packet.Body = this.Server.Serializer.Serialize(result);
-                        actionContext.Session.UnWrap().Send(actionContext.Packet.ToByteRange());
+                        actionContext.Session.UnWrap().SendAsync(actionContext.Packet.ToByteRange());
                     }
                 }
                 catch (AggregateException ex)
