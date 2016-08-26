@@ -57,7 +57,7 @@ namespace NetworkSocket
         /// 获取或设置断线自动重连的时间间隔 
         /// 设置为TimeSpan.Zero表示不自动重连
         /// </summary>
-        public TimeSpan AutoReconnect { get; set; }
+        public TimeSpan ReconnectPeriod { get; set; }
 
 
         /// <summary>
@@ -233,21 +233,17 @@ namespace NetworkSocket
         /// </summary>
         private void ReconnectLoop()
         {
-            if (this.AutoReconnect == TimeSpan.Zero)
+            if (this.ReconnectPeriod > TimeSpan.Zero)
             {
-                return;
-            }
-
-            Action<bool> action = (connected) =>
-            {
-                if (connected == false)
+                this.Connect(this.RemoteEndPoint).ContinueWith(t =>
                 {
-                    Thread.Sleep(this.AutoReconnect);
-                    this.ReconnectLoop();
-                }
-            };
-
-            this.Connect(this.RemoteEndPoint).ContinueWith((t) => action(t.Result));
+                    if (t.Result == false && this.ReconnectPeriod > TimeSpan.Zero)
+                    {
+                        Thread.Sleep(this.ReconnectPeriod);
+                        this.ReconnectLoop();
+                    }
+                });
+            }
         }
 
         /// <summary>

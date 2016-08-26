@@ -33,7 +33,7 @@ namespace FastClient
         private async void MainForm_Load(object sender, EventArgs e)
         {
             // 断开自动重连间隔一秒
-            Client.Instance.AutoReconnect = TimeSpan.FromSeconds(1);
+            Client.Instance.ReconnectPeriod = TimeSpan.FromSeconds(1);
 
             var connected = await Client.Instance.Connect("localhost", 1212);
             var version = connected ? await Client.Instance.GetVersion() : null;
