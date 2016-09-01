@@ -217,11 +217,7 @@ namespace NetworkSocket.Fast
                         actionContext.Packet.Body = this.Serializer.Serialize(result);
                         this.SendAsync(actionContext.Packet.ToByteRange());
                     }
-                }
-                catch (AggregateException ex)
-                {
-                    this.ProcessExecutingException(actionContext, ex.InnerException);
-                }
+                }                
                 catch (Exception ex)
                 {
                     this.ProcessExecutingException(actionContext, ex);

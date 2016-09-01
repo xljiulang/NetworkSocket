@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NetworkSocket.Core
@@ -87,10 +88,15 @@ namespace NetworkSocket.Core
             {
                 return this.value;
             }
-            else
+
+            try
             {
-                var resultInvoker = TaskWrapper.dic.GetOrAdd(this.valueType, (type) => TaskWrapper.CreateTaskResultInvoker(type));
-                return resultInvoker(this.task);
+                var taskResult = TaskWrapper.dic.GetOrAdd(this.valueType, (type) => TaskWrapper.CreateTaskResultInvoker(type));
+                return taskResult(this.task);
+            }
+            catch (AggregateException ex)
+            {
+                throw ex.InnerException;
             }
         }
 
@@ -112,7 +118,8 @@ namespace NetworkSocket.Core
             }
             else
             {
-                this.task.ContinueWith(t => action(this));
+                var scheduler = SynchronizationContext.Current == null ? TaskScheduler.Current : TaskScheduler.FromCurrentSynchronizationContext();
+                this.task.ContinueWith(t => action(this), scheduler);
             }
             return this;
         }

@@ -142,11 +142,7 @@ namespace NetworkSocket.Http
                         if (result == null) result = new EmptyResult();
                         result.ExecuteResult(actionContext);
                     }
-                }
-                catch (AggregateException ex)
-                {
-                    this.ProcessExecutingException(actionContext, filters, ex.InnerException);
-                }
+                }                
                 catch (Exception ex)
                 {
                     this.ProcessExecutingException(actionContext, filters, ex);

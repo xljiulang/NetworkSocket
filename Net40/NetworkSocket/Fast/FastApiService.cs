@@ -121,12 +121,7 @@ namespace NetworkSocket.Fast
                         actionContext.Packet.Body = this.Server.Serializer.Serialize(result);
                         actionContext.Session.UnWrap().SendAsync(actionContext.Packet.ToByteRange());
                     }
-                }
-                catch (AggregateException ex)
-                {
-                    var exceptionContext = new ExceptionContext(actionContext, ex.InnerException);
-                    Common.SendRemoteException(actionContext.Session.UnWrap(), exceptionContext);
-                }
+                }               
                 catch (Exception ex)
                 {
                     var exceptionContext = new ExceptionContext(actionContext, ex);

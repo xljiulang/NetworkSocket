@@ -123,11 +123,7 @@ namespace NetworkSocket.WebSocket
                         var packetJson = this.Server.JsonSerializer.Serialize(actionContext.Packet);
                         actionContext.Session.UnWrap().SendTextAsync(packetJson);
                     }
-                }
-                catch (AggregateException ex)
-                {
-                    this.ProcessExecutingException(actionContext, filters, ex.InnerException);
-                }
+                }               
                 catch (Exception ex)
                 {
                     this.ProcessExecutingException(actionContext, filters, ex);
