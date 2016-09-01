@@ -67,6 +67,7 @@
     <Compile Include="Core\IFilterSupportable.cs" />
     <Compile Include="Core\IGlobalFilters.cs" />
     <Compile Include="Core\Internal\ApiActionList.cs" />
+    <Compile Include="Core\Internal\LogicalContext.cs" />
     <Compile Include="Core\Internal\DefaultDependencyResolver.cs" />
     <Compile Include="Core\Internal\DefaultDynamicJsonSerializer.cs" />
     <Compile Include="Core\Internal\DefaultFilterAttributeProvider.cs" />

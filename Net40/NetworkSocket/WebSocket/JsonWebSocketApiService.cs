@@ -19,9 +19,9 @@ namespace NetworkSocket.WebSocket
     public abstract class JsonWebSocketApiService : JsonWebSocketFilterAttribute, IJsonWebSocketApiService
     {
         /// <summary>
-        /// 上下文名称
+        /// 逻辑调用上下文
         /// </summary>
-        private static readonly string contextName = "ActionContext";
+        private readonly LogicalContext<ActionContext> logicalContext = new LogicalContext<ActionContext>();
 
         /// <summary>
         /// 获取当前Api行为上下文
@@ -30,11 +30,7 @@ namespace NetworkSocket.WebSocket
         {
             get
             {
-                return CallContext.LogicalGetData(contextName) as ActionContext;
-            }
-            private set
-            {
-                CallContext.LogicalSetData(contextName, value);
+                return this.logicalContext.GetValue();
             }
         }
 
@@ -58,13 +54,17 @@ namespace NetworkSocket.WebSocket
             var filters = Enumerable.Empty<IFilter>();
             try
             {
-                this.CurrentContext = actionContext;
+                this.logicalContext.SetValue(actionContext);
                 filters = this.Server.FilterAttributeProvider.GetActionFilters(actionContext.Action);
                 this.ExecuteActionAsync(actionContext, filters);
             }
             catch (Exception ex)
             {
                 this.ProcessExecutingException(actionContext, filters, ex);
+            }
+            finally
+            {
+                this.logicalContext.FreeValue();
             }
         }
 
@@ -126,6 +126,10 @@ namespace NetworkSocket.WebSocket
                 catch (Exception ex)
                 {
                     this.ProcessExecutingException(actionContext, filters, ex);
+                }
+                finally
+                {
+                    this.logicalContext.FreeValue();
                 }
             });
         }
