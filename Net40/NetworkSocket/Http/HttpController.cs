@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Reflection;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
@@ -19,10 +20,9 @@ namespace NetworkSocket.Http
     public abstract class HttpController : HttpFilterAttribute, IHttpController
     {
         /// <summary>
-        /// 线程唯一上下文
+        /// 上下文名称
         /// </summary>
-        [ThreadStatic]
-        private static ActionContext threadContext;
+        private static readonly string contextName = "ActionContext";
 
         /// <summary>
         /// 获取当前Api行为上下文
@@ -31,11 +31,11 @@ namespace NetworkSocket.Http
         {
             get
             {
-                return threadContext;
+                return CallContext.LogicalGetData(contextName) as ActionContext;
             }
             private set
             {
-                threadContext = value;
+                CallContext.LogicalSetData(contextName, value);
             }
         }
 
@@ -129,7 +129,6 @@ namespace NetworkSocket.Http
             {
                 try
                 {
-                    this.CurrentContext = actionContext;
                     var result = task.GetResult() as ActionResult;
                     this.ExecFiltersAfterAction(filters, actionContext);
 

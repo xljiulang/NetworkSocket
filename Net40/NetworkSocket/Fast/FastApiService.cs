@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
 using System.Reflection;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,23 +19,22 @@ namespace NetworkSocket.Fast
     public abstract class FastApiService : FastFilterAttribute, IFastApiService
     {
         /// <summary>
-        /// 线程唯一上下文
+        /// 上下文名称
         /// </summary>
-        [ThreadStatic]
-        private static ActionContext threadContext;
+        private static readonly string contextName = "ActionContext";
 
         /// <summary>
         /// 获取当前Api行为上下文
         /// </summary>
         protected ActionContext CurrentContext
-        {
+        {             
             get
             {
-                return threadContext;
+                return CallContext.LogicalGetData(contextName) as ActionContext;
             }
             private set
             {
-                threadContext = value;
+                CallContext.LogicalSetData(contextName, value);
             }
         }
 
@@ -45,7 +45,7 @@ namespace NetworkSocket.Fast
         {
             get
             {
-                return threadContext.Session.Middleware;
+                return CurrentContext.Session.Middleware;
             }
         }
 
@@ -61,7 +61,7 @@ namespace NetworkSocket.Fast
                 this.CurrentContext = actionContext;
                 filters = this.Server.FilterAttributeProvider.GetActionFilters(actionContext.Action);
                 this.ExecuteActionAsync(actionContext, filters);
-            }           
+            }
             catch (Exception ex)
             {
                 this.ProcessExecutingException(actionContext, filters, ex);
@@ -107,7 +107,6 @@ namespace NetworkSocket.Fast
             {
                 try
                 {
-                    this.CurrentContext = actionContext;
                     var result = task.GetResult();
                     this.ExecFiltersAfterAction(filters, actionContext);
 
@@ -121,7 +120,7 @@ namespace NetworkSocket.Fast
                         actionContext.Packet.Body = this.Server.Serializer.Serialize(result);
                         actionContext.Session.UnWrap().SendAsync(actionContext.Packet.ToByteRange());
                     }
-                }               
+                }
                 catch (Exception ex)
                 {
                     var exceptionContext = new ExceptionContext(actionContext, ex);

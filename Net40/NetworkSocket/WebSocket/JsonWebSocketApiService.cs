@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
 using System.Reflection;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -18,10 +19,9 @@ namespace NetworkSocket.WebSocket
     public abstract class JsonWebSocketApiService : JsonWebSocketFilterAttribute, IJsonWebSocketApiService
     {
         /// <summary>
-        /// 线程唯一上下文
+        /// 上下文名称
         /// </summary>
-        [ThreadStatic]
-        private static ActionContext threadContext;
+        private static readonly string contextName = "ActionContext";
 
         /// <summary>
         /// 获取当前Api行为上下文
@@ -30,11 +30,11 @@ namespace NetworkSocket.WebSocket
         {
             get
             {
-                return threadContext;
+                return CallContext.LogicalGetData(contextName) as ActionContext;
             }
             private set
             {
-                threadContext = value;
+                CallContext.LogicalSetData(contextName, value);
             }
         }
 
@@ -45,7 +45,7 @@ namespace NetworkSocket.WebSocket
         {
             get
             {
-                return threadContext.Session.Middleware;
+                return CurrentContext.Session.Middleware;
             }
         }
 
@@ -61,7 +61,7 @@ namespace NetworkSocket.WebSocket
                 this.CurrentContext = actionContext;
                 filters = this.Server.FilterAttributeProvider.GetActionFilters(actionContext.Action);
                 this.ExecuteActionAsync(actionContext, filters);
-            }           
+            }
             catch (Exception ex)
             {
                 this.ProcessExecutingException(actionContext, filters, ex);
@@ -108,7 +108,6 @@ namespace NetworkSocket.WebSocket
             {
                 try
                 {
-                    this.CurrentContext = actionContext;
                     var result = task.GetResult();
                     this.ExecFiltersAfterAction(filters, actionContext);
 
@@ -123,7 +122,7 @@ namespace NetworkSocket.WebSocket
                         var packetJson = this.Server.JsonSerializer.Serialize(actionContext.Packet);
                         actionContext.Session.UnWrap().SendTextAsync(packetJson);
                     }
-                }               
+                }
                 catch (Exception ex)
                 {
                     this.ProcessExecutingException(actionContext, filters, ex);
