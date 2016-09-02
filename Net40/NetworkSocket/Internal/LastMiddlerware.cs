@@ -23,7 +23,7 @@ namespace NetworkSocket
         /// <returns></returns>
         public Task Invoke(IContenxt context)
         {
-            context.Buffer.Clear();
+            context.Stream.Clear();
             context.Session.Close();
             return null;
         }

@@ -92,7 +92,7 @@ namespace NetworkSocket
         /// <summary>
         /// 获取接收到的未处理数据
         /// </summary>      
-        public ReceiveBuffer RecvBuffer { get; private set; }
+        public NsStream RecvStream { get; private set; }
 
         /// <summary>
         /// 获取本机终结点
@@ -111,7 +111,7 @@ namespace NetworkSocket
         public TcpSessionBase()
         {
             this.Tag = new Tag();
-            this.RecvBuffer = new ReceiveBuffer();
+            this.RecvStream = new NsStream();
             this.PendingSendByteRanges = new ConcurrentQueue<IByteRange>();
         }
 
@@ -130,7 +130,7 @@ namespace NetworkSocket
                 this.PendingSendByteRanges = new ConcurrentQueue<IByteRange>();
             }
 
-            this.RecvBuffer.Clear();
+            this.RecvStream.Clear();
             this.Tag.Clear();
             this.SetProtocolWrapper(null, null);
             this.LocalEndPoint = (IPEndPoint)socket.LocalEndPoint;
@@ -388,7 +388,7 @@ namespace NetworkSocket
         protected virtual void Dispose(bool disposing)
         {
             this.Close(false);
-            this.RecvBuffer.Dispose();
+            this.RecvStream.Dispose();
 
             if (disposing)
             {
@@ -396,7 +396,7 @@ namespace NetworkSocket
                 this.Socket = null;
                 this.PendingSendByteRanges = null;
                 this.Tag = null;
-                this.RecvBuffer = null;
+                this.RecvStream = null;
                 this.CloseHandler = null;
                 this.DisconnectHandler = null;
                 this.ReceiveHandler = null;

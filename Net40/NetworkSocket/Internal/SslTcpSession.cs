@@ -168,11 +168,11 @@ namespace NetworkSocket
                 return;
             }
 
-            lock (this.RecvBuffer.SyncRoot)
+            lock (this.RecvStream.SyncRoot)
             {
-                this.RecvBuffer.Seek(0, SeekOrigin.End);
-                this.RecvBuffer.Write(this.bufferRange.Buffer, this.bufferRange.Offset, read);
-                this.RecvBuffer.Seek(0, SeekOrigin.Begin);
+                this.RecvStream.Seek(0, SeekOrigin.End);
+                this.RecvStream.Write(this.bufferRange.Buffer, this.bufferRange.Offset, read);
+                this.RecvStream.Seek(0, SeekOrigin.Begin);
                 this.ReceiveHandler(this);
             }
 

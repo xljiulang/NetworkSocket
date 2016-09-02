@@ -91,15 +91,15 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 当接收到远程端的数据时，将触发此方法
         /// </summary>
-        /// <param name="buffer">接收到的历史数据</param>        
-        protected sealed override void OnReceive(IReceiveBuffer buffer)
+        /// <param name="stream">接收到的历史数据</param>        
+        protected sealed override void OnReceive(INsStream stream)
         {
             while (true)
             {
                 var packet = default(FastPacket);
-                if (FastPacket.Parse(buffer, out packet) == false)
+                if (FastPacket.Parse(stream, out packet) == false)
                 {
-                    buffer.Clear();
+                    stream.Clear();
                 }
                 if (packet == null)
                 {

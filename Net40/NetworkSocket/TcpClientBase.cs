@@ -199,7 +199,7 @@ namespace NetworkSocket
         /// <param name="session">会话</param>
         private void ReceiveHandler(TcpSessionBase session)
         {
-            this.OnReceive(session.RecvBuffer);
+            this.OnReceive(session.RecvStream);
         }
 
         /// <summary>
@@ -216,9 +216,9 @@ namespace NetworkSocket
         /// <summary>
         /// 当接收到远程端的数据时，将触发此方法   
         /// </summary>       
-        /// <param name="buffer">接收到的历史数据</param>
+        /// <param name="stream">接收到的历史数据</param>
         /// <returns></returns>
-        protected abstract void OnReceive(IReceiveBuffer buffer);
+        protected abstract void OnReceive(INsStream stream);
 
 
         /// <summary>

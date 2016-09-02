@@ -157,7 +157,7 @@ namespace NetworkSocket.WebSocket
             {
                 try
                 {
-                    var request = FrameRequest.Parse(context.Buffer);
+                    var request = FrameRequest.Parse(context.Stream);
                     if (request == null)
                     {
                         return list;

@@ -126,7 +126,7 @@ namespace NetworkSocket.Fast
         private Task OnFastRequest(IContenxt context)
         {
             var fastPacket = default(FastPacket);
-            if (FastPacket.Parse(context.Buffer, out fastPacket) == false)
+            if (FastPacket.Parse(context.Stream, out fastPacket) == false)
             {
                 return this.Next.Invoke(context);
             }
@@ -167,7 +167,7 @@ namespace NetworkSocket.Fast
             while (true)
             {
                 var packet = default(FastPacket);
-                if (FastPacket.Parse(context.Buffer, out packet) == false)
+                if (FastPacket.Parse(context.Stream, out packet) == false)
                 {
                     return list;
                 }

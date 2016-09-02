@@ -1,14 +1,15 @@
 ﻿using NetworkSocket;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using NetworkSocket.Util;
 
 namespace UnitTest.NetworkSocket
 {
 
 
     /// <summary>
-    ///这是 ReceiveBufferTest 的测试类，旨在
-    ///包含所有 ReceiveBufferTest 单元测试
+    ///这是 NsStreamTest 的测试类，旨在
+    ///包含所有 NsStreamTest 单元测试
     ///</summary>
     [TestClass()]
     public class ReceiveStreamTest
@@ -70,7 +71,7 @@ namespace UnitTest.NetworkSocket
         [TestMethod()]
         public void ClearTest()
         {
-            ReceiveBuffer target = new ReceiveBuffer(); // TODO: 初始化为适当的值
+            NsStream target = new NsStream(); // TODO: 初始化为适当的值
             target.Write(new byte[] { 1, 2 }, 0, 2);
             target.Clear();
             Assert.IsTrue(target.Length == 0);
@@ -82,7 +83,7 @@ namespace UnitTest.NetworkSocket
         [TestMethod()]
         public void ClearTest1()
         {
-            ReceiveBuffer target = new ReceiveBuffer(); // TODO: 初始化为适当的值
+            NsStream target = new NsStream(); // TODO: 初始化为适当的值
             target.Write(new byte[] { 1, 2 }, 0, 2);
             int count = 1; // TODO: 初始化为适当的值
             target.Clear(count);
@@ -95,7 +96,7 @@ namespace UnitTest.NetworkSocket
         [TestMethod()]
         public void CopyToTest()
         {
-            ReceiveBuffer target = new ReceiveBuffer(); // TODO: 初始化为适当的值
+            NsStream target = new NsStream(); // TODO: 初始化为适当的值
             target.Write(new byte[] { 1, 2, 3, 4 }, 0, 4);
             byte[] dstArray = new byte[2]; // TODO: 初始化为适当的值
             int count = 2; // TODO: 初始化为适当的值
@@ -109,7 +110,7 @@ namespace UnitTest.NetworkSocket
         [TestMethod()]
         public void CopyToTest1()
         {
-            ReceiveBuffer target = new ReceiveBuffer(); // TODO: 初始化为适当的值
+            NsStream target = new NsStream(); // TODO: 初始化为适当的值
             target.Write(new byte[] { 1, 2, 3, 4 }, 0, 4);
             byte[] dstArray = new byte[3]; // TODO: 初始化为适当的值
             int dstOffset = 1; // TODO: 初始化为适当的值
@@ -124,7 +125,7 @@ namespace UnitTest.NetworkSocket
         [TestMethod()]
         public void CopyToTest2()
         {
-            ReceiveBuffer target = new ReceiveBuffer(); // TODO: 初始化为适当的值
+            NsStream target = new NsStream(); // TODO: 初始化为适当的值
             target.Write(new byte[] { 1, 2, 3, 4 }, 0, 4);
             int srcOffset = 2; // TODO: 初始化为适当的值
             byte[] dstArray = new byte[3]; ; // TODO: 初始化为适当的值
@@ -140,7 +141,7 @@ namespace UnitTest.NetworkSocket
         [TestMethod()]
         public void ReadAndPositionTest()
         {
-            ReceiveBuffer target = new ReceiveBuffer(); // TODO: 初始化为适当的值
+            NsStream target = new NsStream(); // TODO: 初始化为适当的值
             var bytes = new byte[]{
                 1,
                 3,
@@ -168,7 +169,7 @@ namespace UnitTest.NetworkSocket
         [TestMethod()]
         public void ItemTest()
         {
-            ReceiveBuffer target = new ReceiveBuffer(); // TODO: 初始化为适当的值
+            NsStream target = new NsStream(); // TODO: 初始化为适当的值
             target.Write(new byte[] { 234 }, 0, 1);
             int index = 0; // TODO: 初始化为适当的值
             byte actual;
@@ -179,7 +180,7 @@ namespace UnitTest.NetworkSocket
         [TestMethod()]
         public void IndexOfTest()
         {
-            ReceiveBuffer target = new ReceiveBuffer(); // TODO: 初始化为适当的值
+            NsStream target = new NsStream(); // TODO: 初始化为适当的值
             var bytes = new byte[] { 2, 3, 4, 4 };
             target.Write(bytes, 0, bytes.Length);
             target.Position = 0;

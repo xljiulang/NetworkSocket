@@ -15,7 +15,24 @@ namespace NetworkSocket.Core
         /// <summary>
         /// 上下文名称
         /// </summary>
-        private static readonly string contextName = "LogicalContext";
+        private readonly string contextName;
+
+        /// <summary>
+        /// 线程逻辑调用上下文
+        /// </summary>
+        public LogicalContext()
+            : this(typeof(T).Name)
+        {
+        }
+
+        /// <summary>
+        /// 线程逻辑调用上下文
+        /// </summary>
+        /// <param name="contextName">上下文名称</param>
+        public LogicalContext(string contextName)
+        {
+            this.contextName = contextName;
+        }
 
         /// <summary>
         /// 获取值

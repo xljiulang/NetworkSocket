@@ -34,13 +34,13 @@ namespace NetworkSocket.Http
         /// <summary>
         /// 是否为http协议
         /// </summary>
-        /// <param name="buffer">收到的数据</param>
+        /// <param name="stream">收到的数据</param>
         /// <param name="headerLength">头数据长度，包括双换行</param>
         /// <returns></returns>
-        public static bool IsHttp(IReceiveBuffer buffer, out int headerLength)
+        public static bool IsHttp(INsStream stream, out int headerLength)
         {
-            var methodLength = Protocol.GetMthodLength(buffer);
-            var methodName = buffer.ReadString(methodLength, Encoding.ASCII);
+            var methodLength = Protocol.GetMthodLength(stream);
+            var methodName = stream.ReadString(methodLength, Encoding.ASCII);
 
             if (Protocol.MethodNames.Any(m => m.StartsWith(methodName, StringComparison.OrdinalIgnoreCase)) == false)
             {
@@ -48,8 +48,8 @@ namespace NetworkSocket.Http
                 return false;
             }
 
-            buffer.Position = 0;
-            var headerIndex = buffer.IndexOf(Protocol.DoubleCrlf);
+            stream.Position = 0;
+            var headerIndex = stream.IndexOf(Protocol.DoubleCrlf);
             if (headerIndex < 0)
             {
                 headerLength = 0;
@@ -63,14 +63,14 @@ namespace NetworkSocket.Http
         /// <summary>
         /// 获取当前的http方法长度
         /// </summary>
-        /// <param name="buffer">收到的数据</param>
+        /// <param name="stream">收到的数据</param>
         /// <returns></returns>
-        private static int GetMthodLength(IReceiveBuffer buffer)
+        private static int GetMthodLength(INsStream stream)
         {
-            var maxLength = Math.Min(buffer.Length, Protocol.MedthodMaxLength + 1);
+            var maxLength = Math.Min(stream.Length, Protocol.MedthodMaxLength + 1);
             for (var i = 0; i < maxLength; i++)
             {
-                if (buffer[i] == Protocol.Space)
+                if (stream[i] == Protocol.Space)
                 {
                     return i - 1;
                 }

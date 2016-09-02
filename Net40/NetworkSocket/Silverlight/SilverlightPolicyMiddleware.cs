@@ -24,13 +24,13 @@ namespace NetworkSocket.Silverlight
         /// <returns></returns>
         Task IMiddleware.Invoke(IContenxt context)
         {
-            if (context.Session.Protocol != null || context.Buffer.Length != 22)
+            if (context.Session.Protocol != null || context.Stream.Length != 22)
             {
                 return this.Next.Invoke(context);
             }
 
-            context.Buffer.Position = 0;
-            var request = context.Buffer.ReadString(Encoding.ASCII);
+            context.Stream.Position = 0;
+            var request = context.Stream.ReadString(Encoding.ASCII);
             if (string.Equals(request, "<policy-file-request/>", StringComparison.OrdinalIgnoreCase))
             {
                 return new Task(() => this.SendPolicyXMLAsync(context));

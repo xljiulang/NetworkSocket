@@ -167,26 +167,26 @@ namespace NetworkSocket.Fast
         /// 解析一个数据包       
         /// 不足一个封包时返回null
         /// </summary>
-        /// <param name="buffer">接收到的历史数据</param>
+        /// <param name="stream">接收到的历史数据</param>
         /// <param name="packet">数据包</param>
         /// <returns></returns>
-        public static bool Parse(IReceiveBuffer buffer, out FastPacket packet)
+        public static bool Parse(INsStream stream, out FastPacket packet)
         {
-            if (buffer.Length < 1 || buffer[0] != FastPacket.Mark)
+            if (stream.Length < 1 || stream[0] != FastPacket.Mark)
             {
                 packet = null;
                 return false;
             }
 
-            if (buffer.Length < 5)
+            if (stream.Length < 5)
             {
                 packet = null;
                 return true;
             }
 
-            buffer.Position = 1;
+            stream.Position = 1;
             const int packetMinSize = 16;
-            var totalBytes = buffer.ReadInt32();
+            var totalBytes = stream.ReadInt32();
 
             if (totalBytes < packetMinSize)
             {
@@ -195,14 +195,14 @@ namespace NetworkSocket.Fast
             }
 
             // 数据包未接收完整
-            if (buffer.Length < totalBytes)
+            if (stream.Length < totalBytes)
             {
                 packet = null;
                 return true;
             }
 
             // api名称数据长度
-            var apiNameLength = buffer.ReadByte();
+            var apiNameLength = stream.ReadByte();
             if (totalBytes < apiNameLength + packetMinSize)
             {
                 packet = null;
@@ -210,18 +210,18 @@ namespace NetworkSocket.Fast
             }
 
             // api名称数据
-            var apiNameBytes = buffer.ReadArray(apiNameLength);
+            var apiNameBytes = stream.ReadArray(apiNameLength);
             // 标识符
-            var id = buffer.ReadInt64();
+            var id = stream.ReadInt64();
             // 是否为客户端封包
-            var isFromClient = buffer.ReadBoolean();
+            var isFromClient = stream.ReadBoolean();
             // 是否异常
-            var isException = buffer.ReadBoolean();
+            var isException = stream.ReadBoolean();
             // 实体数据
-            var body = buffer.ReadArray(totalBytes - buffer.Position);
+            var body = stream.ReadArray(totalBytes - stream.Position);
 
             // 清空本条数据
-            buffer.Clear(totalBytes);
+            stream.Clear(totalBytes);
 
             var apiName = Encoding.UTF8.GetString(apiNameBytes);
             packet = new FastPacket(apiName, id, isFromClient)
