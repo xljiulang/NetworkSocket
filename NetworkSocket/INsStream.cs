@@ -128,7 +128,7 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="count"></param>
         /// <returns></returns>
-        IByteRange ReadByteRange(int count);
+        ArraySegment<byte> ReadByteRange(int count);
 
         /// <summary>
         /// 清空所有数据    

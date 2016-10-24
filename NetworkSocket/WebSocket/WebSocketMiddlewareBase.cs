@@ -87,7 +87,7 @@ namespace NetworkSocket.WebSocket
                     var wrapper = new WebSocketSession(context.Session);
                     var hansshakeResponse = new HandshakeResponse(secValue);
 
-                    wrapper.SendAsync(hansshakeResponse);
+                    wrapper.Send(hansshakeResponse);
                     this.OnSetProtocolWrapper(context.Session, wrapper);
                 }
                 catch (Exception) { }
@@ -181,7 +181,7 @@ namespace NetworkSocket.WebSocket
                     try
                     {
                         var session = (WebSocketSession)context.Session.Wrapper;
-                        session.SendAsync(new FrameResponse(FrameCodes.Pong, frameRequest.Content));
+                        session.Send(new FrameResponse(FrameCodes.Pong, frameRequest.Content));
                     }
                     catch (Exception)
                     {

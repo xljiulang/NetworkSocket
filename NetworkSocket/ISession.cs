@@ -66,13 +66,15 @@ namespace NetworkSocket
         /// 同步发送数据
         /// </summary>
         /// <param name="byteRange">数据范围</param>
-        void Send(IByteRange byteRange);
+        /// <returns></returns>
+        int Send(ArraySegment<byte> byteRange);
 
         /// <summary>
-        /// 异步发送数据
+        /// 同步发送数据
         /// </summary>
-        /// <param name="byteRange">数据范围</param>  
-        void SendAsync(IByteRange byteRange);
+        /// <param name="buffer">数据</param>
+        /// <returns></returns>
+        int Send(byte[] buffer);
 
         /// <summary>      
         /// 断开和远程端的连接

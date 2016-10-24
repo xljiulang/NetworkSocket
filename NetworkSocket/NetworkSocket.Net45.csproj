@@ -56,7 +56,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ByteBits.cs" />
-    <Compile Include="ByteRange.cs" />
     <Compile Include="Core\ApiAction.cs" />
     <Compile Include="Core\ApiAttribute.cs" />
     <Compile Include="Core\FilterAttribute.cs" />
@@ -131,7 +130,6 @@
     <Compile Include="Http\Result\FileResult.cs" />
     <Compile Include="Http\Result\JsonResult.cs" />
     <Compile Include="Http\RouteAttribute.cs" />
-    <Compile Include="IByteRange.cs" />
     <Compile Include="IContenxt.cs" />
     <Compile Include="IListener.cs" />
     <Compile Include="IMiddleware.cs" />

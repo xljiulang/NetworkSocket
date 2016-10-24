@@ -144,7 +144,7 @@ namespace NetworkSocket.Util
         public short ReadInt16()
         {
             var range = this.ReadByteRange(sizeof(short));
-            return ByteConverter.ToInt16(range.Buffer, range.Offset, this.Endian);
+            return ByteConverter.ToInt16(range.Array, range.Offset, this.Endian);
         }
 
         /// <summary>
@@ -156,7 +156,7 @@ namespace NetworkSocket.Util
         public uint ReadUInt16()
         {
             var range = this.ReadByteRange(sizeof(ushort));
-            return ByteConverter.ToUInt16(range.Buffer, range.Offset, this.Endian);
+            return ByteConverter.ToUInt16(range.Array, range.Offset, this.Endian);
         }
 
         /// <summary>
@@ -168,7 +168,7 @@ namespace NetworkSocket.Util
         public int ReadInt32()
         {
             var range = this.ReadByteRange(sizeof(int));
-            return ByteConverter.ToInt32(range.Buffer, range.Offset, this.Endian);
+            return ByteConverter.ToInt32(range.Array, range.Offset, this.Endian);
         }
 
         /// <summary>
@@ -180,7 +180,7 @@ namespace NetworkSocket.Util
         public uint ReadUInt32()
         {
             var range = this.ReadByteRange(sizeof(uint));
-            return ByteConverter.ToUInt32(range.Buffer, range.Offset, this.Endian);
+            return ByteConverter.ToUInt32(range.Array, range.Offset, this.Endian);
         }
 
         /// <summary>
@@ -192,7 +192,7 @@ namespace NetworkSocket.Util
         public long ReadInt64()
         {
             var range = this.ReadByteRange(sizeof(long));
-            return ByteConverter.ToInt64(range.Buffer, range.Offset, this.Endian);
+            return ByteConverter.ToInt64(range.Array, range.Offset, this.Endian);
         }
 
         /// <summary>
@@ -204,7 +204,7 @@ namespace NetworkSocket.Util
         public ulong ReadUInt64()
         {
             var range = this.ReadByteRange(sizeof(ulong));
-            return ByteConverter.ToUInt64(range.Buffer, range.Offset, this.Endian);
+            return ByteConverter.ToUInt64(range.Array, range.Offset, this.Endian);
         }
 
         /// <summary>
@@ -228,7 +228,7 @@ namespace NetworkSocket.Util
             var range = this.ReadByteRange(count);
             var bytes = new byte[count];
 
-            Buffer.BlockCopy(range.Buffer, range.Offset, bytes, 0, count);
+            Buffer.BlockCopy(range.Array, range.Offset, bytes, 0, count);
             return bytes;
         }
 
@@ -262,7 +262,7 @@ namespace NetworkSocket.Util
             }
 
             var range = this.ReadByteRange(count);
-            return encode.GetString(range.Buffer, range.Offset, range.Count);
+            return encode.GetString(range.Array, range.Offset, range.Count);
         }
 
 
@@ -273,9 +273,9 @@ namespace NetworkSocket.Util
         /// <param name="count">字节数</param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public IByteRange ReadByteRange(int count)
+        public  ArraySegment<byte> ReadByteRange(int count)
         {
-            var range = new ByteRange(base.GetBuffer(), this.Position, count);
+            var range = new ArraySegment<byte>(base.GetBuffer(), this.Position, count);
             this.Position = this.Position + count;
             return range;
         }

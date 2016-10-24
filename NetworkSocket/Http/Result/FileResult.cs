@@ -60,7 +60,7 @@ namespace NetworkSocket.Http
             using (var stream = new FileStream(this.FileName, FileMode.Open, FileAccess.Read))
             {
                 const int size = 8 * 1024;
-                var state = response.WriteHeader((int)stream.Length, false);
+                var state = response.WriteHeader((int)stream.Length);
                 var bytes = new byte[size];
 
                 while (state == true)
@@ -70,8 +70,8 @@ namespace NetworkSocket.Http
                     {
                         break;
                     }
-                    var content = new ByteRange(bytes, 0, length);
-                    state = response.WriteContent(content, false);
+                    var content = new ArraySegment<byte>(bytes, 0, length);
+                    state = response.WriteContent(content);
                 }
             }
         }

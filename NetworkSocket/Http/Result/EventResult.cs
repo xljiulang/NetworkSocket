@@ -47,7 +47,7 @@ namespace NetworkSocket.Http
 
             if (this.httpEvent != null)
             {
-                wapper.SendEventAsync(this.httpEvent);
+                wapper.SendEvent(this.httpEvent);
             }
         }
     }

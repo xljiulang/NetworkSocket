@@ -262,7 +262,7 @@ namespace NetworkSocket.Util
         public void CopyTo(int srcOffset, byte[] dstArray, int dstOffset, int count)
         {
             Buffer.BlockCopy(this._buffer, srcOffset, dstArray, dstOffset, count);
-        }             
+        }
 
         /// <summary>
         /// 转换为byte数组
@@ -279,9 +279,9 @@ namespace NetworkSocket.Util
         /// 转换为ByteRange类型
         /// </summary>      
         /// <returns></returns>        
-        public ByteRange ToByteRange()
+        public ArraySegment<byte> ToByteRange()
         {
-            return new ByteRange(this._buffer, 0, this.Length);
+            return new ArraySegment<byte>(this._buffer, 0, this.Length);
         }
 
         /// <summary>

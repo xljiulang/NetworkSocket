@@ -31,16 +31,6 @@ namespace NetworkSocket
         /// </summary>        
         protected Socket Socket { get; private set; }
 
-        /// <summary>
-        /// 获取或设置等待发送的数量
-        /// </summary>
-        protected int PendingSendCount = 0;
-
-        /// <summary>
-        /// 获取待发送的ByeRange集合
-        /// </summary>
-        protected ConcurrentQueue<IByteRange> PendingSendByteRanges { get; private set; }
-
 
         /// <summary>
         /// 处理和分析收到的数据的委托
@@ -112,7 +102,6 @@ namespace NetworkSocket
         {
             this.Tag = new Tag();
             this.RecvStream = new NsStream();
-            this.PendingSendByteRanges = new ConcurrentQueue<IByteRange>();
         }
 
         /// <summary>
@@ -122,13 +111,7 @@ namespace NetworkSocket
         public virtual void Bind(Socket socket)
         {
             this.Socket = socket;
-            this.socketClosed = false;
-            this.PendingSendCount = 0;
-
-            if (this.PendingSendByteRanges.Count > 0)
-            {
-                this.PendingSendByteRanges = new ConcurrentQueue<IByteRange>();
-            }
+            this.socketClosed = false;           
 
             this.RecvStream.Clear();
             this.Tag.ID = null;
@@ -144,16 +127,43 @@ namespace NetworkSocket
         public abstract void LoopReceive();
 
         /// <summary>
-        /// 异步发送数据
+        /// 同步发送数据
         /// </summary>
-        /// <param name="byteRange">数据范围</param>         
-        public abstract void SendAsync(IByteRange byteRange);
+        /// <param name="byteRange">数据范围</param>
+        /// <returns></returns>
+        public virtual int Send(ArraySegment<byte> byteRange)
+        {
+            if (byteRange.Array == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            if (this.IsConnected == false)
+            {
+                throw new SocketException((int)SocketError.NotConnected);
+            }
+
+            return this.Socket.Send(byteRange.Array, byteRange.Offset, byteRange.Count, SocketFlags.None);
+        }
 
         /// <summary>
         /// 同步发送数据
         /// </summary>
-        /// <param name="byteRange">数据范围</param>
-        public abstract void Send(IByteRange byteRange);
+        /// <param name="buffer">数据</param>
+        /// <returns></returns>
+        public virtual int Send(byte[] buffer)
+        {
+            if (buffer == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            if (this.IsConnected == false)
+            {
+                throw new SocketException((int)SocketError.NotConnected);
+            }
+            return this.Socket.Send(buffer);
+        }
 
         /// <summary>
         /// 主动断开和远程端的连接  
@@ -172,17 +182,7 @@ namespace NetworkSocket
                 if (waitForSendComplete == false)
                 {
                     this.TryInvokeAction(() => this.Socket.Shutdown(SocketShutdown.Both));
-                }
-                else
-                {
-                    this.TryInvokeAction(() => this.Socket.Shutdown(SocketShutdown.Receive));
-                    var spinWait = new SpinWait();
-                    while (this.IsConnected && this.PendingSendCount > 0)
-                    {
-                        spinWait.SpinOnce();
-                    }
-                    this.TryInvokeAction(() => this.Socket.Shutdown(SocketShutdown.Send));
-                }
+                }               
 
                 this.Socket.Dispose();
                 this.socketClosed = true;
@@ -395,7 +395,6 @@ namespace NetworkSocket
             {
                 this.socketRoot = null;
                 this.Socket = null;
-                this.PendingSendByteRanges = null;
                 this.Tag = null;
                 this.RecvStream = null;
                 this.CloseHandler = null;

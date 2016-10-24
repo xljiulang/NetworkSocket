@@ -48,7 +48,7 @@ namespace NetworkSocket.Flex
             {
                 var policyXml = this.GeneratePolicyXml();
                 var bytes = Encoding.UTF8.GetBytes(policyXml.ToCharArray());
-                context.Session.SendAsync(new ByteRange(bytes));
+                context.Session.Send(bytes);
             }
             catch (Exception)
             {

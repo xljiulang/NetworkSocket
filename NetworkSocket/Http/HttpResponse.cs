@@ -172,26 +172,24 @@ namespace NetworkSocket.Http
         /// <summary>
         /// 输出头数据
         /// </summary>
-        /// <param name="async">是否异步</param>
         /// <returns></returns>
-        public bool WriteHeader(bool async = true)
+        public bool WriteHeader()
         {
-            return this.WriteHeader(-1, async);
+            return this.WriteHeader(-1);
         }
 
         /// <summary>
         /// 输出头数据
         /// </summary>
         /// <param name="contentLength">内容长度</param>
-        /// <param name="async">是否异步</param>
         /// <returns></returns>
-        public bool WriteHeader(int contentLength, bool async = true)
+        public bool WriteHeader(int contentLength)
         {
             if (this.wroteHeader == false)
             {
                 this.wroteHeader = true;
                 var headerByes = this.GetHeaderBytes(contentLength);
-                return this.TrySend(new ByteRange(headerByes), async);
+                return this.TrySend(headerByes);
             }
             return false;
         }
@@ -200,19 +198,27 @@ namespace NetworkSocket.Http
         /// 输出内容
         /// </summary>
         /// <param name="range">内容</param>
-        /// <param name="async">是否异步</param>
         /// <returns></returns>
-        public bool WriteContent(ByteRange range, bool async = true)
+        public bool WriteContent(ArraySegment<byte> range)
         {
-            return this.TrySend(range, async);
+            return this.TrySend(range);
+        }
+
+        /// <summary>
+        /// 输出内容
+        /// </summary>
+        /// <param name="buffer">内容</param>
+        /// <returns></returns>
+        public bool WriteContent(byte[] buffer)
+        {
+            return this.TrySend(buffer);
         }
 
         /// <summary>
         /// 输出文本内容
         /// </summary>      
         /// <param name="content">内容</param>
-        /// <param name="async">是否异步</param>
-        public bool Write(string content, bool async = true)
+        public bool Write(string content)
         {
             if (content == null)
             {
@@ -229,7 +235,7 @@ namespace NetworkSocket.Http
             }
 
             buffer.Add(contentBytes);
-            return this.TrySend(buffer.ToByteRange(), async);
+            return this.TrySend(buffer.ToByteRange());
         }
 
 
@@ -237,32 +243,36 @@ namespace NetworkSocket.Http
         /// 尝试发送数据到客户端
         /// </summary>
         /// <param name="range"></param>
-        /// <param name="async"></param>
         /// <returns></returns>
-        private bool TrySend(ByteRange range, bool async)
+        private bool TrySend(ArraySegment<byte> range)
         {
-            if (range == null)
-            {
-                return false;
-            }
-
             try
             {
-                if (async == true)
-                {
-                    this.session.SendAsync(range);
-                }
-                else
-                {
-                    this.session.Send(range);
-                }
-                return true;
+                return this.session.Send(range) > 0;
             }
             catch (Exception)
             {
                 return false;
             }
         }
+
+        /// <summary>
+        /// 尝试发送数据到客户端
+        /// </summary>
+        /// <param name="buffer"></param>
+        /// <returns></returns>
+        private bool TrySend(byte[] buffer)
+        {
+            try
+            {
+                return this.session.Send(buffer) > 0;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
 
         /// <summary>
         /// 主动关闭连接

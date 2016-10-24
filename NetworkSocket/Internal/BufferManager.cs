@@ -52,16 +52,16 @@ namespace NetworkSocket
         /// 申请一个缓冲区
         /// </summary>        
         /// <returns></returns>
-        public static ByteRange GetBuffer()
+        public static ArraySegment<byte> GetBuffer()
         {
             lock (BufferManager.syncRoot)
             {
-                ByteRange buffer;
+                ArraySegment<byte>? buffer;
                 while ((buffer = BufferManager.linkedList.Last.Value.AllocBuffer()) == null)
                 {
                     BufferManager.CreateBufferBlock();
                 }
-                return buffer;
+                return buffer.Value;
             }
         }
 
@@ -72,7 +72,7 @@ namespace NetworkSocket
         public static void SetBuffer(SocketAsyncEventArgs arg)
         {
             var buffer = BufferManager.GetBuffer();
-            arg.SetBuffer(buffer.Buffer, buffer.Offset, buffer.Count);
+            arg.SetBuffer(buffer.Array, buffer.Offset, buffer.Count);
         }
 
 
@@ -112,13 +112,13 @@ namespace NetworkSocket
             /// 当内存块满时返回null
             /// </summary>
             /// <returns></returns>
-            public ByteRange AllocBuffer()
+            public ArraySegment<byte>? AllocBuffer()
             {
                 if (this.position == this.buffer.Length)
                 {
                     return null;
                 }
-                var byteRange = new ByteRange(this.buffer, this.position, this.itemSize);
+                var byteRange = new ArraySegment<byte>(this.buffer, this.position, this.itemSize);
                 this.position = this.position + this.itemSize;
                 return byteRange;
             }

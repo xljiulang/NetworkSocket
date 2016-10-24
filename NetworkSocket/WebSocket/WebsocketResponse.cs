@@ -14,6 +14,6 @@ namespace NetworkSocket.WebSocket
         /// 转换ByteArray类型
         /// </summary>
         /// <returns></returns>
-        public abstract IByteRange ToByteRange();
+        public abstract ArraySegment<byte> ToByteRange();
     }
 }

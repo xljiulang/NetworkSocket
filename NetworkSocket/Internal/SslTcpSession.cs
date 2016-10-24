@@ -43,7 +43,7 @@ namespace NetworkSocket
         /// <summary>
         /// 缓冲区范围
         /// </summary>
-        private IByteRange bufferRange = BufferManager.GetBuffer();
+        private ArraySegment<byte> bufferRange = BufferManager.GetBuffer();
 
         /// <summary>
         /// 获取会话是否提供SSL/TLS安全
@@ -148,7 +148,7 @@ namespace NetworkSocket
 
             base.TryInvokeAction(() =>
                 this.sslStream.BeginRead(
-                this.bufferRange.Buffer,
+                this.bufferRange.Array,
                 this.bufferRange.Offset,
                 this.bufferRange.Count,
                 this.EndRead,
@@ -171,85 +171,13 @@ namespace NetworkSocket
             lock (this.RecvStream.SyncRoot)
             {
                 this.RecvStream.Seek(0, SeekOrigin.End);
-                this.RecvStream.Write(this.bufferRange.Buffer, this.bufferRange.Offset, read);
+                this.RecvStream.Write(this.bufferRange.Array, this.bufferRange.Offset, read);
                 this.RecvStream.Seek(0, SeekOrigin.Begin);
                 this.ReceiveHandler(this);
             }
 
             // 重新进行一次接收
             this.TryBeginRead();
-        }
-
-        /// <summary>
-        /// 异步发送数据
-        /// </summary>
-        /// <param name="byteRange">数据范围</param>  
-        /// <exception cref="ArgumentNullException"></exception>        
-        /// <exception cref="SocketException"></exception>
-        public override void SendAsync(IByteRange byteRange)
-        {
-            if (byteRange == null)
-            {
-                throw new ArgumentNullException();
-            }
-
-            if (this.IsConnected == false)
-            {
-                throw new SocketException((int)SocketError.NotConnected);
-            }
-
-            // 如果发送过程已停止，则本次直接发送
-            if (Interlocked.CompareExchange(ref this.PendingSendCount, 1, 0) == 0)
-            {
-                this.TrySendByteRangeAsync(byteRange);
-            }
-            else
-            {
-                this.PendingSendByteRanges.Enqueue(byteRange);
-                // 如果发送过程已停止，则启动发送缓存中的数据
-                if (Interlocked.Increment(ref this.PendingSendCount) == 1)
-                {
-                    this.TrySendByteRangeAsync(null);
-                }
-            }
-        }
-
-        /// <summary>
-        /// 尝试异步发送一个ByteRange
-        /// 发送完成将触发SendCompleted方法
-        /// <param name="byteRange">数据范围，为null则从缓冲中区获取</param>
-        /// </summary>
-        private void TrySendByteRangeAsync(IByteRange byteRange)
-        {
-            if (byteRange == null && this.PendingSendByteRanges.TryDequeue(out byteRange) == false)
-            {
-                Interlocked.Exchange(ref this.PendingSendCount, 0);
-                return;
-            }
-
-            base.TryInvokeAction(() =>
-                this.sslStream.BeginWrite(
-                byteRange.Buffer,
-                byteRange.Offset,
-                byteRange.Count,
-                this.EndWirte,
-                null));
-        }
-
-        /// <summary>
-        /// 发送完成后
-        /// </summary>
-        /// <param name="asyncResult">异步结果</param>
-        private void EndWirte(IAsyncResult asyncResult)
-        {
-            if (this.IsConnected == false || base.TryInvokeAction(() => this.sslStream.EndWrite(asyncResult)) == false)
-            {
-                Interlocked.Exchange(ref this.PendingSendCount, 0);
-            }
-            else if (Interlocked.Decrement(ref this.PendingSendCount) > 0)
-            {
-                this.TrySendByteRangeAsync(null);
-            }
         }
 
         /// <summary>
@@ -266,17 +194,17 @@ namespace NetworkSocket
                 this.sslStream = null;
                 this.certificate = null;
                 this.certificateValidationCallback = null;
-                this.bufferRange = null;
             }
         }
 
         /// <summary>
-        /// 异步发送数据
+        /// 同步发送数据
         /// </summary>
         /// <param name="byteRange">数据范围</param>  
         /// <exception cref="ArgumentNullException"></exception>        
         /// <exception cref="SocketException"></exception>
-        public override void Send(IByteRange byteRange)
+        /// <returns></returns>
+        public override int Send(ArraySegment<byte> byteRange)
         {
             if (byteRange == null)
             {
@@ -288,7 +216,29 @@ namespace NetworkSocket
                 throw new SocketException((int)SocketError.NotConnected);
             }
 
-            this.sslStream.Write(byteRange.Buffer, byteRange.Offset, byteRange.Count);
+            this.sslStream.Write(byteRange.Array, byteRange.Offset, byteRange.Count);
+            return byteRange.Count;
+        }
+
+        /// <summary>
+        /// 同步发送数据
+        /// </summary>
+        /// <param name="buffer">数据</param>
+        /// <returns></returns>
+        public override int Send(byte[] buffer)
+        {
+            if (buffer == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            if (this.IsConnected == false)
+            {
+                throw new SocketException((int)SocketError.NotConnected);
+            }
+
+            this.sslStream.Write(buffer);
+            return buffer.Length;
         }
     }
 }

@@ -117,7 +117,7 @@ namespace NetworkSocket.WebSocket
                 body = parameters
             };
             var packetJson = this.Middleware.JsonSerializer.Serialize(packet);
-            this.session.SendTextAsync(packetJson);
+            this.session.SendText(packetJson);
         }
 
         /// <summary>
@@ -144,7 +144,7 @@ namespace NetworkSocket.WebSocket
             // 登记TaskSetAction             
             var task = this.Middleware.TaskSetActionTable.Create<T>(packet.id, this.Middleware.TimeOut);
             var packetJson = this.Middleware.JsonSerializer.Serialize(packet);
-            this.session.SendTextAsync(packetJson);
+            this.session.SendText(packetJson);
             return task;
         }
 

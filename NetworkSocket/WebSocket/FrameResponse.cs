@@ -37,7 +37,7 @@ namespace NetworkSocket.WebSocket
         /// 转换为ByteRange
         /// </summary>
         /// <returns></returns>
-        public override IByteRange ToByteRange()
+        public override  ArraySegment<byte> ToByteRange()
         {
             var builder = new ByteBuilder(Endians.Big);
 

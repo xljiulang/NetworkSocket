@@ -120,7 +120,7 @@ namespace NetworkSocket.WebSocket
                     {
                         actionContext.Packet.body = result;
                         var packetJson = this.Server.JsonSerializer.Serialize(actionContext.Packet);
-                        actionContext.Session.UnWrap().SendTextAsync(packetJson);
+                        actionContext.Session.UnWrap().SendText(packetJson);
                     }
                 }
                 catch (Exception ex)
