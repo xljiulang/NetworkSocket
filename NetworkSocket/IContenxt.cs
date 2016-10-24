@@ -17,7 +17,7 @@ namespace NetworkSocket
         ISession Session { get; }
 
         /// <summary>
-        /// 获取当前会话收到的历史数据
+        /// 获取当前会话收到的数据
         /// 非线程安全类型
         /// </summary>
         IStreamReader InputStream { get; }
