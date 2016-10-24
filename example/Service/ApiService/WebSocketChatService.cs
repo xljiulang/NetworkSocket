@@ -1,13 +1,13 @@
 ﻿using NetworkSocket.Core;
 using NetworkSocket.WebSocket;
-using MixServer.Filters;
+using Service.Filters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Models;
 
-namespace MixServer.ApiService
+namespace Service.ApiService
 {
     /// <summary>
     /// jsonWebSocket在线聊天Api服务

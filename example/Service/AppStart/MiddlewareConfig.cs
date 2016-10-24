@@ -1,4 +1,4 @@
-﻿using MixServer.GlobalFilters;
+﻿using Service.GlobalFilters;
 using NetworkSocket;
 using NetworkSocket.Flex;
 using NetworkSocket.Http;
@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace MixServer.AppStart
+namespace Service.AppStart
 {
     public static partial class Config
     {

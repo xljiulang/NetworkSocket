@@ -1,18 +1,17 @@
 ﻿using NetworkSocket.Http;
-using MixServer.Filters;
+using Service.Filters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Diagnostics;
 
-namespace MixServer.Controller
+namespace Service.Controller
 {
     /// <summary>
-    /// 电源控制器
+    /// Web聊天控制器
     /// </summary>
-    public class HomeController : HttpController
+    public class ChatController : HttpController
     {
         /// <summary>
         /// 加载视图
@@ -33,25 +32,6 @@ namespace MixServer.Controller
         public ActionResult Index()
         {
             return View();
-        }
-
-        /// <summary>
-        /// WebApi示例页面
-        /// </summary>
-        /// <returns></returns>
-        public ActionResult WebApi()
-        {
-            return View();
-        }
-         
-
-        /// <summary>
-        /// 中间件编写代码示例页面
-        /// </summary>
-        /// <returns></returns>
-        public ActionResult Middleware()
-        {
-            return View();
-        }
+        }         
     }
 }

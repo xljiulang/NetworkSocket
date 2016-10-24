@@ -5,11 +5,11 @@ VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetworkSocket.Net45", "NetworkSocket\NetworkSocket.Net45.csproj", "{80D0FA44-523B-4E68-BDC2-B12901D5855B}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Demo", "Demo", "{8A38CC1F-CB87-4838-90AF-8ECF79AEDB15}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "example", "example", "{8A38CC1F-CB87-4838-90AF-8ECF79AEDB15}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Models", "Demo\Models\Models.csproj", "{F9B37780-6345-4E6F-8523-687F56895625}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Models", "example\Models\Models.csproj", "{F9B37780-6345-4E6F-8523-687F56895625}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MixServer", "Demo\MixServer\MixServer.csproj", "{2A042153-5699-4B9B-A011-1EDCA65E662D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Service", "example\Service\Service.csproj", "{2A042153-5699-4B9B-A011-1EDCA65E662D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,5 +1,5 @@
 ﻿using NetworkSocket.Http;
-using MixServer.Filters;
+using Service.Filters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Diagnostics;
 
-namespace MixServer.Controller
+namespace Service.Controller
 {
     /// <summary>
     /// SSE控制器
