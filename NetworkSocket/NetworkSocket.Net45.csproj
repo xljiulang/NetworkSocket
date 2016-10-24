@@ -78,9 +78,7 @@
     <Compile Include="Core\Internal\PacketIdProvider.cs" />
     <Compile Include="Core\Internal\ITaskSetAction.cs" />
     <Compile Include="Core\Internal\TaskSetActionTable.cs" />
-    <Compile Include="Core\Internal\TaskWrapper.cs" />
     <Compile Include="Core\ISerializer.cs" />
-    <Compile Include="Core\ITaskWrapper.cs" />
     <Compile Include="Endians.cs" />
     <Compile Include="Events.cs" />
     <Compile Include="Exceptions\ApiExecuteException.cs" />

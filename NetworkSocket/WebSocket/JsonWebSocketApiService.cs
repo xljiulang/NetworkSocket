@@ -89,7 +89,7 @@ namespace NetworkSocket.WebSocket
         /// <param name="filters">过滤器</param>
         /// <exception cref="ArgumentException"></exception>
         /// <returns>当正常执行输出Api的结果时返回true</returns>
-        private void ExecuteActionAsync(ActionContext actionContext, IEnumerable<IFilter> filters)
+        private async void ExecuteActionAsync(ActionContext actionContext, IEnumerable<IFilter> filters)
         {
             // 参数准备
             var parameters = this.GetAndUpdateParameterValues(actionContext);
@@ -101,37 +101,33 @@ namespace NetworkSocket.WebSocket
                 var exceptionContext = new ExceptionContext(actionContext, actionContext.Result);
                 this.Server.SendRemoteException(exceptionContext);
                 return;
-            }
+            }            
 
-            // 执行Api            
-            actionContext.Action.ExecuteAsWrapper(this, parameters).ContinueWith(task =>
+            try
             {
-                try
-                {
-                    var result = task.GetResult();
-                    this.ExecFiltersAfterAction(filters, actionContext);
+                var result = await actionContext.Action.ExecuteAsync(this, parameters);
+                this.ExecFiltersAfterAction(filters, actionContext);
 
-                    if (actionContext.Result != null)
-                    {
-                        var exceptionContext = new ExceptionContext(actionContext, actionContext.Result);
-                        this.Server.SendRemoteException(exceptionContext);
-                    }
-                    else if (actionContext.Action.IsVoidReturn == false && actionContext.Session.IsConnected)  // 返回数据
-                    {
-                        actionContext.Packet.body = result;
-                        var packetJson = this.Server.JsonSerializer.Serialize(actionContext.Packet);
-                        actionContext.Session.UnWrap().SendText(packetJson);
-                    }
-                }
-                catch (Exception ex)
+                if (actionContext.Result != null)
                 {
-                    this.ProcessExecutingException(actionContext, filters, ex);
+                    var exceptionContext = new ExceptionContext(actionContext, actionContext.Result);
+                    this.Server.SendRemoteException(exceptionContext);
                 }
-                finally
+                else if (actionContext.Action.IsVoidReturn == false && actionContext.Session.IsConnected)  // 返回数据
                 {
-                    this.logicalContext.FreeValue();
+                    actionContext.Packet.body = result;
+                    var packetJson = this.Server.JsonSerializer.Serialize(actionContext.Packet);
+                    actionContext.Session.UnWrap().SendText(packetJson);
                 }
-            });
+            }
+            catch (Exception ex)
+            {
+                this.ProcessExecutingException(actionContext, filters, ex);
+            }
+            finally
+            {
+                this.logicalContext.FreeValue();
+            }
         }
 
         /// <summary>

@@ -56,7 +56,7 @@ namespace NetworkSocket.Core
         /// 清除值
         /// </summary>
         public void FreeValue()
-        {
+        { 
             CallContext.FreeNamedDataSlot(contextName);
         }
     }

@@ -66,14 +66,14 @@ namespace NetworkSocket.Http
         /// 执行Api行为
         /// </summary>   
         /// <param name="actionContext">上下文</param>      
-        void IHttpController.Execute(ActionContext actionContext)
+        async void IHttpController.Execute(ActionContext actionContext)
         {
             var filters = Enumerable.Empty<IFilter>();
             try
             {
                 this.logicalContext.SetValue(actionContext);
                 filters = this.Server.FilterAttributeProvider.GetActionFilters(actionContext.Action);
-                this.ExecuteActionAsync(actionContext, filters);
+                await this.ExecuteActionAsync(actionContext, filters);
             }
             catch (Exception ex)
             {
@@ -111,7 +111,7 @@ namespace NetworkSocket.Http
         /// <param name="actionContext">上下文</param>       
         /// <param name="filters">过滤器</param>
         /// <returns>如果输出Api的返回结果就返回true</returns>
-        private void ExecuteActionAsync(ActionContext actionContext, IEnumerable<IFilter> filters)
+        private async Task ExecuteActionAsync(ActionContext actionContext, IEnumerable<IFilter> filters)
         {
             // Api参数准备
             var parameters = this.GetAndUpdateParameterValues(actionContext);
@@ -124,33 +124,33 @@ namespace NetworkSocket.Http
                 return;
             }
 
-            // 执行Action              
-            actionContext.Action.ExecuteAsWrapper(this, parameters).ContinueWith(task =>
+            try
             {
-                try
-                {
-                    var result = task.GetResult() as ActionResult;
-                    this.ExecFiltersAfterAction(filters, actionContext);
+                var result = await actionContext.Action.ExecuteAsync(this, parameters);
+                var actionResult = result as ActionResult;
 
-                    if (actionContext.Result != null)
-                    {
-                        actionContext.Result.ExecuteResult(actionContext);
-                    }
-                    else
-                    {
-                        if (result == null) result = new EmptyResult();
-                        result.ExecuteResult(actionContext);
-                    }
-                }
-                catch (Exception ex)
+                this.ExecFiltersAfterAction(filters, actionContext);
+                if (actionContext.Result != null)
                 {
-                    this.ProcessExecutingException(actionContext, filters, ex);
+                    actionContext.Result.ExecuteResult(actionContext);
                 }
-                finally
+                else
                 {
-                    this.logicalContext.FreeValue();
+                    if (actionResult == null)
+                    {
+                        actionResult = new JsonResult(result);
+                    }
+                    actionResult.ExecuteResult(actionContext);
                 }
-            });
+            }
+            catch (Exception ex)
+            {
+                this.ProcessExecutingException(actionContext, filters, ex);
+            }
+            finally
+            {
+                this.logicalContext.FreeValue();
+            }
         }
 
 
