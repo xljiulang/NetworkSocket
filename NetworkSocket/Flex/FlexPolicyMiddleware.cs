@@ -33,7 +33,7 @@ namespace NetworkSocket.Flex
             var request = context.Stream.ReadString(Encoding.ASCII);
             if (string.Equals(request, "<policy-file-request/>\0", StringComparison.OrdinalIgnoreCase))
             {
-                return new Task(() => this.SendPolicyXML(context));
+                return Task.Run(() => this.SendPolicyXML(context));
             }
             return this.Next.Invoke(context);
         }

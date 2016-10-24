@@ -48,27 +48,37 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="context">上下文</param>
         /// <returns></returns>
-        private Task OnWebSocketHandshakeRequest(IContenxt context)
+        private async Task OnWebSocketHandshakeRequest(IContenxt context)
         {
             try
             {
                 var result = HttpRequestParser.Parse(context);
-                if (result.Request == null || result.Request.IsWebsocketRequest() == false)
+                if (result.IsHttp == false)
                 {
-                    return this.Next.Invoke(context);
-                }
-                else
-                {
-                    context.Stream.Clear(result.PackageLength);
+                    await this.Next.Invoke(context);
+                    return;
                 }
 
+                if (result.Request == null)
+                {
+                    return;
+                }
+
+                if (result.Request.IsWebsocketRequest() == false)
+                {
+                    await this.Next.Invoke(context);
+                    return;
+                }
+
+                context.Stream.Clear(result.PackageLength);
                 const string seckey = "Sec-WebSocket-Key";
                 var secValue = result.Request.Headers[seckey];
-                return this.ResponseHandshake(context, secValue);
+                await this.ResponseHandshake(context, secValue);
             }
             catch (Exception)
             {
-                return this.Next.Invoke(context);
+                context.Stream.Clear();
+                context.Session.Close();
             }
         }
 
@@ -80,18 +90,14 @@ namespace NetworkSocket.WebSocket
         /// <returns></returns>
         private Task ResponseHandshake(IContenxt context, string secValue)
         {
-            return new Task(() =>
-            {
-                try
-                {
-                    var wrapper = new WebSocketSession(context.Session);
-                    var hansshakeResponse = new HandshakeResponse(secValue);
+            var wrapper = new WebSocketSession(context.Session);
+            var hansshakeResponse = new HandshakeResponse(secValue);
 
-                    wrapper.Send(hansshakeResponse);
-                    this.OnSetProtocolWrapper(context.Session, wrapper);
-                }
-                catch (Exception) { }
-            });
+            if (wrapper.TrySend(hansshakeResponse) == true)
+            {
+                this.OnSetProtocolWrapper(context.Session, wrapper);
+            }
+            return TaskHelper.Empty;
         }
 
         /// <summary>
@@ -112,7 +118,7 @@ namespace NetworkSocket.WebSocket
         private Task OnWebSocketFrameRequest(IContenxt context)
         {
             var requests = this.GenerateWebSocketRequest(context);
-            return new Task(() =>
+            return Task.Run(() =>
             {
                 foreach (var request in requests)
                 {

@@ -25,11 +25,15 @@ namespace NetworkSocket.Http
         /// <returns></returns>
         Task IMiddleware.Invoke(IContenxt context)
         {
-            if (context.Session.Protocol == Protocol.Http)
+            var protocol = context.Session.Protocol;
+            if (protocol == Protocol.None || protocol == Protocol.Http)
+            {
+                return this.OnHttpRequest(context);
+            }
+            else
             {
                 return this.Next.Invoke(context);
             }
-            return this.OnHttpRequest(context);
         }
 
 
@@ -38,49 +42,62 @@ namespace NetworkSocket.Http
         /// </summary>
         /// <param name="context">上下文</param>
         /// <returns></returns>
-        private Task OnHttpRequest(IContenxt context)
+        private async Task OnHttpRequest(IContenxt context)
         {
             try
             {
                 var result = HttpRequestParser.Parse(context);
-                if (result.IsHttp == false)
-                {
-                    return this.Next.Invoke(context);
-                }
-
-                if (result.Request == null)
-                {
-                    return new Task(() => { });
-                }
-
-                if (result.Request.IsWebsocketRequest() == true)
-                {
-                    return this.Next.Invoke(context);
-                }
-
-                if (context.Session.Protocol == null)
-                {
-                    context.Session.SetProtocolWrapper(Protocol.Http, null);
-                }
-
-                context.Stream.Clear(result.PackageLength);
-
-                return new Task(() =>
-                {
-                    var response = new HttpResponse(context.Session);
-                    var requestContext = new RequestContext(result.Request, response);
-                    this.OnHttpRequest(context, requestContext);
-                });
+                await this.ProcessParseResult(context, result);
             }
             catch (HttpException ex)
             {
-                return new Task(() => this.OnException(context.Session, ex));
+                this.OnException(context.Session, ex);
             }
             catch (Exception ex)
             {
-                return new Task(() => this.OnException(context.Session, new HttpException(500, ex.Message)));
+                this.OnException(context.Session, new HttpException(500, ex.Message));
             }
         }
+
+        /// <summary>
+        /// 处理解析结果
+        /// </summary>
+        /// <param name="context">上下文</param>
+        /// <param name="result">解析结果</param>
+        /// <returns></returns>
+        private async Task ProcessParseResult(IContenxt context, HttpParseResult result)
+        {
+            if (result.IsHttp == false)
+            {
+                await this.Next.Invoke(context);
+                return;
+            }
+
+            if (result.Request == null)
+            {
+                return;
+            }
+
+            if (result.Request.IsWebsocketRequest() == true)
+            {
+                await this.Next.Invoke(context);
+                return;
+            }
+
+            if (context.Session.Protocol == null)
+            {
+                context.Session.SetProtocolWrapper(Protocol.Http, null);
+            }
+            context.Stream.Clear(result.PackageLength);
+
+            await Task.Run(() =>
+            {
+                var response = new HttpResponse(context.Session);
+                var requestContext = new RequestContext(result.Request, response);
+                this.OnHttpRequest(context, requestContext);
+            });
+        }
+
 
         /// <summary>
         /// 异常时

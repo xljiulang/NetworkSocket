@@ -139,6 +139,7 @@
     <Compile Include="Internal\LastMiddlerware.cs" />
     <Compile Include="Internal\Tag.cs" />
     <Compile Include="Internal\IocpTcpSession.cs" />
+    <Compile Include="Internal\TaskHelper.cs" />
     <Compile Include="Internal\TcpSessionBase.cs" />
     <Compile Include="Internal\TcpSessionCollection.cs" />
     <Compile Include="Internal\TcpSessionQueue.cs" />
@@ -167,7 +168,6 @@
     <Compile Include="Util\Converts\NullConvert.cs" />
     <Compile Include="Util\Converts\PrimitiveContert.cs" />
     <Compile Include="Util\IConvert.cs" />
-    <Compile Include="Util\LimitedTask.cs" />
     <Compile Include="Util\TcpSnapshot.cs" />
     <Compile Include="Util\HttpUtility.cs" />
     <Compile Include="Validation\FluentApi.cs" />

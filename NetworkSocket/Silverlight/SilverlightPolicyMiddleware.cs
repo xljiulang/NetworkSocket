@@ -33,7 +33,7 @@ namespace NetworkSocket.Silverlight
             var request = context.Stream.ReadString(Encoding.ASCII);
             if (string.Equals(request, "<policy-file-request/>", StringComparison.OrdinalIgnoreCase))
             {
-                return new Task(() => this.SendPolicyXMLAsync(context));
+                return Task.Run(() => this.SendPolicyXMLAsync(context));
             }
             return this.Next.Invoke(context);
         }

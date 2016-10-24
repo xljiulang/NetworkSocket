@@ -77,9 +77,28 @@ namespace NetworkSocket.WebSocket
         /// <exception cref="SocketException"></exception>
         /// <exception cref="ArgumentNullException"></exception>   
         /// <param name="response">回复内容</param>
-        public void Send(WebsocketResponse response)
+        public int Send(WebsocketResponse response)
         {
-            this.session.Send(response.ToByteRange());
+            return this.session.Send(response.ToByteRange());
+        }
+
+        /// <summary>
+        /// 尝试发送回复数据
+        /// </summary>
+        /// <exception cref="SocketException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>   
+        /// <param name="response">回复内容</param>
+        public bool TrySend(WebsocketResponse response)
+        {
+            try
+            {
+                this.Send(response);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -87,11 +106,11 @@ namespace NetworkSocket.WebSocket
         /// </summary>     
         /// <param name="content">文本内容</param>
         /// <exception cref="SocketException"></exception>
-        public void SendText(string content)
+        public int SendText(string content)
         {
             var bytes = content == null ? new byte[0] : Encoding.UTF8.GetBytes(content);
             var response = new FrameResponse(FrameCodes.Text, bytes);
-            this.Send(response);
+            return this.Send(response);
         }
 
         /// <summary>
@@ -99,10 +118,10 @@ namespace NetworkSocket.WebSocket
         /// </summary>       
         /// <param name="content">二进制数据</param>
         /// <exception cref="SocketException"></exception>
-        public void SendBinary(byte[] content)
+        public int SendBinary(byte[] content)
         {
             var response = new FrameResponse(FrameCodes.Binary, content);
-            this.Send(response);
+            return this.Send(response);
         }
 
 

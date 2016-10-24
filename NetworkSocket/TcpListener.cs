@@ -308,8 +308,7 @@ namespace NetworkSocket
             try
             {
                 var context = this.CreateContext(session);
-                var task = this.middlewares.First.Value.Invoke(context);
-                if (task != null && task.Status == TaskStatus.Created) task.Start();
+                this.middlewares.First.Value.Invoke(context);
             }
             catch (Exception ex)
             {
