@@ -24,16 +24,17 @@ namespace NetworkSocket.Silverlight
         /// <returns></returns>
         Task IMiddleware.Invoke(IContenxt context)
         {
-            if (context.Session.Protocol != Protocol.None || context.Stream.Length != 22)
+            if (context.Session.Protocol != Protocol.None || context.InputStream.Length != 22)
             {
                 return this.Next.Invoke(context);
             }
 
-            context.Stream.Position = 0;
-            var request = context.Stream.ReadString(Encoding.ASCII);
+            context.InputStream.Position = 0;
+            var request = context.InputStream.ReadString(Encoding.ASCII);
             if (string.Equals(request, "<policy-file-request/>", StringComparison.OrdinalIgnoreCase))
             {
-                return Task.Run(() => this.SendPolicyXMLAsync(context));
+                this.SendPolicyXML(context);
+                return TaskHelper.Completed;
             }
             return this.Next.Invoke(context);
         }
@@ -42,7 +43,7 @@ namespace NetworkSocket.Silverlight
         /// 发送策略文件
         /// </summary>
         /// <param name="context">上下文</param>
-        private void SendPolicyXMLAsync(IContenxt context)
+        private void SendPolicyXML(IContenxt context)
         {
             try
             {

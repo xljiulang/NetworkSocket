@@ -14,16 +14,16 @@ namespace NetworkSocket
         /// <summary>
         /// 历史数据对象上下文名称
         /// </summary>
-        private static readonly string contextName = "NsStreamContext";
+        private static readonly string contextName = "InputStreamContext";
 
         /// <summary>
         /// 获取或设置当前会话收到的历史数据对象
         /// </summary>
-        public INsStream Stream
+        public IStreamReader InputStream
         {
             get
             {
-                return CallContext.GetData(contextName) as INsStream;
+                return CallContext.GetData(contextName) as IStreamReader;
             }
             set
             {

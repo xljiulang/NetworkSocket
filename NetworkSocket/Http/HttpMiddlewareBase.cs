@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NetworkSocket.Http
@@ -84,20 +85,19 @@ namespace NetworkSocket.Http
                 return;
             }
 
+            context.InputStream.Clear(result.PackageLength);
             if (context.Session.Protocol == null)
             {
                 context.Session.SetProtocolWrapper(Protocol.Http, null);
             }
-            context.Stream.Clear(result.PackageLength);
 
-            await Task.Run(() =>
+            ThreadPool.UnsafeQueueUserWorkItem((state) =>
             {
                 var response = new HttpResponse(context.Session);
                 var requestContext = new RequestContext(result.Request, response);
                 this.OnHttpRequest(context, requestContext);
-            });
+            }, null);
         }
-
 
         /// <summary>
         /// 异常时

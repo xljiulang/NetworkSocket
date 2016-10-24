@@ -270,7 +270,7 @@ namespace NetworkSocket
             return new Context
             {
                 Session = session,
-                Stream = session.RecvStream,
+                InputStream = session.InputStream,
                 AllSessions = this.workSessions
             };
         }

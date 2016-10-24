@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NetworkSocket.WebSocket
@@ -70,14 +71,14 @@ namespace NetworkSocket.WebSocket
                     return;
                 }
 
-                context.Stream.Clear(result.PackageLength);
+                context.InputStream.Clear(result.PackageLength);
                 const string seckey = "Sec-WebSocket-Key";
                 var secValue = result.Request.Headers[seckey];
                 await this.ResponseHandshake(context, secValue);
             }
             catch (Exception)
             {
-                context.Stream.Clear();
+                context.InputStream.Clear();
                 context.Session.Close();
             }
         }
@@ -97,7 +98,7 @@ namespace NetworkSocket.WebSocket
             {
                 this.OnSetProtocolWrapper(context.Session, wrapper);
             }
-            return TaskHelper.Empty;
+            return TaskHelper.Completed;
         }
 
         /// <summary>
@@ -118,13 +119,14 @@ namespace NetworkSocket.WebSocket
         private Task OnWebSocketFrameRequest(IContenxt context)
         {
             var requests = this.GenerateWebSocketRequest(context);
-            return Task.Run(() =>
+            ThreadPool.UnsafeQueueUserWorkItem((state) =>
             {
                 foreach (var request in requests)
                 {
                     this.OnWebSocketRequest(context, request);
                 }
-            });
+            }, null);
+            return TaskHelper.Completed;
         }
 
         /// <summary>
@@ -139,7 +141,7 @@ namespace NetworkSocket.WebSocket
             {
                 try
                 {
-                    var request = FrameRequest.Parse(context.Stream);
+                    var request = FrameRequest.Parse(context.InputStream);
                     if (request == null)
                     {
                         return list;

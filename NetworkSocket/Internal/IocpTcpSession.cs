@@ -92,11 +92,11 @@ namespace NetworkSocket
                 return;
             }
 
-            lock (this.RecvStream.SyncRoot)
+            lock (this.InputStream.SyncRoot)
             {
-                this.RecvStream.Seek(0, SeekOrigin.End);
-                this.RecvStream.Write(arg.Buffer, arg.Offset, arg.BytesTransferred);
-                this.RecvStream.Seek(0, SeekOrigin.Begin);
+                this.InputStream.Seek(0, SeekOrigin.End);
+                this.InputStream.Write(arg.Buffer, arg.Offset, arg.BytesTransferred);
+                this.InputStream.Seek(0, SeekOrigin.Begin);
                 this.ReceiveHandler(this);
             }
 

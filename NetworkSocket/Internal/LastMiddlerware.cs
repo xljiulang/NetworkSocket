@@ -23,9 +23,9 @@ namespace NetworkSocket
         /// <returns></returns>
         public Task Invoke(IContenxt context)
         {
-            context.Stream.Clear();
+            context.InputStream.Clear();
             context.Session.Close();
-            return TaskHelper.Empty;
+            return TaskHelper.Completed;
         }
     }
 }

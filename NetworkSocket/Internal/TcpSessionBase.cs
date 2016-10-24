@@ -82,7 +82,7 @@ namespace NetworkSocket
         /// <summary>
         /// 获取接收到的未处理数据
         /// </summary>      
-        public NsStream RecvStream { get; private set; }
+        public InputStream InputStream { get; private set; }
 
         /// <summary>
         /// 获取本机终结点
@@ -101,7 +101,7 @@ namespace NetworkSocket
         public TcpSessionBase()
         {
             this.Tag = new Tag();
-            this.RecvStream = new NsStream();
+            this.InputStream = new InputStream();
         }
 
         /// <summary>
@@ -113,7 +113,7 @@ namespace NetworkSocket
             this.Socket = socket;
             this.socketClosed = false;
 
-            this.RecvStream.Clear();
+            this.InputStream.Clear();
             this.Tag.ID = null;
             this.Tag.Data = null;
             this.SetProtocolWrapper(Protocol.None, null);
@@ -376,14 +376,14 @@ namespace NetworkSocket
         protected virtual void Dispose(bool disposing)
         {
             this.Close(false);
-            this.RecvStream.Dispose();
+            this.InputStream.Dispose();
 
             if (disposing)
             {
                 this.socketRoot = null;
                 this.Socket = null;
                 this.Tag = null;
-                this.RecvStream = null;
+                this.InputStream = null;
                 this.CloseHandler = null;
                 this.DisconnectHandler = null;
                 this.ReceiveHandler = null;

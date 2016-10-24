@@ -54,7 +54,7 @@ namespace NetworkSocket.WebSocket
         /// <param name="stream">所有收到的数据</param>  
         /// <exception cref="NotSupportedException"></exception>
         /// <returns></returns>
-        public unsafe static FrameRequest Parse(INsStream stream)
+        public unsafe static FrameRequest Parse(IStreamReader stream)
         {
             if (stream.Length < 2)
             {

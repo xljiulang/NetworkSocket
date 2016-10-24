@@ -45,15 +45,15 @@ namespace NetworkSocket.Http
         {
             var headerLength = 0;
             var result = new HttpParseResult();
-            context.Stream.Position = 0;
+            context.InputStream.Position = 0;
 
-            result.IsHttp = HttpRequestParser.IsHttp(context.Stream, out headerLength);
+            result.IsHttp = HttpRequestParser.IsHttp(context.InputStream, out headerLength);
             if (result.IsHttp == false || headerLength <= 0)
             {
                 return result;
             }
 
-            var headerString = context.Stream.ReadString(headerLength, Encoding.ASCII);
+            var headerString = context.InputStream.ReadString(Encoding.ASCII, headerLength);
             const string pattern = @"^(?<method>[^\s]+)\s(?<path>[^\s]+)\sHTTP\/1\.1\r\n" +
                 @"((?<field_name>[^:\r\n]+):\s(?<field_value>[^\r\n]*)\r\n)+" +
                 @"\r\n";
@@ -69,7 +69,7 @@ namespace NetworkSocket.Http
             var httpHeader = HttpHeader.Parse(match.Groups["field_name"].Captures, match.Groups["field_value"].Captures);
             var contentLength = httpHeader.TryGet<int>("Content-Length");
 
-            if (httpMethod == HttpMethod.POST && context.Stream.Length - headerLength < contentLength)
+            if (httpMethod == HttpMethod.POST && context.InputStream.Length - headerLength < contentLength)
             {
                 return result;// 数据未完整                 
             }
@@ -97,9 +97,9 @@ namespace NetworkSocket.Http
                     break;
 
                 default:
-                    request.Body = context.Stream.ReadArray(contentLength);
-                    context.Stream.Position = headerLength;
-                    HttpRequestParser.GeneratePostFormAndFiles(request, context.Stream);
+                    request.Body = context.InputStream.ReadArray(contentLength);
+                    context.InputStream.Position = headerLength;
+                    HttpRequestParser.GeneratePostFormAndFiles(request, context.InputStream);
                     break;
             }
 
@@ -116,10 +116,10 @@ namespace NetworkSocket.Http
         /// <param name="stream">收到的数据</param>
         /// <param name="headerLength">头数据长度，包括双换行</param>
         /// <returns></returns>
-        private static bool IsHttp(INsStream stream, out int headerLength)
+        private static bool IsHttp(IStreamReader stream, out int headerLength)
         {
             var methodLength = HttpRequestParser.GetMthodLength(stream);
-            var methodName = stream.ReadString(methodLength, Encoding.ASCII);
+            var methodName = stream.ReadString(Encoding.ASCII, methodLength);
 
             if (HttpRequestParser.MethodNames.Any(m => m.StartsWith(methodName, StringComparison.OrdinalIgnoreCase)) == false)
             {
@@ -144,7 +144,7 @@ namespace NetworkSocket.Http
         /// </summary>
         /// <param name="stream">收到的数据</param>
         /// <returns></returns>
-        private static int GetMthodLength(INsStream stream)
+        private static int GetMthodLength(IStreamReader stream)
         {
             var maxLength = Math.Min(stream.Length, HttpRequestParser.MedthodMaxLength + 1);
             for (var i = 0; i < maxLength; i++)
@@ -178,7 +178,7 @@ namespace NetworkSocket.Http
         /// </summary>
         /// <param name="request"></param>
         /// <param name="stream"></param>      
-        private static void GeneratePostFormAndFiles(HttpRequest request, INsStream stream)
+        private static void GeneratePostFormAndFiles(HttpRequest request, IStreamReader stream)
         {
             var boundary = default(string);
             if (request.IsApplicationFormRequest() == true)
@@ -222,7 +222,7 @@ namespace NetworkSocket.Http
         /// <param name="request"></param>
         /// <param name="stream"></param>   
         /// <param name="boundary">边界</param>
-        private static void GenerateMultipartFormAndFiles(HttpRequest request, INsStream stream, string boundary)
+        private static void GenerateMultipartFormAndFiles(HttpRequest request, IStreamReader stream, string boundary)
         {
             var boundaryBytes = Encoding.ASCII.GetBytes("\r\n--" + boundary);
             var maxPosition = stream.Length - Encoding.ASCII.GetBytes("--\r\n").Length;
@@ -239,7 +239,7 @@ namespace NetworkSocket.Http
                     break;
                 }
 
-                var head = stream.ReadString(headLength, Encoding.UTF8);
+                var head = stream.ReadString(Encoding.UTF8, headLength);
                 var bodyLength = stream.IndexOf(boundaryBytes);
                 if (bodyLength < 0)
                 {

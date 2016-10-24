@@ -24,16 +24,17 @@ namespace NetworkSocket.Flex
         /// <returns></returns>
         Task IMiddleware.Invoke(IContenxt context)
         {
-            if (context.Session.Protocol != Protocol.None || context.Stream.Length != 23)
+            if (context.Session.Protocol != Protocol.None || context.InputStream.Length != 23)
             {
                 return this.Next.Invoke(context);
             }
 
-            context.Stream.Position = 0;
-            var request = context.Stream.ReadString(Encoding.ASCII);
+            context.InputStream.Position = 0;
+            var request = context.InputStream.ReadString(Encoding.ASCII);
             if (string.Equals(request, "<policy-file-request/>\0", StringComparison.OrdinalIgnoreCase))
             {
-                return Task.Run(() => this.SendPolicyXML(context));
+                this.SendPolicyXML(context);
+                return TaskHelper.Completed;
             }
             return this.Next.Invoke(context);
         }

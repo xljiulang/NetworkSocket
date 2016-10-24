@@ -14,9 +14,9 @@ namespace NetworkSocket
     internal static class TaskHelper
     {
         /// <summary>
-        /// 表示空的任务
+        /// 表示已完成的任务
         /// </summary>
-        public static readonly Task Empty = Task.FromResult(0);
+        public static readonly Task Completed = Task.FromResult(true);
 
         /// <summary>
         /// 安全字典

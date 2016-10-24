@@ -15,6 +15,7 @@ namespace MixServer.Controller
     /// </summary>
     public class WebApiController : HttpController
     {
+        [NoneAction]
         public object About()
         {
             var names = typeof(HttpController).Assembly.GetName();
