@@ -6,7 +6,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Diagnostics;
-using NetworkSocket.Fast;
 using System.Threading.Tasks;
 
 namespace MixServer.Controller

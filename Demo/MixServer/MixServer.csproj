@@ -52,22 +52,18 @@
     <Compile Include="ApiService\WebSocketChatService.cs" />
     <Compile Include="Controller\WebApiController.cs" />
     <Compile Include="GlobalFilters\WebSockeGlobalFilter.cs" />
-    <Compile Include="GlobalFilters\FastGlobalFilter.cs" />
     <Compile Include="GlobalFilters\HttpGlobalFilter.cs" />
     <Compile Include="Filters\HttpLogFilter.cs" />
-    <Compile Include="Filters\FastLogFilter.cs" />
-    <Compile Include="Filters\FastLoginFilter.cs" />
     <Compile Include="Filters\WebSocketNickNameFilter.cs" />
-    <Compile Include="ApiService\FastMathService.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <None Include="ssl.cer" />
     <None Include="View\Home\Middleware.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\NetworkSocket\NetworkSocket.csproj">
+    <ProjectReference Include="..\..\NetworkSocket\NetworkSocket.Net45.csproj">
       <Project>{80d0fa44-523b-4e68-bdc2-b12901d5855b}</Project>
-      <Name>NetworkSocket</Name>
+      <Name>NetworkSocket.Net45</Name>
     </ProjectReference>
     <ProjectReference Include="..\Models\Models.csproj">
       <Project>{f9b37780-6345-4e6f-8523-687f56895625}</Project>

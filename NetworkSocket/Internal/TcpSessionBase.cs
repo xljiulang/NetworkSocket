@@ -131,7 +131,8 @@ namespace NetworkSocket
             }
 
             this.RecvStream.Clear();
-            this.Tag.Clear();
+            this.Tag.ID = null;
+            this.Tag.Data = null;
             this.SetProtocolWrapper(null, null);
             this.LocalEndPoint = (IPEndPoint)socket.LocalEndPoint;
             this.RemoteEndPoint = (IPEndPoint)socket.RemoteEndPoint;

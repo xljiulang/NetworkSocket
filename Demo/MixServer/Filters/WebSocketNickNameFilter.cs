@@ -17,8 +17,8 @@ namespace MixServer.Filters
         }
 
         protected override void OnExecuting(ActionContext filterContext)
-        {
-            if (filterContext.Session.Tag.TryGet("name") == null)
+        { 
+            if (filterContext.Session.Tag.Data == null)
             {
                 filterContext.Result = "请设置昵称后再聊天";
             }

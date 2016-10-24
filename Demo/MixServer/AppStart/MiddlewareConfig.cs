@@ -1,6 +1,5 @@
 ﻿using MixServer.GlobalFilters;
 using NetworkSocket;
-using NetworkSocket.Fast;
 using NetworkSocket.Flex;
 using NetworkSocket.Http;
 using NetworkSocket.WebSocket;
@@ -21,7 +20,6 @@ namespace MixServer.AppStart
         {           
             listener.Use<HttpMiddleware>().GlobalFilters.Add(new HttpGlobalFilter());
             listener.Use<JsonWebSocketMiddleware>().GlobalFilters.Add(new WebSockeGlobalFilter());
-            listener.Use<FastMiddleware>().GlobalFilters.Add(new FastGlobalFilter());
             listener.Use<FlexPolicyMiddleware>();
             listener.Events.OnDisconnected += Events_OnDisconnected;
         }
@@ -38,7 +36,7 @@ namespace MixServer.AppStart
                 return;
             }
 
-            var name = context.Session.Tag.TryGet<string>("name");
+            var name = context.Session.Tag.Data;
             if (name == null)
             {
                 return;
@@ -49,7 +47,7 @@ namespace MixServer.AppStart
                 .FilterWrappers<JsonWebSocketSession>();
 
             var members = webSocketSessions
-                .Select(item => item.Tag.TryGet<string>("name"))
+                .Select(item => item.Tag.Data)
                 .Where(item => item != null)
                 .ToArray();
 

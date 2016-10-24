@@ -38,8 +38,9 @@ namespace MixServer.ApiService
             var members = this
                 .CurrentContext
                 .JsonWebSocketSessions
-                .Select(item => item.Tag.TryGet<string>("name"))
+                .Select(item => item.Tag.Data)
                 .Where(item => item != null)
+                .Select(item=>item.ToString())
                 .ToArray();
 
             return members;
@@ -58,13 +59,13 @@ namespace MixServer.ApiService
                 return new SetNameResult { State = false, Message = "昵称不能为空 .." };
             }
 
-            if (this.OtherSessions.Any(item => item.Tag.TryGet<string>("name") == name))
+            if (this.OtherSessions.Any(item =>(string) item.Tag.Data == name))
             {
                 return new SetNameResult { State = false, Message = "此昵称已经被占用 .." };
             }
 
             // 推送新成员上线提醒
-            this.CurrentContext.Session.Tag.Set("name", name);
+            this.CurrentContext.Session.Tag.Data = name;
             var members = this.GetAllMembers();
 
             foreach (var session in this.OtherSessions)
@@ -88,7 +89,7 @@ namespace MixServer.ApiService
                 return false;
             }
 
-            var name = (string)this.CurrentContext.Session.Tag.TryGet<string>("name"); // 发言人
+            var name = (string)this.CurrentContext.Session.Tag.Data; // 发言人
             foreach (var session in this.OtherSessions)
             {
                 session.InvokeApi("OnChatMessage", name, message, DateTime.Now.ToString("HH:mm:ss"));

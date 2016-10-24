@@ -42,8 +42,18 @@ namespace NetworkSocket.Http
         {
             try
             {
-                var request = default(HttpRequest);
-                if (HttpRequest.Parse(context, out request) == false)
+                var result = HttpRequestParser.Parse(context);
+                if (result.IsHttp == false)
+                {
+                    return this.Next.Invoke(context);
+                }
+
+                if (result.Request == null)
+                {
+                    return new Task(() => { });
+                }
+
+                if (result.Request.IsWebsocketRequest() == true)
                 {
                     return this.Next.Invoke(context);
                 }
@@ -53,22 +63,12 @@ namespace NetworkSocket.Http
                     context.Session.SetProtocolWrapper("http", null);
                 }
 
-                if (request == null)
-                {
-                    return new Task(() => { });
-                }
-
-                if (request.IsWebsocketRequest() == true)
-                {
-                    const string secKey = "Sec-WebSocket-Key";
-                    context.Session.Tag.Set(secKey, request.Headers[secKey]);
-                    return this.Next.Invoke(context);
-                }
+                context.Stream.Clear(result.PackageLength);
 
                 return new Task(() =>
                 {
                     var response = new HttpResponse(context.Session);
-                    var requestContext = new RequestContext(request, response);
+                    var requestContext = new RequestContext(result.Request, response);
                     this.OnHttpRequest(context, requestContext);
                 });
             }

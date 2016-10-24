@@ -8,7 +8,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>NetworkSocket</RootNamespace>
     <AssemblyName>NetworkSocket</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SccProjectName>SAK</SccProjectName>
     <SccLocalPath>SAK</SccLocalPath>
@@ -16,6 +16,7 @@
     <SccProvider>SAK</SccProvider>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -26,6 +27,7 @@
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Debug\NetworkSocket.xml</DocumentationFile>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -37,6 +39,7 @@
     <DocumentationFile>bin\Release\NetworkSocket.xml</DocumentationFile>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DebugSymbols>true</DebugSymbols>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
@@ -87,18 +90,6 @@
     <Compile Include="Exceptions\RemoteException.cs" />
     <Compile Include="Exceptions\ResolveException.cs" />
     <Compile Include="Exceptions\SerializerException.cs" />
-    <Compile Include="Fast\Context\ActionContext.cs" />
-    <Compile Include="Fast\Context\ExceptionContext.cs" />
-    <Compile Include="Fast\Context\RequestContext.cs" />
-    <Compile Include="Fast\FastApiService.cs" />
-    <Compile Include="Fast\FastFilterAttribute.cs" />
-    <Compile Include="Fast\FastMiddleware.cs" />
-    <Compile Include="Fast\FastPacket.cs" />
-    <Compile Include="Fast\FastSession.cs" />
-    <Compile Include="Fast\FastTcpClient.cs" />
-    <Compile Include="Fast\IFastApiService.cs" />
-    <Compile Include="Fast\Internal\Common.cs" />
-    <Compile Include="Fast\Internal\FastGlobalFilters.cs" />
     <Compile Include="Flex\FlexPolicyMiddleware.cs" />
     <Compile Include="Http\Context\ActionContext.cs" />
     <Compile Include="Http\Context\ExceptionContext.cs" />
@@ -130,7 +121,8 @@
     <Compile Include="Http\Internal\HttpGlobalFilters.cs" />
     <Compile Include="Http\Internal\MultipartHead.cs" />
     <Compile Include="Http\Internal\BinderProperty.cs" />
-    <Compile Include="Http\Internal\Protocol.cs" />
+    <Compile Include="Http\Internal\HttpRequestParser.cs" />
+    <Compile Include="Http\Internal\HttpParseResult.cs" />
     <Compile Include="Http\Result\ActionResult.cs" />
     <Compile Include="Http\Result\ContentResult.cs" />
     <Compile Include="Http\Result\EmptyResult.cs" />
@@ -163,7 +155,6 @@
     <Compile Include="Reflection\Method.cs" />
     <Compile Include="Reflection\Property.cs" />
     <Compile Include="Silverlight\SilverlightPolicyMiddleware.cs" />
-    <Compile Include="TcpClientBase.cs" />
     <Compile Include="TcpListener.cs" />
     <Compile Include="Util\ByteBuilder.cs" />
     <Compile Include="Util\ByteConverter.cs" />

@@ -35,35 +35,12 @@ namespace NetworkSocket.WebSocket
                 return this.OnWebSocketFrameRequest(context);
             }
 
-            if (isWebSocket == null)
+            if (isWebSocket == null || context.Session.IsProtocol("http") == true)
             {
                 return this.OnWebSocketHandshakeRequest(context);
             }
 
-            if (context.Session.IsProtocol("http") == true)
-            {
-                return this.OnWebSocketHandshake(context);
-            }
-
             return this.Next.Invoke(context);
-        }
-
-        /// <summary>
-        /// 回复握手，请求体已被http中间件解析
-        /// </summary>
-        /// <param name="context">上下文</param>
-        /// <returns></returns>
-        private Task OnWebSocketHandshake(IContenxt context)
-        {
-            const string seckey = "Sec-WebSocket-Key";
-            var secValue = context.Session.Tag.TryGet<string>(seckey);
-            if (string.IsNullOrEmpty(secValue) == true)
-            {
-                return this.Next.Invoke(context);
-            }
-
-            context.Session.Tag.Remove(seckey);
-            return this.ResponseHandshake(context, secValue);
         }
 
         /// <summary>
@@ -75,19 +52,18 @@ namespace NetworkSocket.WebSocket
         {
             try
             {
-                var httpRequest = default(HttpRequest);
-                if (HttpRequest.Parse(context, out httpRequest) == false)
+                var result = HttpRequestParser.Parse(context);
+                if (result.Request == null || result.Request.IsWebsocketRequest() == false)
                 {
                     return this.Next.Invoke(context);
                 }
-
-                if (httpRequest == null || httpRequest.IsWebsocketRequest() == false)
+                else
                 {
-                    return this.Next.Invoke(context);
+                    context.Stream.Clear(result.PackageLength);
                 }
 
                 const string seckey = "Sec-WebSocket-Key";
-                var secValue = httpRequest.Headers[seckey];
+                var secValue = result.Request.Headers[seckey];
                 return this.ResponseHandshake(context, secValue);
             }
             catch (Exception)
