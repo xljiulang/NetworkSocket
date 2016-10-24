@@ -1,23 +1,17 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Demo", "Demo", "{1AD64CA4-4550-4D5F-A56D-46DFCFD480A9}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Net40", "Net40", "{89ABE2CB-D89C-438D-B88A-1FA91E98CF0A}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetworkSocket", "Net40\NetworkSocket\NetworkSocket.csproj", "{80D0FA44-523B-4E68-BDC2-B12901D5855B}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{CC0392B3-93ED-4341-9D14-4EE4F9EBFE30}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTest.NetworkSocket", "Test\UnitTest.NetworkSocket\UnitTest.NetworkSocket.csproj", "{2EF57D67-04C8-477B-948F-1C18227472E0}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Autofac.NetworkSocket", "Net40\Autofac.NetworkSocket\Autofac.NetworkSocket.csproj", "{6305A612-4DD1-40DB-A3FD-B57BA6409986}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MixServer", "Demo\MixServer\MixServer.csproj", "{2A042153-5699-4B9B-A011-1EDCA65E662D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Models", "Demo\Models\Models.csproj", "{F9B37780-6345-4E6F-8523-687F56895625}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FastClient", "Demo\FastClient\FastClient.csproj", "{30386CFD-B297-4F51-9E68-BACEB7C60D39}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetworkSocket", "NetworkSocket\NetworkSocket.csproj", "{80D0FA44-523B-4E68-BDC2-B12901D5855B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,36 +23,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{80D0FA44-523B-4E68-BDC2-B12901D5855B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{80D0FA44-523B-4E68-BDC2-B12901D5855B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{80D0FA44-523B-4E68-BDC2-B12901D5855B}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{80D0FA44-523B-4E68-BDC2-B12901D5855B}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{80D0FA44-523B-4E68-BDC2-B12901D5855B}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{80D0FA44-523B-4E68-BDC2-B12901D5855B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{80D0FA44-523B-4E68-BDC2-B12901D5855B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{80D0FA44-523B-4E68-BDC2-B12901D5855B}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{80D0FA44-523B-4E68-BDC2-B12901D5855B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{80D0FA44-523B-4E68-BDC2-B12901D5855B}.Release|x86.ActiveCfg = Release|Any CPU
-		{2EF57D67-04C8-477B-948F-1C18227472E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2EF57D67-04C8-477B-948F-1C18227472E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2EF57D67-04C8-477B-948F-1C18227472E0}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{2EF57D67-04C8-477B-948F-1C18227472E0}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{2EF57D67-04C8-477B-948F-1C18227472E0}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{2EF57D67-04C8-477B-948F-1C18227472E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2EF57D67-04C8-477B-948F-1C18227472E0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2EF57D67-04C8-477B-948F-1C18227472E0}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{2EF57D67-04C8-477B-948F-1C18227472E0}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{2EF57D67-04C8-477B-948F-1C18227472E0}.Release|x86.ActiveCfg = Release|Any CPU
-		{6305A612-4DD1-40DB-A3FD-B57BA6409986}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6305A612-4DD1-40DB-A3FD-B57BA6409986}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6305A612-4DD1-40DB-A3FD-B57BA6409986}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{6305A612-4DD1-40DB-A3FD-B57BA6409986}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{6305A612-4DD1-40DB-A3FD-B57BA6409986}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{6305A612-4DD1-40DB-A3FD-B57BA6409986}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6305A612-4DD1-40DB-A3FD-B57BA6409986}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6305A612-4DD1-40DB-A3FD-B57BA6409986}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{6305A612-4DD1-40DB-A3FD-B57BA6409986}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{6305A612-4DD1-40DB-A3FD-B57BA6409986}.Release|x86.ActiveCfg = Release|Any CPU
 		{2A042153-5699-4B9B-A011-1EDCA65E662D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2A042153-5699-4B9B-A011-1EDCA65E662D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2A042153-5699-4B9B-A011-1EDCA65E662D}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -89,6 +53,16 @@ Global
 		{30386CFD-B297-4F51-9E68-BACEB7C60D39}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{30386CFD-B297-4F51-9E68-BACEB7C60D39}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{30386CFD-B297-4F51-9E68-BACEB7C60D39}.Release|x86.ActiveCfg = Release|Any CPU
+		{80D0FA44-523B-4E68-BDC2-B12901D5855B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{80D0FA44-523B-4E68-BDC2-B12901D5855B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{80D0FA44-523B-4E68-BDC2-B12901D5855B}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{80D0FA44-523B-4E68-BDC2-B12901D5855B}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{80D0FA44-523B-4E68-BDC2-B12901D5855B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{80D0FA44-523B-4E68-BDC2-B12901D5855B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{80D0FA44-523B-4E68-BDC2-B12901D5855B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{80D0FA44-523B-4E68-BDC2-B12901D5855B}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{80D0FA44-523B-4E68-BDC2-B12901D5855B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{80D0FA44-523B-4E68-BDC2-B12901D5855B}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -97,9 +71,6 @@ Global
 		{2A042153-5699-4B9B-A011-1EDCA65E662D} = {1AD64CA4-4550-4D5F-A56D-46DFCFD480A9}
 		{F9B37780-6345-4E6F-8523-687F56895625} = {1AD64CA4-4550-4D5F-A56D-46DFCFD480A9}
 		{30386CFD-B297-4F51-9E68-BACEB7C60D39} = {1AD64CA4-4550-4D5F-A56D-46DFCFD480A9}
-		{80D0FA44-523B-4E68-BDC2-B12901D5855B} = {89ABE2CB-D89C-438D-B88A-1FA91E98CF0A}
-		{6305A612-4DD1-40DB-A3FD-B57BA6409986} = {89ABE2CB-D89C-438D-B88A-1FA91E98CF0A}
-		{2EF57D67-04C8-477B-948F-1C18227472E0} = {CC0392B3-93ED-4341-9D14-4EE4F9EBFE30}
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = Demo\Server\Server.csproj

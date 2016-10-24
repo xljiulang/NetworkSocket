@@ -61,12 +61,11 @@
     <Compile Include="ApiService\FastMathService.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <None Include="app.config" />
     <None Include="ssl.cer" />
     <None Include="View\Home\Middleware.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Net40\NetworkSocket\NetworkSocket.csproj">
+    <ProjectReference Include="..\..\NetworkSocket\NetworkSocket.csproj">
       <Project>{80d0fa44-523b-4e68-bdc2-b12901d5855b}</Project>
       <Name>NetworkSocket</Name>
     </ProjectReference>

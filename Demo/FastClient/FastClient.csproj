@@ -100,8 +100,8 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Net40\NetworkSocket\NetworkSocket.csproj">
-      <Project>{80D0FA44-523B-4E68-BDC2-B12901D5855B}</Project>
+    <ProjectReference Include="..\..\NetworkSocket\NetworkSocket.csproj">
+      <Project>{80d0fa44-523b-4e68-bdc2-b12901d5855b}</Project>
       <Name>NetworkSocket</Name>
     </ProjectReference>
     <ProjectReference Include="..\Models\Models.csproj">
