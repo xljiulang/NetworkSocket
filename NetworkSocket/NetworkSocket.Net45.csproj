@@ -120,6 +120,7 @@
     <Compile Include="Http\Internal\BinderProperty.cs" />
     <Compile Include="Http\Internal\HttpRequestParser.cs" />
     <Compile Include="Http\Internal\HttpParseResult.cs" />
+    <Compile Include="Http\NoneActionAttribute.cs" />
     <Compile Include="Http\Result\ActionResult.cs" />
     <Compile Include="Http\Result\ContentResult.cs" />
     <Compile Include="Http\Result\EmptyResult.cs" />

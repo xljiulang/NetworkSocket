@@ -129,16 +129,11 @@ namespace NetworkSocket.Http
         /// <returns></returns>
         public static bool IsSupport(MethodInfo method)
         {
-            if (typeof(ActionResult).IsAssignableFrom(method.ReturnType))
+            if (method.IsDefined(typeof(NoneActionAttribute)))
             {
-                return true;
+                return false;
             }
-            else if (method.ReturnType.IsGenericType && method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>))
-            {
-                var actionType = method.ReturnType.GetGenericArguments().First();
-                return typeof(ActionResult).IsAssignableFrom(actionType);
-            }
-            return false;
+            return true;
         }
     }
 }

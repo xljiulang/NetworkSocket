@@ -49,14 +49,14 @@ namespace NetworkSocket.WebSocket
         /// 执行Api行为
         /// </summary>   
         /// <param name="actionContext">上下文</param>      
-        void IJsonWebSocketApiService.Execute(ActionContext actionContext)
+        async void IJsonWebSocketApiService.Execute(ActionContext actionContext)
         {
             var filters = Enumerable.Empty<IFilter>();
             try
             {
                 this.logicalContext.SetValue(actionContext);
                 filters = this.Server.FilterAttributeProvider.GetActionFilters(actionContext.Action);
-                this.ExecuteActionAsync(actionContext, filters);
+                await this.ExecuteActionAsync(actionContext, filters);
             }
             catch (Exception ex)
             {
@@ -89,7 +89,7 @@ namespace NetworkSocket.WebSocket
         /// <param name="filters">过滤器</param>
         /// <exception cref="ArgumentException"></exception>
         /// <returns>当正常执行输出Api的结果时返回true</returns>
-        private async void ExecuteActionAsync(ActionContext actionContext, IEnumerable<IFilter> filters)
+        private async Task ExecuteActionAsync(ActionContext actionContext, IEnumerable<IFilter> filters)
         {
             // 参数准备
             var parameters = this.GetAndUpdateParameterValues(actionContext);
@@ -101,7 +101,7 @@ namespace NetworkSocket.WebSocket
                 var exceptionContext = new ExceptionContext(actionContext, actionContext.Result);
                 this.Server.SendRemoteException(exceptionContext);
                 return;
-            }            
+            }
 
             try
             {

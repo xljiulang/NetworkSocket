@@ -15,17 +15,17 @@ namespace MixServer.Controller
     /// </summary>
     public class WebApiController : HttpController
     {
-        public JsonResult About()
+        public object About()
         {
             var names = typeof(HttpController).Assembly.GetName();
-            return Json(new { assembly = names.Name, version = names.Version.ToString() });
+            return new { assembly = names.Name, version = names.Version.ToString() };
         }
 
         [HttpPost]
-        public async Task<JsonResult> Login(string account, string password)
+        public async Task<object> Login(string account, string password)
         {
-            await Task.Delay(TimeSpan.FromSeconds(2));
-            return Json(new { account, password });
+            await Task.Delay(TimeSpan.FromSeconds(3));
+            return new { account, password };
         }
     }
 }
