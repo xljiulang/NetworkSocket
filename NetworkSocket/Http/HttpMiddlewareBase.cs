@@ -25,7 +25,7 @@ namespace NetworkSocket.Http
         /// <returns></returns>
         Task IMiddleware.Invoke(IContenxt context)
         {
-            if (context.Session.IsProtocol("http") == false)
+            if (context.Session.Protocol == Protocol.Http)
             {
                 return this.Next.Invoke(context);
             }
@@ -60,7 +60,7 @@ namespace NetworkSocket.Http
 
                 if (context.Session.Protocol == null)
                 {
-                    context.Session.SetProtocolWrapper("http", null);
+                    context.Session.SetProtocolWrapper(Protocol.Http, null);
                 }
 
                 context.Stream.Clear(result.PackageLength);

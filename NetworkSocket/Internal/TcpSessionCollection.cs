@@ -135,9 +135,9 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="protocol">协议类型</param>
         /// <returns></returns>
-        public IEnumerable<ISession> FilterProtocol(string protocol)
+        public IEnumerable<ISession> FilterProtocol(Protocol protocol)
         {
-            return this.Where(item => item.IsProtocol(protocol) == true);
+            return this.Where(item => item.Protocol == protocol);
         }
 
 

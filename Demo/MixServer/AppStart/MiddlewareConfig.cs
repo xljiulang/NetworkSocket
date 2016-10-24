@@ -17,7 +17,7 @@ namespace MixServer.AppStart
         /// </summary>
         /// <param name="listener"></param>
         public static void ConfigMiddleware(TcpListener listener)
-        {           
+        {
             listener.Use<HttpMiddleware>().GlobalFilters.Add(new HttpGlobalFilter());
             listener.Use<JsonWebSocketMiddleware>().GlobalFilters.Add(new WebSockeGlobalFilter());
             listener.Use<FlexPolicyMiddleware>();
@@ -31,7 +31,7 @@ namespace MixServer.AppStart
         /// <param name="context"></param>
         static void Events_OnDisconnected(object sender, IContenxt context)
         {
-            if (context.Session.IsProtocol("websocket") != true)
+            if (context.Session.Protocol != Protocol.WebSocket)
             {
                 return;
             }

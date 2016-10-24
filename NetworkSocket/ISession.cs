@@ -40,7 +40,7 @@ namespace NetworkSocket
         /// <summary>
         /// 获取会话的协议名
         /// </summary>
-        string Protocol { get; }
+        Protocol Protocol { get; }
 
         /// <summary>
         /// 获取会话的包装对象
@@ -49,25 +49,11 @@ namespace NetworkSocket
         IWrapper Wrapper { get; }
 
         /// <summary>
-        /// 获取会话的协议是否和protocol匹配
-        /// </summary>
-        /// <param name="protocol">协议名</param>
-        /// <returns></returns>
-        bool? IsProtocol(string protocol);
-
-        /// <summary>
         /// 设置会话的协议名和会话包装对象
         /// </summary>
         /// <param name="protocol">协议</param>
         /// <param name="wrapper">会话的包装对象</param>
-        void SetProtocolWrapper(string protocol, IWrapper wrapper);
-
-        /// <summary>
-        /// 同步发送数据
-        /// </summary>
-        /// <param name="byteRange">数据范围</param>
-        /// <returns></returns>
-        int Send(ArraySegment<byte> byteRange);
+        void SetProtocolWrapper(Protocol protocol, IWrapper wrapper);
 
         /// <summary>
         /// 同步发送数据
@@ -75,6 +61,13 @@ namespace NetworkSocket
         /// <param name="buffer">数据</param>
         /// <returns></returns>
         int Send(byte[] buffer);
+
+        /// <summary>
+        /// 同步发送数据
+        /// </summary>
+        /// <param name="byteRange">数据范围</param>
+        /// <returns></returns>
+        int Send(ArraySegment<byte> byteRange);
 
         /// <summary>      
         /// 断开和远程端的连接

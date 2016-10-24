@@ -72,7 +72,7 @@ namespace NetworkSocket
         /// <summary>
         /// 获取会话的协议
         /// </summary>
-        public string Protocol { get; private set; }
+        public Protocol Protocol { get; private set; }
 
         /// <summary>
         /// 获取会话的包装对象
@@ -111,12 +111,12 @@ namespace NetworkSocket
         public virtual void Bind(Socket socket)
         {
             this.Socket = socket;
-            this.socketClosed = false;           
+            this.socketClosed = false;
 
             this.RecvStream.Clear();
             this.Tag.ID = null;
             this.Tag.Data = null;
-            this.SetProtocolWrapper(null, null);
+            this.SetProtocolWrapper(Protocol.None, null);
             this.LocalEndPoint = (IPEndPoint)socket.LocalEndPoint;
             this.RemoteEndPoint = (IPEndPoint)socket.RemoteEndPoint;
         }
@@ -182,7 +182,7 @@ namespace NetworkSocket
                 if (waitForSendComplete == false)
                 {
                     this.TryInvokeAction(() => this.Socket.Shutdown(SocketShutdown.Both));
-                }               
+                }
 
                 this.Socket.Dispose();
                 this.socketClosed = true;
@@ -207,26 +207,13 @@ namespace NetworkSocket
             }
         }
 
-        /// <summary>
-        /// 获取会话的协议是否和protocol匹配
-        /// </summary>
-        /// <param name="protocol">协议名</param>
-        /// <returns></returns>
-        public bool? IsProtocol(string protocol)
-        {
-            if (string.IsNullOrEmpty(this.Protocol) == true)
-            {
-                return null;
-            }
-            return string.Equals(this.Protocol, protocol, StringComparison.OrdinalIgnoreCase);
-        }
 
         /// <summary>
         /// 设置协议和会话包装对象
         /// </summary>
         /// <param name="protocol">协议</param>
         /// <param name="wrapper">会话的包装对象</param>
-        public void SetProtocolWrapper(string protocol, IWrapper wrapper)
+        public void SetProtocolWrapper(Protocol protocol, IWrapper wrapper)
         {
             this.Protocol = protocol;
             this.Wrapper = wrapper;

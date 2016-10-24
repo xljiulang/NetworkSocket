@@ -23,7 +23,7 @@ namespace NetworkSocket
         /// <summary>
         /// 返回Data的转换类型
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="T">数据类型</typeparam>
         /// <returns></returns>
         T DataCast<T>();
     }

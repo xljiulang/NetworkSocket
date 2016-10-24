@@ -41,9 +41,9 @@ namespace NetworkSocket.Http
             context.Response.ContentType = "text/event-stream";
             context.Response.WriteHeader();
 
-            var session =((IWrapper) context.Response).UnWrap();
+            var session = ((IWrapper)context.Response).UnWrap();
             var wapper = new HttpEventSession(session);
-            session.SetProtocolWrapper("sse", wapper);
+            session.SetProtocolWrapper(Protocol.SeverSendEvent, wapper);
 
             if (this.httpEvent != null)
             {

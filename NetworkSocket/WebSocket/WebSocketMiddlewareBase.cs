@@ -29,13 +29,13 @@ namespace NetworkSocket.WebSocket
         /// <returns></returns>
         Task IMiddleware.Invoke(IContenxt context)
         {
-            var isWebSocket = context.Session.IsProtocol("websocket");
-            if (isWebSocket == true)
+            var protocol = context.Session.Protocol;
+            if (protocol == Protocol.WebSocket)
             {
                 return this.OnWebSocketFrameRequest(context);
             }
 
-            if (isWebSocket == null || context.Session.IsProtocol("http") == true)
+            if (protocol == Protocol.None || protocol == Protocol.Http)
             {
                 return this.OnWebSocketHandshakeRequest(context);
             }
@@ -101,7 +101,7 @@ namespace NetworkSocket.WebSocket
         /// <param name="wrapper">包装对象</param>
         protected virtual void OnSetProtocolWrapper(ISession session, WebSocketSession wrapper)
         {
-            session.SetProtocolWrapper("websocket", wrapper);
+            session.SetProtocolWrapper(Protocol.WebSocket, wrapper);
         }
 
         /// <summary>

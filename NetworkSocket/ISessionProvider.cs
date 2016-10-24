@@ -28,6 +28,6 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="protocol">协议类型</param>
         /// <returns></returns>
-        IEnumerable<ISession> FilterProtocol(string protocol);
+        IEnumerable<ISession> FilterProtocol(Protocol protocol);
     }
 }

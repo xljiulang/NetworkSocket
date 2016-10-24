@@ -35,7 +35,7 @@ namespace NetworkSocket.WebSocket
         /// 默认30秒
         /// </summary>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public  TimeSpan TimeOut{get;set;}         
+        public TimeSpan TimeOut { get; set; }
 
         /// <summary>
         /// 获取或设置序列化工具       
@@ -118,7 +118,7 @@ namespace NetworkSocket.WebSocket
         protected override void OnSetProtocolWrapper(ISession session, WebSocketSession wrapper)
         {
             var jsonWebSocketSession = new JsonWebSocketSession(this, wrapper);
-            session.SetProtocolWrapper("websocket", jsonWebSocketSession);
+            session.SetProtocolWrapper(Protocol.WebSocket, jsonWebSocketSession);
         }
 
         /// <summary>

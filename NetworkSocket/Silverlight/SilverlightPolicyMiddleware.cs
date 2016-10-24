@@ -24,7 +24,7 @@ namespace NetworkSocket.Silverlight
         /// <returns></returns>
         Task IMiddleware.Invoke(IContenxt context)
         {
-            if (context.Session.Protocol != null || context.Stream.Length != 22)
+            if (context.Session.Protocol != Protocol.None || context.Stream.Length != 22)
             {
                 return this.Next.Invoke(context);
             }
