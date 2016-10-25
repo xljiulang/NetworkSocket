@@ -25,7 +25,7 @@ namespace NetworkSocket
         {
             context.InputStream.Clear();
             context.Session.Close();
-            return TaskHelper.Completed;
+            return TaskEx.CompletedTask;
         }
     }
 }

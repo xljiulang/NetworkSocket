@@ -33,12 +33,12 @@ namespace NetworkSocket.WebSocket
             var protocol = context.Session.Protocol;
             if (protocol == Protocol.WebSocket)
             {
-                return this.OnWebSocketFrameRequest(context);
+                return this.OnWebSocketFrameRequestAsync(context);
             }
 
             if (protocol == Protocol.None || protocol == Protocol.Http)
             {
-                return this.OnWebSocketHandshakeRequest(context);
+                return this.OnWebSocketHandshakeRequestAsync(context);
             }
 
             return this.Next.Invoke(context);
@@ -49,7 +49,7 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="context">上下文</param>
         /// <returns></returns>
-        private async Task OnWebSocketHandshakeRequest(IContenxt context)
+        private async Task OnWebSocketHandshakeRequestAsync(IContenxt context)
         {
             try
             {
@@ -74,7 +74,7 @@ namespace NetworkSocket.WebSocket
                 context.InputStream.Clear(result.PackageLength);
                 const string seckey = "Sec-WebSocket-Key";
                 var secValue = result.Request.Headers[seckey];
-                await this.ResponseHandshake(context, secValue);
+                await this.ResponseHandshakeAsync(context, secValue);
             }
             catch (Exception)
             {
@@ -89,7 +89,7 @@ namespace NetworkSocket.WebSocket
         /// <param name="context">上下文</param>
         /// <param name="secValue">Sec-WebSocket-Key</param>
         /// <returns></returns>
-        private Task ResponseHandshake(IContenxt context, string secValue)
+        private Task ResponseHandshakeAsync(IContenxt context, string secValue)
         {
             var wrapper = new WebSocketSession(context.Session);
             var hansshakeResponse = new HandshakeResponse(secValue);
@@ -98,7 +98,7 @@ namespace NetworkSocket.WebSocket
             {
                 this.OnSetProtocolWrapper(context.Session, wrapper);
             }
-            return TaskHelper.Completed;
+            return TaskEx.CompletedTask;
         }
 
         /// <summary>
@@ -116,7 +116,7 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="context">上下文</param>
         /// <returns></returns>
-        private Task OnWebSocketFrameRequest(IContenxt context)
+        private Task OnWebSocketFrameRequestAsync(IContenxt context)
         {
             var requests = this.GenerateWebSocketRequest(context);
             ThreadPool.UnsafeQueueUserWorkItem((state) =>
@@ -126,7 +126,7 @@ namespace NetworkSocket.WebSocket
                     this.OnWebSocketRequest(context, request);
                 }
             }, null);
-            return TaskHelper.Completed;
+            return TaskEx.CompletedTask;
         }
 
         /// <summary>

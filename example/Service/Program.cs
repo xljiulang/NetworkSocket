@@ -18,12 +18,11 @@ namespace Service
                 Directory.SetCurrentDirectory("../../");
             }
 
-            var sslListener = new TcpListener();
-            Config.ConfigMiddleware(sslListener);
+            var listener = new TcpListener();
+            Config.ConfigMiddleware(listener);
             Config.ConfigValidation();
 
-            // sslListener.UseSSL(X509Certificate.CreateFromCertFile("ssl.cer"));
-            sslListener.Start(1212);
+            listener.Start(1212);
 
             Process.Start("http://localhost:1212/home/index");
             Console.ReadLine();

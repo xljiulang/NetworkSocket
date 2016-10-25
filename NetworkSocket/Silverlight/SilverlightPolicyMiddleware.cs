@@ -34,7 +34,7 @@ namespace NetworkSocket.Silverlight
             if (string.Equals(request, "<policy-file-request/>", StringComparison.OrdinalIgnoreCase))
             {
                 this.SendPolicyXML(context);
-                return TaskHelper.Completed;
+                return TaskEx.CompletedTask;
             }
             return this.Next.Invoke(context);
         }

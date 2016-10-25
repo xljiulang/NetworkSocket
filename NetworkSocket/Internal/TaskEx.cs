@@ -11,12 +11,12 @@ namespace NetworkSocket
     /// <summary>
     /// 任务helper
     /// </summary>
-    internal static class TaskHelper
+    internal static class TaskEx
     {
         /// <summary>
         /// 表示已完成的任务
         /// </summary>
-        public static readonly Task Completed = Task.FromResult(true);
+        public static readonly Task CompletedTask = Task.FromResult(true);
 
         /// <summary>
         /// 安全字典
@@ -30,7 +30,7 @@ namespace NetworkSocket
         /// <param name="value">值</param>
         /// <param name="valueType">值类型</param>
         /// <returns></returns>
-        public async static Task<object> CastTaskFrom(object value, Type valueType)
+        public async static Task<object> CastFrom(object value, Type valueType)
         {
             var task = value as Task;
             if (task == null)
@@ -40,8 +40,8 @@ namespace NetworkSocket
             else
             {
                 await task;
-                return TaskHelper.cache
-                    .GetOrAdd(valueType, (type) => TaskHelper.CreateTaskResultInvoker(type))
+                return TaskEx.cache
+                    .GetOrAdd(valueType, (type) => TaskEx.CreateTaskResultInvoker(type))
                     .Invoke(task);
             }
         }

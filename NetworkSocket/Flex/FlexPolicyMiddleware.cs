@@ -34,7 +34,7 @@ namespace NetworkSocket.Flex
             if (string.Equals(request, "<policy-file-request/>\0", StringComparison.OrdinalIgnoreCase))
             {
                 this.SendPolicyXML(context);
-                return TaskHelper.Completed;
+                return TaskEx.CompletedTask;
             }
             return this.Next.Invoke(context);
         }

@@ -29,7 +29,7 @@ namespace NetworkSocket.Http
             var protocol = context.Session.Protocol;
             if (protocol == Protocol.None || protocol == Protocol.Http)
             {
-                return this.OnHttpRequest(context);
+                return this.OnHttpRequestAsync(context);
             }
             else
             {
@@ -43,12 +43,12 @@ namespace NetworkSocket.Http
         /// </summary>
         /// <param name="context">上下文</param>
         /// <returns></returns>
-        private async Task OnHttpRequest(IContenxt context)
+        private async Task OnHttpRequestAsync(IContenxt context)
         {
             try
             {
                 var result = HttpRequestParser.Parse(context);
-                await this.ProcessParseResult(context, result);
+                await this.ProcessParseResultAsync(context, result);
             }
             catch (HttpException ex)
             {
@@ -66,7 +66,7 @@ namespace NetworkSocket.Http
         /// <param name="context">上下文</param>
         /// <param name="result">解析结果</param>
         /// <returns></returns>
-        private async Task ProcessParseResult(IContenxt context, HttpParseResult result)
+        private async Task ProcessParseResultAsync(IContenxt context, HttpParseResult result)
         {
             if (result.IsHttp == false)
             {

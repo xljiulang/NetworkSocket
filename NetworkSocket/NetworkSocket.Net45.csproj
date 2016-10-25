@@ -138,7 +138,7 @@
     <Compile Include="Internal\LastMiddlerware.cs" />
     <Compile Include="Internal\Tag.cs" />
     <Compile Include="Internal\IocpTcpSession.cs" />
-    <Compile Include="Internal\TaskHelper.cs" />
+    <Compile Include="Internal\TaskEx.cs" />
     <Compile Include="Internal\TcpSessionBase.cs" />
     <Compile Include="Internal\TcpSessionCollection.cs" />
     <Compile Include="Internal\TcpSessionQueue.cs" />
