@@ -58,9 +58,9 @@ namespace NetworkSocket.Http
         }
 
         /// <summary>
-        /// 获取http服务实例
+        /// 获取http中间件的实例
         /// </summary>
-        public HttpMiddleware Server { get; internal set; }
+        public HttpMiddleware Middleware { get; internal set; }
 
         /// <summary>
         /// 执行Api行为
@@ -72,7 +72,7 @@ namespace NetworkSocket.Http
             try
             {
                 this.logicalContext.SetValue(actionContext);
-                filters = this.Server.FilterAttributeProvider.GetActionFilters(actionContext.Action);
+                filters = this.Middleware.FilterAttributeProvider.GetActionFilters(actionContext.Action);
                 await this.ExecuteActionAsync(actionContext, filters);
             }
             catch (Exception ex)
@@ -167,7 +167,7 @@ namespace NetworkSocket.Http
             for (var i = 0; i < action.ParameterValues.Length; i++)
             {
                 var paramter = action.ParameterInfos[i];
-                var pValue = this.Server.ModelBinder.BindModel(actionContext.Request, paramter);
+                var pValue = this.Middleware.ModelBinder.BindModel(actionContext.Request, paramter);
                 action.ParameterValues[i] = pValue;
             }
             return action.ParameterValues;
@@ -200,7 +200,7 @@ namespace NetworkSocket.Http
         protected virtual FileResult File(string fileName)
         {
             var extension = Path.GetExtension(fileName);
-            var contenType = this.Server.MIMECollection[extension];
+            var contenType = this.Middleware.MIMECollection[extension];
             return this.File(fileName, contenType);
         }
 
@@ -290,7 +290,7 @@ namespace NetworkSocket.Http
         /// <returns></returns>
         private IEnumerable<IFilter> GetTotalFilters(IEnumerable<IFilter> filters)
         {
-            return this.Server
+            return this.Middleware
                 .GlobalFilters
                 .Cast<IFilter>()
                 .Concat(new[] { this })

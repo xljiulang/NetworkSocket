@@ -6,12 +6,12 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NetworkSocket
+namespace NetworkSocket.Tasks
 {
     /// <summary>
-    /// 任务helper
+    /// 提供Task的一些额外方法
     /// </summary>
-    internal static class TaskEx
+    public static class TaskEx
     {
         /// <summary>
         /// 表示已完成的任务

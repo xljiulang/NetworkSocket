@@ -142,7 +142,7 @@ namespace NetworkSocket.WebSocket
             };
 
             // 登记TaskSetAction             
-            var task = this.Middleware.TaskSetActionTable.Create<T>(packet.id, this.Middleware.TimeOut);
+            var task = this.Middleware.TaskSetterTable.Create<T>(packet.id, this.Middleware.TimeOut);
             var packetJson = this.Middleware.JsonSerializer.Serialize(packet);
             this.session.SendText(packetJson);
             return task;

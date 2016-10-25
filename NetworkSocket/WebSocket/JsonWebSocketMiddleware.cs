@@ -1,5 +1,6 @@
 ﻿using NetworkSocket.Core;
 using NetworkSocket.Exceptions;
+using NetworkSocket.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,7 +29,7 @@ namespace NetworkSocket.WebSocket
         /// <summary>
         /// 获取任务行为记录表
         /// </summary>
-        internal TaskSetActionTable TaskSetActionTable { get; private set; }
+        internal TaskSetterTable<long> TaskSetterTable { get; private set; }
 
         /// <summary>
         /// 获取或设置请求等待超时时间(毫秒)    
@@ -65,7 +66,7 @@ namespace NetworkSocket.WebSocket
         {
             this.apiActionList = new ApiActionList();
             this.PacketIdProvider = new PacketIdProvider();
-            this.TaskSetActionTable = new TaskSetActionTable();
+            this.TaskSetterTable = new TaskSetterTable<long>();
 
             this.TimeOut = TimeSpan.FromSeconds(30);
             this.JsonSerializer = new DefaultDynamicJsonSerializer();
@@ -184,8 +185,8 @@ namespace NetworkSocket.WebSocket
         /// <param name="requestContext">请求上下文</param>     
         private void ProcessRemoteException(RequestContext requestContext)
         {
-            var taskSetAction = this.TaskSetActionTable.Take(requestContext.Packet.id);
-            if (taskSetAction == null)
+            var taskSetter = this.TaskSetterTable.Take(requestContext.Packet.id);
+            if (taskSetter == null)
             {
                 return;
             }
@@ -193,7 +194,7 @@ namespace NetworkSocket.WebSocket
             var body = requestContext.Packet.body;
             var message = body == null ? null : body.ToString();
             var exception = new RemoteException(message);
-            taskSetAction.SetException(exception);
+            taskSetter.SetException(exception);
         }
 
         /// <summary>
@@ -233,8 +234,8 @@ namespace NetworkSocket.WebSocket
         /// <returns></returns>
         private bool SetApiActionTaskResult(RequestContext requestContext)
         {
-            var taskSetAction = this.TaskSetActionTable.Take(requestContext.Packet.id);
-            if (taskSetAction == null)
+            var taskSetter = this.TaskSetterTable.Take(requestContext.Packet.id);
+            if (taskSetter == null)
             {
                 return true;
             }
@@ -242,16 +243,16 @@ namespace NetworkSocket.WebSocket
             try
             {
                 var body = requestContext.Packet.body;
-                var value = this.JsonSerializer.Convert(body, taskSetAction.ValueType);
-                return taskSetAction.SetResult(value);
+                var value = this.JsonSerializer.Convert(body, taskSetter.ValueType);
+                return taskSetter.SetResult(value);
             }
             catch (SerializerException ex)
             {
-                return taskSetAction.SetException(ex);
+                return taskSetter.SetException(ex);
             }
             catch (Exception ex)
             {
-                return taskSetAction.SetException(new SerializerException(ex));
+                return taskSetter.SetException(new SerializerException(ex));
             }
         }
 
