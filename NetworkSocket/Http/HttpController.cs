@@ -138,7 +138,7 @@ namespace NetworkSocket.Http
                 {
                     if (actionResult == null)
                     {
-                        actionResult = new JsonResult(result);
+                        actionResult = this.Json(result);
                     }
                     actionResult.ExecuteResult(actionContext);
                 }
