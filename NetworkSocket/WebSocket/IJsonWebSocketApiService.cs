@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace NetworkSocket.WebSocket
 {
@@ -11,9 +12,9 @@ namespace NetworkSocket.WebSocket
     public interface IJsonWebSocketApiService : IDisposable
     {
         /// <summary>
-        /// 执行Api行为
+        /// 异步执行Api行为
         /// </summary>              
         /// <param name="actionContext">Api行为上下文</param>      
-        void Execute(ActionContext actionContext);
+        Task ExecuteAsync(ActionContext actionContext);
     }
 }

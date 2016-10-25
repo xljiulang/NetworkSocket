@@ -127,7 +127,7 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="context">上下文</param>
         /// <param name="content">内容</param>
-        protected sealed override void OnText(IContenxt context, string content)
+        protected sealed override async void OnText(IContenxt context, string content)
         {
             var jsonPacket = this.TryGetJsonPacket(context, content);
             if (jsonPacket == null)
@@ -143,7 +143,7 @@ namespace NetworkSocket.WebSocket
             }
             else
             {
-                this.ProcessRequest(requestContext);
+                await this.ProcessRequestAsync(requestContext);
             }
         }
 
@@ -201,7 +201,7 @@ namespace NetworkSocket.WebSocket
         /// 处理正常的数据请求
         /// </summary>
         /// <param name="requestContext">请求上下文</param>       
-        private void ProcessRequest(RequestContext requestContext)
+        private async Task ProcessRequestAsync(RequestContext requestContext)
         {
             if (requestContext.Packet.fromClient == false)
             {
@@ -223,7 +223,7 @@ namespace NetworkSocket.WebSocket
             }
 
             // 执行Api行为           
-            jsonWebSocketApiService.Execute(actionContext);
+            await jsonWebSocketApiService.ExecuteAsync(actionContext);
             this.DependencyResolver.TerminateService(jsonWebSocketApiService);
         }
 

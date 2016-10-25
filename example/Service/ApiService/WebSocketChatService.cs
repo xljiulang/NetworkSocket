@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Models;
+using System.Threading.Tasks;
 
 namespace Service.ApiService
 {
@@ -40,7 +41,7 @@ namespace Service.ApiService
                 .JsonWebSocketSessions
                 .Select(item => item.Tag.Data)
                 .Where(item => item != null)
-                .Select(item=>item.ToString())
+                .Select(item => item.ToString())
                 .ToArray();
 
             return members;
@@ -59,7 +60,7 @@ namespace Service.ApiService
                 return new SetNameResult { State = false, Message = "昵称不能为空 .." };
             }
 
-            if (this.OtherSessions.Any(item =>(string) item.Tag.Data == name))
+            if (this.OtherSessions.Any(item => (string)item.Tag.Data == name))
             {
                 return new SetNameResult { State = false, Message = "此昵称已经被占用 .." };
             }
@@ -82,8 +83,9 @@ namespace Service.ApiService
         /// <returns></returns>        
         [Api]
         [WebSocketNickNameFilter] //设置了昵称才可以发言
-        public bool ChatMessage(string message)
+        public async Task<bool> ChatMessage(string message)
         {
+            await Task.Delay(10 * 1000);
             if (string.IsNullOrEmpty(message) == true)
             {
                 return false;

@@ -63,10 +63,10 @@ namespace NetworkSocket.Http
         public HttpMiddleware Middleware { get; internal set; }
 
         /// <summary>
-        /// 执行Api行为
+        /// 异步执行Api行为
         /// </summary>   
         /// <param name="actionContext">上下文</param>      
-        async void IHttpController.Execute(ActionContext actionContext)
+        async Task IHttpController.ExecuteAsync(ActionContext actionContext)
         {
             var filters = Enumerable.Empty<IFilter>();
             try

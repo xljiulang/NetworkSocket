@@ -46,10 +46,10 @@ namespace NetworkSocket.WebSocket
         }
 
         /// <summary>
-        /// 执行Api行为
+        /// 异步执行Api行为
         /// </summary>   
         /// <param name="actionContext">上下文</param>      
-        async void IJsonWebSocketApiService.Execute(ActionContext actionContext)
+        async Task IJsonWebSocketApiService.ExecuteAsync(ActionContext actionContext)
         {
             var filters = Enumerable.Empty<IFilter>();
             try
