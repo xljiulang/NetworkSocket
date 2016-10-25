@@ -74,7 +74,7 @@ namespace NetworkSocket
         /// <summary>
         /// 获取会话提供者
         /// </summary>
-        public ISessionProvider SessionProvider { get; private set; }
+        public ISessionManager SessionManager { get; private set; }
 
         /// <summary>
         /// Tcp监听服务
@@ -83,7 +83,26 @@ namespace NetworkSocket
         {
             this.middlewares.AddLast(new LastMiddlerware());
             this.Events = new Events();
-            this.SessionProvider = this.workSessions;
+            this.SessionManager = this.workSessions;
+        }
+
+        /// <summary>
+        /// 使用SSL安全传输
+        /// </summary>
+        /// <param name="cer">证书</param>
+        /// <exception cref="InvalidOperationException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>
+        public void UseSSL(X509Certificate cer)
+        {
+            if (cer == null)
+            {
+                throw new ArgumentNullException();
+            }
+            if (this.IsListening == true)
+            {
+                throw new InvalidOperationException("实例已经IsListening，不能UseSSL");
+            }
+            this.Certificate = cer;
         }
 
         /// <summary>
@@ -253,11 +272,14 @@ namespace NetworkSocket
                 return session;
             }
 
-            if (this.Certificate != null)
+            if (this.Certificate == null)
+            {
+                return new IocpTcpSession();
+            }
+            else
             {
                 return new SslTcpSession(this.Certificate);
             }
-            return new IocpTcpSession();
         }
 
         /// <summary>
@@ -271,7 +293,7 @@ namespace NetworkSocket
             {
                 Session = session,
                 InputStream = session.InputStream,
-                AllSessions = this.workSessions
+                AllSessions = this.SessionManager
             };
         }
 

@@ -24,6 +24,6 @@ namespace NetworkSocket
         /// <summary>
         /// 获取或设置所有会话对象
         /// </summary>
-        public ISessionProvider AllSessions { get; set; }
+        public ISessionManager AllSessions { get; set; }
     }
 }

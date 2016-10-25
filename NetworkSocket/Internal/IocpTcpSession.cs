@@ -37,7 +37,7 @@ namespace NetworkSocket
         /// IOCP的Tcp会话对象  
         /// </summary>  
         public IocpTcpSession()
-        { 
+        {
             this.recvArg.Completed += this.RecvCompleted;
             BufferManager.SetBuffer(this.recvArg);
         }
@@ -48,7 +48,7 @@ namespace NetworkSocket
         /// <param name="socket">套接字</param>
         public override void Bind(Socket socket)
         {
-            this.recvArg.SocketError = SocketError.Success;        
+            this.recvArg.SocketError = SocketError.Success;
             base.Bind(socket);
         }
 
@@ -70,13 +70,17 @@ namespace NetworkSocket
                 return;
             }
 
-            base.TryInvokeAction(() =>
+            try
             {
                 if (this.Socket.ReceiveAsync(this.recvArg) == false)
                 {
                     this.RecvCompleted(this.Socket, this.recvArg);
                 }
-            }, () => this.DisconnectHandler(this));
+            }
+            catch (Exception)
+            {
+                this.DisconnectHandler(this);
+            }
         }
 
         /// <summary>
@@ -102,7 +106,7 @@ namespace NetworkSocket
 
             // 重新进行一次接收
             this.TryReceiveAsync();
-        } 
+        }
 
         /// <summary>
         /// 释放资源

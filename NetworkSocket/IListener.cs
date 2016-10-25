@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
 namespace NetworkSocket
@@ -16,6 +17,12 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="middleware">中间件</param>
         void Use(IMiddleware middleware);
+
+        /// <summary>
+        /// 使用SSL安全传输
+        /// </summary>
+        /// <param name="cer">证书</param>
+        void UseSSL(X509Certificate cer);
 
         /// <summary>
         /// 开始启动监听        

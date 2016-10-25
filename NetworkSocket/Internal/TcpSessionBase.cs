@@ -181,7 +181,13 @@ namespace NetworkSocket
 
                 if (waitForSendComplete == false)
                 {
-                    this.TryInvokeAction(() => this.Socket.Shutdown(SocketShutdown.Both));
+                    try
+                    {
+                        this.Socket.Shutdown(SocketShutdown.Both);
+                    }
+                    catch (Exception)
+                    {
+                    }
                 }
 
                 this.Socket.Dispose();
@@ -274,60 +280,6 @@ namespace NetworkSocket
             catch (Exception)
             {
                 return false;
-            }
-        }
-
-        /// <summary>
-        /// 尝试执行方法
-        /// </summary>
-        /// <param name="action">方法</param>
-        protected bool TryInvokeAction(Action action)
-        {
-            try
-            {
-                action.Invoke();
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// 尝试执行方法
-        /// </summary>
-        /// <param name="action">方法</param>
-        /// <param name="ex">异常处理</param>
-        protected bool TryInvokeAction(Action action, Action ex)
-        {
-            try
-            {
-                action.Invoke();
-                return true;
-            }
-            catch (Exception)
-            {
-                ex.Invoke();
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// 尝试执行方法
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="func">方法</param>
-        /// <returns></returns>
-        protected T TryInvokeFunc<T>(Func<T> func)
-        {
-            try
-            {
-                return func.Invoke();
-            }
-            catch (Exception)
-            {
-                return default(T);
             }
         }
 

@@ -148,7 +148,7 @@ namespace NetworkSocket.Core
         public Task<object> ExecuteAsync(object service, params object[] parameters)
         {
             var result = this.Execute(service, parameters);
-            return TaskHelper.CastFrom(result, this.ReturnType);
+            return TaskHelper.CastTaskFrom(result, this.ReturnType);
         }
 
         /// <summary>

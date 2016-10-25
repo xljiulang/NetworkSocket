@@ -7,9 +7,9 @@ using System.Text;
 namespace NetworkSocket
 {
     /// <summary>
-    /// 定义会话提供者的接口
+    /// 定义会话管理者的接口
     /// </summary>
-    public interface ISessionProvider : IEnumerable
+    public interface ISessionManager : IEnumerable
     {
         /// <summary>
         /// 获取所有会话的数量

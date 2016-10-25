@@ -32,6 +32,7 @@ namespace NetworkSocket
 
         /// <summary>
         /// 服务器证书
+        /// 不为null时表示服务器会话对象
         /// </summary>
         private X509Certificate certificate;
 
@@ -111,11 +112,17 @@ namespace NetworkSocket
             }
             else
             {
-                base.TryInvokeAction(() =>
+                try
+                {
                     this.sslStream.BeginAuthenticateAsServer(
-                    this.certificate,
-                    this.EndAuthenticateAsServer,
-                    null), ((ISession)this).Close);
+                        this.certificate,
+                        this.EndAuthenticateAsServer,
+                        null);
+                }
+                catch (Exception)
+                {
+                    ((ISession)this).Close();
+                }
             }
         }
 
@@ -125,14 +132,14 @@ namespace NetworkSocket
         /// <param name="asyncResult">异步结果</param>
         private void EndAuthenticateAsServer(IAsyncResult asyncResult)
         {
-            var result = base.TryInvokeAction(() => this.sslStream.EndAuthenticateAsServer(asyncResult));
-            if (result == false)
+            try
+            {
+                this.sslStream.EndAuthenticateAsServer(asyncResult);
+                this.TryBeginRead();
+            }
+            catch (Exception)
             {
                 ((ISession)this).Close();
-            }
-            else
-            {
-                this.TryBeginRead();
             }
         }
 
@@ -146,13 +153,19 @@ namespace NetworkSocket
                 return;
             }
 
-            base.TryInvokeAction(() =>
+            try
+            {
                 this.sslStream.BeginRead(
-                this.bufferRange.Array,
-                this.bufferRange.Offset,
-                this.bufferRange.Count,
-                this.EndRead,
-                null), () => this.DisconnectHandler(this));
+                    this.bufferRange.Array,
+                    this.bufferRange.Offset,
+                    this.bufferRange.Count,
+                    this.EndRead,
+                    null);
+            }
+            catch (Exception)
+            {
+                this.DisconnectHandler(this);
+            }
         }
 
         /// <summary>
@@ -161,24 +174,43 @@ namespace NetworkSocket
         /// <param name="asyncResult">异步结果</param>
         private void EndRead(IAsyncResult asyncResult)
         {
-            var read = base.TryInvokeFunc(() => this.sslStream.EndRead(asyncResult));
+            var read = this.ReadInputStream(asyncResult);
             if (read <= 0)
             {
                 this.DisconnectHandler(this);
-                return;
             }
-
-            lock (this.InputStream.SyncRoot)
+            else
             {
-                this.InputStream.Seek(0, SeekOrigin.End);
-                this.InputStream.Write(this.bufferRange.Array, this.bufferRange.Offset, read);
-                this.InputStream.Seek(0, SeekOrigin.Begin);
-                this.ReceiveHandler(this);
-            }
+                lock (this.InputStream.SyncRoot)
+                {
+                    this.InputStream.Seek(0, SeekOrigin.End);
+                    this.InputStream.Write(this.bufferRange.Array, this.bufferRange.Offset, read);
+                    this.InputStream.Seek(0, SeekOrigin.Begin);
+                    this.ReceiveHandler(this);
+                }
 
-            // 重新进行一次接收
-            this.TryBeginRead();
+                // 重新进行一次接收
+                this.TryBeginRead();
+            }
         }
+
+        /// <summary>
+        /// 读取数据
+        /// </summary>
+        /// <param name="asyncResult"></param>
+        /// <returns></returns>
+        private int ReadInputStream(IAsyncResult asyncResult)
+        {
+            try
+            {
+                return this.sslStream.EndRead(asyncResult);
+            }
+            catch (Exception)
+            {
+                return 0;
+            }
+        }
+
 
         /// <summary>
         /// 释放资源

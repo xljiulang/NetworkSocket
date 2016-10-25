@@ -145,7 +145,7 @@
     <Compile Include="Internal\SslTcpSession.cs" />
     <Compile Include="IStreamReader.cs" />
     <Compile Include="ISession.cs" />
-    <Compile Include="ISessionProvider.cs" />
+    <Compile Include="ISessionManager.cs" />
     <Compile Include="ITag.cs" />
     <Compile Include="IWrapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

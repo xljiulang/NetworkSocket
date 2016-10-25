@@ -216,6 +216,7 @@ namespace NetworkSocket.Http
 
         /// <summary>
         /// 输出文本内容
+        /// 自动设置Content-Length
         /// </summary>      
         /// <param name="content">内容</param>
         public bool Write(string content)

@@ -17,6 +17,11 @@ namespace NetworkSocket
         private readonly string value;
 
         /// <summary>
+        /// 表示无协议
+        /// </summary>
+        public static readonly Protocol None = new Protocol();
+
+        /// <summary>
         /// 获取http协议
         /// </summary>
         public static readonly Protocol Http = new Protocol("http");
@@ -30,11 +35,6 @@ namespace NetworkSocket
         /// 获取SeverSendEvent协议
         /// </summary>
         public static readonly Protocol SeverSendEvent = new Protocol("sse");
-
-        /// <summary>
-        /// 表示无协议
-        /// </summary>
-        public static readonly Protocol None = new Protocol();
 
         /// <summary>       
         /// 表示

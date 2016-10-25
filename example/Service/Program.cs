@@ -21,6 +21,8 @@ namespace Service
             var sslListener = new TcpListener();
             Config.ConfigMiddleware(sslListener);
             Config.ConfigValidation();
+
+            // sslListener.UseSSL(X509Certificate.CreateFromCertFile("ssl.cer"));
             sslListener.Start(1212);
 
             Process.Start("http://localhost:1212/home/index");

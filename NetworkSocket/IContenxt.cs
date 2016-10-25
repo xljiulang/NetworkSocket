@@ -25,6 +25,6 @@ namespace NetworkSocket
         /// <summary>
         /// 获取所有会话对象
         /// </summary>
-        ISessionProvider AllSessions { get; }
+        ISessionManager AllSessions { get; }
     }
 }
