@@ -138,9 +138,12 @@ namespace NetworkSocket.Http
                 {
                     if (actionResult == null)
                     {
-                        actionResult = this.Json(result);
+                        this.Restful(result).ExecuteResult(actionContext);
                     }
-                    actionResult.ExecuteResult(actionContext);
+                    else
+                    {
+                        actionResult.ExecuteResult(actionContext);
+                    }
                 }
             }
             catch (Exception ex)
@@ -188,6 +191,17 @@ namespace NetworkSocket.Http
         /// </summary>
         /// <param name="data">内容</param>
         protected virtual JsonResult Json(object data)
+        {
+            return new JsonResult(data);
+        }
+
+        /// <summary>
+        /// 生成Restful结果
+        /// 直接返回数据类型的Api将使用此结果输出
+        /// </summary>
+        /// <param name="data">内容</param>
+        /// <returns></returns>
+        protected virtual ActionResult Restful(object data)
         {
             return new JsonResult(data);
         }
