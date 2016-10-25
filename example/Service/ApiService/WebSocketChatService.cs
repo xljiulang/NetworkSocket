@@ -83,9 +83,8 @@ namespace Service.ApiService
         /// <returns></returns>        
         [Api]
         [WebSocketNickNameFilter] //设置了昵称才可以发言
-        public async Task<bool> ChatMessage(string message)
+        public bool ChatMessage(string message)
         {
-            await Task.Delay(10 * 1000);
             if (string.IsNullOrEmpty(message) == true)
             {
                 return false;

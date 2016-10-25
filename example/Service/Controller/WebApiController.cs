@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using NetworkSocket.Tasks;
 
 namespace Service.Controller
 {
@@ -14,7 +15,7 @@ namespace Service.Controller
     /// WebApi控制器
     /// </summary>
     public class WebApiController : HttpController
-    { 
+    {
         public object About()
         {
             var names = typeof(HttpController).Assembly.GetName();
@@ -24,7 +25,7 @@ namespace Service.Controller
         [HttpPost]
         public async Task<object> Login(string account, string password)
         {
-            await Task.Delay(TimeSpan.FromSeconds(3));
+            await TaskEx.CompletedTask;
             return new { account, password };
         }
     }
