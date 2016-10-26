@@ -201,9 +201,9 @@ namespace NetworkSocket.Http
         /// </summary>
         /// <param name="data">内容</param>
         /// <returns></returns>
-        protected virtual ActionResult Restful(object data)
+        protected virtual RestfulResult Restful(object data)
         {
-            return new JsonResult(data);
+            return new RestfulResult(data);
         }
 
         /// <summary>

@@ -98,9 +98,9 @@ namespace NetworkSocket
 
             lock (this.InputStream.SyncRoot)
             {
-                this.InputStream.Seek(0, SeekOrigin.End);
-                this.InputStream.Write(arg.Buffer, arg.Offset, arg.BytesTransferred);
-                this.InputStream.Seek(0, SeekOrigin.Begin);
+                this.InputStream.Stream.Seek(0, SeekOrigin.End);
+                this.InputStream.Stream.Write(arg.Buffer, arg.Offset, arg.BytesTransferred);
+                this.InputStream.Stream.Seek(0, SeekOrigin.Begin);
                 this.ReceiveHandler(this);
             }
 

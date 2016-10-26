@@ -5,47 +5,55 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
-namespace NetworkSocket.Util
+namespace NetworkSocket.Streams
 {
     /// <summary>
-    /// 表示会话收到的数据流
+    /// 提供对内存流读取
     /// 非线程安全类型  
     /// </summary>
     [DebuggerDisplay("Position = {Position}, Length = {Length}")]
     [DebuggerTypeProxy(typeof(DebugView))]
-    internal class InputStream : MemoryStream, IStreamReader
+    public class InputStreamReader : IStreamReader
     {
+        /// <summary>
+        /// 获取所读取的数据流对象
+        /// </summary>
+        public MemoryStream Stream { get; private set; }
+
         /// <summary>
         /// 获取同步锁对象
         /// </summary>
         public object SyncRoot { get; private set; }
 
+
         /// <summary>
         /// 获取用字节表示的流长度
         /// </summary>
-        new public int Length
+        public int Length
         {
             get
             {
-                return (int)base.Length;
+                return (int)this.Stream.Length;
             }
         }
 
         /// <summary>
         /// 获取或设置流中的当前位置
         /// </summary>
-        new public int Position
+        public int Position
         {
             get
             {
-                return (int)base.Position;
+                return (int)this.Stream.Position;
             }
             set
             {
-                base.Position = value;
+                this.Stream.Position = value;
             }
         }
+
 
         /// <summary>
         /// 获取指定位置的字节
@@ -61,15 +69,23 @@ namespace NetworkSocket.Util
                 {
                     throw new ArgumentOutOfRangeException();
                 }
-                return base.GetBuffer()[index];
+                return this.Stream.GetBuffer()[index];
             }
         }
 
+
         /// <summary>
-        /// 内存数据流
+        /// 对内存流读取
         /// </summary>
-        public InputStream()
+        /// <param name="stream">内存流</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        public InputStreamReader(MemoryStream stream)
         {
+            if (stream == null)
+            {
+                throw new ArgumentNullException();
+            }
+            this.Stream = stream;
             this.SyncRoot = new object();
         }
 
@@ -80,7 +96,7 @@ namespace NetworkSocket.Util
         /// <returns></returns>
         public bool ReadBoolean()
         {
-            return base.ReadByte() != 0;
+            return this.Stream.ReadByte() != 0;
         }
 
         /// <summary>
@@ -88,9 +104,9 @@ namespace NetworkSocket.Util
         /// </summary>      
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <returns></returns>
-        byte IStreamReader.ReadByte()
+        public byte ReadByte()
         {
-            return (byte)base.ReadByte();
+            return (byte)this.Stream.ReadByte();
         }
 
         /// <summary>
@@ -299,7 +315,7 @@ namespace NetworkSocket.Util
         /// <exception cref="ArgumentNullException"></exception>
         private ArraySegment<byte> ReadArraySegment(int count)
         {
-            var range = new ArraySegment<byte>(base.GetBuffer(), this.Position, count);
+            var range = new ArraySegment<byte>(this.Stream.GetBuffer(), this.Position, count);
             this.Position = this.Position + count;
             return range;
         }
@@ -311,7 +327,7 @@ namespace NetworkSocket.Util
         public void Clear()
         {
             this.Position = 0;
-            base.SetLength(0L);
+            this.Stream.SetLength(0L);
         }
 
         /// <summary>
@@ -328,11 +344,11 @@ namespace NetworkSocket.Util
             var length = this.Length - count;
             if (length > 0)
             {
-                this.CopyTo(count, base.GetBuffer(), 0, length);
+                this.CopyTo(count, this.Stream.GetBuffer(), 0, length);
             }
 
             this.Position = 0;
-            base.SetLength(length);
+            this.Stream.SetLength(length);
         }
 
         /// <summary>
@@ -358,7 +374,7 @@ namespace NetworkSocket.Util
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         public void CopyTo(int srcOffset, byte[] dstArray, int dstOffset, int count)
         {
-            Buffer.BlockCopy(base.GetBuffer(), srcOffset, dstArray, dstOffset, count);
+            Buffer.BlockCopy(this.Stream.GetBuffer(), srcOffset, dstArray, dstOffset, count);
         }
 
         /// <summary>
@@ -399,7 +415,7 @@ namespace NetworkSocket.Util
         /// <returns></returns>
         unsafe private bool SequenceEqual(int index, byte[] binary)
         {
-            fixed (byte* p1 = &base.GetBuffer()[index], p2 = &binary[0])
+            fixed (byte* p1 = &this.Stream.GetBuffer()[index], p2 = &binary[0])
             {
                 for (var i = 0; i < binary.Length; i++)
                 {
@@ -421,13 +437,13 @@ namespace NetworkSocket.Util
             /// <summary>
             /// 查看的对象
             /// </summary>
-            private InputStream view;
+            private InputStreamReader view;
 
             /// <summary>
             /// 调试视图
             /// </summary>
             /// <param name="view">查看的对象</param>
-            public DebugView(InputStream view)
+            public DebugView(InputStreamReader view)
             {
                 this.view = view;
             }

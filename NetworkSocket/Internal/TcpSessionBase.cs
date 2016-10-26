@@ -1,7 +1,9 @@
-﻿using NetworkSocket.Util;
+﻿using NetworkSocket.Streams;
+using NetworkSocket.Util;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -82,7 +84,7 @@ namespace NetworkSocket
         /// <summary>
         /// 获取接收到的未处理数据
         /// </summary>      
-        public InputStream InputStream { get; private set; }
+        public InputStreamReader InputStream { get; private set; }
 
         /// <summary>
         /// 获取本机终结点
@@ -101,7 +103,7 @@ namespace NetworkSocket
         public TcpSessionBase()
         {
             this.Tag = new Tag();
-            this.InputStream = new InputStream();
+            this.InputStream = new InputStreamReader(new MemoryStream());
         }
 
         /// <summary>
@@ -130,6 +132,8 @@ namespace NetworkSocket
         /// 同步发送数据
         /// </summary>
         /// <param name="byteRange">数据范围</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="SocketException"></exception>
         /// <returns></returns>
         public virtual int Send(ArraySegment<byte> byteRange)
         {
@@ -150,6 +154,8 @@ namespace NetworkSocket
         /// 同步发送数据
         /// </summary>
         /// <param name="buffer">数据</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="SocketException"></exception>
         /// <returns></returns>
         public virtual int Send(byte[] buffer)
         {
@@ -328,7 +334,7 @@ namespace NetworkSocket
         protected virtual void Dispose(bool disposing)
         {
             this.Close(false);
-            this.InputStream.Dispose();
+            this.InputStream.Stream.Dispose();
 
             if (disposing)
             {

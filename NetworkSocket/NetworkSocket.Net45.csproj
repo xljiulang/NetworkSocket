@@ -126,11 +126,13 @@
     <Compile Include="Http\Result\EventResult.cs" />
     <Compile Include="Http\Result\FileResult.cs" />
     <Compile Include="Http\Result\JsonResult.cs" />
+    <Compile Include="Http\Result\ResultfulResult.cs" />
     <Compile Include="Http\RouteAttribute.cs" />
     <Compile Include="IContenxt.cs" />
     <Compile Include="IListener.cs" />
     <Compile Include="IMiddleware.cs" />
     <Compile Include="Core\Internal\DomainAssembly.cs" />
+    <Compile Include="Streams\InputStreamReader.cs" />
     <Compile Include="Internal\BufferManager.cs" />
     <Compile Include="Internal\Context.cs" />
     <Compile Include="Internal\LastMiddlerware.cs" />
@@ -150,10 +152,12 @@
     <Compile Include="IWrapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Protocol.cs" />
-    <Compile Include="Internal\InputStream.cs" />
     <Compile Include="Reflection\Method.cs" />
     <Compile Include="Reflection\Property.cs" />
     <Compile Include="Silverlight\SilverlightPolicyMiddleware.cs" />
+    <Compile Include="TcpClientBase.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="TcpListener.cs" />
     <Compile Include="Util\ByteBuilder.cs" />
     <Compile Include="Util\ByteConverter.cs" />

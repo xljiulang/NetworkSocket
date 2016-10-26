@@ -183,9 +183,9 @@ namespace NetworkSocket
             {
                 lock (this.InputStream.SyncRoot)
                 {
-                    this.InputStream.Seek(0, SeekOrigin.End);
-                    this.InputStream.Write(this.bufferRange.Array, this.bufferRange.Offset, read);
-                    this.InputStream.Seek(0, SeekOrigin.Begin);
+                    this.InputStream.Stream.Seek(0, SeekOrigin.End);
+                    this.InputStream.Stream.Write(this.bufferRange.Array, this.bufferRange.Offset, read);
+                    this.InputStream.Stream.Seek(0, SeekOrigin.Begin);
                     this.ReceiveHandler(this);
                 }
 
