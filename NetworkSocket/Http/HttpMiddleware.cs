@@ -16,9 +16,9 @@ namespace NetworkSocket.Http
     public class HttpMiddleware : HttpMiddlewareBase, IDependencyResolverSupportable, IFilterSupportable
     {
         /// <summary>
-        /// 所有Http行为
+        /// http路由
         /// </summary>
-        private HttpActionList httpActionList;
+        private readonly HttpRouter httpRouter;
 
         /// <summary>
         /// 获取模型生成器
@@ -51,7 +51,9 @@ namespace NetworkSocket.Http
         /// </summary>
         public HttpMiddleware()
         {
-            this.httpActionList = new HttpActionList();
+            var httpActions = this.FindAllHttpActions();
+            this.httpRouter = new HttpRouter(httpActions);
+
             this.ModelBinder = new DefaultModelBinder();
             this.GlobalFilters = new HttpGlobalFilters();
             this.MIMECollection = new HttpMIMECollection();
@@ -59,37 +61,42 @@ namespace NetworkSocket.Http
             this.DependencyResolver = new DefaultDependencyResolver();
 
             this.MIMECollection.FillBasicMIME();
-            DomainAssembly.GetAssemblies().ForEach(item => this.BindController(item));
         }
 
         /// <summary>
-        /// 绑定程序集下的所有控制器
+        /// 搜索程序域内所有HttpAction
+        /// </summary>
+        /// <returns></returns>
+        private IEnumerable<HttpAction> FindAllHttpActions()
+        {
+            return DomainAssembly
+                .GetAssemblies()
+                .SelectMany(item => this.GetHttpActions(item));
+        }
+
+        /// <summary>
+        /// 获取程序集的Api行为
         /// </summary>
         /// <param name="assembly">程序集</param>
-        private void BindController(Assembly assembly)
+        /// <returns></returns>
+        private IEnumerable<HttpAction> GetHttpActions(Assembly assembly)
         {
-            var controllers = assembly
+            return assembly
                 .GetTypes()
                 .Where(item => item.IsAbstract == false)
-                .Where(item => typeof(HttpController).IsAssignableFrom(item));
-
-            foreach (var controller in controllers)
-            {
-                var httpActions = HttpMiddleware.GetControllerHttpActions(controller);
-                this.httpActionList.AddRange(httpActions);
-            }
+                .Where(item => typeof(HttpController).IsAssignableFrom(item))
+                .SelectMany(item => this.GetHttpActions(item));
         }
 
         /// <summary>
         /// 获取服务类型的Api行为
         /// </summary>
         /// <param name="controller">服务类型</param>
-        /// <exception cref="ArgumentException"></exception>
         /// <returns></returns>
-        private static IEnumerable<HttpAction> GetControllerHttpActions(Type controller)
+        private IEnumerable<HttpAction> GetHttpActions(Type controller)
         {
             return controller
-                .GetMethods()
+                .GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance)
                 .Where(item => HttpAction.IsSupport(item))
                 .Select(method => new HttpAction(method, controller));
         }
@@ -148,7 +155,7 @@ namespace NetworkSocket.Http
         /// <param name="requestContext">请求上下文</param>
         private async Task ProcessActionRequestAsync(string route, IContenxt context, RequestContext requestContext)
         {
-            var action = this.httpActionList.TryGet(requestContext.Request);
+            var action = this.httpRouter.MatchHttpAction(requestContext.Request);
             if (action == null)
             {
                 var ex = new HttpException(404, "找不到路径" + route);

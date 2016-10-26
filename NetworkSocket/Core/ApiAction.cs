@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace NetworkSocket.Core
@@ -95,7 +96,7 @@ namespace NetworkSocket.Core
             }
             else
             {
-                this.ApiName = method.Name;
+                this.ApiName = Regex.Replace(method.Name, @"Async$", string.Empty, RegexOptions.IgnoreCase);
             }
         }
 

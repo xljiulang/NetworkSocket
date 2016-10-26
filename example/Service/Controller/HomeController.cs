@@ -43,13 +43,14 @@ namespace Service.Controller
         {
             return View();
         }
-         
+
 
         /// <summary>
         /// 中间件编写代码示例页面
         /// </summary>
         /// <returns></returns>
-        public ActionResult Middleware()
+        [Route("/{controller}/middleware")]
+        public ActionResult CusMiddleware()
         {
             return View();
         }

@@ -58,7 +58,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <None Include="ssl.cer" />
-    <None Include="View\Home\Middleware.cshtml" />
+    <None Include="View\Home\CusMiddleware.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\NetworkSocket\NetworkSocket.Net45.csproj">

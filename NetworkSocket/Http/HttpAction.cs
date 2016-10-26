@@ -17,9 +17,9 @@ namespace NetworkSocket.Http
     public class HttpAction : ApiAction
     {
         /// <summary>
-        /// 获取路由规则
+        /// 获取路由
         /// </summary>
-        public string Route { get; private set; }
+        public RouteAttribute Route { get; private set; }
 
         /// <summary>
         /// 获取是允许的请求方式
@@ -30,7 +30,6 @@ namespace NetworkSocket.Http
         /// 获取方法的名称
         /// </summary>
         public string ActionName { get; protected set; }
-
 
         /// <summary>
         /// 获取控制器名称
@@ -50,46 +49,38 @@ namespace NetworkSocket.Http
             this.DeclaringService = declaringType;
             this.ActionName = this.Method.Name;
             this.ControllerName = Regex.Replace(declaringType.Name, @"Controller$", string.Empty, RegexOptions.IgnoreCase);
-            this.AllowMethod = this.GetAllowMethod(method);
-            this.Route = this.GetRoute(declaringType);
+            this.AllowMethod = HttpAction.GetAllowMethod(method);
+            this.Route = this.GetRouteAttribute();
         }
 
         /// <summary>
         /// 获取路由地址
-        /// </summary>
-        /// <param name="declaringType"></param>
+        /// </summary> 
         /// <returns></returns>
-        private string GetRoute(Type declaringType)
+        private RouteAttribute GetRouteAttribute()
         {
-            var route = string.Empty;
-            var routeAttribute = Attribute
-                .GetCustomAttributes(declaringType, typeof(RouteAttribute), false)
-                .Cast<RouteAttribute>()
-                .FirstOrDefault();
-
-            if (routeAttribute != null)
+            var routeAttribute = Attribute.GetCustomAttribute(this.Method.Info, typeof(RouteAttribute), false) as RouteAttribute;
+            if (routeAttribute == null)
             {
-                route = routeAttribute.Route;
-            }
-            else
-            {
-                route = "/" + this.ControllerName;
+                routeAttribute = this.DeclaringService.GetCustomAttribute<RouteAttribute>(false);
             }
 
-            if (route.Length > 1 && route.EndsWith("/") == false)
+            if (routeAttribute == null)
             {
-                route = route + "/";
+                var route = string.Format("/{0}/{1}", this.ControllerName, this.ApiName);
+                routeAttribute = new RouteAttribute(route);
             }
-            return (route + this.ApiName).ToLower();
+
+            routeAttribute.BindHttpAction(this);
+            return routeAttribute;
         }
-
 
         /// <summary>
         /// 获取支持的http请求方式
         /// </summary>
         /// <param name="method"></param>
         /// <returns></returns>
-        private HttpMethod GetAllowMethod(MethodInfo method)
+        private static HttpMethod GetAllowMethod(MethodInfo method)
         {
             var methodAttribute = Attribute.GetCustomAttribute(method, typeof(HttpMethodFilterAttribute)) as HttpMethodFilterAttribute;
             if (methodAttribute != null)
@@ -97,29 +88,6 @@ namespace NetworkSocket.Http
                 return methodAttribute.Method;
             }
             return HttpMethod.ALL;
-        }
-
-        /// <summary>
-        /// 获取哈希码
-        /// </summary>
-        /// <returns></returns>
-        public override int GetHashCode()
-        {
-            return this.Route.GetHashCode() ^ this.AllowMethod.GetHashCode();
-        }
-
-        /// <summary>
-        /// 比较是否相等
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
-        public override bool Equals(object obj)
-        {
-            if (obj == null)
-            {
-                return false;
-            }
-            return obj.GetHashCode() == this.GetHashCode() && obj is HttpAction;
         }
 
         /// <summary>
