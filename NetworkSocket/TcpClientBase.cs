@@ -195,8 +195,9 @@ namespace NetworkSocket
 
             e.Completed -= this.ConnectCompleted;
             e.Dispose();
+
             taskSource.TrySetResult(result);
-            this.OnConnected(result);
+            this.OnConnected(e.SocketError);
         }
 
 
@@ -220,13 +221,15 @@ namespace NetworkSocket
             this.ReconnectLoopAsync();
         }
 
-        /// <summary>
-        /// 当接收到远程端的数据时，将触发此方法   
-        /// </summary>       
-        /// <param name="stream">接收到的历史数据</param>
-        /// <returns></returns>
-        protected abstract void OnReceive(IStreamReader stream);
 
+        /// <summary>
+        /// 与服务器连接之后，将触发此方法
+        /// </summary>
+        /// <param name="error">连接状态码</param>
+        protected virtual void OnConnected(SocketError error)
+        {
+
+        }
 
         /// <summary>
         /// 当与服务器断开连接后，将触发此方法
@@ -236,12 +239,12 @@ namespace NetworkSocket
         }
 
         /// <summary>
-        /// 与服务器连接之后，将触发此方法
-        /// </summary>
-        /// <param name="state">连接状态</param>
-        protected virtual void OnConnected(bool state)
-        {
-        }
+        /// 当接收到远程端的数据时，将触发此方法   
+        /// </summary>       
+        /// <param name="inputStream">接收到的数据</param>
+        /// <returns></returns>
+        protected abstract void OnReceive(IStreamReader inputStream);
+
 
         /// <summary>
         /// 同步发送数据
@@ -271,11 +274,10 @@ namespace NetworkSocket
         /// 等待缓冲区数据发送完成
         /// 然后断开和远程端的连接   
         /// </summary>     
-        public void Close()
+        public virtual void Close()
         {
             this.session.Close(true);
         }
-
 
         /// <summary>
         /// 还原到包装前
