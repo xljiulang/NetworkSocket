@@ -13,7 +13,7 @@ namespace NetworkSocket.Http
         /// <summary>
         /// text/html内容
         /// </summary>
-        private string content;
+        protected string Content { get; private set; }
 
         /// <summary>
         /// text/html内容
@@ -21,7 +21,7 @@ namespace NetworkSocket.Http
         /// <param name="content">内容</param>
         public ContentResult(string content)
         {
-            this.content = content;
+            this.Content = content;
         }
 
         /// <summary>
@@ -30,7 +30,7 @@ namespace NetworkSocket.Http
         /// <param name="context">上下文</param>
         public override void ExecuteResult(RequestContext context)
         {
-            context.Response.Write(content);
+            context.Response.Write(Content);
         }
     }
 }

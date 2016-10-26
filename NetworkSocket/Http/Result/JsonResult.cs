@@ -15,7 +15,7 @@ namespace NetworkSocket.Http
         /// <summary>
         /// 内容
         /// </summary>
-        private object data;
+        protected object Data { get; private set; }
 
         /// <summary>
         /// application/json内容
@@ -23,7 +23,7 @@ namespace NetworkSocket.Http
         /// <param name="data">内容</param>
         public JsonResult(object data)
         {
-            this.data = data;
+            this.Data = data;
         }
 
         /// <summary>
@@ -33,7 +33,7 @@ namespace NetworkSocket.Http
         public override void ExecuteResult(RequestContext context)
         {
             var callback = context.Request["callback"];
-            var json = new DefaultDynamicJsonSerializer().Serialize(this.data);
+            var json = new DefaultDynamicJsonSerializer().Serialize(this.Data);
 
             if (callback == null)
             {

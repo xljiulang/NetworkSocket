@@ -15,7 +15,7 @@ namespace NetworkSocket.Http
         /// <summary>
         /// 内容
         /// </summary>
-        private object data;
+        protected object Data { get; private set; }
 
         /// <summary>
         /// 内容
@@ -23,7 +23,7 @@ namespace NetworkSocket.Http
         /// <param name="data">内容</param>
         public RestfulResult(object data)
         {
-            this.data = data;
+            this.Data = data;
         }
 
         /// <summary>
@@ -35,7 +35,7 @@ namespace NetworkSocket.Http
             // TODO
             // application/xml
 
-            new JsonResult(this.data).ExecuteResult(context);
+            new JsonResult(this.Data).ExecuteResult(context);
         }
     }
 }
