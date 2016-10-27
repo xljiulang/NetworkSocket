@@ -10,25 +10,21 @@ namespace NetworkSocket.Http
     /// <summary>
     /// 表示Http路由映射 
     /// 标记：/{segment1}/{segment2}/{controller}/{action}
-    /// {controller}/{action}可以写固定值
+    /// 其中{controller}/{action}可以写固定值
+    /// *代表匹配多个字，?代表单个字
     /// </summary>
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
-    public sealed class RouteAttribute : Attribute
+    public class RouteAttribute : Attribute
     {
         /// <summary>
-        /// 路由正则
+        /// 路由规则正则
         /// </summary>
-        private Regex regex;
-
-        /// <summary>
-        /// 路由项
-        /// </summary>
-        private readonly IList<string> tokens = new List<string>();
+        private Regex ruleRegex;
 
         /// <summary>
         /// 获取路由映射 
         /// </summary>
-        public string Route { get; private set; }
+        public string Rule { get; private set; }
 
         /// <summary>
         /// 获取路由的值
@@ -38,81 +34,68 @@ namespace NetworkSocket.Http
         /// <summary>
         /// 表示路由映射
         /// 标记：/{segment1}/{segment2}/{controller}/{action}
-        /// {controller}/{action}可以写固定值
+        /// 其中{controller}/{action}可以写固定值
+        /// *代表匹配多个字，?代表单个字
         /// </summary>
-        /// <param name="route">路由规则</param>      
+        /// <param name="rule">路由规则</param>      
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public RouteAttribute(string route)
+        public RouteAttribute(string rule)
         {
-            if (string.IsNullOrEmpty(route))
+            if (string.IsNullOrEmpty(rule))
             {
                 throw new ArgumentNullException();
             }
 
-            if (route.StartsWith("/") == false)
+            if (rule.StartsWith("/") == false)
             {
                 throw new ArgumentException("route必须以/开始");
             }
 
-            this.Route = route;
-            this.RouteDatas = new NameValueCollection(StringComparer.OrdinalIgnoreCase);
+            this.Rule = rule;
+            this.RouteDatas = new RouteDataCollection();
         }
 
         /// <summary>
-        /// 绑定Action
+        /// 绑定httpAction
         /// </summary>
         /// <param name="httpAction">http行为</param>
-        internal void BindHttpAction(HttpAction httpAction)
+        /// <returns></returns>
+        internal RouteAttribute BindHttpAction(HttpAction httpAction)
         {
-            this.tokens.Clear();
-            var pattern = Regex.Replace(this.Route, @"\{\w+\}", (m) =>
+            this.Rule = Regex.Replace(this.Rule, @"\{controller\}", httpAction.ControllerName, RegexOptions.IgnoreCase);
+            this.Rule = Regex.Replace(this.Rule, @"\{action\}", httpAction.ApiName, RegexOptions.IgnoreCase);
+
+            var glob = Regex.Escape(this.Rule).Replace(@"\*", ".*").Replace(@"\?", ".").Replace(@"\{", "{");
+            var pattern = Regex.Replace(glob, @"\{\w+\}", (m) =>
             {
                 var token = m.Value.TrimStart('{').TrimEnd('}');
-                if (token.Equals("controller", StringComparison.OrdinalIgnoreCase))
-                {
-                    this.Route = Regex.Replace(this.Route, m.Value, httpAction.ControllerName, RegexOptions.IgnoreCase);
-                    return httpAction.ControllerName;
-                }
-                else if (token.Equals("action", StringComparison.OrdinalIgnoreCase))
-                {
-                    this.Route = Regex.Replace(this.Route, m.Value, httpAction.ApiName, RegexOptions.IgnoreCase);
-                    return httpAction.ApiName;
-                }
-                else
-                {
-                    this.tokens.Add(token);
-                    return string.Format(@"(?<{0}>\w+)", token);
-                }
-            }, RegexOptions.IgnoreCase);
-
-            this.regex = new Regex(pattern, RegexOptions.IgnoreCase);
+                this.RouteDatas.Set(token, null);
+                return string.Format(@"(?<{0}>\w+)", token);
+            });
+            this.ruleRegex = new Regex(pattern, RegexOptions.IgnoreCase);
+            return this;
         }
 
         /// <summary>
-        /// 与相应url匹配
+        /// 与url进行匹配
+        /// 同时更新RouteDatas的值
         /// </summary>
-        /// <param name="url">url</param>
+        /// <param name="url">请求的完整url</param>
         /// <returns></returns>
-        internal bool IsMatchFor(Uri url)
+        public virtual bool IsMatch(Uri url)
         {
-            this.RouteDatas.Clear();
-            var match = this.regex.Match(url.AbsolutePath);
-
-            if (match.Success == false)
+            var match = this.ruleRegex.Match(url.AbsolutePath);
+            if (match.Success == true)
             {
-                return false;
-            }
-
-            foreach (var token in this.tokens)
-            {
-                var capture = match.Groups[token];
-                if (capture != null)
+                for (var i = 0; i < this.RouteDatas.Keys.Count; i++)
                 {
-                    this.RouteDatas.Set(token, capture.Value);
+                    var key = this.RouteDatas.Keys[i];
+                    var capture = match.Groups[key];
+                    this.RouteDatas.Set(key, capture.Value);
                 }
             }
-            return true;
+            return match.Success;
         }
 
         /// <summary>
@@ -121,7 +104,40 @@ namespace NetworkSocket.Http
         /// <returns></returns>
         public override string ToString()
         {
-            return this.Route;
+            return this.Rule;
+        }
+
+
+
+        /// <summary>
+        /// 路由数据集合
+        /// </summary>
+        private class RouteDataCollection : NameValueCollection
+        {
+            /// <summary>
+            /// 路由数据集合
+            /// </summary>
+            public RouteDataCollection()
+                : base(StringComparer.OrdinalIgnoreCase)
+            {
+            }
+
+            /// <summary>
+            /// 清除
+            /// </summary>
+            public override void Clear()
+            {
+                throw new NotSupportedException();
+            }
+
+            /// <summary>
+            /// 移除项
+            /// </summary>
+            /// <param name="name">项名</param>
+            public override void Remove(string name)
+            {
+                throw new NotSupportedException();
+            }
         }
     }
 }

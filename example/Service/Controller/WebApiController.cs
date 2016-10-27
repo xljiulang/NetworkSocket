@@ -16,6 +16,7 @@ namespace Service.Controller
     /// </summary>
     public class WebApiController : HttpController
     {
+        [Route("/{version}/{controller}/{action}")]
         public object About()
         {
             var names = typeof(HttpController).Assembly.GetName();

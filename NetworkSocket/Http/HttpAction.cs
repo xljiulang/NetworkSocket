@@ -27,15 +27,9 @@ namespace NetworkSocket.Http
         public HttpMethod AllowMethod { get; private set; }
 
         /// <summary>
-        /// 获取方法的名称
-        /// </summary>
-        public string ActionName { get; protected set; }
-
-        /// <summary>
         /// 获取控制器名称
         /// </summary>
         public string ControllerName { get; protected set; }
-
 
         /// <summary>
         /// Http的Api行为 
@@ -46,8 +40,7 @@ namespace NetworkSocket.Http
         public HttpAction(MethodInfo method, Type declaringType)
             : base(method)
         {
-            this.DeclaringService = declaringType;
-            this.ActionName = this.Method.Name;
+            this.DeclaringService = declaringType;          
             this.ControllerName = Regex.Replace(declaringType.Name, @"Controller$", string.Empty, RegexOptions.IgnoreCase);
             this.AllowMethod = HttpAction.GetAllowMethod(method);
             this.Route = this.GetRouteAttribute();
@@ -59,20 +52,19 @@ namespace NetworkSocket.Http
         /// <returns></returns>
         private RouteAttribute GetRouteAttribute()
         {
-            var routeAttribute = Attribute.GetCustomAttribute(this.Method.Info, typeof(RouteAttribute), false) as RouteAttribute;
-            if (routeAttribute == null)
+            var route = this.Method.Info.GetCustomAttribute<RouteAttribute>(false); ;
+            if (route == null)
             {
-                routeAttribute = this.DeclaringService.GetCustomAttribute<RouteAttribute>(false);
+                route = this.DeclaringService.GetCustomAttribute<RouteAttribute>(false);
             }
 
-            if (routeAttribute == null)
+            if (route == null)
             {
-                var route = string.Format("/{0}/{1}", this.ControllerName, this.ApiName);
-                routeAttribute = new RouteAttribute(route);
+                var rule = string.Format("/{0}/{1}", this.ControllerName, this.ApiName);
+                route = new RouteAttribute(rule);
             }
 
-            routeAttribute.BindHttpAction(this);
-            return routeAttribute;
+            return route.BindHttpAction(this);
         }
 
         /// <summary>
@@ -91,11 +83,11 @@ namespace NetworkSocket.Http
         }
 
         /// <summary>
-        /// 是否可以创建为一个HttpAction
+        /// 返回是否是一个HttpAction
         /// </summary>
-        /// <param name="method">方法 </param>
+        /// <param name="method">方法</param>
         /// <returns></returns>
-        public static bool IsSupport(MethodInfo method)
+        public static bool IsHttpAction(MethodInfo method)
         {
             if (method.IsDefined(typeof(NoneActionAttribute)))
             {

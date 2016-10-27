@@ -113,7 +113,7 @@
     <Compile Include="Http\IModelBinder.cs" />
     <Compile Include="Http\Internal\DefaultModelBinder.cs" />
     <Compile Include="Http\Internal\HttpGlobalFilters.cs" />
-    <Compile Include="Http\Internal\HttpRouter.cs" />
+    <Compile Include="Http\Internal\HttpRouteTable.cs" />
     <Compile Include="Http\Internal\MultipartHead.cs" />
     <Compile Include="Http\Internal\BinderProperty.cs" />
     <Compile Include="Http\Internal\HttpRequestParser.cs" />

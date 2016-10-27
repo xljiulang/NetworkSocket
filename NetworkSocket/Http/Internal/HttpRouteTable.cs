@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 namespace NetworkSocket.Http
 {
     /// <summary>
-    /// 表示http路由
+    /// 表示http路由表
     /// </summary>
-    internal class HttpRouter
+    internal class HttpRouteTable
     {
         /// <summary>
         /// http行为
@@ -20,7 +20,7 @@ namespace NetworkSocket.Http
         /// http路由
         /// </summary>
         /// <param name="actions">http行为</param>
-        public HttpRouter(IEnumerable<HttpAction> actions)
+        public HttpRouteTable(IEnumerable<HttpAction> actions)
         {
             this.httpActions = actions.OrderBy(item => item.AllowMethod).ToArray();
         }
@@ -34,7 +34,7 @@ namespace NetworkSocket.Http
         {
             return this.httpActions.FirstOrDefault(item =>
                 request.HttpMethod == (request.HttpMethod & item.AllowMethod) &&
-                item.Route.IsMatchFor(request.Url));
+                item.Route.IsMatch(request.Url));
         }
     }
 }

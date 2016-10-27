@@ -18,7 +18,7 @@ namespace NetworkSocket.Http
         /// <summary>
         /// http路由
         /// </summary>
-        private readonly HttpRouter httpRouter;
+        private readonly HttpRouteTable routeTable;
 
         /// <summary>
         /// 获取模型生成器
@@ -52,7 +52,7 @@ namespace NetworkSocket.Http
         public HttpMiddleware()
         {
             var httpActions = this.FindAllHttpActions();
-            this.httpRouter = new HttpRouter(httpActions);
+            this.routeTable = new HttpRouteTable(httpActions);
 
             this.ModelBinder = new DefaultModelBinder();
             this.GlobalFilters = new HttpGlobalFilters();
@@ -97,7 +97,7 @@ namespace NetworkSocket.Http
         {
             return controller
                 .GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance)
-                .Where(item => HttpAction.IsSupport(item))
+                .Where(item => HttpAction.IsHttpAction(item))
                 .Select(method => new HttpAction(method, controller));
         }
 
@@ -155,7 +155,7 @@ namespace NetworkSocket.Http
         /// <param name="requestContext">请求上下文</param>
         private async Task ProcessActionRequestAsync(string route, IContenxt context, RequestContext requestContext)
         {
-            var action = this.httpRouter.MatchHttpAction(requestContext.Request);
+            var action = this.routeTable.MatchHttpAction(requestContext.Request);
             if (action == null)
             {
                 var ex = new HttpException(404, "找不到路径" + route);
