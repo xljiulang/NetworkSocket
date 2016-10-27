@@ -199,7 +199,50 @@ namespace NetworkSocket
             taskSource.TrySetResult(result);
             this.OnConnected(e.SocketError);
         }
+        /// <summary>
+        /// 连接到远程端
+        /// </summary>
+        /// <param name="host">域名或ip地址</param>
+        /// <param name="port">远程端口</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="SocketException"></exception>
+        public void Connect(string host, int port)
+        {
+            this.Connect(new DnsEndPoint(host, port));
+        }
 
+        /// <summary>
+        /// 连接到远程终端       
+        /// </summary>
+        /// <param name="ip">远程ip</param>
+        /// <param name="port">远程端口</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="SocketException"></exception>
+        public void Connect(IPAddress ip, int port)
+        {
+            this.Connect(new IPEndPoint(ip, port));
+        }
+
+        /// <summary>
+        /// 连接到远程端
+        /// </summary>
+        /// <param name="remoteEndPoint">远程端</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="SocketException"></exception>
+        public void Connect(EndPoint remoteEndPoint)
+        {
+            var socket = new Socket(remoteEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            try
+            {
+                socket.Connect(remoteEndPoint);
+                this.session.Bind(socket);
+            }
+            catch (Exception ex)
+            {
+                socket.Dispose();
+                throw ex;
+            }
+        }
 
         /// <summary>
         /// 接收处理
@@ -228,7 +271,6 @@ namespace NetworkSocket
         /// <param name="error">连接状态码</param>
         protected virtual void OnConnected(SocketError error)
         {
-
         }
 
         /// <summary>
