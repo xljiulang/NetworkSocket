@@ -21,7 +21,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
+    <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -85,6 +85,18 @@
     <Compile Include="Exceptions\RemoteException.cs" />
     <Compile Include="Exceptions\ResolveException.cs" />
     <Compile Include="Exceptions\SerializerException.cs" />
+    <Compile Include="Fast\Context\ActionContext.cs" />
+    <Compile Include="Fast\Context\ExceptionContext.cs" />
+    <Compile Include="Fast\Context\RequestContext.cs" />
+    <Compile Include="Fast\FastApiService.cs" />
+    <Compile Include="Fast\FastFilterAttribute.cs" />
+    <Compile Include="Fast\FastMiddleware.cs" />
+    <Compile Include="Fast\FastPacket.cs" />
+    <Compile Include="Fast\FastSession.cs" />
+    <Compile Include="Fast\FastTcpClient.cs" />
+    <Compile Include="Fast\IFastApiService.cs" />
+    <Compile Include="Fast\Internal\Common.cs" />
+    <Compile Include="Fast\Internal\FastGlobalFilters.cs" />
     <Compile Include="Flex\FlexPolicyMiddleware.cs" />
     <Compile Include="Http\Context\ActionContext.cs" />
     <Compile Include="Http\Context\ExceptionContext.cs" />

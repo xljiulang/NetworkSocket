@@ -4,14 +4,18 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{2A042153-5699-4B9B-A011-1EDCA65E662D}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{30386CFD-B297-4F51-9E68-BACEB7C60D39}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Service</RootNamespace>
-    <AssemblyName>Service</AssemblyName>
+    <RootNamespace>FastClient</RootNamespace>
+    <AssemblyName>FastClient</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -34,6 +38,10 @@
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>
+    </StartupObject>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -41,27 +49,55 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="System.Deployment, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ApiService\FastMathService.cs" />
-    <Compile Include="AppStart\MiddlewareConfig.cs" />
-    <Compile Include="AppStart\ValidationConfig.cs" />
-    <Compile Include="Controller\HomeController.cs" />
-    <Compile Include="Controller\ChatController.cs" />
-    <Compile Include="Controller\EventController.cs" />
-    <Compile Include="ApiService\WebSocketChatService.cs" />
-    <Compile Include="Controller\WebApiController.cs" />
-    <Compile Include="Filters\FastLogFilter.cs" />
-    <Compile Include="GlobalFilters\FastGlobalFilter.cs" />
-    <Compile Include="GlobalFilters\WebSockeGlobalFilter.cs" />
-    <Compile Include="GlobalFilters\HttpGlobalFilter.cs" />
-    <Compile Include="Filters\HttpLogFilter.cs" />
-    <Compile Include="Filters\WebSocketNickNameFilter.cs" />
+    <Compile Include="Client.cs" />
+    <Compile Include="FormMain.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormMain.Designer.cs">
+      <DependentUpon>FormMain.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <None Include="ssl.cer" />
-    <None Include="View\Home\CusMiddleware.cshtml" />
+    <Compile Include="FormSum.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormSum.Designer.cs">
+      <DependentUpon>FormSum.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="FormMain.resx">
+      <DependentUpon>FormMain.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <EmbeddedResource Include="FormSum.resx">
+      <DependentUpon>FormSum.cs</DependentUpon>
+    </EmbeddedResource>
+    <None Include="app.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\NetworkSocket\NetworkSocket.Net45.csproj">
@@ -73,35 +109,6 @@
       <Name>Models</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="View\Chat\Index.cshtml" />
-    <Content Include="js\chatUI.js" />
-    <Content Include="js\bootstrap\css\bootstrap-ie6.min.css" />
-    <Content Include="js\bootstrap\css\bootstrap-responsive.min.css" />
-    <Content Include="js\bootstrap\css\bootstrap.min.css" />
-    <Content Include="js\bootstrap\css\ie.css" />
-    <Content Include="js\bootstrap\img\glyphicons-halflings-8.png" />
-    <Content Include="js\bootstrap\img\glyphicons-halflings-white.png" />
-    <Content Include="js\bootstrap\img\glyphicons-halflings.png" />
-    <Content Include="js\bootstrap\img\next.png" />
-    <Content Include="js\bootstrap\img\prev.png" />
-    <Content Include="js\bootstrap\js\bootstrap-ie.js" />
-    <Content Include="js\bootstrap\js\bootstrap.min.js" />
-    <Content Include="js\jquery-1.7.1.min.js" />
-    <Content Include="js\json2.js" />
-    <Content Include="js\jsonWebSocket.js" />
-    <Content Include="js\swfobject.js" />
-    <Content Include="js\WebSocketMain.swf" />
-    <Content Include="js\web_socket.js" />
-    <Content Include="js\window\window.css" />
-    <Content Include="js\window\window.js" />
-    <None Include="View\Home\WebApi.cshtml" />
-    <None Include="View\Event\Index.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="View\Home\Index.cshtml" />
-  </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -32,6 +32,11 @@ namespace NetworkSocket
         public static readonly Protocol WebSocket = new Protocol("ws");
 
         /// <summary>
+        /// 获取Fast协议
+        /// </summary>
+        public static readonly Protocol Fast = new Protocol("fast");
+
+        /// <summary>
         /// 获取SeverSendEvent协议
         /// </summary>
         public static readonly Protocol SeverSendEvent = new Protocol("sse");

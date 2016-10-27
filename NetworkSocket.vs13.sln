@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Models", "example\Models\Mo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Service", "example\Service\Service.csproj", "{2A042153-5699-4B9B-A011-1EDCA65E662D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FastClient", "example\FastClient\FastClient.csproj", "{30386CFD-B297-4F51-9E68-BACEB7C60D39}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,16 @@ Global
 		{2A042153-5699-4B9B-A011-1EDCA65E662D}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{2A042153-5699-4B9B-A011-1EDCA65E662D}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{2A042153-5699-4B9B-A011-1EDCA65E662D}.Release|x86.ActiveCfg = Release|Any CPU
+		{30386CFD-B297-4F51-9E68-BACEB7C60D39}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30386CFD-B297-4F51-9E68-BACEB7C60D39}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30386CFD-B297-4F51-9E68-BACEB7C60D39}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{30386CFD-B297-4F51-9E68-BACEB7C60D39}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{30386CFD-B297-4F51-9E68-BACEB7C60D39}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{30386CFD-B297-4F51-9E68-BACEB7C60D39}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30386CFD-B297-4F51-9E68-BACEB7C60D39}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30386CFD-B297-4F51-9E68-BACEB7C60D39}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{30386CFD-B297-4F51-9E68-BACEB7C60D39}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{30386CFD-B297-4F51-9E68-BACEB7C60D39}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -58,6 +70,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{F9B37780-6345-4E6F-8523-687F56895625} = {8A38CC1F-CB87-4838-90AF-8ECF79AEDB15}
 		{2A042153-5699-4B9B-A011-1EDCA65E662D} = {8A38CC1F-CB87-4838-90AF-8ECF79AEDB15}
+		{30386CFD-B297-4F51-9E68-BACEB7C60D39} = {8A38CC1F-CB87-4838-90AF-8ECF79AEDB15}
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = Demo\Server\Server.csproj

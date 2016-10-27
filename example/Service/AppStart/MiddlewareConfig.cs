@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using NetworkSocket.Fast;
 
 namespace Service.AppStart
 {
@@ -20,9 +21,11 @@ namespace Service.AppStart
         {
             listener.Use<HttpMiddleware>().GlobalFilters.Add(new HttpGlobalFilter());
             listener.Use<JsonWebSocketMiddleware>().GlobalFilters.Add(new WebSockeGlobalFilter());
+            listener.Use<FastMiddleware>().GlobalFilters.Add(new FastGlobalFilter());
             listener.Use<FlexPolicyMiddleware>();
             listener.Events.OnDisconnected += Events_OnDisconnected;
         }
+         
 
         /// <summary>
         /// 会话断开连接时

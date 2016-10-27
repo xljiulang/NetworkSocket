@@ -116,7 +116,7 @@ namespace NetworkSocket
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="SocketException"></exception>
         /// <returns></returns>
-        public Task<bool> ConnectAsync(string host, int port)
+        public Task<SocketError> ConnectAsync(string host, int port)
         {
             return this.ConnectAsync(new DnsEndPoint(host, port));
         }
@@ -127,7 +127,7 @@ namespace NetworkSocket
         /// <param name="ip">远程ip</param>
         /// <param name="port">远程端口</param>
         /// <returns></returns>
-        public Task<bool> ConnectAsync(IPAddress ip, int port)
+        public Task<SocketError> ConnectAsync(IPAddress ip, int port)
         {
             return this.ConnectAsync(new IPEndPoint(ip, port));
         }
@@ -138,12 +138,12 @@ namespace NetworkSocket
         /// <param name="remoteEndPoint">远程ip和端口</param> 
         /// <exception cref="AuthenticationException"></exception>
         /// <returns></returns>
-        public Task<bool> ConnectAsync(EndPoint remoteEndPoint)
+        public Task<SocketError> ConnectAsync(EndPoint remoteEndPoint)
         {
-            var taskSource = new TaskCompletionSource<bool>();
+            var taskSource = new TaskCompletionSource<SocketError>();
             if (this.IsConnected)
             {
-                taskSource.TrySetResult(true);
+                taskSource.TrySetResult(SocketError.Success);
                 return taskSource.Task;
             }
 
@@ -153,7 +153,7 @@ namespace NetworkSocket
                 var ip = Dns.GetHostAddresses(dnsEndpoint.Host).Where(item => item.AddressFamily == AddressFamily.InterNetwork).FirstOrDefault();
                 if (ip == null)
                 {
-                    taskSource.TrySetResult(false);
+                    taskSource.TrySetResult(SocketError.TryAgain);
                     return taskSource.Task;
                 }
                 remoteEndPoint = new IPEndPoint(ip, dnsEndpoint.Port);
@@ -179,10 +179,9 @@ namespace NetworkSocket
         private void ConnectCompleted(object sender, SocketAsyncEventArgs e)
         {
             var socket = sender as Socket;
-            var taskSource = e.UserToken as TaskCompletionSource<bool>;
-            var result = e.SocketError == SocketError.Success;
+            var taskSource = e.UserToken as TaskCompletionSource<SocketError>;
 
-            if (result == true)
+            if (e.SocketError == SocketError.Success)
             {
                 this.session.Bind(socket);
                 this.session.TrySetKeepAlive(this.KeepAlivePeriod);
@@ -196,19 +195,21 @@ namespace NetworkSocket
             e.Completed -= this.ConnectCompleted;
             e.Dispose();
 
-            taskSource.TrySetResult(result);
+            taskSource.TrySetResult(e.SocketError);
             this.OnConnected(e.SocketError);
         }
+
+
         /// <summary>
         /// 连接到远程端
         /// </summary>
         /// <param name="host">域名或ip地址</param>
         /// <param name="port">远程端口</param>
         /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="SocketException"></exception>
-        public void Connect(string host, int port)
+        /// <returns></returns>
+        public SocketError Connect(string host, int port)
         {
-            this.Connect(new DnsEndPoint(host, port));
+            return this.Connect(new DnsEndPoint(host, port));
         }
 
         /// <summary>
@@ -217,10 +218,10 @@ namespace NetworkSocket
         /// <param name="ip">远程ip</param>
         /// <param name="port">远程端口</param>
         /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="SocketException"></exception>
-        public void Connect(IPAddress ip, int port)
+        /// <returns></returns>
+        public SocketError Connect(IPAddress ip, int port)
         {
-            this.Connect(new IPEndPoint(ip, port));
+            return this.Connect(new IPEndPoint(ip, port));
         }
 
         /// <summary>
@@ -228,14 +229,30 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="remoteEndPoint">远程端</param>
         /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="SocketException"></exception>
-        public void Connect(EndPoint remoteEndPoint)
+        /// <returns></returns>
+        public SocketError Connect(EndPoint remoteEndPoint)
         {
+            var dnsEndpoint = remoteEndPoint as DnsEndPoint;
+            if (dnsEndpoint != null)
+            {
+                var ip = Dns.GetHostAddresses(dnsEndpoint.Host).Where(item => item.AddressFamily == AddressFamily.InterNetwork).FirstOrDefault();
+                if (ip == null)
+                {
+                    return SocketError.TryAgain;
+                }
+                remoteEndPoint = new IPEndPoint(ip, dnsEndpoint.Port);
+            }
+
             var socket = new Socket(remoteEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             try
             {
                 socket.Connect(remoteEndPoint);
                 this.session.Bind(socket);
+                return SocketError.Success;
+            }
+            catch (SocketException ex)
+            {
+                return ex.SocketErrorCode;
             }
             catch (Exception ex)
             {
@@ -349,7 +366,7 @@ namespace NetworkSocket
             }
 
             var state = await this.ConnectAsync(this.RemoteEndPoint);
-            if (state == true)
+            if (state == SocketError.Success)
             {
                 return;
             }
