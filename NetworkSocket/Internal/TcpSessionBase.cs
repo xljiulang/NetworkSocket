@@ -121,8 +121,8 @@ namespace NetworkSocket
             this.Tag.ID = null;
             ((IDictionary)this.Tag).Clear();
             this.SetProtocolWrapper(Protocol.None, null);
-            this.LocalEndPoint = (IPEndPoint)socket.LocalEndPoint;
-            this.RemoteEndPoint = (IPEndPoint)socket.RemoteEndPoint;
+            this.LocalEndPoint = socket.LocalEndPoint;
+            this.RemoteEndPoint = socket.RemoteEndPoint;
         }
 
         /// <summary>

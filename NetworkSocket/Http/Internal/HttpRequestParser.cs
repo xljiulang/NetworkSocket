@@ -83,7 +83,12 @@ namespace NetworkSocket.Http
             };
 
             var scheme = context.Session.IsSecurity ? "https" : "http";
-            var url = string.Format("{0}://{1}{2}", scheme, context.Session.LocalEndPoint, match.Groups["path"].Value);
+            var host = httpHeader["Host"];
+            if (string.IsNullOrEmpty(host) == true)
+            {
+                host = context.Session.LocalEndPoint.ToString();
+            }
+            var url = string.Format("{0}://{1}{2}", scheme, host, match.Groups["path"].Value);
             request.Url = new Uri(url);
             request.Path = request.Url.AbsolutePath;
             request.Query = HttpNameValueCollection.Parse(request.Url.Query.TrimStart('?'));
