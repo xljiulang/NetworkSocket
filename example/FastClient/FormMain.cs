@@ -36,7 +36,7 @@ namespace FastClient
             // 断开自动重连间隔一秒
             Client.Instance.ReconnectPeriod = TimeSpan.FromSeconds(1);
 
-            var connected = await Client.Instance.ConnectAsync("localhost", 1212) == SocketError.Success;
+            var connected = Client.Instance.Connect("localhost", 1212) == SocketError.Success;
             var version = connected ? await Client.Instance.GetVersion() : null;
 
             this.Text = connected ? ("通讯库版本：" + version) : "连接服务器失败 ..";

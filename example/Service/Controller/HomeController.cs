@@ -93,7 +93,8 @@ namespace Service.Controller
         /// 中间件编写代码示例页面
         /// </summary>
         /// <returns></returns>
-        public ActionResult Middleware()
+        [Route("/{controller}/Middleware")]
+        public ActionResult CusMiddleware()
         {
             return View();
         }

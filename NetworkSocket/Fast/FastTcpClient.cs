@@ -103,7 +103,6 @@ namespace NetworkSocket.Fast
                 {
                     this.OnReceivePacket(package);
                 }
-
             }, null);
         }
 
@@ -166,7 +165,7 @@ namespace NetworkSocket.Fast
                 if (action != null)
                 {
                     var actionContext = new ActionContext(requestContext, action);
-                    await this.TryExecuteActionAsync(actionContext);
+                    await this.ExecuteActionAsync(actionContext);
                 }
             }
         }
@@ -196,27 +195,7 @@ namespace NetworkSocket.Fast
             }
 
             return null;
-        }
-
-
-        /// <summary>
-        /// 调用自身方法
-        /// 将返回值发送给服务器
-        /// 或将异常发送给服务器
-        /// </summary>    
-        /// <param name="actionContext">上下文</param>       
-        /// <returns></returns>
-        private async Task TryExecuteActionAsync(ActionContext actionContext)
-        {
-            try
-            {
-                await this.ExecuteActionAsync(actionContext);
-            }
-            catch (Exception ex)
-            {
-                this.ProcessExecutingException(actionContext, ex);
-            }
-        }
+        }         
 
 
         /// <summary>

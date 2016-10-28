@@ -140,26 +140,25 @@ namespace NetworkSocket
         /// <returns></returns>
         public Task<SocketError> ConnectAsync(EndPoint remoteEndPoint)
         {
+            if (remoteEndPoint == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            if (this.IsConnected == true)
+            {
+                return Task.FromResult(SocketError.Success);
+            }
+
+
+            var addressFamily = AddressFamily.InterNetwork;
+            if (remoteEndPoint.AddressFamily != AddressFamily.Unspecified)
+            {
+                addressFamily = remoteEndPoint.AddressFamily;
+            }
+
             var taskSource = new TaskCompletionSource<SocketError>();
-            if (this.IsConnected)
-            {
-                taskSource.TrySetResult(SocketError.Success);
-                return taskSource.Task;
-            }
-
-            var dnsEndpoint = remoteEndPoint as DnsEndPoint;
-            if (dnsEndpoint != null)
-            {
-                var ip = Dns.GetHostAddresses(dnsEndpoint.Host).Where(item => item.AddressFamily == AddressFamily.InterNetwork).FirstOrDefault();
-                if (ip == null)
-                {
-                    taskSource.TrySetResult(SocketError.TryAgain);
-                    return taskSource.Task;
-                }
-                remoteEndPoint = new IPEndPoint(ip, dnsEndpoint.Port);
-            }
-
-            var socket = new Socket(remoteEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            var socket = new Socket(addressFamily, SocketType.Stream, ProtocolType.Tcp);
             var connectArg = new SocketAsyncEventArgs { RemoteEndPoint = remoteEndPoint, UserToken = taskSource };
             connectArg.Completed += this.ConnectCompleted;
 
@@ -232,32 +231,33 @@ namespace NetworkSocket
         /// <returns></returns>
         public SocketError Connect(EndPoint remoteEndPoint)
         {
-            var dnsEndpoint = remoteEndPoint as DnsEndPoint;
-            if (dnsEndpoint != null)
+            if (remoteEndPoint == null)
             {
-                var ip = Dns.GetHostAddresses(dnsEndpoint.Host).Where(item => item.AddressFamily == AddressFamily.InterNetwork).FirstOrDefault();
-                if (ip == null)
-                {
-                    return SocketError.TryAgain;
-                }
-                remoteEndPoint = new IPEndPoint(ip, dnsEndpoint.Port);
+                throw new ArgumentNullException();
             }
 
-            var socket = new Socket(remoteEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            var addressFamily = AddressFamily.InterNetwork;
+            if (remoteEndPoint.AddressFamily != AddressFamily.Unspecified)
+            {
+                addressFamily = remoteEndPoint.AddressFamily;
+            }
+
             try
             {
+                var socket = new Socket(addressFamily, SocketType.Stream, ProtocolType.Tcp);
                 socket.Connect(remoteEndPoint);
+
                 this.session.Bind(socket);
+                this.session.TrySetKeepAlive(this.KeepAlivePeriod);
+                this.session.LoopReceive();
+
+                this.OnConnected(SocketError.Success);
                 return SocketError.Success;
             }
             catch (SocketException ex)
             {
+                this.OnConnected(ex.SocketErrorCode);
                 return ex.SocketErrorCode;
-            }
-            catch (Exception ex)
-            {
-                socket.Dispose();
-                throw ex;
             }
         }
 
