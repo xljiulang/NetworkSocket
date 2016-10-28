@@ -131,6 +131,7 @@ namespace NetworkSocket.Fast
             if (FastPacket.Parse(context.InputStream, out fastPacket) == false)
             {
                 await this.Next.Invoke(context);
+                return;
             }
 
             if (fastPacket == null)
