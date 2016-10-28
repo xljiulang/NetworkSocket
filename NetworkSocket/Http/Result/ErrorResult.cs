@@ -51,7 +51,10 @@ namespace NetworkSocket.Http
         /// <param name="context">上下文</param>
         public override void ExecuteResult(RequestContext context)
         {
-            this.ExecuteResult(context.Response);
+            var gzip = context.Request.IsAcceptGZip();
+            context.Response.Status = this.Status;
+            context.Response.StatusDescription = ((HttpStatusCode)this.Status).ToString();
+            context.Response.WriteResponse(this.Errors, gzip);
         }
 
         /// <summary>
@@ -62,7 +65,7 @@ namespace NetworkSocket.Http
         {
             response.Status = this.Status;
             response.StatusDescription = ((HttpStatusCode)this.Status).ToString();
-            response.Write(this.Errors);
+            response.WriteResponse(this.Errors);
         }
     }
 }

@@ -101,6 +101,8 @@
     <Compile Include="Http\Context\ActionContext.cs" />
     <Compile Include="Http\Context\ExceptionContext.cs" />
     <Compile Include="Http\Context\RequestContext.cs" />
+    <Compile Include="Http\Internal\ResponseHeader.cs" />
+    <Compile Include="Util\GZip.cs" />
     <Compile Include="Http\HttpAction.cs" />
     <Compile Include="Http\HttpController.cs" />
     <Compile Include="Http\HttpEvent.cs" />

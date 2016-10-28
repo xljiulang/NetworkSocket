@@ -34,16 +34,17 @@ namespace NetworkSocket.Http
         {
             var callback = context.Request["callback"];
             var json = new DefaultDynamicJsonSerializer().Serialize(this.Data);
+            var gzip = context.Request.IsAcceptGZip();
 
             if (callback == null)
             {
                 context.Response.ContentType = "application/json";
-                context.Response.Write(json);
+                context.Response.WriteResponse(json, gzip);
             }
             else
             {
                 var jsonP = string.Format("{0}({1})", callback, json);
-                context.Response.Write(jsonP);
+                context.Response.WriteResponse(jsonP, gzip);
             }
         }
     }

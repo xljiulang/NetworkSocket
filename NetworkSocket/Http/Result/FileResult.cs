@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NetworkSocket.Util;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -11,6 +12,21 @@ namespace NetworkSocket.Http
     /// </summary>
     public class FileResult : ActionResult
     {
+        /// <summary>
+        /// 1M以下文件
+        /// </summary>
+        private static readonly long maxTxtFileSize = 1024L * 1024L;
+
+        /// <summary>
+        /// 文本文件格式
+        /// </summary>
+        private static readonly string[] txtFiles = new string[] { ".js", ".css", ".html", ".html", ".text", ".xml" };
+
+        /// <summary>
+        /// gizp支持的文件格式
+        /// </summary>
+        private static readonly HashSet<string> gzipHashSet = new HashSet<string>(txtFiles, StringComparer.OrdinalIgnoreCase);
+
         /// <summary>
         /// 获取或设置文件路径
         /// </summary>
@@ -34,7 +50,7 @@ namespace NetworkSocket.Http
         {
             if (File.Exists(this.FileName) == true)
             {
-                this.ExecuteResult(context.Response);
+                this.ExecuteFileResult(context);
             }
             else
             {
@@ -43,37 +59,93 @@ namespace NetworkSocket.Http
             }
         }
 
+
         /// <summary>
         /// 输出文件
         /// </summary>
-        /// <param name="response">回复对象</param>
-        public void ExecuteResult(HttpResponse response)
+        /// <param name="context">上下文</param>
+        public void ExecuteFileResult(RequestContext context)
         {
             if (string.IsNullOrEmpty(this.ContentType))
             {
                 this.ContentType = "application/ocelet-stream";
             }
-            response.Charset = null;
-            response.ContentType = this.ContentType;
-            response.ContentDisposition = this.ContentDisposition;
+            context.Response.Charset = null;
+            context.Response.ContentType = this.ContentType;
+            context.Response.ContentDisposition = this.ContentDisposition;
 
-            using (var stream = new FileStream(this.FileName, FileMode.Open, FileAccess.Read))
+            using (var fileStream = new FileStream(this.FileName, FileMode.Open, FileAccess.Read))
             {
-                const int size = 8 * 1024;
-                var state = response.WriteHeader((int)stream.Length);
-                var bytes = new byte[size];
-
-                while (state == true)
+                if (this.GZipSupported(context, fileStream) == true)
                 {
-                    var length = stream.Read(bytes, 0, size);
-                    if (length == 0)
-                    {
-                        break;
-                    }
-                    var content = new ArraySegment<byte>(bytes, 0, length);
-                    state = response.WriteContent(content);
+                    this.ResponseFileByGzip(context.Response, fileStream);
+                }
+                else
+                {
+                    this.ResponseFile(context.Response, fileStream);
                 }
             }
+        }
+
+        /// <summary>
+        /// 文件是否能使用GZip
+        /// </summary>
+        /// <param name="context">上下文</param>
+        /// <param name="fileStream">文件流</param>
+        /// <returns></returns>
+        private bool GZipSupported(RequestContext context, FileStream fileStream)
+        {
+            if (context.Request.IsAcceptGZip() == false)
+            {
+                return false;
+            }
+
+            var ext = Path.GetExtension(this.FileName);
+            if (FileResult.gzipHashSet.Contains(ext) == false)
+            {
+                return false;
+            }
+
+            return fileStream.Length < FileResult.maxTxtFileSize;
+        }
+
+        /// <summary>
+        /// 输出文件
+        /// </summary>
+        /// <param name="response"></param>
+        /// <param name="fileStream"></param>
+        private void ResponseFile(HttpResponse response, FileStream fileStream)
+        {
+            const int size = 8 * 1024;
+            var state = response.WriteHeader((int)fileStream.Length);
+            var bytes = new byte[size];
+
+            while (state == true)
+            {
+                var length = fileStream.Read(bytes, 0, size);
+                if (length == 0)
+                {
+                    break;
+                }
+                var content = new ArraySegment<byte>(bytes, 0, length);
+                state = response.WriteContent(content);
+            }
+        }
+
+        /// <summary>
+        /// 输出文件
+        /// Gzip压缩
+        /// </summary>
+        /// <param name="response"></param>
+        /// <param name="fileStream"></param>
+        private void ResponseFileByGzip(HttpResponse response, FileStream fileStream)
+        {
+            var buffer = new byte[fileStream.Length];
+            fileStream.Read(buffer, 0, buffer.Length);
+
+            var zipBuffer = GZip.Compress(buffer);
+            response.WriteHeader(zipBuffer.Length, true);
+            response.WriteContent(zipBuffer);
         }
     }
 }

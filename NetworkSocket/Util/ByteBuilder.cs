@@ -276,10 +276,10 @@ namespace NetworkSocket.Util
         }
 
         /// <summary>
-        /// 转换为ByteRange类型
+        /// 转换为ArraySegment类型
         /// </summary>      
         /// <returns></returns>        
-        public ArraySegment<byte> ToByteRange()
+        public ArraySegment<byte> ToArraySegment()
         {
             return new ArraySegment<byte>(this._buffer, 0, this.Length);
         }

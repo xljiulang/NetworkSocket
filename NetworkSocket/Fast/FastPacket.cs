@@ -149,7 +149,7 @@ namespace NetworkSocket.Fast
             builder.Add(this.IsFromClient);
             builder.Add(this.IsException);
             builder.Add(this.Body);
-            return builder.ToByteRange();
+            return builder.ToArraySegment();
         }
 
         /// <summary>

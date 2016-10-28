@@ -28,7 +28,7 @@ namespace NetworkSocket.Http
         /// <summary>
         /// 获取Form 
         /// </summary>
-        public HttpNameValueCollection Form { get;  internal set; }
+        public HttpNameValueCollection Form { get; internal set; }
 
         /// <summary>
         /// 获取请求的文件
@@ -65,7 +65,7 @@ namespace NetworkSocket.Http
         /// </summary>
         public EndPoint RemoteEndPoint { get; internal set; }
 
-       
+
         /// <summary>
         /// 从Query和Form获取请求参数的值
         /// 多个值会以逗号分隔
@@ -115,7 +115,7 @@ namespace NetworkSocket.Http
             }
             return list;
         }
-              
+
 
         /// <summary>
         /// 是否为ajax请求
@@ -198,6 +198,20 @@ namespace NetworkSocket.Http
         }
 
         /// <summary>
+        /// 返回客户端是否接受GZip压缩
+        /// </summary>
+        /// <returns></returns>
+        public bool IsAcceptGZip()
+        {
+            var accept = this.Headers["Accept-Encoding"];
+            if (accept == null)
+            {
+                return false;
+            }
+            return accept.IndexOf("gzip", StringComparison.OrdinalIgnoreCase) > -1;
+        }
+
+        /// <summary>
         /// 获取是否相等
         /// 不区分大小写
         /// </summary>
@@ -207,7 +221,7 @@ namespace NetworkSocket.Http
         private static bool StringEquals(string value1, string value2)
         {
             return string.Equals(value1, value2, StringComparison.OrdinalIgnoreCase);
-        }     
+        }
     }
 }
 

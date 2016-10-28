@@ -30,7 +30,8 @@ namespace NetworkSocket.Http
         /// <param name="context">上下文</param>
         public override void ExecuteResult(RequestContext context)
         {
-            context.Response.Write(Content);
+            var gzip = context.Request.IsAcceptGZip();
+            context.Response.WriteResponse(Content, gzip);
         }
     }
 }

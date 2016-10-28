@@ -142,7 +142,7 @@ namespace NetworkSocket.Http
             else
             {
                 var result = new FileResult { FileName = file, ContentType = contenType };
-                result.ExecuteResult(requestContext);
+                result.ExecuteFileResult(requestContext);
             }
         }
 

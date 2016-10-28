@@ -1,8 +1,11 @@
 ﻿using NetworkSocket.Util;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Text;
 
 namespace NetworkSocket.Http
@@ -16,12 +19,6 @@ namespace NetworkSocket.Http
         /// 会话对象
         /// </summary>
         private ISession session;
-
-        /// <summary>
-        /// 是否已写头信息
-        /// </summary>
-        private bool wroteHeader = false;
-
 
         /// <summary>
         /// 获取是否已连接到远程端
@@ -114,100 +111,30 @@ namespace NetworkSocket.Http
         }
 
         /// <summary>
-        /// 忽略的key
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        private static bool IsIgnoreKey(string key)
-        {
-            var keys = new[] { "Content-Type", "Content-Length", "Date", "Server" };
-            return keys.Any(item => string.Equals(key, item, StringComparison.OrdinalIgnoreCase));
-        }
-
-        /// <summary>
-        /// 获取内容类型
-        /// </summary>
-        /// <returns></returns>
-        private string GenerateContentType()
-        {
-            if (this.Charset == null)
-            {
-                return string.Format("Content-Type: {0}", this.ContentType);
-            }
-            return string.Format("Content-Type: {0}; charset={1}", this.ContentType, this.Charset.WebName);
-        }
-
-        /// <summary>
-        /// 生成头部数据
-        /// </summary>
-        /// <param name="contentLength">内容长度</param>
-        /// <returns></returns>
-        private byte[] GetHeaderBytes(int contentLength)
-        {
-            var header = new StringBuilder()
-                   .AppendFormat("HTTP/1.1 {0} {1}", this.Status, this.StatusDescription).AppendLine()
-                   .AppendLine(this.GenerateContentType());
-
-            if (contentLength > -1)
-            {
-                header.AppendFormat("Content-Length: {0}", contentLength).AppendLine();
-            }
-
-            header
-                .AppendFormat("Date: {0}", DateTime.Now.ToUniversalTime().ToString("r")).AppendLine()
-                .AppendLine("Server: NetworkSocket");
-
-            var keys = this.Headers.AllKeys.Where(item => IsIgnoreKey(item) == false).ToArray();
-            foreach (var key in keys)
-            {
-                var value = this.Headers[key];
-                if (string.IsNullOrWhiteSpace(value) == false)
-                {
-                    header.AppendFormat("{0}: {1}", key, value).AppendLine();
-                }
-            }
-            return Encoding.ASCII.GetBytes(header.AppendLine().ToString());
-        }
-
-        /// <summary>
-        /// 输出头数据
+        /// 输出不包含Content-Length的头数据        
         /// </summary>
         /// <returns></returns>
         public bool WriteHeader()
         {
-            return this.WriteHeader(-1);
+            return this.WriteHeader(-1, gzip: false);
         }
 
         /// <summary>
         /// 输出头数据
         /// </summary>
         /// <param name="contentLength">内容长度</param>
+        /// <param name="gzip">gzip模式</param>
         /// <returns></returns>
-        public bool WriteHeader(int contentLength)
+        public bool WriteHeader(int contentLength, bool gzip = false)
         {
-            if (this.wroteHeader == false)
-            {
-                this.wroteHeader = true;
-                var headerByes = this.GetHeaderBytes(contentLength);
-                return this.TrySend(headerByes);
-            }
-            return false;
+            var headerByes = this.GenerateHeader(contentLength, gzip);
+            return this.TrySend(headerByes);
         }
 
         /// <summary>
         /// 输出内容
         /// </summary>
-        /// <param name="range">内容</param>
-        /// <returns></returns>
-        public bool WriteContent(ArraySegment<byte> range)
-        {
-            return this.TrySend(range);
-        }
-
-        /// <summary>
-        /// 输出内容
-        /// </summary>
-        /// <param name="buffer">内容</param>
+        /// <param name="buffer">内容</param>      
         /// <returns></returns>
         public bool WriteContent(byte[] buffer)
         {
@@ -215,28 +142,95 @@ namespace NetworkSocket.Http
         }
 
         /// <summary>
-        /// 输出文本内容
-        /// 自动设置Content-Length
+        /// 输出内容
+        /// </summary>
+        /// <param name="buffer">内容</param>
+        /// <returns></returns>
+        public bool WriteContent(ArraySegment<byte> buffer)
+        {
+            return this.TrySend(buffer);
+        }
+
+
+        /// <summary>
+        /// 输出回复内容
+        /// 自动设置回复头的Content-Length
         /// </summary>      
         /// <param name="content">内容</param>
-        public bool Write(string content)
+        /// <param name="gzip">gzip模式</param>
+        public bool WriteResponse(string content, bool gzip = false)
         {
             if (content == null)
             {
                 content = string.Empty;
             }
-            var buffer = new ByteBuilder(Endians.Little);
-            var contentBytes = this.Charset.GetBytes(content);
 
-            if (this.wroteHeader == false)
+            var contentBytes = this.Charset.GetBytes(content);
+            if (gzip == true)
             {
-                this.wroteHeader = true;
-                var headerByes = this.GetHeaderBytes(contentBytes.Length);
-                buffer.Add(headerByes);
+                contentBytes = GZip.Compress(contentBytes);
             }
 
-            buffer.Add(contentBytes);
-            return this.TrySend(buffer.ToByteRange());
+            var headerBytes = this.GenerateHeader(contentBytes.Length, gzip);
+            var buffer = this.ConcatBuffer(headerBytes, contentBytes);
+            return this.TrySend(buffer);
+        }
+
+        /// <summary>
+        /// 生成头部数据
+        /// </summary>
+        /// <param name="contentLength">内容长度</param>
+        /// <param name="gzip">gzip模式</param>
+        /// <returns></returns>
+        private byte[] GenerateHeader(int contentLength, bool gzip)
+        {
+            var header = new ResponseHeader(this.Status, this.StatusDescription);
+            if (this.Charset == null)
+            {
+                header.Add("Content-Type", this.ContentType);
+            }
+            else
+            {
+                var contenType = string.Format("{0}; charset={1}", this.ContentType, this.Charset.WebName);
+                header.Add("Content-Type", contenType);
+            }
+
+            if (contentLength >= 0)
+            {
+                header.Add("Content-Length", contentLength);
+            }
+
+            if (gzip == true)
+            {
+                header.Add("Content-Encoding", "gzip");
+            }
+
+            var assemblyName = typeof(HttpMiddleware).Assembly.GetName();
+            header.Add("Date", DateTime.Now.ToUniversalTime().ToString("r"));
+            header.Add("Server", assemblyName.Name + assemblyName.Version.ToString());
+
+            foreach (var key in this.Headers.AllKeys)
+            {
+                header.Add(key, this.Headers[key]);
+            }
+
+            return header.ToByteArray();
+        }
+
+
+        /// <summary>
+        /// 连接buffer
+        /// </summary>
+        /// <param name="buffer1"></param>
+        /// <param name="buffer2"></param>
+        /// <returns></returns>
+        private byte[] ConcatBuffer(byte[] buffer1, byte[] buffer2)
+        {
+            var length = buffer1.Length + buffer2.Length;
+            var buffer = new byte[length];
+            Buffer.BlockCopy(buffer1, 0, buffer, 0, buffer1.Length);
+            Buffer.BlockCopy(buffer2, 0, buffer, buffer1.Length, buffer2.Length);
+            return buffer;
         }
 
 

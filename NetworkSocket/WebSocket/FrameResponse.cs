@@ -58,7 +58,7 @@ namespace NetworkSocket.WebSocket
                 builder.Add((byte)this.Content.Length);
             }
             builder.Add(this.Content);
-            return builder.ToByteRange();
+            return builder.ToArraySegment();
         }
     }
 }
