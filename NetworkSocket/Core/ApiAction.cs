@@ -24,6 +24,11 @@ namespace NetworkSocket.Core
         private static object[] parameters;
 
         /// <summary>
+        /// 是否是Task类型返回
+        /// </summary>
+        private readonly bool isTaskReturn;
+
+        /// <summary>
         /// 获取Api行为的Api名称
         /// </summary>
         public string ApiName { get; protected set; }
@@ -82,6 +87,7 @@ namespace NetworkSocket.Core
         /// <exception cref="ArgumentException"></exception>
         public ApiAction(MethodInfo method)
         {
+            this.isTaskReturn = typeof(Task).IsAssignableFrom(method.ReturnType);
             this.Method = new Method(method);
             this.DeclaringService = method.DeclaringType;
             this.ReturnType = method.ReturnType;
@@ -149,10 +155,10 @@ namespace NetworkSocket.Core
         /// <returns></returns>
         public Task<object> ExecuteAsync(object service, params object[] parameters)
         {
-            if (typeof(Task).IsAssignableFrom(this.ReturnType) == true)
+            if (this.isTaskReturn == true)
             {
-                var task = this.Execute(service, parameters);
-                return TaskEx.CastFrom(task, this.ReturnType);
+                var task = this.Execute(service, parameters) as Task;
+                return task == null ? Task.FromResult<object>(null) : task.ToTask<object>(this.ReturnType);
             }
             else
             {

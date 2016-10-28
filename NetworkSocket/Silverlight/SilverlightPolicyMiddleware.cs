@@ -23,7 +23,7 @@ namespace NetworkSocket.Silverlight
         /// </summary>
         /// <param name="context">上下文</param>
         /// <returns></returns>
-        Task IMiddleware.Invoke(IContenxt context)
+        bool IMiddleware.Invoke(IContenxt context)
         {
             if (context.Session.Protocol != Protocol.None || context.InputStream.Length != 22)
             {
@@ -34,26 +34,30 @@ namespace NetworkSocket.Silverlight
             var request = context.InputStream.ReadString(Encoding.ASCII);
             if (string.Equals(request, "<policy-file-request/>", StringComparison.OrdinalIgnoreCase))
             {
-                this.SendPolicyXML(context);
-                return TaskEx.CompletedTask;
+                return this.SendPolicyXML(context);
             }
-            return this.Next.Invoke(context);
+            else
+            {
+                return this.Next.Invoke(context);
+            }
         }
 
         /// <summary>
         /// 发送策略文件
         /// </summary>
         /// <param name="context">上下文</param>
-        private void SendPolicyXML(IContenxt context)
+        /// <returns></returns>
+        private bool SendPolicyXML(IContenxt context)
         {
             try
             {
                 var policyXml = this.GeneratePolicyXml();
                 var bytes = Encoding.UTF8.GetBytes(policyXml);
-                context.Session.Send(bytes);
+                return context.Session.Send(bytes) > 0;
             }
             catch (Exception)
             {
+                return false;
             }
             finally
             {

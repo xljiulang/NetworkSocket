@@ -266,10 +266,9 @@ namespace NetworkSocket
         /// 接收处理
         /// </summary>
         /// <param name="session">会话</param>
-        private Task ReceiveHandler(TcpSessionBase session)
+        private void ReceiveHandler(TcpSessionBase session)
         {
             this.OnReceive(session.InputStream);
-            return TaskEx.CompletedTask;
         }
 
         /// <summary>

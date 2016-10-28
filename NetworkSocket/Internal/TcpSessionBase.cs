@@ -39,7 +39,7 @@ namespace NetworkSocket
         /// <summary>
         /// 处理和分析收到的数据的委托
         /// </summary>
-        public Func<TcpSessionBase, Task> ReceiveHandler;
+        public Action<TcpSessionBase> ReceiveHandler;
 
         /// <summary>
         /// 连接断开委托   

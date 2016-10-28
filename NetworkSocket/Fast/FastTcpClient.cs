@@ -99,7 +99,7 @@ namespace NetworkSocket.Fast
             var packages = this.GenerateFastPackets(inputStream);
             foreach (var package in packages)
             {
-                this.OnReceivePacket(package);
+                this.OnProcessPacket(package);
             }
         }
 
@@ -128,31 +128,17 @@ namespace NetworkSocket.Fast
 
 
         /// <summary>
-        /// 接收到服务发来的数据包
+        /// 处理接收到服务发来的数据包
         /// </summary>
         /// <param name="packet">数据包</param>
-        private async void OnReceivePacket(FastPacket packet)
+        private void OnProcessPacket(FastPacket packet)
         {
             var requestContext = new RequestContext(null, packet, null);
             if (packet.IsException == true)
             {
                 Common.SetApiActionTaskException(this.taskSetterTable, requestContext);
             }
-            else
-            {
-                await this.ProcessRequestAsync(requestContext);
-            }
-        }
-
-
-        /// <summary>
-        /// 处理正常的数据请求
-        /// </summary>      
-        /// <param name="requestContext">请求上下文</param>
-        /// <returns></returns>
-        private async Task ProcessRequestAsync(RequestContext requestContext)
-        {
-            if (requestContext.Packet.IsFromClient)
+            else if (packet.IsFromClient == true)
             {
                 Common.SetApiActionTaskResult(requestContext, this.taskSetterTable, this.Serializer);
             }
@@ -162,7 +148,7 @@ namespace NetworkSocket.Fast
                 if (action != null)
                 {
                     var actionContext = new ActionContext(requestContext, action);
-                    await this.ExecuteActionAsync(actionContext);
+                    this.ExecuteAction(actionContext);
                 }
             }
         }
@@ -199,15 +185,15 @@ namespace NetworkSocket.Fast
         /// 执行Api行为
         /// </summary>
         /// <param name="actionContext">上下文</param>   
-        /// <exception cref="SerializerException"></exception>
-        /// <returns></returns>
-        private async Task ExecuteActionAsync(ActionContext actionContext)
+        private async void ExecuteAction(ActionContext actionContext)
         {
             try
             {
+                var action = actionContext.Action;
                 var parameters = Common.GetAndUpdateParameterValues(this.Serializer, actionContext);
-                var result = await actionContext.Action.ExecuteAsync(this, actionContext.Action.ParameterValues);
-                if (actionContext.Action.IsVoidReturn == false && this.IsConnected)
+                var result = await action.ExecuteAsync(this, action.ParameterValues);
+
+                if (action.IsVoidReturn == false && this.IsConnected == true)
                 {
                     actionContext.Packet.Body = this.Serializer.Serialize(result);
                     this.Send(actionContext.Packet.ToByteRange());

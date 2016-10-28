@@ -25,7 +25,7 @@ namespace NetworkSocket.Http
         /// </summary>
         /// <param name="context">上下文</param>
         /// <returns></returns>
-        Task IMiddleware.Invoke(IContenxt context)
+        bool IMiddleware.Invoke(IContenxt context)
         {
             var protocol = context.Session.Protocol;
             if (protocol == Protocol.None || protocol == Protocol.Http)
@@ -44,20 +44,22 @@ namespace NetworkSocket.Http
         /// </summary>
         /// <param name="context">上下文</param>
         /// <returns></returns>
-        private async Task OnHttpRequest(IContenxt context)
+        private bool OnHttpRequest(IContenxt context)
         {
             try
             {
                 var result = HttpRequestParser.Parse(context);
-                await this.ProcessParseResult(context, result);
+                return this.ProcessParseResult(context, result);
             }
             catch (HttpException ex)
             {
                 this.OnException(context.Session, ex);
+                return false;
             }
             catch (Exception ex)
             {
                 this.OnException(context.Session, new HttpException(500, ex.Message));
+                return false;
             }
         }
 
@@ -67,18 +69,20 @@ namespace NetworkSocket.Http
         /// <param name="context">上下文</param>
         /// <param name="result">解析结果</param>
         /// <returns></returns>
-        private Task ProcessParseResult(IContenxt context, HttpParseResult result)
+        private bool ProcessParseResult(IContenxt context, HttpParseResult result)
         {
             if (result.IsHttp == false)
             {
                 return this.Next.Invoke(context);
             }
 
+            // 数据未完整
             if (result.Request == null)
             {
-                return TaskEx.CompletedTask;
+                return true;
             }
 
+            // 协议升级
             if (result.Request.IsWebsocketRequest() == true)
             {
                 return this.Next.Invoke(context);
@@ -93,7 +97,7 @@ namespace NetworkSocket.Http
             var response = new HttpResponse(context.Session);
             var requestContext = new RequestContext(result.Request, response);
             this.OnHttpRequest(context, requestContext);
-            return TaskEx.CompletedTask;
+            return true;
         }
 
         /// <summary>

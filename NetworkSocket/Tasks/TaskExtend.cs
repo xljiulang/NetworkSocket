@@ -9,41 +9,39 @@ using System.Threading.Tasks;
 namespace NetworkSocket.Tasks
 {
     /// <summary>
-    /// 提供Task的一些额外方法
+    /// 提供Task的扩展
     /// </summary>
-    public static class TaskEx
+    public static class TaskExtend
     {
-        /// <summary>
-        /// 表示已完成的任务
-        /// </summary>
-        public static readonly Task CompletedTask = Task.FromResult(true);
-
         /// <summary>
         /// 安全字典
         /// </summary>
         private readonly static ConcurrentDictionary<Type, Func<Task, object>> cache = new ConcurrentDictionary<Type, Func<Task, object>>();
 
+        /// <summary>
+        /// 转换为TaskOf(T)类型
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="task">任务</param>
+        /// <returns></returns>
+        public static Task<T> ToTask<T>(this Task task)
+        {
+            return task.ToTask<T>(task.GetType());
+        }
 
         /// <summary>
-        /// 从value值转换得到
+        /// 转换为TaskOf(T)类型
         /// </summary>
-        /// <param name="value">值</param>
-        /// <param name="valueType">值类型</param>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="task">任务</param>
+        /// <param name="taskType">任务类型</param>
         /// <returns></returns>
-        public async static Task<object> CastFrom(object value, Type valueType)
+        public async static Task<T> ToTask<T>(this Task task, Type taskType)
         {
-            var task = value as Task;
-            if (task == null)
-            {
-                return value;
-            }
-            else
-            {
-                await task;
-                return TaskEx.cache
-                    .GetOrAdd(valueType, (type) => TaskEx.CreateTaskResultInvoker(type))
-                    .Invoke(task);
-            }
+            await task;
+            return (T)TaskExtend.cache
+                .GetOrAdd(taskType, (type) => TaskExtend.CreateResultInvoker(type))
+                .Invoke(task);
         }
 
         /// <summary>
@@ -51,7 +49,7 @@ namespace NetworkSocket.Tasks
         /// </summary>
         /// <param name="taskType">Task实例的类型</param>
         /// <returns></returns>
-        private static Func<Task, object> CreateTaskResultInvoker(Type taskType)
+        private static Func<Task, object> CreateResultInvoker(Type taskType)
         {
             if (taskType.IsGenericType && taskType.GetGenericTypeDefinition() == typeof(Task<>))
             {

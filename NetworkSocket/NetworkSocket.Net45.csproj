@@ -155,7 +155,7 @@
     <Compile Include="Internal\IocpTcpSession.cs" />
     <Compile Include="Tasks\ITaskSetter.cs" />
     <Compile Include="Tasks\TaskSetterTable.cs" />
-    <Compile Include="Tasks\TaskEx.cs" />
+    <Compile Include="Tasks\TaskExtend.cs" />
     <Compile Include="Internal\TcpSessionBase.cs" />
     <Compile Include="Internal\TcpSessionCollection.cs" />
     <Compile Include="Internal\TcpSessionQueue.cs" />

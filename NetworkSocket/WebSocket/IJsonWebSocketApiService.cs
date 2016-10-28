@@ -14,7 +14,8 @@ namespace NetworkSocket.WebSocket
         /// <summary>
         /// 异步执行Api行为
         /// </summary>              
-        /// <param name="actionContext">Api行为上下文</param>      
+        /// <param name="actionContext">Api行为上下文</param>   
+        /// <returns></returns>
         Task ExecuteAsync(ActionContext actionContext);
     }
 }

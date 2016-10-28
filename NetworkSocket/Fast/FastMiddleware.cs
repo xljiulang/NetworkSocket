@@ -110,7 +110,7 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="context">上下文</param>
         /// <returns></returns>
-        Task IMiddleware.Invoke(IContenxt context)
+        bool IMiddleware.Invoke(IContenxt context)
         {
             var protocal = context.Session.Protocol;
             if (protocal != Protocol.None && protocal != Protocol.Fast)
@@ -125,7 +125,7 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="context">上下文</param>
         /// <returns></returns>
-        private Task OnFastRequest(IContenxt context)
+        private bool OnFastRequest(IContenxt context)
         {
             var fastPacket = default(FastPacket);
             if (FastPacket.Parse(context.InputStream, out fastPacket) == false)
@@ -133,9 +133,10 @@ namespace NetworkSocket.Fast
                 return this.Next.Invoke(context);
             }
 
+            // 数据未完整
             if (fastPacket == null)
             {
-                return TaskEx.CompletedTask;
+                return true;
             }
 
             if (context.Session.Protocol == Protocol.None)
@@ -152,7 +153,7 @@ namespace NetworkSocket.Fast
                 var requestContext = new RequestContext(fastSession, packet, context.AllSessions);
                 this.OnRecvFastPacket(requestContext);
             }
-            return TaskEx.CompletedTask;
+            return true;
         }
 
         /// <summary>
@@ -199,7 +200,7 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 处理正常的数据请求
         /// </summary>
-        /// <param name="requestContext">请求上下文</param>    
+        /// <param name="requestContext">请求上下文</param>
         private async void ProcessRequest(RequestContext requestContext)
         {
             if (requestContext.Packet.IsFromClient == false)

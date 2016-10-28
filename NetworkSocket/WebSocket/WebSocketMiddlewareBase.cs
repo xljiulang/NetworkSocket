@@ -29,7 +29,7 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="context">上下文</param>
         /// <returns></returns>
-        Task IMiddleware.Invoke(IContenxt context)
+        bool IMiddleware.Invoke(IContenxt context)
         {
             var protocol = context.Session.Protocol;
             if (protocol == Protocol.WebSocket)
@@ -52,7 +52,7 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="context">上下文</param>
         /// <returns></returns>
-        private Task OnWebSocketHandshakeRequest(IContenxt context)
+        private bool OnWebSocketHandshakeRequest(IContenxt context)
         {
             try
             {
@@ -62,9 +62,10 @@ namespace NetworkSocket.WebSocket
                     return this.Next.Invoke(context);
                 }
 
+                // 数据未完整
                 if (result.Request == null)
                 {
-                    return TaskEx.CompletedTask;
+                    return true;
                 }
 
                 if (result.Request.IsWebsocketRequest() == false)
@@ -76,13 +77,13 @@ namespace NetworkSocket.WebSocket
                 const string seckey = "Sec-WebSocket-Key";
                 var secValue = result.Request.Headers[seckey];
                 this.ResponseHandshake(context, secValue);
-                return TaskEx.CompletedTask;
+                return true;
             }
             catch (Exception)
             {
                 context.InputStream.Clear();
                 context.Session.Close();
-                return TaskEx.CompletedTask;
+                return false;
             }
         }
 
@@ -117,14 +118,14 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="context">上下文</param>
         /// <returns></returns>
-        private Task OnWebSocketFrameRequest(IContenxt context)
+        private bool OnWebSocketFrameRequest(IContenxt context)
         {
             var requests = this.GenerateWebSocketRequest(context);
             foreach (var request in requests)
             {
                 this.OnWebSocketRequest(context, request);
             }
-            return TaskEx.CompletedTask;
+            return true;
         }
 
         /// <summary>
