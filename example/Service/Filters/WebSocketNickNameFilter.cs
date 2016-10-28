@@ -17,8 +17,8 @@ namespace Service.Filters
         }
 
         protected override void OnExecuting(ActionContext filterContext)
-        { 
-            if (filterContext.Session.Tag.Data == null)
+        {
+            if (filterContext.Session.Tag.Get("name").IsNull)
             {
                 filterContext.Result = "请设置昵称后再聊天";
             }

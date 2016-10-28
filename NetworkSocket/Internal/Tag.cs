@@ -10,7 +10,7 @@ namespace NetworkSocket
     /// <summary>
     /// 表示用户附加数据
     /// </summary>   
-    internal class Tag : ITag
+    internal class Tag : ConcurrentDictionary<string, object>, ITag
     {
         /// <summary>
         /// 获取或设置唯一标识符
@@ -18,18 +18,33 @@ namespace NetworkSocket
         public string ID { get; set; }
 
         /// <summary>
-        /// 获取或设置其它用户数据
+        /// 表示用户附加数据
         /// </summary>
-        public object Data { get; set; }
+        public Tag()
+            : base(StringComparer.OrdinalIgnoreCase)
+        {
+        }
 
         /// <summary>
-        /// 返回Data的转换类型
+        /// 设置值
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        public T DataCast<T>()
+        /// <param name="key">键</param>
+        /// <param name="value">值</param>
+        public void Set(string key, object value)
         {
-            return (T)this.Data;
+            base.AddOrUpdate(key, value, (k, v) => value);
+        }
+
+        /// <summary>
+        /// 获取值
+        /// </summary>
+        /// <param name="key">键</param>
+        /// <returns></returns>
+        public TagItem Get(string key)
+        {
+            object value;
+            base.TryGetValue(key, out value);
+            return new TagItem(value);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using NetworkSocket.Streams;
 using NetworkSocket.Util;
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -117,7 +118,7 @@ namespace NetworkSocket
 
             this.InputStream.Clear();
             this.Tag.ID = null;
-            this.Tag.Data = null;
+            ((IDictionary)this.Tag).Clear();
             this.SetProtocolWrapper(Protocol.None, null);
             this.LocalEndPoint = (IPEndPoint)socket.LocalEndPoint;
             this.RemoteEndPoint = (IPEndPoint)socket.RemoteEndPoint;

@@ -16,15 +16,17 @@ namespace NetworkSocket
         string ID { get; set; }
 
         /// <summary>
-        /// 获取或设置其它用户数据
+        /// 设置值
         /// </summary>
-        object Data { get; set; }
+        /// <param name="key">键</param>
+        /// <param name="value">值</param>
+        void Set(string key, object value);
 
         /// <summary>
-        /// 返回Data的转换类型
+        /// 获取值
         /// </summary>
-        /// <typeparam name="T">数据类型</typeparam>
+        /// <param name="key">键</param>
         /// <returns></returns>
-        T DataCast<T>();
+        TagItem Get(string key);
     }
 }

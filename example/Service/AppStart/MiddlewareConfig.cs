@@ -25,7 +25,7 @@ namespace Service.AppStart
             listener.Use<FlexPolicyMiddleware>();
             listener.Events.OnDisconnected += Events_OnDisconnected;
         }
-         
+
 
         /// <summary>
         /// 会话断开连接时
@@ -39,8 +39,8 @@ namespace Service.AppStart
                 return;
             }
 
-            var name = context.Session.Tag.Data;
-            if (name == null)
+            var name = context.Session.Tag.Get("name");
+            if (name.IsNull == true)
             {
                 return;
             }
@@ -50,7 +50,7 @@ namespace Service.AppStart
                 .FilterWrappers<JsonWebSocketSession>();
 
             var members = webSocketSessions
-                .Select(item => item.Tag.Data)
+                .Select(item => item.Tag.Get("name").AsString())
                 .Where(item => item != null)
                 .ToArray();
 

@@ -60,7 +60,6 @@
     <Compile Include="Filters\WebSocketNickNameFilter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <None Include="ssl.cer" />
     <None Include="View\Home\CusMiddleware.cshtml" />
   </ItemGroup>
   <ItemGroup>
