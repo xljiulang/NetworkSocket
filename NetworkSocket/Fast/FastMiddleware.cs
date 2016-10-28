@@ -125,18 +125,17 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="context">上下文</param>
         /// <returns></returns>
-        private async Task OnFastRequest(IContenxt context)
+        private Task OnFastRequest(IContenxt context)
         {
             var fastPacket = default(FastPacket);
             if (FastPacket.Parse(context.InputStream, out fastPacket) == false)
             {
-                await this.Next.Invoke(context);
-                return;
+                return this.Next.Invoke(context);
             }
 
             if (fastPacket == null)
             {
-                return;
+                return TaskEx.CompletedTask;
             }
 
             if (context.Session.Protocol == Protocol.None)
@@ -153,6 +152,7 @@ namespace NetworkSocket.Fast
                 var requestContext = new RequestContext(fastSession, packet, context.AllSessions);
                 this.OnRecvFastPacket(requestContext);
             }
+            return TaskEx.CompletedTask;
         }
 
         /// <summary>
@@ -183,7 +183,7 @@ namespace NetworkSocket.Fast
         /// 接收到会话对象的数据包
         /// </summary>
         /// <param name="requestContext">请求上下文</param>
-        private async void OnRecvFastPacket(RequestContext requestContext)
+        private void OnRecvFastPacket(RequestContext requestContext)
         {
             if (requestContext.Packet.IsException == true)
             {
@@ -191,7 +191,7 @@ namespace NetworkSocket.Fast
             }
             else
             {
-                await this.ProcessRequestAsync(requestContext);
+                this.ProcessRequest(requestContext);
             }
         }
 
@@ -200,8 +200,7 @@ namespace NetworkSocket.Fast
         /// 处理正常的数据请求
         /// </summary>
         /// <param name="requestContext">请求上下文</param>    
-        /// <returns></returns>
-        private async Task ProcessRequestAsync(RequestContext requestContext)
+        private async void ProcessRequest(RequestContext requestContext)
         {
             if (requestContext.Packet.IsFromClient == false)
             {

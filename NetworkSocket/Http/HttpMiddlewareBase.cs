@@ -30,7 +30,7 @@ namespace NetworkSocket.Http
             var protocol = context.Session.Protocol;
             if (protocol == Protocol.None || protocol == Protocol.Http)
             {
-                return this.OnHttpRequestAsync(context);
+                return this.OnHttpRequest(context);
             }
             else
             {
@@ -44,12 +44,12 @@ namespace NetworkSocket.Http
         /// </summary>
         /// <param name="context">上下文</param>
         /// <returns></returns>
-        private async Task OnHttpRequestAsync(IContenxt context)
+        private async Task OnHttpRequest(IContenxt context)
         {
             try
             {
                 var result = HttpRequestParser.Parse(context);
-                await this.ProcessParseResultAsync(context, result);
+                await this.ProcessParseResult(context, result);
             }
             catch (HttpException ex)
             {
@@ -67,23 +67,21 @@ namespace NetworkSocket.Http
         /// <param name="context">上下文</param>
         /// <param name="result">解析结果</param>
         /// <returns></returns>
-        private async Task ProcessParseResultAsync(IContenxt context, HttpParseResult result)
+        private Task ProcessParseResult(IContenxt context, HttpParseResult result)
         {
             if (result.IsHttp == false)
             {
-                await this.Next.Invoke(context);
-                return;
+                return this.Next.Invoke(context);
             }
 
             if (result.Request == null)
             {
-                return;
+                return TaskEx.CompletedTask;
             }
 
             if (result.Request.IsWebsocketRequest() == true)
             {
-                await this.Next.Invoke(context);
-                return;
+                return this.Next.Invoke(context);
             }
 
             context.InputStream.Clear(result.PackageLength);
@@ -95,6 +93,7 @@ namespace NetworkSocket.Http
             var response = new HttpResponse(context.Session);
             var requestContext = new RequestContext(result.Request, response);
             this.OnHttpRequest(context, requestContext);
+            return TaskEx.CompletedTask;
         }
 
         /// <summary>

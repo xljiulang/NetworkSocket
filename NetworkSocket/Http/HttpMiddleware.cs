@@ -106,7 +106,7 @@ namespace NetworkSocket.Http
         /// </summary>       
         /// <param name="context">上下文</param>
         /// <param name="requestContext">请求上下文对象</param>
-        protected override async void OnHttpRequest(IContenxt context, RequestContext requestContext)
+        protected override void OnHttpRequest(IContenxt context, RequestContext requestContext)
         {
             var extenstion = Path.GetExtension(requestContext.Request.Path);
             if (string.IsNullOrWhiteSpace(extenstion) == false)
@@ -115,7 +115,7 @@ namespace NetworkSocket.Http
             }
             else
             {
-                await this.ProcessActionRequestAsync(requestContext.Request.Path, context, requestContext);
+                this.ProcessActionRequest(requestContext.Request.Path, context, requestContext);
             }
         }
 
@@ -153,7 +153,7 @@ namespace NetworkSocket.Http
         /// <param name="route">路由</param>
         /// <param name="context">上下文</param>
         /// <param name="requestContext">请求上下文</param>
-        private async Task ProcessActionRequestAsync(string route, IContenxt context, RequestContext requestContext)
+        private void ProcessActionRequest(string route, IContenxt context, RequestContext requestContext)
         {
             var action = this.routeTable.MatchHttpAction(requestContext.Request);
             if (action == null)
@@ -163,7 +163,7 @@ namespace NetworkSocket.Http
             }
             else
             {
-                await this.ExecuteHttpActionAsync(action, context, requestContext);
+                this.ExecuteHttpAction(action, context, requestContext);
             }
         }
 
@@ -173,7 +173,7 @@ namespace NetworkSocket.Http
         /// <param name="action">httpAction</param>
         /// <param name="context">上下文</param>
         /// <param name="requestContext">请求上下文</param>      
-        private async Task ExecuteHttpActionAsync(HttpAction action, IContenxt context, RequestContext requestContext)
+        private async void ExecuteHttpAction(HttpAction action, IContenxt context, RequestContext requestContext)
         {
             var actionContext = new ActionContext(requestContext, action, context);
             var controller = GetHttpController(actionContext);

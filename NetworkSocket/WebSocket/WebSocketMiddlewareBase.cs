@@ -34,15 +34,17 @@ namespace NetworkSocket.WebSocket
             var protocol = context.Session.Protocol;
             if (protocol == Protocol.WebSocket)
             {
-                return this.OnWebSocketFrameRequestAsync(context);
+                return this.OnWebSocketFrameRequest(context);
             }
 
             if (protocol == Protocol.None || protocol == Protocol.Http)
             {
-                return this.OnWebSocketHandshakeRequestAsync(context);
+                return this.OnWebSocketHandshakeRequest(context);
             }
-
-            return this.Next.Invoke(context);
+            else
+            {
+                return this.Next.Invoke(context);
+            }
         }
 
         /// <summary>
@@ -50,37 +52,37 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="context">上下文</param>
         /// <returns></returns>
-        private async Task OnWebSocketHandshakeRequestAsync(IContenxt context)
+        private Task OnWebSocketHandshakeRequest(IContenxt context)
         {
             try
             {
                 var result = HttpRequestParser.Parse(context);
                 if (result.IsHttp == false)
                 {
-                    await this.Next.Invoke(context);
-                    return;
+                    return this.Next.Invoke(context);
                 }
 
                 if (result.Request == null)
                 {
-                    return;
+                    return TaskEx.CompletedTask;
                 }
 
                 if (result.Request.IsWebsocketRequest() == false)
                 {
-                    await this.Next.Invoke(context);
-                    return;
+                    return this.Next.Invoke(context);
                 }
 
                 context.InputStream.Clear(result.PackageLength);
                 const string seckey = "Sec-WebSocket-Key";
                 var secValue = result.Request.Headers[seckey];
-                await this.ResponseHandshakeAsync(context, secValue);
+                this.ResponseHandshake(context, secValue);
+                return TaskEx.CompletedTask;
             }
             catch (Exception)
             {
                 context.InputStream.Clear();
                 context.Session.Close();
+                return TaskEx.CompletedTask;
             }
         }
 
@@ -89,8 +91,7 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="context">上下文</param>
         /// <param name="secValue">Sec-WebSocket-Key</param>
-        /// <returns></returns>
-        private Task ResponseHandshakeAsync(IContenxt context, string secValue)
+        private void ResponseHandshake(IContenxt context, string secValue)
         {
             var wrapper = new WebSocketSession(context.Session);
             var hansshakeResponse = new HandshakeResponse(secValue);
@@ -99,7 +100,6 @@ namespace NetworkSocket.WebSocket
             {
                 this.OnSetProtocolWrapper(context.Session, wrapper);
             }
-            return TaskEx.CompletedTask;
         }
 
         /// <summary>
@@ -117,7 +117,7 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="context">上下文</param>
         /// <returns></returns>
-        private Task OnWebSocketFrameRequestAsync(IContenxt context)
+        private Task OnWebSocketFrameRequest(IContenxt context)
         {
             var requests = this.GenerateWebSocketRequest(context);
             foreach (var request in requests)
