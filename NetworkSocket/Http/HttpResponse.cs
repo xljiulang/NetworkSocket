@@ -155,7 +155,7 @@ namespace NetworkSocket.Http
 
             header
                 .AppendFormat("Date: {0}", DateTime.Now.ToUniversalTime().ToString("r")).AppendLine()
-                .AppendLine("Server: NetworkSocket.HttpServer");
+                .AppendLine("Server: NetworkSocket");
 
             var keys = this.Headers.AllKeys.Where(item => IsIgnoreKey(item) == false).ToArray();
             foreach (var key in keys)

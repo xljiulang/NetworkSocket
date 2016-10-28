@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 
 namespace NetworkSocket.Http
@@ -20,6 +21,7 @@ namespace NetworkSocket.Http
         /// 获取或设置错误内容
         /// </summary>
         public string Errors { get; set; }
+
 
         /// <summary>
         /// Http错误结果
@@ -59,6 +61,7 @@ namespace NetworkSocket.Http
         public void ExecuteResult(HttpResponse response)
         {
             response.Status = this.Status;
+            response.StatusDescription = ((HttpStatusCode)this.Status).ToString();
             response.Write(this.Errors);
         }
     }

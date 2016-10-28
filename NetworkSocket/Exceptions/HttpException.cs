@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 
 namespace NetworkSocket.Exceptions
@@ -22,8 +23,18 @@ namespace NetworkSocket.Exceptions
         /// <param name="message">提示消息</param>
         public HttpException(int status, string message)
             : base(message)
-        {
+        { 
             this.Status = status;
+        }
+
+        /// <summary>
+        /// http异常
+        /// </summary>
+        /// <param name="status">状态码</param>
+        /// <param name="message">提示消息</param>
+        public HttpException(HttpStatusCode status, string message)
+            : this((int)status, message)
+        {
         }
     }
 }
