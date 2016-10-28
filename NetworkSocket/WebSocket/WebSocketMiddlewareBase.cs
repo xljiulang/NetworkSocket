@@ -120,13 +120,10 @@ namespace NetworkSocket.WebSocket
         private Task OnWebSocketFrameRequestAsync(IContenxt context)
         {
             var requests = this.GenerateWebSocketRequest(context);
-            ThreadPool.UnsafeQueueUserWorkItem((state) =>
+            foreach (var request in requests)
             {
-                foreach (var request in requests)
-                {
-                    this.OnWebSocketRequest(context, request);
-                }
-            }, null);
+                this.OnWebSocketRequest(context, request);
+            }
             return TaskEx.CompletedTask;
         }
 

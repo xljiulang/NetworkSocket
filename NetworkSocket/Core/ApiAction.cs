@@ -149,8 +149,15 @@ namespace NetworkSocket.Core
         /// <returns></returns>
         public Task<object> ExecuteAsync(object service, params object[] parameters)
         {
-            var result = this.Execute(service, parameters);
-            return TaskEx.CastFrom(result, this.ReturnType);
+            if (typeof(Task).IsAssignableFrom(this.ReturnType) == true)
+            {
+                var task = this.Execute(service, parameters);
+                return TaskEx.CastFrom(task, this.ReturnType);
+            }
+            else
+            {
+                return Task.Run<object>(() => this.Execute(service, parameters));
+            }
         }
 
         /// <summary>

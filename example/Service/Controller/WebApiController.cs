@@ -26,7 +26,7 @@ namespace Service.Controller
         [HttpPost]
         public async Task<object> Login(string account, string password)
         {
-            await TaskEx.CompletedTask;
+            await Task.Delay(3 * 1000);
             return new { account, password };
         }
     }

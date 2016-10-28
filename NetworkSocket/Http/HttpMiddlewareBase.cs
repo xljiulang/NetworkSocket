@@ -1,4 +1,5 @@
 ﻿using NetworkSocket.Exceptions;
+using NetworkSocket.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -91,12 +92,9 @@ namespace NetworkSocket.Http
                 context.Session.SetProtocolWrapper(Protocol.Http, null);
             }
 
-            ThreadPool.UnsafeQueueUserWorkItem((state) =>
-            {
-                var response = new HttpResponse(context.Session);
-                var requestContext = new RequestContext(result.Request, response);
-                this.OnHttpRequest(context, requestContext);
-            }, null);
+            var response = new HttpResponse(context.Session);
+            var requestContext = new RequestContext(result.Request, response);
+            this.OnHttpRequest(context, requestContext);
         }
 
         /// <summary>

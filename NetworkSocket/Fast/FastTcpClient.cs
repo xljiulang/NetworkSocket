@@ -97,13 +97,10 @@ namespace NetworkSocket.Fast
         protected sealed override void OnReceive(IStreamReader inputStream)
         {
             var packages = this.GenerateFastPackets(inputStream);
-            ThreadPool.UnsafeQueueUserWorkItem((state) =>
+            foreach (var package in packages)
             {
-                foreach (var package in packages)
-                {
-                    this.OnReceivePacket(package);
-                }
-            }, null);
+                this.OnReceivePacket(package);
+            }
         }
 
         /// <summary>
@@ -195,7 +192,7 @@ namespace NetworkSocket.Fast
             }
 
             return null;
-        }         
+        }
 
 
         /// <summary>

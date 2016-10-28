@@ -125,17 +125,17 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="context">上下文</param>
         /// <returns></returns>
-        private Task OnFastRequest(IContenxt context)
+        private async Task OnFastRequest(IContenxt context)
         {
             var fastPacket = default(FastPacket);
             if (FastPacket.Parse(context.InputStream, out fastPacket) == false)
             {
-                return this.Next.Invoke(context);
+                await this.Next.Invoke(context);
             }
 
             if (fastPacket == null)
             {
-                return TaskEx.CompletedTask;
+                return;
             }
 
             if (context.Session.Protocol == Protocol.None)
@@ -147,15 +147,11 @@ namespace NetworkSocket.Fast
             var fastSession = (FastSession)context.Session.Wrapper;
             var fastPackets = this.GenerateFastPackets(context, fastPacket);
 
-            ThreadPool.UnsafeQueueUserWorkItem((state) =>
+            foreach (var packet in fastPackets)
             {
-                foreach (var packet in fastPackets)
-                {
-                    var requestContext = new RequestContext(fastSession, packet, context.AllSessions);
-                    this.OnRecvFastPacket(requestContext);
-                }
-            }, null);
-            return TaskEx.CompletedTask;
+                var requestContext = new RequestContext(fastSession, packet, context.AllSessions);
+                this.OnRecvFastPacket(requestContext);
+            }
         }
 
         /// <summary>

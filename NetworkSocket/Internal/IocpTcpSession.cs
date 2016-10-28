@@ -88,7 +88,7 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="sender">事件源</param>
         /// <param name="arg">参数</param>
-        private void RecvCompleted(object sender, SocketAsyncEventArgs arg)
+        private async void RecvCompleted(object sender, SocketAsyncEventArgs arg)
         {
             if (arg.BytesTransferred == 0 || arg.SocketError != SocketError.Success)
             {
@@ -96,15 +96,12 @@ namespace NetworkSocket
                 return;
             }
 
-            lock (this.InputStream.SyncRoot)
-            {
-                this.InputStream.Stream.Seek(0, SeekOrigin.End);
-                this.InputStream.Stream.Write(arg.Buffer, arg.Offset, arg.BytesTransferred);
-                this.InputStream.Stream.Seek(0, SeekOrigin.Begin);
-                this.ReceiveHandler(this);
-            }
+            this.InputStream.Stream.Seek(0, SeekOrigin.End);
+            this.InputStream.Stream.Write(arg.Buffer, arg.Offset, arg.BytesTransferred);
+            this.InputStream.Stream.Seek(0, SeekOrigin.Begin);
 
             // 重新进行一次接收
+            await this.ReceiveHandler(this);
             this.TryReceiveAsync();
         }
 

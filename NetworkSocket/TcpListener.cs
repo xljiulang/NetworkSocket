@@ -325,12 +325,12 @@ namespace NetworkSocket
         /// 执行会话请求处理
         /// </summary>
         /// <param name="session">会话对象</param>
-        private void InvokeSession(TcpSessionBase session)
+        private async Task InvokeSession(TcpSessionBase session)
         {
             try
             {
                 var context = this.CreateContext(session);
-                this.middlewares.First.Value.Invoke(context);
+                await this.middlewares.First.Value.Invoke(context);
             }
             catch (Exception ex)
             {

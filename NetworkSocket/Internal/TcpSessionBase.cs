@@ -10,6 +10,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace NetworkSocket
 {
@@ -38,7 +39,7 @@ namespace NetworkSocket
         /// <summary>
         /// 处理和分析收到的数据的委托
         /// </summary>
-        public Action<TcpSessionBase> ReceiveHandler;
+        public Func<TcpSessionBase, Task> ReceiveHandler;
 
         /// <summary>
         /// 连接断开委托   

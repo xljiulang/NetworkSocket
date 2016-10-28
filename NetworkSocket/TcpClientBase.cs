@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Net.Security;
 using System.Security.Authentication;
+using NetworkSocket.Tasks;
 
 namespace NetworkSocket
 {
@@ -265,9 +266,10 @@ namespace NetworkSocket
         /// 接收处理
         /// </summary>
         /// <param name="session">会话</param>
-        private void ReceiveHandler(TcpSessionBase session)
+        private Task ReceiveHandler(TcpSessionBase session)
         {
             this.OnReceive(session.InputStream);
+            return TaskEx.CompletedTask;
         }
 
         /// <summary>
@@ -301,7 +303,6 @@ namespace NetworkSocket
         /// 当接收到远程端的数据时，将触发此方法   
         /// </summary>       
         /// <param name="inputStream">接收到的数据</param>
-        /// <returns></returns>
         protected abstract void OnReceive(IStreamReader inputStream);
 
 
