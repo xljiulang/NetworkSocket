@@ -65,9 +65,17 @@ namespace NetworkSocket.Http
         /// </summary>
         /// <param name="context">上下文</param>
         /// <returns></returns>
-        internal async void ExecuteResultAsyncNoWait(RequestContext context)
-        {
-            await this.ExecuteResultAsync(context);
+        internal async void TryExecuteResultAsyncNoWait(RequestContext context)
+        {           
+            try
+            {
+                await this.ExecuteResultAsync(context).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                var error = new ErrorResult { Status = 500, Errors = ex.Message };
+                error.ExecuteResult(context);
+            }
         }
 
         /// <summary>
@@ -236,7 +244,7 @@ namespace NetworkSocket.Http
         /// <param name="fileStream"></param>
         /// <returns></returns>
         private async Task ResponseFileByGzipAsync(HttpResponse response, FileStream fileStream)
-        {
+        { 
             var buffer = new byte[fileStream.Length];
             await fileStream.ReadAsync(buffer, 0, buffer.Length);
 

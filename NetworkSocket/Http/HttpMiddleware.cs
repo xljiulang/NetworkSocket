@@ -141,7 +141,7 @@ namespace NetworkSocket.Http
             else
             {
                 var result = new FileResult { FileName = file, ContentType = contenType };
-                result.ExecuteResultAsyncNoWait(requestContext);
+                result.TryExecuteResultAsyncNoWait(requestContext);
             }
         }
 
