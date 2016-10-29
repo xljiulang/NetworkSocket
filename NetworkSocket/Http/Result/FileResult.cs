@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace NetworkSocket.Http
 {
@@ -59,12 +60,39 @@ namespace NetworkSocket.Http
             }
         }
 
+        /// <summary>
+        /// 异步执行结果
+        /// </summary>
+        /// <param name="context">上下文</param>
+        /// <returns></returns>
+        internal async void ExecuteResultAsyncNoWait(RequestContext context)
+        {
+            await this.ExecuteResultAsync(context);
+        }
+
+        /// <summary>
+        /// 异步执行结果
+        /// </summary>
+        /// <param name="context">上下文</param>
+        /// <returns></returns>
+        public async Task ExecuteResultAsync(RequestContext context)
+        {
+            if (File.Exists(this.FileName) == true)
+            {
+                await this.ExecuteFileResultAsync(context);
+            }
+            else
+            {
+                var result = new ErrorResult { Status = 404, Errors = "找不到文件：" + this.FileName };
+                result.ExecuteResult(context.Response);
+            }
+        }
 
         /// <summary>
         /// 输出文件
         /// </summary>
         /// <param name="context">上下文</param>
-        public void ExecuteFileResult(RequestContext context)
+        private void ExecuteFileResult(RequestContext context)
         {
             if (string.IsNullOrEmpty(this.ContentType))
             {
@@ -83,6 +111,34 @@ namespace NetworkSocket.Http
                 else
                 {
                     this.ResponseFile(context.Response, fileStream);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 输出文件
+        /// </summary>
+        /// <param name="context">上下文</param>
+        /// <returns></returns>
+        private async Task ExecuteFileResultAsync(RequestContext context)
+        {
+            if (string.IsNullOrEmpty(this.ContentType))
+            {
+                this.ContentType = "application/ocelet-stream";
+            }
+            context.Response.Charset = null;
+            context.Response.ContentType = this.ContentType;
+            context.Response.ContentDisposition = this.ContentDisposition;
+
+            using (var fileStream = new FileStream(this.FileName, FileMode.Open, FileAccess.Read))
+            {
+                if (this.GZipSupported(context, fileStream) == true)
+                {
+                    await this.ResponseFileByGzipAsync(context.Response, fileStream);
+                }
+                else
+                {
+                    await this.ResponseFileAsync(context.Response, fileStream);
                 }
             }
         }
@@ -134,6 +190,30 @@ namespace NetworkSocket.Http
 
         /// <summary>
         /// 输出文件
+        /// </summary>
+        /// <param name="response"></param>
+        /// <param name="fileStream"></param>
+        /// <returns></returns>
+        private async Task ResponseFileAsync(HttpResponse response, FileStream fileStream)
+        {
+            const int size = 8 * 1024;
+            var state = response.WriteHeader((int)fileStream.Length);
+            var bytes = new byte[size];
+
+            while (state == true)
+            {
+                var length = await fileStream.ReadAsync(bytes, 0, size);
+                if (length == 0)
+                {
+                    break;
+                }
+                var content = new ArraySegment<byte>(bytes, 0, length);
+                state = response.WriteContent(content);
+            }
+        }
+
+        /// <summary>
+        /// 输出文件
         /// Gzip压缩
         /// </summary>
         /// <param name="response"></param>
@@ -142,6 +222,23 @@ namespace NetworkSocket.Http
         {
             var buffer = new byte[fileStream.Length];
             fileStream.Read(buffer, 0, buffer.Length);
+
+            var zipBuffer = GZip.Compress(buffer);
+            response.WriteHeader(zipBuffer.Length, true);
+            response.WriteContent(zipBuffer);
+        }
+
+        /// <summary>
+        /// 输出文件
+        /// Gzip压缩
+        /// </summary>
+        /// <param name="response"></param>
+        /// <param name="fileStream"></param>
+        /// <returns></returns>
+        private async Task ResponseFileByGzipAsync(HttpResponse response, FileStream fileStream)
+        {
+            var buffer = new byte[fileStream.Length];
+            await fileStream.ReadAsync(buffer, 0, buffer.Length);
 
             var zipBuffer = GZip.Compress(buffer);
             response.WriteHeader(zipBuffer.Length, true);

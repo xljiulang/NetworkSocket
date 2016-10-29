@@ -24,6 +24,7 @@ namespace Service.Controller
         }
 
         [HttpPost]
+        [Route("/{controller}/{action}.html")]
         public async Task<object> Login(string account, string password)
         {
             await Task.Delay(3 * 1000);

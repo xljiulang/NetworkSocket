@@ -108,14 +108,18 @@ namespace NetworkSocket.Http
         /// <param name="requestContext">请求上下文对象</param>
         protected override void OnHttpRequest(IContenxt context, RequestContext requestContext)
         {
-            var extenstion = Path.GetExtension(requestContext.Request.Path);
-            if (string.IsNullOrWhiteSpace(extenstion) == false)
+            var action = this.routeTable.MatchHttpAction(requestContext.Request);
+            if (action != null)
             {
-                this.ProcessStaticFileRequest(extenstion, requestContext);
+                this.ExecuteHttpAction(action, context, requestContext);
             }
             else
             {
-                this.ProcessActionRequest(requestContext.Request.Path, context, requestContext);
+                var extenstion = Path.GetExtension(requestContext.Request.Path);
+                if (string.IsNullOrWhiteSpace(extenstion) == false)
+                {
+                    this.ProcessStaticFileRequest(extenstion, requestContext);
+                }
             }
         }
 
@@ -134,36 +138,10 @@ namespace NetworkSocket.Http
                 var ex = new HttpException(403, string.Format("未配置{0}格式的MIME ..", extension));
                 this.ProcessHttpException(ex, requestContext);
             }
-            else if (File.Exists(file) == false)
-            {
-                var ex = new HttpException(404, string.Format("找不到文件{0} ..", file));
-                this.ProcessHttpException(ex, requestContext);
-            }
             else
             {
                 var result = new FileResult { FileName = file, ContentType = contenType };
-                result.ExecuteFileResult(requestContext);
-            }
-        }
-
-
-        /// <summary>
-        /// 处理一般的请求
-        /// </summary>
-        /// <param name="route">路由</param>
-        /// <param name="context">上下文</param>
-        /// <param name="requestContext">请求上下文</param>
-        private void ProcessActionRequest(string route, IContenxt context, RequestContext requestContext)
-        {
-            var action = this.routeTable.MatchHttpAction(requestContext.Request);
-            if (action == null)
-            {
-                var ex = new HttpException(404, "找不到路径" + route);
-                this.ProcessHttpException(ex, requestContext);
-            }
-            else
-            {
-                this.ExecuteHttpAction(action, context, requestContext);
+                result.ExecuteResultAsyncNoWait(requestContext);
             }
         }
 
