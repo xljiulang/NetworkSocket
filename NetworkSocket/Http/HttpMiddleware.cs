@@ -116,7 +116,12 @@ namespace NetworkSocket.Http
             else
             {
                 var extenstion = Path.GetExtension(requestContext.Request.Path);
-                if (string.IsNullOrWhiteSpace(extenstion) == false)
+                if (string.IsNullOrWhiteSpace(extenstion) == true)
+                {
+                    var exception = new HttpException(404, "请求的页面不存在");
+                    this.OnException(context.Session, exception);
+                }
+                else
                 {
                     this.ProcessStaticFileRequest(extenstion, requestContext);
                 }
@@ -135,8 +140,8 @@ namespace NetworkSocket.Http
 
             if (string.IsNullOrWhiteSpace(contenType) == true)
             {
-                var ex = new HttpException(403, string.Format("未配置{0}格式的MIME ..", extension));
-                this.ProcessHttpException(ex, requestContext);
+                var exception = new HttpException(403, string.Format("未配置{0}格式的MIME ..", extension));
+                this.OnException(((IWrapper)requestContext.Response).UnWrap(), exception);
             }
             else
             {
@@ -154,12 +159,22 @@ namespace NetworkSocket.Http
         private async void ExecuteHttpAction(HttpAction action, IContenxt context, RequestContext requestContext)
         {
             var actionContext = new ActionContext(requestContext, action, context);
-            var controller = GetHttpController(actionContext);
+            var controller = this.GetHttpController(actionContext);
 
             if (controller != null)
             {
-                await controller.ExecuteAsync(actionContext);
-                this.DependencyResolver.TerminateService(controller);
+                try
+                {
+                    await controller.ExecuteAsync(actionContext);
+                }
+                catch (Exception ex)
+                {
+                    this.OnException(context.Session, ex);
+                }
+                finally
+                {
+                    this.DependencyResolver.TerminateService(controller);
+                }
             }
         }
 
@@ -179,45 +194,9 @@ namespace NetworkSocket.Http
             }
             catch (Exception ex)
             {
-                var httpException = new HttpException(500, ex.Message);
-                this.ProcessHttpException(httpException, actionContext);
+                this.OnException(actionContext.Session, ex);
                 return null;
             }
-        }
-
-        /// <summary>
-        /// 异常时
-        /// </summary>
-        /// <param name="session">产生异常的会话</param>
-        /// <param name="exception">异常</param>
-        protected sealed override void OnException(ISession session, Exception exception)
-        {
-            var response = new HttpResponse(session);
-            var requestContext = new RequestContext(null, response);
-            var exceptionConext = new ExceptionContext(requestContext, exception);
-            this.ExecGlobalExceptionFilters(exceptionConext);
-
-            if (exceptionConext.Result != null)
-            {
-                exceptionConext.Result.ExecuteResult(requestContext);
-            }
-            else
-            {
-                base.OnException(session, exception);
-            }
-        }
-
-        /// <summary>
-        /// 处理Http异常
-        /// </summary>
-        /// <param name="ex">Http异常</param>
-        /// <param name="context">请求上下文</param>
-        private void ProcessHttpException(HttpException ex, RequestContext context)
-        {
-            var exceptionContent = new ExceptionContext(context, ex);
-            this.ExecGlobalExceptionFilters(exceptionContent);
-            var result = exceptionContent.Result ?? new ErrorResult(ex);
-            result.ExecuteResult(context);
         }
 
         /// <summary>

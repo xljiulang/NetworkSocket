@@ -54,13 +54,12 @@ namespace NetworkSocket.Http
             catch (HttpException ex)
             {
                 this.OnException(context.Session, ex);
-                return false;
             }
             catch (Exception ex)
             {
                 this.OnException(context.Session, new HttpException(500, ex.Message));
-                return false;
             }
+            return false;
         }
 
         /// <summary>
