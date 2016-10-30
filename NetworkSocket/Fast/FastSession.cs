@@ -100,7 +100,7 @@ namespace NetworkSocket.Fast
             var id = this.Middleware.PacketIdProvider.NewId();
             var packet = new FastPacket(api, id, false);
             packet.SetBodyParameters(this.Middleware.Serializer, parameters);
-            this.session.Send(packet.ToByteRange());
+            this.session.Send(packet.ToArraySegment());
         }
 
         /// <summary>

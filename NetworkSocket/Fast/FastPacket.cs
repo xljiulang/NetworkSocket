@@ -130,10 +130,10 @@ namespace NetworkSocket.Fast
 
 
         /// <summary>
-        /// 转换为ByteRange
+        /// 转换为ArraySegment
         /// </summary>
         /// <returns></returns>
-        public ArraySegment<byte> ToByteRange()
+        public ArraySegment<byte> ToArraySegment()
         {
             var apiNameBytes = Encoding.UTF8.GetBytes(this.ApiName);
             var headLength = apiNameBytes.Length + 16;

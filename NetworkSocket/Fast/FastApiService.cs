@@ -78,7 +78,7 @@ namespace NetworkSocket.Fast
         private void ProcessExecutingException(ActionContext actionContext, IEnumerable<IFilter> filters, Exception exception)
         {
             var exceptionContext = new ExceptionContext(actionContext, new ApiExecuteException(exception));
-            Common.SendRemoteException(actionContext.Session.UnWrap(), exceptionContext);
+            Common.SendRemoteException(actionContext.Session, exceptionContext);
             this.ExecAllExceptionFilters(filters, exceptionContext);
         }
 
@@ -99,7 +99,7 @@ namespace NetworkSocket.Fast
             if (actionContext.Result != null)
             {
                 var exceptionContext = new ExceptionContext(actionContext, actionContext.Result);
-                Common.SendRemoteException(actionContext.Session.UnWrap(), exceptionContext);
+                Common.SendRemoteException(actionContext.Session, exceptionContext);
                 return;
             }
 
@@ -111,18 +111,18 @@ namespace NetworkSocket.Fast
                 if (actionContext.Result != null)
                 {
                     var exceptionContext = new ExceptionContext(actionContext, actionContext.Result);
-                    Common.SendRemoteException(actionContext.Session.UnWrap(), exceptionContext);
+                    Common.SendRemoteException(actionContext.Session, exceptionContext);
                 }
                 else if (actionContext.Action.IsVoidReturn == false && actionContext.Session.IsConnected)  // 返回数据
                 {
                     actionContext.Packet.Body = this.Middleware.Serializer.Serialize(result);
-                    actionContext.Session.UnWrap().Send(actionContext.Packet.ToByteRange());
+                    actionContext.Session.UnWrap().Send(actionContext.Packet.ToArraySegment());
                 }
             }
             catch (Exception ex)
             {
                 var exceptionContext = new ExceptionContext(actionContext, ex);
-                Common.SendRemoteException(actionContext.Session.UnWrap(), exceptionContext);
+                Common.SendRemoteException(actionContext.Session, exceptionContext);
             }
             finally
             {

@@ -206,42 +206,64 @@ namespace NetworkSocket.Fast
             if (requestContext.Packet.IsFromClient == false)
             {
                 Common.SetApiActionTaskResult(requestContext, this.TaskSetterTable, this.Serializer);
-                return;
             }
+            else
+            {
+                await this.TryExecuteRequestAsync(requestContext);
+            }
+        }
 
-            var action = this.GetApiAction(requestContext);
+        /// <summary>
+        /// 执行请求
+        /// </summary>
+        /// <param name="requestContext">上下文</param>
+        /// <returns></returns>
+        private async Task<bool> TryExecuteRequestAsync(RequestContext requestContext)
+        {
+            var action = this.TryGetApiAction(requestContext);
             if (action == null)
             {
-                return;
+                return false;
             }
 
             var actionContext = new ActionContext(requestContext, action);
-            var fastApiService = this.GetFastApiService(actionContext);
+            var fastApiService = this.TryGetFastApiService(actionContext);
             if (fastApiService == null)
             {
-                return;
+                return false;
             }
 
-            // 执行Api行为           
-            await fastApiService.ExecuteAsync(actionContext);
-            this.DependencyResolver.TerminateService(fastApiService);
+            try
+            {
+                await fastApiService.ExecuteAsync(actionContext);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                var context = new ExceptionContext(actionContext, ex);
+                this.OnException(requestContext.Session, context);
+                return false;
+            }
+            finally
+            {
+                this.DependencyResolver.TerminateService(fastApiService);
+            }
         }
+
 
         /// <summary>
         /// 获取Api行为
         /// </summary>
         /// <param name="requestContext">请求上下文</param>
         /// <returns></returns>
-        private ApiAction GetApiAction(RequestContext requestContext)
+        private ApiAction TryGetApiAction(RequestContext requestContext)
         {
             var action = this.apiActionList.TryGet(requestContext.Packet.ApiName);
             if (action == null)
             {
                 var exception = new ApiNotExistException(requestContext.Packet.ApiName);
                 var exceptionContext = new ExceptionContext(requestContext, exception);
-
-                Common.SendRemoteException(requestContext.Session.UnWrap(), exceptionContext);
-                this.ExecGlobalExceptionFilters(exceptionContext);
+                this.OnException(requestContext.Session, exceptionContext);
             }
             return action;
         }
@@ -251,7 +273,7 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="actionContext">Api行为上下文</param>
         /// <returns></returns>
-        private IFastApiService GetFastApiService(ActionContext actionContext)
+        private IFastApiService TryGetFastApiService(ActionContext actionContext)
         {
             try
             {
@@ -263,34 +285,19 @@ namespace NetworkSocket.Fast
             {
                 var exception = new ResolveException(actionContext.Action.DeclaringService, ex);
                 var exceptionContext = new ExceptionContext(actionContext, exception);
-
-                Common.SendRemoteException(actionContext.Session.UnWrap(), exceptionContext);
-                this.ExecGlobalExceptionFilters(exceptionContext);
+                this.OnException(actionContext.Session, exceptionContext);
                 return null;
             }
         }
 
         /// <summary>
-        /// 执行异常过滤器
-        /// </summary>         
-        /// <param name="exceptionContext">上下文</param>       
-        private void ExecGlobalExceptionFilters(ExceptionContext exceptionContext)
+        /// 异常时
+        /// </summary>
+        /// <param name="sessionWrapper">产生异常的会话</param>
+        /// <param name="context">上下文</param>
+        protected virtual void OnException(IWrapper sessionWrapper, ExceptionContext context)
         {
-            if (this.GlobalFilters.Count == 0)
-            {
-                return;
-            }
-
-            foreach (IFilter filter in this.GlobalFilters)
-            {
-                filter.OnException(exceptionContext);
-                if (exceptionContext.ExceptionHandled == true) break;
-            }
-
-            if (exceptionContext.ExceptionHandled == false)
-            {
-                throw exceptionContext.Exception;
-            }
+            Common.SendRemoteException(sessionWrapper, context);
         }
     }
 }

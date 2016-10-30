@@ -85,17 +85,17 @@ namespace NetworkSocket.Fast
         /// <summary>       
         /// 发送异常信息到远程端
         /// </summary>
-        /// <param name="session">会话对象</param>       
+        /// <param name="sessionWrapper">会话对象</param>       
         /// <param name="exceptionContext">上下文</param>  
         /// <returns></returns>
-        public static bool SendRemoteException(ISession session, ExceptionContext exceptionContext)
+        public static bool SendRemoteException(IWrapper sessionWrapper, ExceptionContext exceptionContext)
         {
             try
             {
                 var packet = exceptionContext.Packet;
                 packet.IsException = true;
                 packet.Body = Encoding.UTF8.GetBytes(exceptionContext.Exception.Message);
-                session.Send(packet.ToByteRange());
+                sessionWrapper.UnWrap().Send(packet.ToArraySegment());
                 return true;
             }
             catch (Exception)
@@ -119,7 +119,7 @@ namespace NetworkSocket.Fast
         public static Task<T> InvokeApi<T>(ISession session, TaskSetterTable<long> taskSetActionTable, ISerializer serializer, FastPacket packet, TimeSpan timeout)
         {
             var task = taskSetActionTable.Create<T>(packet.Id, timeout);
-            session.Send(packet.ToByteRange());
+            session.Send(packet.ToArraySegment());
             return task;
         }
 

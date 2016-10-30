@@ -168,7 +168,7 @@ namespace NetworkSocket.Fast
 
             var exception = new ApiNotExistException(requestContext.Packet.ApiName);
             var exceptionContext = new ExceptionContext(requestContext, exception);
-            Common.SendRemoteException(this.UnWrap(), exceptionContext);
+            Common.SendRemoteException(this, exceptionContext);
 
             var exceptionHandled = false;
             this.OnException(requestContext.Packet, exception, out exceptionHandled);
@@ -196,7 +196,7 @@ namespace NetworkSocket.Fast
                 if (action.IsVoidReturn == false && this.IsConnected == true)
                 {
                     actionContext.Packet.Body = this.Serializer.Serialize(result);
-                    this.Send(actionContext.Packet.ToByteRange());
+                    this.Send(actionContext.Packet.ToArraySegment());
                 }
             }
             catch (Exception ex)
@@ -214,7 +214,7 @@ namespace NetworkSocket.Fast
         private void ProcessExecutingException(ActionContext actionContext, Exception exception)
         {
             var exceptionContext = new ExceptionContext(actionContext, new ApiExecuteException(exception));
-            Common.SendRemoteException(this.UnWrap(), exceptionContext);
+            Common.SendRemoteException(this, exceptionContext);
 
             var exceptionHandled = false;
             this.OnException(actionContext.Packet, exception, out exceptionHandled);
@@ -246,7 +246,7 @@ namespace NetworkSocket.Fast
         {
             var packet = new FastPacket(api, this.packetIdProvider.NewId(), true);
             packet.SetBodyParameters(this.Serializer, parameters);
-            this.Send(packet.ToByteRange());
+            this.Send(packet.ToArraySegment());
         }
 
         /// <summary>
