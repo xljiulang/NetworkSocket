@@ -209,7 +209,7 @@ namespace NetworkSocket.Fast
             }
             else
             {
-                await this.TryExecuteRequestAsync(requestContext);
+                await this.TryExecuteRequestAsync(requestContext).ConfigureAwait(false);
             }
         }
 

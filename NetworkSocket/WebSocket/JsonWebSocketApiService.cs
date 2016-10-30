@@ -77,7 +77,7 @@ namespace NetworkSocket.WebSocket
         private void ProcessExecutingException(ActionContext actionContext, IEnumerable<IFilter> actionfilters, Exception exception)
         {
             var exceptionContext = new ExceptionContext(actionContext, new ApiExecuteException(exception));
-            this.Server.SendRemoteException(exceptionContext);
+            this.Server.SendRemoteException(exceptionContext, exceptionContext.Exception);
             this.ExecAllExceptionFilters(actionfilters, exceptionContext);
         }
 
@@ -99,7 +99,7 @@ namespace NetworkSocket.WebSocket
             if (actionContext.Result != null)
             {
                 var exceptionContext = new ExceptionContext(actionContext, actionContext.Result);
-                this.Server.SendRemoteException(exceptionContext);
+                this.Server.SendRemoteException(actionContext, actionContext.Result);
                 return;
             }
 
@@ -110,8 +110,7 @@ namespace NetworkSocket.WebSocket
 
                 if (actionContext.Result != null)
                 {
-                    var exceptionContext = new ExceptionContext(actionContext, actionContext.Result);
-                    this.Server.SendRemoteException(exceptionContext);
+                    this.Server.SendRemoteException(actionContext, actionContext.Result);
                 }
                 else if (actionContext.Action.IsVoidReturn == false && actionContext.Session.IsConnected)  // 返回数据
                 {

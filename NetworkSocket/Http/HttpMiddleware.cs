@@ -165,7 +165,7 @@ namespace NetworkSocket.Http
             {
                 try
                 {
-                    await controller.ExecuteAsync(actionContext);
+                    await controller.ExecuteAsync(actionContext).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -196,29 +196,6 @@ namespace NetworkSocket.Http
             {
                 this.OnException(actionContext.Session, ex);
                 return null;
-            }
-        }
-
-        /// <summary>
-        /// 执行全局异常过滤器
-        /// </summary>         
-        /// <param name="exceptionContext">上下文</param>       
-        private void ExecGlobalExceptionFilters(ExceptionContext exceptionContext)
-        {
-            if (this.GlobalFilters.Count == 0)
-            {
-                return;
-            }
-
-            foreach (IFilter filter in this.GlobalFilters)
-            {
-                filter.OnException(exceptionContext);
-                if (exceptionContext.ExceptionHandled == true) break;
-            }
-
-            if (exceptionContext.ExceptionHandled == false)
-            {
-                throw exceptionContext.Exception;
             }
         }
     }
