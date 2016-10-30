@@ -28,7 +28,7 @@ namespace Service.ApiService
             {
                 return this
                     .CurrentContext
-                    .FastSessions                    
+                    .FastSessions
                     .Where(item => item != this.CurrentContext.Session);
             }
         }
@@ -65,6 +65,8 @@ namespace Service.ApiService
             {
                 session.InvokeApi("LoginNotify", user.Account);
             }
+
+            CurrentContext.Session.Tag.Set("Logined", true);
             return new LoginResult { State = true };
         }
 
@@ -76,7 +78,8 @@ namespace Service.ApiService
         /// <param name="z"></param>
         /// <returns></returns>
         [Api("GetSum")]
-        [FastLogFilter("求合操作")]        
+        [FastLogFilter("求合操作")]
+        [FastLogin]
         public int GetSun(int x, int y, int z)
         {
             return x + y + z;

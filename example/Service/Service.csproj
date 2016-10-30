@@ -53,6 +53,7 @@
     <Compile Include="ApiService\WebSocketChatService.cs" />
     <Compile Include="Controller\WebApiController.cs" />
     <Compile Include="Filters\FastLogFilter.cs" />
+    <Compile Include="Filters\FastLoginAttribute.cs" />
     <Compile Include="GlobalFilters\FastGlobalFilter.cs" />
     <Compile Include="GlobalFilters\WebSockeGlobalFilter.cs" />
     <Compile Include="GlobalFilters\HttpGlobalFilter.cs" />
