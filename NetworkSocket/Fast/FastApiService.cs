@@ -83,31 +83,41 @@ namespace NetworkSocket.Fast
         }
 
         /// <summary>
-        /// 调用自身实现的Api行为
-        /// 将返回值发送给客户端        
+        /// 调用自身实现的Api行为            
         /// </summary>       
         /// <param name="actionContext">上下文</param>       
         /// <param name="filters">过滤器</param>
-        /// <returns>当正常执行输出</returns>
+        /// <returns></returns>
         private async Task ExecuteActionAsync(ActionContext actionContext, IEnumerable<IFilter> filters)
         {
-            // 参数准备
-            var parameters = Common.GetAndUpdateParameterValues(this.Middleware.Serializer, actionContext);
-
-            // Api执行前
+            Common.GetAndUpdateParameterValues(this.Middleware.Serializer, actionContext);
             this.ExecFiltersBeforeAction(filters, actionContext);
-            if (actionContext.Result != null)
+
+            if (actionContext.Result == null)
+            {
+                await this.ExecutingActionAsync(actionContext, filters);
+            }
+            else
             {
                 var exceptionContext = new ExceptionContext(actionContext, actionContext.Result);
                 Common.SendRemoteException(actionContext.Session, exceptionContext);
-                return;
             }
+        }
 
+        /// <summary>
+        /// 异步执行Api
+        /// </summary>
+        /// <param name="actionContext">上下文</param>
+        /// <param name="filters">过滤器</param>
+        /// <returns></returns>
+        private async Task ExecutingActionAsync(ActionContext actionContext, IEnumerable<IFilter> filters)
+        {
             try
             {
-                var result = await actionContext.Action.ExecuteAsync(this, parameters);
-                this.ExecFiltersAfterAction(filters, actionContext);
+                var paramters = actionContext.Action.ParameterValues;
+                var result = await actionContext.Action.ExecuteAsync(this, paramters);
 
+                this.ExecFiltersAfterAction(filters, actionContext);
                 if (actionContext.Result != null)
                 {
                     var exceptionContext = new ExceptionContext(actionContext, actionContext.Result);
@@ -118,11 +128,6 @@ namespace NetworkSocket.Fast
                     actionContext.Packet.Body = this.Middleware.Serializer.Serialize(result);
                     actionContext.Session.UnWrap().Send(actionContext.Packet.ToArraySegment());
                 }
-            }
-            catch (Exception ex)
-            {
-                var exceptionContext = new ExceptionContext(actionContext, ex);
-                Common.SendRemoteException(actionContext.Session, exceptionContext);
             }
             finally
             {

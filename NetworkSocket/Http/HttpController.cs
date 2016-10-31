@@ -113,21 +113,31 @@ namespace NetworkSocket.Http
         /// <returns>如果输出Api的返回结果就返回true</returns>
         private async Task ExecuteActionAsync(ActionContext actionContext, IEnumerable<IFilter> filters)
         {
-            // Api参数准备
-            var parameters = this.GetAndUpdateParameterValues(actionContext);
-
-            // Action执行前
+            this.UpdateParameterValues(actionContext);
             this.ExecFiltersBeforeAction(filters, actionContext);
+
             if (actionContext.Result != null)
             {
                 actionContext.Result.ExecuteResult(actionContext);
-                return;
             }
+            else
+            {
+                await this.ExecutingActionAsync(actionContext, filters);
+            }
+        }
 
+        /// <summary>
+        /// 异步执行Api
+        /// </summary>
+        /// <param name="actionContext">上下文</param>
+        /// <param name="filters">过滤器</param>
+        /// <returns></returns>
+        private async Task ExecutingActionAsync(ActionContext actionContext, IEnumerable<IFilter> filters)
+        {
             try
             {
+                var parameters = actionContext.Action.ParameterValues;
                 var result = await actionContext.Action.ExecuteAsync(this, parameters);
-                var actionResult = result as ActionResult;
 
                 this.ExecFiltersAfterAction(filters, actionContext);
                 if (actionContext.Result != null)
@@ -136,6 +146,7 @@ namespace NetworkSocket.Http
                 }
                 else
                 {
+                    var actionResult = result as ActionResult;
                     if (actionResult == null)
                     {
                         this.Restful(result).ExecuteResult(actionContext);
@@ -145,10 +156,6 @@ namespace NetworkSocket.Http
                         actionResult.ExecuteResult(actionContext);
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                this.ProcessExecutingException(actionContext, filters, ex);
             }
             finally
             {
@@ -161,8 +168,7 @@ namespace NetworkSocket.Http
         /// 获取和更新Http Api的参数值
         /// </summary>
         /// <param name="actionContext"></param>
-        /// <returns></returns>
-        private object[] GetAndUpdateParameterValues(ActionContext actionContext)
+        private void UpdateParameterValues(ActionContext actionContext)
         {
             var action = actionContext.Action;
             action.ParameterValues = new object[action.ParameterInfos.Length];
@@ -173,7 +179,6 @@ namespace NetworkSocket.Http
                 var pValue = this.Middleware.ModelBinder.BindModel(actionContext.Request, paramter);
                 action.ParameterValues[i] = pValue;
             }
-            return action.ParameterValues;
         }
 
         /// <summary>

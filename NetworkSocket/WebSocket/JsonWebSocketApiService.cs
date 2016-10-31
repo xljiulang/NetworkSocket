@@ -83,31 +83,40 @@ namespace NetworkSocket.WebSocket
 
         /// <summary>
         /// 调用自身实现的Api行为
-        /// 将返回值发送给客户端        
         /// </summary>       
         /// <param name="actionContext">上下文</param>       
         /// <param name="filters">过滤器</param>
-        /// <exception cref="ArgumentException"></exception>
-        /// <returns>当正常执行输出Api的结果时返回true</returns>
+        /// <returns></returns>
         private async Task ExecuteActionAsync(ActionContext actionContext, IEnumerable<IFilter> filters)
         {
-            // 参数准备
-            var parameters = this.GetAndUpdateParameterValues(actionContext);
-
-            // Api执行前
+            this.UpdateParameterValues(actionContext);
             this.ExecFiltersBeforeAction(filters, actionContext);
+
             if (actionContext.Result != null)
             {
                 var exceptionContext = new ExceptionContext(actionContext, actionContext.Result);
                 this.Server.SendRemoteException(actionContext, actionContext.Result);
-                return;
             }
+            else
+            {
+                await this.ExecutingActionAsync(actionContext, filters);
+            }
+        }
 
+        /// <summary>
+        /// 异步执行Api
+        /// </summary>
+        /// <param name="actionContext">上下文</param>
+        /// <param name="filters">过滤器</param>
+        /// <returns></returns>
+        private async Task ExecutingActionAsync(ActionContext actionContext, IEnumerable<IFilter> filters)
+        {
             try
             {
+                var parameters = actionContext.Action.ParameterValues;
                 var result = await actionContext.Action.ExecuteAsync(this, parameters);
-                this.ExecFiltersAfterAction(filters, actionContext);
 
+                this.ExecFiltersAfterAction(filters, actionContext);
                 if (actionContext.Result != null)
                 {
                     this.Server.SendRemoteException(actionContext, actionContext.Result);
@@ -118,10 +127,6 @@ namespace NetworkSocket.WebSocket
                     var packetJson = this.Server.JsonSerializer.Serialize(actionContext.Packet);
                     actionContext.Session.UnWrap().SendText(packetJson);
                 }
-            }
-            catch (Exception ex)
-            {
-                this.ProcessExecutingException(actionContext, filters, ex);
             }
             finally
             {
@@ -134,8 +139,7 @@ namespace NetworkSocket.WebSocket
         /// </summary> 
         /// <param name="context">上下文</param>        
         /// <exception cref="ArgumentException"></exception>    
-        /// <returns></returns>
-        private object[] GetAndUpdateParameterValues(ActionContext context)
+        private void UpdateParameterValues(ActionContext context)
         {
             var body = context.Packet.body as IList;
             if (body == null)
@@ -158,7 +162,6 @@ namespace NetworkSocket.WebSocket
                 parameters[i] = serializer.Convert(bodyParameter, parameterType);
             }
             context.Action.ParameterValues = parameters;
-            return parameters;
         }
 
         /// <summary>
