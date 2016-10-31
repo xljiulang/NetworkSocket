@@ -156,7 +156,7 @@ namespace NetworkSocket.Http
             {
                 if (stream[i] == HttpRequestParser.Space)
                 {
-                    return i - 1;
+                    return i;
                 }
             }
             return maxLength;
