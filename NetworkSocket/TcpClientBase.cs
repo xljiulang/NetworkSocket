@@ -139,7 +139,7 @@ namespace NetworkSocket
         /// <param name="remoteEndPoint">远程ip和端口</param> 
         /// <exception cref="AuthenticationException"></exception>
         /// <returns></returns>
-        public Task<SocketError> ConnectAsync(EndPoint remoteEndPoint)
+        public virtual Task<SocketError> ConnectAsync(EndPoint remoteEndPoint)
         {
             if (remoteEndPoint == null)
             {
@@ -230,7 +230,7 @@ namespace NetworkSocket
         /// <param name="remoteEndPoint">远程端</param>
         /// <exception cref="ArgumentNullException"></exception>
         /// <returns></returns>
-        public SocketError Connect(EndPoint remoteEndPoint)
+        public virtual SocketError Connect(EndPoint remoteEndPoint)
         {
             if (remoteEndPoint == null)
             {
