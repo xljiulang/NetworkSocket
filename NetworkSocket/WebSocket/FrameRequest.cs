@@ -52,9 +52,10 @@ namespace NetworkSocket.WebSocket
         /// 返回请求数据包
         /// </summary>
         /// <param name="stream">所有收到的数据</param>  
+        /// <param name="requiredMask">是否要求必须Mask</param>
         /// <exception cref="NotSupportedException"></exception>
         /// <returns></returns>
-        public unsafe static FrameRequest Parse(IStreamReader stream)
+        public unsafe static FrameRequest Parse(IStreamReader stream, bool requiredMask = true)
         {
             if (stream.Length < 2)
             {
@@ -74,7 +75,12 @@ namespace NetworkSocket.WebSocket
             ByteBits byte1 = stream[1];
             var mask = byte1[0];
 
-            if (mask == false || Enum.IsDefined(typeof(FrameCodes), frameCode) == false || rsv != 0)
+            if (requiredMask && mask == false)
+            {
+                throw new NotSupportedException("mask is required");
+            }
+
+            if (Enum.IsDefined(typeof(FrameCodes), frameCode) == false || rsv != 0)
             {
                 throw new NotSupportedException();
             }
@@ -94,17 +100,18 @@ namespace NetworkSocket.WebSocket
                 contentLength = (int)stream.ReadUInt16();
             }
 
-            var packetLength = 6 + contentSize + contentLength;
+            var maskSize = mask ? 4 : 0;
+            var packetLength = 2 + maskSize + contentSize + contentLength;
             if (stream.Length < packetLength)
             {
                 return null;
             }
 
-            var maskingKey = stream.ReadArray(4);
+            var maskingKey = mask ? stream.ReadArray(4) : null;
             var content = stream.ReadArray(contentLength);
             stream.Clear(packetLength);
 
-            if (contentLength > 0)
+            if (mask && contentLength > 0)
             {
                 fixed (byte* pcontent = &content[0], pmask = &maskingKey[0])
                 {

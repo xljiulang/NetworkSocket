@@ -206,12 +206,14 @@
     <Compile Include="Validation\ValidContext.cs" />
     <Compile Include="Validation\ValidResult.cs" />
     <Compile Include="Validation\ValidRuleBase.cs" />
+    <Compile Include="WebSocket\CloseResponse.cs" />
     <Compile Include="WebSocket\Context\ActionContext.cs" />
     <Compile Include="WebSocket\Context\ExceptionContext.cs" />
     <Compile Include="WebSocket\Context\RequestContext.cs" />
     <Compile Include="WebSocket\FrameCodes.cs" />
     <Compile Include="WebSocket\FrameRequest.cs" />
     <Compile Include="WebSocket\FrameResponse.cs" />
+    <Compile Include="WebSocket\HandshakeRequest.cs" />
     <Compile Include="WebSocket\HandshakeResponse.cs" />
     <Compile Include="WebSocket\IJsonWebSocketApiService.cs" />
     <Compile Include="WebSocket\Internal\WebSocketGlobalFilters.cs" />
@@ -221,6 +223,7 @@
     <Compile Include="WebSocket\JsonWebSocketMiddleware.cs" />
     <Compile Include="WebSocket\JsonWebSocketSession.cs" />
     <Compile Include="WebSocket\StatusCodes.cs" />
+    <Compile Include="WebSocket\WebSocketClient.cs" />
     <Compile Include="WebSocket\WebSocketMiddlewareBase.cs" />
     <Compile Include="WebSocket\WebsocketResponse.cs" />
     <Compile Include="WebSocket\WebSocketSession.cs" />

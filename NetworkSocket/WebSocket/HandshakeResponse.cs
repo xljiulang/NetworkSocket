@@ -13,6 +13,11 @@ namespace NetworkSocket.WebSocket
     public class HandshakeResponse : WebsocketResponse
     {
         /// <summary>
+        /// 换行
+        /// </summary>
+        private static readonly string CRLF = "\r\n";
+
+        /// <summary>
         /// Sec-WebSocket-Key
         /// </summary>
         private string secValue;
@@ -32,7 +37,7 @@ namespace NetworkSocket.WebSocket
         /// <returns></returns>
         private string CreateResponseKey()
         {
-            var guid = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+            const string guid = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
             var bytes = SHA1.Create().ComputeHash(Encoding.UTF8.GetBytes(this.secValue + guid));
             return Convert.ToBase64String(bytes);
         }
@@ -41,15 +46,15 @@ namespace NetworkSocket.WebSocket
         /// 转换为二进制数据
         /// </summary>
         /// <returns></returns>
-        public override ArraySegment<byte> ToByteRange()
+        public override ArraySegment<byte> ToArraySegment(bool mask)
         {
             var builder = new StringBuilder();
-            builder.AppendLine("HTTP/1.1 101 Switching Protocols");
-            builder.AppendLine("Upgrade: websocket");
-            builder.AppendLine("Connection: Upgrade");
-            builder.AppendLine("Sec-WebSocket-Accept: " + this.CreateResponseKey());
-            builder.AppendLine("Server: NetworkSocket.WebSocket");
-            builder.AppendLine();
+            builder.Append("HTTP/1.1 101 Switching Protocols").Append(CRLF);
+            builder.Append("Upgrade: websocket").Append(CRLF);
+            builder.Append("Connection: Upgrade").Append(CRLF);
+            builder.Append("Sec-WebSocket-Accept: " + this.CreateResponseKey()).Append(CRLF);
+            builder.Append("Server: NetworkSocket").Append(CRLF).Append(CRLF);
+
             return new ArraySegment<byte>(Encoding.UTF8.GetBytes(builder.ToString()));
         }
     }

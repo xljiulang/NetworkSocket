@@ -147,9 +147,10 @@ namespace NetworkSocket.WebSocket
                     }
                     list.Add(request);
                 }
-                catch (NotSupportedException)
+                catch (NotSupportedException ex)
                 {
-                    context.Session.Close();
+                    var session = new WebSocketSession(context.Session);
+                    session.Close(StatusCodes.ProtocolError, ex.Message);
                     return list;
                 }
             }
@@ -165,13 +166,15 @@ namespace NetworkSocket.WebSocket
             switch (frameRequest.Frame)
             {
                 case FrameCodes.Close:
-                    var reason = StatusCodes.NormalClosure;
+                    var code = StatusCodes.NormalClosure;
+                    var reason = string.Empty;
+
                     if (frameRequest.Content.Length > 1)
                     {
-                        var status = ByteConverter.ToUInt16(frameRequest.Content, 0, Endians.Big);
-                        reason = (StatusCodes)status;
+                        code = (StatusCodes)ByteConverter.ToUInt16(frameRequest.Content, 0, Endians.Big);
+                        reason = Encoding.UTF8.GetString(frameRequest.Content, 2, frameRequest.Content.Length - 2);
                     }
-                    this.OnClose(context, reason);
+                    this.OnClose(context, code, reason);
                     context.Session.Close();
                     break;
 
@@ -185,18 +188,10 @@ namespace NetworkSocket.WebSocket
                     break;
 
                 case FrameCodes.Ping:
-                    try
-                    {
-                        var session = (WebSocketSession)context.Session.Wrapper;
-                        session.Send(new FrameResponse(FrameCodes.Pong, frameRequest.Content));
-                    }
-                    catch (Exception)
-                    {
-                    }
-                    finally
-                    {
-                        this.OnPing(context, frameRequest.Content);
-                    }
+                    var session = (WebSocketSession)context.Session.Wrapper;
+                    var pong = new FrameResponse(FrameCodes.Pong, frameRequest.Content);
+                    session.TrySend(pong);
+                    this.OnPing(context, frameRequest.Content);
                     break;
 
                 case FrameCodes.Pong:
@@ -251,7 +246,8 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="context">上下文</param>
         /// <param name="code">关闭码</param>
-        protected virtual void OnClose(IContenxt context, StatusCodes code)
+        /// <param name="reason">备注原因</param>
+        protected virtual void OnClose(IContenxt context, StatusCodes code, string reason)
         {
         }
     }

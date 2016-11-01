@@ -11,9 +11,10 @@ namespace NetworkSocket.WebSocket
     public abstract class WebsocketResponse
     {
         /// <summary>
-        /// 转换ByteArray类型
+        /// 转换为ArraySegment
         /// </summary>
+        /// <param name="mask">是否打码</param>
         /// <returns></returns>
-        public abstract ArraySegment<byte> ToByteRange();
+        public abstract ArraySegment<byte> ToArraySegment(bool mask);
     }
 }

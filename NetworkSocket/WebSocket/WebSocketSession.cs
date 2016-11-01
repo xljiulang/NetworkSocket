@@ -72,17 +72,6 @@ namespace NetworkSocket.WebSocket
         }
 
         /// <summary>
-        /// 发送回复数据
-        /// </summary>
-        /// <exception cref="SocketException"></exception>
-        /// <exception cref="ArgumentNullException"></exception>   
-        /// <param name="response">回复内容</param>
-        public int Send(WebsocketResponse response)
-        {
-            return this.session.Send(response.ToByteRange());
-        }
-
-        /// <summary>
         /// 尝试发送回复数据
         /// </summary>
         /// <exception cref="SocketException"></exception>
@@ -100,6 +89,16 @@ namespace NetworkSocket.WebSocket
                 return false;
             }
         }
+        /// <summary>
+        /// 发送回复数据
+        /// </summary>
+        /// <exception cref="SocketException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>   
+        /// <param name="response">回复内容</param>
+        public int Send(WebsocketResponse response)
+        {
+            return this.session.Send(response.ToArraySegment(mask: false));
+        }
 
         /// <summary>
         /// 发送文本消息
@@ -109,8 +108,8 @@ namespace NetworkSocket.WebSocket
         public int SendText(string content)
         {
             var bytes = content == null ? new byte[0] : Encoding.UTF8.GetBytes(content);
-            var response = new FrameResponse(FrameCodes.Text, bytes);
-            return this.Send(response);
+            var text = new FrameResponse(FrameCodes.Text, bytes);
+            return this.Send(text);
         }
 
         /// <summary>
@@ -120,8 +119,8 @@ namespace NetworkSocket.WebSocket
         /// <exception cref="SocketException"></exception>
         public int SendBinary(byte[] content)
         {
-            var response = new FrameResponse(FrameCodes.Binary, content);
-            return this.Send(response);
+            var bin = new FrameResponse(FrameCodes.Binary, content);
+            return this.Send(bin);
         }
 
 
@@ -141,25 +140,9 @@ namespace NetworkSocket.WebSocket
         /// <param name="reason">原因</param>
         public void Close(StatusCodes code, string reason)
         {
-            var codeBytes = ByteConverter.ToBytes((ushort)(code), Endians.Big);
-            var reasonBytes = Encoding.UTF8.GetBytes(reason ?? string.Empty);
-            var content = new byte[codeBytes.Length + reasonBytes.Length];
-
-            Array.Copy(codeBytes, 0, content, 0, codeBytes.Length);
-            Array.Copy(reasonBytes, 0, content, codeBytes.Length, reasonBytes.Length);
-            var response = new FrameResponse(FrameCodes.Close, content);
-
-            try
-            {
-                this.Send(response);
-            }
-            catch (Exception)
-            {
-            }
-            finally
-            {
-                this.session.Close();
-            }
+            var response = new CloseResponse(code, reason);
+            this.TrySend(response);
+            this.session.Close();
         }
 
         /// <summary>
@@ -167,9 +150,11 @@ namespace NetworkSocket.WebSocket
         /// 远程将回复pong
         /// </summary>
         /// <param name="contents">内容</param>
-        public void Ping(byte[] contents)
+        /// <returns></returns>
+        public int Ping(byte[] contents)
         {
-            this.Send(new FrameResponse(FrameCodes.Ping, contents));
+            var ping = new FrameResponse(FrameCodes.Ping, contents);
+            return this.Send(ping);
         }
 
         /// <summary>
