@@ -15,7 +15,7 @@ namespace NetworkSocket.WebSocket
     /// <summary>
     /// 表示握手请求
     /// </summary>
-    public class HandshakeRequest
+    public sealed class HandshakeRequest
     {
         /// <summary>
         /// 换行
@@ -82,37 +82,6 @@ namespace NetworkSocket.WebSocket
         }
 
         /// <summary>
-        /// 生成握手内容
-        /// </summary>
-        /// <param name="client">客户端</param>
-        /// <returns></returns>
-        protected string GenerateHandshakeContent(WebSocketClient client)
-        {
-            var host = client.RemoteEndPoint.ToString();
-            var dnsEndpoint = client.RemoteEndPoint as DnsEndPoint;
-            if (dnsEndpoint != null)
-            {
-                host = string.Format("{0}:{1}", dnsEndpoint.Host, dnsEndpoint.Port);
-            }
-
-            var guid = Guid.NewGuid().ToByteArray();
-            var bytes = SHA1.Create().ComputeHash(guid);
-            this.secKey = Convert.ToBase64String(bytes);
-
-            var builder = new StringBuilder()
-                .AppendFormat("GET / HTTP/1.1").Append(CRLF)
-                .AppendFormat("{0}: {1}", "Host", host).Append(CRLF)
-                .AppendFormat("{0}: {1}", "Connection", "Upgrade").Append(CRLF)
-                .AppendFormat("{0}: {1}", "Upgrade", "websocket").Append(CRLF)
-                .AppendFormat("{0}: {1}", "Origin", "http://" + host).Append(CRLF)
-                .AppendFormat("{0}: {1}", "Sec-WebSocket-Version", "13").Append(CRLF)
-                .AppendFormat("{0}: {1}", "Sec-WebSocket-Key", this.secKey).Append(CRLF)
-                .Append(CRLF);
-
-            return builder.ToString();
-        }
-
-        /// <summary>
         /// 执行握手请求
         /// </summary>
         /// <param name="client">客户端</param>
@@ -139,7 +108,7 @@ namespace NetworkSocket.WebSocket
             {
                 this.IsWaitting = true;
                 this.taskSource = new TaskCompletionSource<SocketError>();
-                var content = this.GenerateHandshakeContent(client);
+                var content = this.GenerateHandshakeContent(client, out this.secKey);
                 var buffer = Encoding.ASCII.GetBytes(content);
                 client.Send(buffer);
                 this.timer = new Timer((state) => this.TrySetResult(SocketError.TimedOut), null, this.timeout, Timeout.InfiniteTimeSpan);
@@ -166,7 +135,6 @@ namespace NetworkSocket.WebSocket
             this.timer.Dispose();
             return this.taskSource.TrySetResult(result);
         }
-
 
         /// <summary>
         /// 设置握手结果
@@ -203,6 +171,38 @@ namespace NetworkSocket.WebSocket
                 }
             }
             return this.TrySetResult(SocketError.SocketError);
+        }
+
+
+        /// <summary>
+        /// 生成握手内容
+        /// </summary>
+        /// <param name="client">客户端</param>
+        /// <param name="secKey">安全Key</param>
+        /// <returns></returns>
+        private string GenerateHandshakeContent(WebSocketClient client, out string secKey)
+        {
+            var host = client.RemoteEndPoint.ToString();
+            var dnsEndpoint = client.RemoteEndPoint as DnsEndPoint;
+            if (dnsEndpoint != null)
+            {
+                host = string.Format("{0}:{1}", dnsEndpoint.Host, dnsEndpoint.Port);
+            }
+
+            var keyBytes = SHA1.Create().ComputeHash(Guid.NewGuid().ToByteArray());
+            secKey = Convert.ToBase64String(keyBytes);
+
+            var builder = new StringBuilder()
+                .AppendFormat("GET / HTTP/1.1").Append(CRLF)
+                .AppendFormat("{0}: {1}", "Host", host).Append(CRLF)
+                .AppendFormat("{0}: {1}", "Connection", "Upgrade").Append(CRLF)
+                .AppendFormat("{0}: {1}", "Upgrade", "websocket").Append(CRLF)
+                .AppendFormat("{0}: {1}", "Origin", "http://" + host).Append(CRLF)
+                .AppendFormat("{0}: {1}", "Sec-WebSocket-Version", "13").Append(CRLF)
+                .AppendFormat("{0}: {1}", "Sec-WebSocket-Key", this.secKey).Append(CRLF)
+                .Append(CRLF);
+
+            return builder.ToString();
         }
     }
 }

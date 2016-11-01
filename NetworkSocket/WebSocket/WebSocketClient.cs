@@ -28,14 +28,14 @@ namespace NetworkSocket.WebSocket
         /// <param name="remoteEndPoint">远程ip和端口</param> 
         /// <exception cref="AuthenticationException"></exception>
         /// <returns></returns>
-        public override SocketError Connect(EndPoint remoteEndPoint)
+        public sealed override SocketError Connect(EndPoint remoteEndPoint)
         {
             var state = base.Connect(remoteEndPoint);
-            if (state != SocketError.Success)
+            if (state == SocketError.Success)
             {
-                return state;
+                state = this.handshake.Execute(this);
             }
-            state = this.handshake.Execute(this);
+
             if (state != SocketError.Success)
             {
                 this.Close();
@@ -49,14 +49,14 @@ namespace NetworkSocket.WebSocket
         /// <param name="remoteEndPoint">远程ip和端口</param> 
         /// <exception cref="AuthenticationException"></exception>
         /// <returns></returns>
-        public override async Task<SocketError> ConnectAsync(EndPoint remoteEndPoint)
+        public sealed override async Task<SocketError> ConnectAsync(EndPoint remoteEndPoint)
         {
             var state = await base.ConnectAsync(remoteEndPoint);
-            if (state != SocketError.Success)
+            if (state == SocketError.Success)
             {
-                return state;
+                state = await this.handshake.ExecuteAsync(this);
             }
-            state = await this.handshake.ExecuteAsync(this);
+
             if (state != SocketError.Success)
             {
                 this.Close();
