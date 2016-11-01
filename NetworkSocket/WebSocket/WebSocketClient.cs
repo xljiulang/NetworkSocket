@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using System.Security.Authentication;
 using NetworkSocket.Http;
 using NetworkSocket.Util;
+using NetworkSocket.Tasks;
+using System.Net.Security;
 
 namespace NetworkSocket.WebSocket
 {
@@ -21,6 +23,39 @@ namespace NetworkSocket.WebSocket
         /// 握手请求
         /// </summary>
         private readonly HandshakeRequest handshake = new HandshakeRequest(TimeSpan.FromSeconds(2));
+
+        /// <summary>
+        /// ping任务表
+        /// </summary>
+        private readonly TaskSetterTable<Guid> pingTable = new TaskSetterTable<Guid>();
+
+        /// <summary>
+        /// WebSocket客户端
+        /// </summary>
+        public WebSocketClient()
+        {
+        }
+
+        /// <summary>
+        /// SSL支持的WebSocket客户端
+        /// </summary>
+        /// <param name="targetHost">目标主机</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        public WebSocketClient(string targetHost)
+            : base(targetHost)
+        {
+        }
+
+        /// <summary>
+        /// SSL支持的WebSocket客户端
+        /// </summary>  
+        /// <param name="targetHost">目标主机</param>
+        /// <param name="certificateValidationCallback">远程证书验证回调</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        public WebSocketClient(string targetHost, RemoteCertificateValidationCallback certificateValidationCallback)
+            : base(targetHost, certificateValidationCallback)
+        {
+        }
 
         /// <summary>
         /// 连接到远程终端 
@@ -160,11 +195,38 @@ namespace NetworkSocket.WebSocket
                     break;
 
                 case FrameCodes.Pong:
+                    this.ProcessPingPong(frame.Content);
                     this.OnPong(frame.Content);
                     break;
 
                 default:
                     break;
+            }
+        }
+
+
+        /// <summary>
+        /// 处理与ping关联
+        /// </summary>
+        /// <param name="pong"></param>
+        private void ProcessPingPong(byte[] pong)
+        {
+            if (pong == null || pong.Length != 36)
+            {
+                return;
+            }
+
+            Guid id;
+            var value = Encoding.UTF8.GetString(pong);
+            if (Guid.TryParse(value, out id) == false)
+            {
+                return;
+            }
+
+            var setter = this.pingTable.Take(id);
+            if (setter != null)
+            {
+                setter.SetResult(true);
             }
         }
 
@@ -229,6 +291,30 @@ namespace NetworkSocket.WebSocket
         {
             var ping = new FrameResponse(FrameCodes.Ping, contents);
             return this.Send(ping);
+        }
+
+        /// <summary>
+        /// 向服务器ping唯一的内容
+        /// 并等待匹配的回复
+        /// </summary>
+        /// <param name="waitTime">最多等待时间，超时则结果false</param>
+        /// <returns></returns>
+        public async Task<bool> PingAsync(TimeSpan waitTime)
+        {
+            var id = Guid.NewGuid();
+            var task = this.pingTable.Create<bool>(id, waitTime);
+
+            var content = Encoding.UTF8.GetBytes(id.ToString());
+            this.Ping(content);
+
+            try
+            {
+                return await task;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         /// <summary>

@@ -188,10 +188,19 @@ namespace NetworkSocket.WebSocket
                     break;
 
                 case FrameCodes.Ping:
-                    var session = (WebSocketSession)context.Session.Wrapper;
-                    var pong = new FrameResponse(FrameCodes.Pong, frameRequest.Content);
-                    session.TrySend(pong);
-                    this.OnPing(context, frameRequest.Content);
+                    try
+                    {
+                        var pong = new FrameResponse(FrameCodes.Pong, frameRequest.Content);
+                        var pongContent = pong.ToArraySegment(mask: false);
+                        context.Session.Send(pongContent);
+                    }
+                    catch (Exception)
+                    {
+                    }
+                    finally
+                    {
+                        this.OnPing(context, frameRequest.Content);
+                    }
                     break;
 
                 case FrameCodes.Pong:
