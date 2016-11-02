@@ -167,15 +167,8 @@ namespace NetworkSocket.WebSocket
             switch (frame.Frame)
             {
                 case FrameCodes.Close:
-                    var code = StatusCodes.NormalClosure;
-                    var reason = string.Empty;
-
-                    if (frame.Content.Length > 1)
-                    {
-                        code = (StatusCodes)ByteConverter.ToUInt16(frame.Content, 0, Endians.Big);
-                        reason = Encoding.UTF8.GetString(frame.Content, 2, frame.Content.Length - 2);
-                    }
-                    this.OnClose(code, reason);
+                    var closeFrame = new CloseRequest(frame);
+                    this.OnClose(closeFrame.StatusCode, closeFrame.CloseReason);
                     base.Close();
                     break;
 

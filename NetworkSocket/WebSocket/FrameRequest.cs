@@ -14,37 +14,37 @@ namespace NetworkSocket.WebSocket
         /// <summary>
         /// 获取是否已完成
         /// </summary>
-        public bool Fin { get; private set; }
+        public virtual bool Fin { get; private set; }
 
         /// <summary>
         /// 获取保存位
         /// </summary>
-        public ByteBits Rsv { get; private set; }
+        public virtual ByteBits Rsv { get; private set; }
 
         /// <summary>
         /// 获取帧类型
         /// </summary>
-        public FrameCodes Frame { get; private set; }
+        public virtual FrameCodes Frame { get; private set; }
 
         /// <summary>
         /// 获取是否有掩码
         /// </summary>
-        public bool Mask { get; private set; }
+        public virtual bool Mask { get; private set; }
 
         /// <summary>
         /// 获取内容长度
         /// </summary>
-        public int ContentLength { get; private set; }
+        public virtual int ContentLength { get; private set; }
 
         /// <summary>
         /// 获取掩码
         /// </summary>
-        public byte[] MaskingKey { get; private set; }
+        public virtual byte[] MaskingKey { get; private set; }
 
         /// <summary>
         /// 获取请求帧的内容
         /// </summary>
-        public byte[] Content { get; private set; }
+        public virtual byte[] Content { get; private set; }
 
 
         /// <summary>

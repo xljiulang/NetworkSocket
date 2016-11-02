@@ -207,6 +207,7 @@
     <Compile Include="Validation\ValidContext.cs" />
     <Compile Include="Validation\ValidResult.cs" />
     <Compile Include="Validation\ValidRuleBase.cs" />
+    <Compile Include="WebSocket\CloseRequest.cs" />
     <Compile Include="WebSocket\CloseResponse.cs" />
     <Compile Include="WebSocket\Context\ActionContext.cs" />
     <Compile Include="WebSocket\Context\ExceptionContext.cs" />
