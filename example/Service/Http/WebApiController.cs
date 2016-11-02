@@ -1,5 +1,4 @@
 ﻿using NetworkSocket.Http;
-using Service.Filters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +8,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using NetworkSocket.Tasks;
 
-namespace Service.Controller
+namespace Service.Http
 {
     /// <summary>
     /// WebApi控制器

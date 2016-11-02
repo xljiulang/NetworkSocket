@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Service.Filters
+namespace Service.Fast
 {
     public class FastLoginAttribute : FastFilterAttribute
     {

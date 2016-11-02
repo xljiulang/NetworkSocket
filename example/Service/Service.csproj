@@ -44,21 +44,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ApiService\FastMathService.cs" />
-    <Compile Include="AppStart\MiddlewareConfig.cs" />
-    <Compile Include="AppStart\ValidationConfig.cs" />
-    <Compile Include="Controller\HomeController.cs" />
-    <Compile Include="Controller\ChatController.cs" />
-    <Compile Include="Controller\EventController.cs" />
-    <Compile Include="ApiService\WebSocketChatService.cs" />
-    <Compile Include="Controller\WebApiController.cs" />
-    <Compile Include="Filters\FastLogFilter.cs" />
-    <Compile Include="Filters\FastLoginAttribute.cs" />
-    <Compile Include="GlobalFilters\FastGlobalFilter.cs" />
-    <Compile Include="GlobalFilters\WebSockeGlobalFilter.cs" />
-    <Compile Include="GlobalFilters\HttpGlobalFilter.cs" />
-    <Compile Include="Filters\HttpLogFilter.cs" />
-    <Compile Include="Filters\WebSocketNickNameFilter.cs" />
+    <Compile Include="Fast\FastMathService.cs" />
+    <Compile Include="Http\HomeController.cs" />
+    <Compile Include="Http\ChatController.cs" />
+    <Compile Include="Http\EventController.cs" />
+    <Compile Include="Websocket\WebSocketChatService.cs" />
+    <Compile Include="Http\WebApiController.cs" />
+    <Compile Include="Fast\FastLogFilter.cs" />
+    <Compile Include="Fast\FastLoginAttribute.cs" />
+    <Compile Include="Fast\FastGlobalFilter.cs" />
+    <Compile Include="Websocket\WebSockeGlobalFilter.cs" />
+    <Compile Include="Http\HttpGlobalFilter.cs" />
+    <Compile Include="Http\HttpLogFilter.cs" />
+    <Compile Include="Websocket\WebSocketNickNameFilter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <None Include="View\Home\CusMiddleware.cshtml" />

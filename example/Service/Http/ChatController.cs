@@ -1,12 +1,11 @@
 ﻿using NetworkSocket.Http;
-using Service.Filters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Service.Controller
+namespace Service.Http
 {
     /// <summary>
     /// Web聊天控制器

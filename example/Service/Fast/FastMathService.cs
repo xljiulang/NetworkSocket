@@ -3,7 +3,6 @@ using NetworkSocket;
 using NetworkSocket.Core;
 using NetworkSocket.Fast;
 using NetworkSocket.Validation;
-using Service.Filters;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,7 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Service.ApiService
+namespace Service.Fast
 {
     /// <summary>
     /// fast协议Api服务  

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Service.Filters
+namespace Service.Websocket
 {
     /// <summary>
     /// 昵称设置过滤器

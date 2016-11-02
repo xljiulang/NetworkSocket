@@ -1,5 +1,4 @@
 ﻿using NetworkSocket.Http;
-using Service.Filters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +7,7 @@ using System.Text;
 using System.Diagnostics;
 using NetworkSocket.Fast;
 
-namespace Service.Controller
+namespace Service.Http
 {
     /// <summary>
     /// 电源控制器

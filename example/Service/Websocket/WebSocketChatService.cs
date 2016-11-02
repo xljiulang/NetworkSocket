@@ -1,14 +1,13 @@
-﻿using NetworkSocket.Core;
+﻿using Models;
+using NetworkSocket.Core;
 using NetworkSocket.WebSocket;
-using Service.Filters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Models;
 using System.Threading.Tasks;
 
-namespace Service.ApiService
+namespace Service.Websocket
 {
     /// <summary>
     /// jsonWebSocket在线聊天Api服务
