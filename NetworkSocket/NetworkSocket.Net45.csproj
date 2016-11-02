@@ -102,6 +102,7 @@
     <Compile Include="Http\Context\ExceptionContext.cs" />
     <Compile Include="Http\Context\RequestContext.cs" />
     <Compile Include="Http\Internal\ResponseHeader.cs" />
+    <Compile Include="ISubscriber.cs" />
     <Compile Include="TagItem.cs" />
     <Compile Include="Util\GZip.cs" />
     <Compile Include="Http\HttpAction.cs" />

@@ -18,7 +18,7 @@ namespace NetworkSocket.WebSocket
         /// <summary>
         /// 会话对象
         /// </summary>
-        private WebSocketSession session;
+        private readonly WebSocketSession session;
 
         /// <summary>
         /// 获取中间件实例
@@ -78,6 +78,17 @@ namespace NetworkSocket.WebSocket
         {
             this.Middleware = server;
             this.session = session;
+        }
+
+        /// <summary>
+        /// 向客户端ping唯一的内容
+        /// 并等待匹配的回复
+        /// </summary>
+        /// <param name="waitTime">最多等待时间，超时则结果false</param>
+        /// <returns></returns>
+        public Task<bool> PingAsync(TimeSpan waitTime)
+        {
+            return this.session.PingAsync(waitTime);
         }
 
         /// <summary>

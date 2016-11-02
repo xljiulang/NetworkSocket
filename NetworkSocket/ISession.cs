@@ -10,7 +10,7 @@ namespace NetworkSocket
     /// <summary>
     /// 定义会话的接口
     /// </summary>   
-    public interface ISession : IDisposable
+    public interface ISession : ISubscriber, IDisposable
     {
         /// <summary>
         /// 获取用户数据字典
@@ -46,7 +46,7 @@ namespace NetworkSocket
         /// 获取会话的包装对象
         /// 该对象一般为会话对协议操作的包装
         /// </summary>
-        IWrapper Wrapper { get; }
+        IWrapper Wrapper { get; }         
 
         /// <summary>
         /// 设置会话的协议名和会话包装对象
@@ -72,6 +72,6 @@ namespace NetworkSocket
         /// <summary>      
         /// 断开和远程端的连接
         /// </summary>
-        void Close();
+        void Close(); 
     }
 }

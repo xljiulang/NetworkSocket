@@ -120,6 +120,7 @@ namespace NetworkSocket
             this.InputStream.Clear();
             this.Tag.ID = null;
             ((IDictionary)this.Tag).Clear();
+            this.UnSubscribe();
             this.SetProtocolWrapper(Protocol.None, null);
             this.LocalEndPoint = socket.LocalEndPoint;
             this.RemoteEndPoint = socket.RemoteEndPoint;
@@ -299,6 +300,80 @@ namespace NetworkSocket
         {
             return this.RemoteEndPoint == null ? string.Empty : this.RemoteEndPoint.ToString();
         }
+
+        #region ISubscriber
+
+        /// <summary>
+        /// 订阅表
+        /// </summary>
+        private readonly Dictionary<string, Action<object>> subscribeTable = new Dictionary<string, Action<object>>(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// 订阅
+        /// 多次订阅同个频道会覆盖前者的handler
+        /// </summary>
+        /// <param name="channel">频道</param>
+        /// <param name="handler">处理者</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        public void Subscribe(string channel, Action<object> handler)
+        {
+            if (string.IsNullOrEmpty(channel))
+            {
+                throw new ArgumentNullException("channel");
+            }
+            if (handler == null)
+            {
+                throw new ArgumentNullException("handler");
+            }
+            this.subscribeTable[channel] = handler;
+        }
+
+        /// <summary>
+        /// 取消所有订阅
+        /// </summary>
+        public void UnSubscribe()
+        {
+            this.subscribeTable.Clear();
+        }
+
+        /// <summary>
+        /// 取消订阅
+        /// </summary>
+        /// <param name="channel">频道</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <returns></returns>
+        public bool UnSubscribe(string channel)
+        {
+            if (string.IsNullOrEmpty(channel))
+            {
+                throw new ArgumentNullException();
+            }
+            return this.subscribeTable.Remove(channel);
+        }
+
+        /// <summary>
+        /// 发布
+        /// </summary>
+        /// <param name="channel">频道</param>
+        /// <param name="data">数据</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <returns></returns>
+        public bool Publish(string channel, object data)
+        {
+            if (string.IsNullOrEmpty(channel))
+            {
+                throw new ArgumentNullException("channel");
+            }
+
+            Action<object> action;
+            if (this.subscribeTable.TryGetValue(channel, out action))
+            {
+                action(data);
+                return true;
+            }
+            return false;
+        }
+        #endregion
 
 
         #region IDisposable

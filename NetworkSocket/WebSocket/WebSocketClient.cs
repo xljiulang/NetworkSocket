@@ -304,11 +304,10 @@ namespace NetworkSocket.WebSocket
             var id = Guid.NewGuid();
             var task = this.pingTable.Create<bool>(id, waitTime);
 
-            var content = Encoding.UTF8.GetBytes(id.ToString());
-            this.Ping(content);
-
             try
             {
+                var content = Encoding.UTF8.GetBytes(id.ToString());
+                this.Ping(content);
                 return await task;
             }
             catch (Exception)

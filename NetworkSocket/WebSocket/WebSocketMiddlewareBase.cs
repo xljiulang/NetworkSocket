@@ -204,6 +204,7 @@ namespace NetworkSocket.WebSocket
                     break;
 
                 case FrameCodes.Pong:
+                    context.Session.Publish("Pong", frameRequest.Content);
                     this.OnPong(context, frameRequest.Content);
                     break;
 

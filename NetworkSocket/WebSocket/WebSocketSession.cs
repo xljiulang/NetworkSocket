@@ -5,6 +5,8 @@ using System.Text;
 using System.Net.Sockets;
 using System.Net;
 using NetworkSocket.Util;
+using NetworkSocket.Tasks;
+using System.Threading.Tasks;
 
 namespace NetworkSocket.WebSocket
 {
@@ -16,7 +18,12 @@ namespace NetworkSocket.WebSocket
         /// <summary>
         /// 会话对象
         /// </summary>
-        private ISession session;
+        private readonly ISession session;
+
+        /// <summary>
+        /// ping任务表
+        /// </summary>
+        private readonly TaskSetterTable<Guid> pingTable = new TaskSetterTable<Guid>();
 
         /// <summary>
         /// 获取用户数据字典
@@ -69,6 +76,33 @@ namespace NetworkSocket.WebSocket
         public WebSocketSession(ISession session)
         {
             this.session = session;
+            this.session.Subscribe("Pong", this.OnPong);
+        }
+
+        /// <summary>
+        /// 收到Pong时
+        /// </summary>
+        /// <param name="data">数据</param>
+        private void OnPong(object data)
+        {
+            var value = data as byte[];
+            if (value == null || value.Length != 36)
+            {
+                return;
+            }
+
+            Guid id;
+            var valueString = Encoding.UTF8.GetString(value);
+            if (Guid.TryParse(valueString, out id) == false)
+            {
+                return;
+            }
+
+            var setter = this.pingTable.Take(id);
+            if (setter != null)
+            {
+                setter.SetResult(true);
+            }
         }
 
         /// <summary>
@@ -146,15 +180,27 @@ namespace NetworkSocket.WebSocket
         }
 
         /// <summary>
-        /// ping指令
-        /// 远程将回复pong
+        /// 向客户端ping唯一的内容
+        /// 并等待匹配的回复
         /// </summary>
-        /// <param name="contents">内容</param>
+        /// <param name="waitTime">最多等待时间，超时则结果false</param>
         /// <returns></returns>
-        public int Ping(byte[] contents)
+        public async Task<bool> PingAsync(TimeSpan waitTime)
         {
-            var ping = new FrameResponse(FrameCodes.Ping, contents);
-            return this.Send(ping);
+            var id = Guid.NewGuid();
+            var task = this.pingTable.Create<bool>(id, waitTime);
+
+            try
+            {
+                var content = Encoding.UTF8.GetBytes(id.ToString());
+                var ping = new FrameResponse(FrameCodes.Ping, content);
+                this.TrySend(ping);
+                return await task;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         /// <summary>
