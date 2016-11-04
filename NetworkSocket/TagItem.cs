@@ -76,6 +76,15 @@ namespace NetworkSocket
         }
 
         /// <summary>
+        /// 转换为bool
+        /// </summary>
+        /// <returns></returns>
+        public bool AsBoolean()
+        {
+            return this.As<Boolean>();
+        }
+
+        /// <summary>
         /// 转换为时间
         /// </summary>
         /// <returns></returns>

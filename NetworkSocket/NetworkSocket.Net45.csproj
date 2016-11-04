@@ -104,6 +104,7 @@
     <Compile Include="Http\Internal\ResponseHeader.cs" />
     <Compile Include="ISubscriber.cs" />
     <Compile Include="TagItem.cs" />
+    <Compile Include="Tasks\TaskSetter.cs" />
     <Compile Include="Util\GZip.cs" />
     <Compile Include="Http\HttpAction.cs" />
     <Compile Include="Http\HttpController.cs" />

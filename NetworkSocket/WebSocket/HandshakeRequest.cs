@@ -1,4 +1,5 @@
 ﻿using NetworkSocket.Http;
+using NetworkSocket.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,17 +39,11 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         private readonly TimeSpan timeout;
 
-
         /// <summary>
-        /// 任务源
+        /// 任务行为
         /// </summary>
-        private TaskCompletionSource<SocketError> taskSource;
+        private TaskSetter<SocketError> taskSetter;
 
-
-        /// <summary>
-        /// 取消源
-        /// </summary>
-        private CancellationTokenSource cancellationTokenSource;
 
         /// <summary>
         /// 是否正在等待回复
@@ -101,13 +96,11 @@ namespace NetworkSocket.WebSocket
             try
             {
                 this.IsWaitting = true;
-                this.taskSource = new TaskCompletionSource<SocketError>();
-                var content = this.GenerateHandshakeContent(client, out this.secKey);
-                var buffer = Encoding.ASCII.GetBytes(content);
-                client.Send(buffer);
+                this.taskSetter = new TaskSetter<SocketError>(this.timeout, () => this.TrySetResult(SocketError.TimedOut));
 
-                this.cancellationTokenSource = new CancellationTokenSource(this.timeout);
-                this.cancellationTokenSource.Token.Register(() => this.TrySetResult(SocketError.TimedOut));
+                var content = this.GenerateHandshakeContent(client, out this.secKey);
+                var handshakeBuffer = Encoding.ASCII.GetBytes(content);
+                client.Send(handshakeBuffer);
             }
             catch (SocketException ex)
             {
@@ -117,7 +110,7 @@ namespace NetworkSocket.WebSocket
             {
                 this.TrySetResult(SocketError.SocketError);
             }
-            return this.taskSource.Task;
+            return this.taskSetter.Task;
         }
 
         /// <summary>
@@ -128,8 +121,7 @@ namespace NetworkSocket.WebSocket
         public bool TrySetResult(SocketError result)
         {
             this.IsWaitting = false;
-            this.cancellationTokenSource.Dispose();
-            return this.taskSource.TrySetResult(result);
+            return this.taskSetter.SetResult(result);
         }
 
         /// <summary>

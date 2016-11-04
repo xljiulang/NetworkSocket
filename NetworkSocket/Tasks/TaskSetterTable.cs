@@ -40,7 +40,13 @@ namespace NetworkSocket.Tasks
         /// <returns></returns>
         public Task<TResult> Create<TResult>(T id, TimeSpan timeout)
         {
-            var taskSetter = new TaskSetter<T, TResult>(this, id, timeout);
+            Action<ITaskSetter> callBack = (setter) =>
+            {
+                this.Take(id);
+                setter.SetException(new TimeoutException());
+            };
+
+            var taskSetter = new TaskSetter<TResult>(timeout, callBack);
             this.table.TryAdd(id, taskSetter);
             return taskSetter.Task;
         }
@@ -75,98 +81,6 @@ namespace NetworkSocket.Tasks
         public void Clear()
         {
             this.table.Clear();
-        }
-
-
-        /// <summary>
-        /// 表示任务设置行为信息
-        /// </summary>
-        /// <typeparam name="TId">id类型</typeparam>
-        /// <typeparam name="TResult">任务结果类型</typeparam>
-        [DebuggerDisplay("Id = {Id}")]
-        private class TaskSetter<TId, TResult> : ITaskSetter
-        {
-            /// <summary>
-            /// 任务列表
-            /// </summary>
-            private TaskSetterTable<TId> table;
-
-            /// <summary>
-            /// 任务源
-            /// </summary>
-            private readonly TaskCompletionSource<TResult> taskSource;
-
-            /// <summary>
-            /// 取消源
-            /// </summary>
-            private readonly CancellationTokenSource cancellationTokenSource;
-
-            /// <summary>
-            /// 获取任务的id
-            /// </summary>
-            public TId Id { get; private set; }
-
-            /// <summary>
-            /// 获取任务的返回结果类型
-            /// </summary>
-            public Type ValueType { get; private set; }
-
-            /// <summary>
-            /// 获取任务
-            /// </summary>
-            public Task<TResult> Task
-            {
-                get
-                {
-                    return this.taskSource.Task;
-                }
-            }
-
-            /// <summary>
-            /// 任务设置行为
-            /// </summary>               
-            /// <param name="table">任务列表</param>
-            /// <param name="id">任务id</param>
-            /// <param name="timeout">超时时间</param>
-            public TaskSetter(TaskSetterTable<TId> table, TId id, TimeSpan timeout)
-            {
-                this.Id = id;
-                this.ValueType = typeof(TResult);
-
-                this.table = table;
-                this.taskSource = new TaskCompletionSource<TResult>();
-                this.cancellationTokenSource = new CancellationTokenSource(timeout);
-                this.cancellationTokenSource.Token.Register(this.OnTimeout);
-            }
-
-            /// <summary>
-            /// 超时
-            /// </summary>
-            private void OnTimeout()
-            {
-                this.table.Take(this.Id);
-                this.SetException(new TimeoutException());
-            }
-
-            /// <summary>
-            /// 设置任务结果
-            /// </summary>
-            /// <param name="value">数据值</param>
-            public bool SetResult(object value)
-            {
-                this.cancellationTokenSource.Dispose();
-                return this.taskSource.TrySetResult((TResult)value);
-            }
-
-            /// <summary>
-            /// 设置异常
-            /// </summary>
-            /// <param name="ex">异常</param>
-            public bool SetException(Exception ex)
-            {
-                this.cancellationTokenSource.Dispose();
-                return this.taskSource.TrySetException(ex);
-            }
         }
     }
 }
