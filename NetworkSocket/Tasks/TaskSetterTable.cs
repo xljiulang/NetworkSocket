@@ -84,7 +84,7 @@ namespace NetworkSocket.Tasks
         /// <typeparam name="TId">id类型</typeparam>
         /// <typeparam name="TResult">任务结果类型</typeparam>
         [DebuggerDisplay("Id = {Id}")]
-        private class TaskSetter<TId, TResult> : ITaskSetter, IDisposable
+        private class TaskSetter<TId, TResult> : ITaskSetter
         {
             /// <summary>
             /// 任务列表
@@ -92,14 +92,14 @@ namespace NetworkSocket.Tasks
             private TaskSetterTable<TId> table;
 
             /// <summary>
-            /// 定时器
-            /// </summary>
-            private readonly Timer timer;
-
-            /// <summary>
             /// 任务源
             /// </summary>
             private readonly TaskCompletionSource<TResult> taskSource;
+
+            /// <summary>
+            /// 取消源
+            /// </summary>
+            private readonly CancellationTokenSource cancellationTokenSource;
 
             /// <summary>
             /// 获取任务的id
@@ -135,18 +135,17 @@ namespace NetworkSocket.Tasks
 
                 this.table = table;
                 this.taskSource = new TaskCompletionSource<TResult>();
-                this.timer = new Timer(this.OnTimerCallback, null, timeout, TimeSpan.FromMilliseconds(-1));
+                this.cancellationTokenSource = new CancellationTokenSource(timeout);
+                this.cancellationTokenSource.Token.Register(this.OnTimeout);
             }
 
             /// <summary>
-            /// timer回调
+            /// 超时
             /// </summary>
-            /// <param name="state"></param>
-            private void OnTimerCallback(object state)
+            private void OnTimeout()
             {
                 this.table.Take(this.Id);
                 this.SetException(new TimeoutException());
-                this.table = null;
             }
 
             /// <summary>
@@ -155,7 +154,7 @@ namespace NetworkSocket.Tasks
             /// <param name="value">数据值</param>
             public bool SetResult(object value)
             {
-                this.timer.Dispose();
+                this.cancellationTokenSource.Dispose();
                 return this.taskSource.TrySetResult((TResult)value);
             }
 
@@ -165,17 +164,8 @@ namespace NetworkSocket.Tasks
             /// <param name="ex">异常</param>
             public bool SetException(Exception ex)
             {
-                this.timer.Dispose();
+                this.cancellationTokenSource.Dispose();
                 return this.taskSource.TrySetException(ex);
-            }
-
-            /// <summary>
-            /// 释放资源
-            /// </summary>
-            public void Dispose()
-            {
-                this.table = null;
-                this.timer.Dispose();
             }
         }
     }

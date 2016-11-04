@@ -29,11 +29,6 @@ namespace NetworkSocket.WebSocket
 
 
         /// <summary>
-        /// 定时器
-        /// </summary>
-        private Timer timer;
-
-        /// <summary>
         /// 安全key
         /// </summary>
         private string secKey;
@@ -49,6 +44,11 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         private TaskCompletionSource<SocketError> taskSource;
 
+
+        /// <summary>
+        /// 取消源
+        /// </summary>
+        private CancellationTokenSource cancellationTokenSource;
 
         /// <summary>
         /// 是否正在等待回复
@@ -88,13 +88,7 @@ namespace NetworkSocket.WebSocket
         /// <returns></returns>
         public SocketError Execute(WebSocketClient client)
         {
-            var task = this.ExecuteAsync(client);
-            if (task.Wait(this.timeout) == false)
-            {
-                this.timer.Dispose();
-                return SocketError.TimedOut;
-            }
-            return task.Result;
+            return this.ExecuteAsync(client).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         /// <summary>
@@ -111,7 +105,9 @@ namespace NetworkSocket.WebSocket
                 var content = this.GenerateHandshakeContent(client, out this.secKey);
                 var buffer = Encoding.ASCII.GetBytes(content);
                 client.Send(buffer);
-                this.timer = new Timer((state) => this.TrySetResult(SocketError.TimedOut), null, this.timeout, Timeout.InfiniteTimeSpan);
+
+                this.cancellationTokenSource = new CancellationTokenSource(this.timeout);
+                this.cancellationTokenSource.Token.Register(() => this.TrySetResult(SocketError.TimedOut));
             }
             catch (SocketException ex)
             {
@@ -132,7 +128,7 @@ namespace NetworkSocket.WebSocket
         public bool TrySetResult(SocketError result)
         {
             this.IsWaitting = false;
-            this.timer.Dispose();
+            this.cancellationTokenSource.Dispose();
             return this.taskSource.TrySetResult(result);
         }
 
