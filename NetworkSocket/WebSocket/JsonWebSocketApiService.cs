@@ -207,11 +207,6 @@ namespace NetworkSocket.WebSocket
                 filter.OnException(exceptionContext);
                 if (exceptionContext.ExceptionHandled == true) break;
             }
-
-            if (exceptionContext.ExceptionHandled == false)
-            {
-                throw exceptionContext.Exception;
-            }
         }
 
         /// <summary>

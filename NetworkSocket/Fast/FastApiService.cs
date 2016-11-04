@@ -178,11 +178,6 @@ namespace NetworkSocket.Fast
                 filter.OnException(exceptionContext);
                 if (exceptionContext.ExceptionHandled == true) break;
             }
-
-            if (exceptionContext.ExceptionHandled == false)
-            {
-                throw exceptionContext.Exception;
-            }
         }
 
 

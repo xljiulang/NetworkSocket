@@ -17,7 +17,7 @@ namespace NetworkSocket.Core
 
         /// <summary>
         /// 获取或设置异常是否已处理
-        /// 设置为true之后有异常不会抛出
+        /// 设置为true之后中止传递下一个Filter
         /// </summary>
         bool ExceptionHandled { get; set; }
     }
