@@ -25,12 +25,12 @@ namespace NetworkSocket.Http
         /// </summary>
         /// <param name="context">上下文</param>
         /// <returns></returns>
-        bool IMiddleware.Invoke(IContenxt context)
+        Task IMiddleware.Invoke(IContenxt context)
         {
             var protocol = context.Session.Protocol;
             if (protocol == Protocol.None || protocol == Protocol.Http)
             {
-                return this.OnHttpRequest(context);
+                return this.OnHttpRequestAsync(context);
             }
             else
             {
@@ -44,12 +44,12 @@ namespace NetworkSocket.Http
         /// </summary>
         /// <param name="context">上下文</param>
         /// <returns></returns>
-        private bool OnHttpRequest(IContenxt context)
+        private async Task OnHttpRequestAsync(IContenxt context)
         {
             try
             {
                 var result = HttpRequestParser.Parse(context);
-                return this.ProcessParseResult(context, result);
+                await this.ProcessParseResultAsync(context, result);
             }
             catch (HttpException ex)
             {
@@ -59,7 +59,6 @@ namespace NetworkSocket.Http
             {
                 this.OnException(context.Session, new HttpException(500, ex.Message));
             }
-            return false;
         }
 
         /// <summary>
@@ -68,7 +67,7 @@ namespace NetworkSocket.Http
         /// <param name="context">上下文</param>
         /// <param name="result">解析结果</param>
         /// <returns></returns>
-        private bool ProcessParseResult(IContenxt context, HttpParseResult result)
+        private Task ProcessParseResultAsync(IContenxt context, HttpParseResult result)
         {
             if (result.IsHttp == false)
             {
@@ -78,7 +77,7 @@ namespace NetworkSocket.Http
             // 数据未完整
             if (result.Request == null)
             {
-                return true;
+                return TaskExtend.CompletedTask;
             }
 
             // 协议升级
@@ -95,8 +94,7 @@ namespace NetworkSocket.Http
 
             var response = new HttpResponse(context.Session);
             var requestContext = new RequestContext(result.Request, response);
-            this.OnHttpRequest(context, requestContext);
-            return true;
+            return this.OnHttpRequestAsync(context, requestContext);
         }
 
         /// <summary>
@@ -121,6 +119,7 @@ namespace NetworkSocket.Http
         /// </summary>       
         /// <param name="context">上下文</param>
         /// <param name="requestContext">请求上下文对象</param>
-        protected abstract void OnHttpRequest(IContenxt context, RequestContext requestContext);
+        /// <returns ></returns>
+        protected abstract Task OnHttpRequestAsync(IContenxt context, RequestContext requestContext);
     }
 }

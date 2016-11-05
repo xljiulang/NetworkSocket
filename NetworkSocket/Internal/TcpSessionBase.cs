@@ -39,7 +39,7 @@ namespace NetworkSocket
         /// <summary>
         /// 处理和分析收到的数据的委托
         /// </summary>
-        public Action<TcpSessionBase> ReceiveHandler;
+        public Func<TcpSessionBase, Task> ReceiveAsyncHandler;
 
         /// <summary>
         /// 连接断开委托   
@@ -421,7 +421,7 @@ namespace NetworkSocket
                 this.InputStream = null;
                 this.CloseHandler = null;
                 this.DisconnectHandler = null;
-                this.ReceiveHandler = null;
+                this.ReceiveAsyncHandler = null;
             }
         }
         #endregion

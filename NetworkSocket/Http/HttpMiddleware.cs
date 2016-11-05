@@ -106,12 +106,13 @@ namespace NetworkSocket.Http
         /// </summary>       
         /// <param name="context">上下文</param>
         /// <param name="requestContext">请求上下文对象</param>
-        protected override void OnHttpRequest(IContenxt context, RequestContext requestContext)
+        /// <returns></returns>
+        protected override async Task OnHttpRequestAsync(IContenxt context, RequestContext requestContext)
         {
             var action = this.routeTable.MatchHttpAction(requestContext.Request);
             if (action != null)
             {
-                this.ExecuteHttpAction(action, context, requestContext);
+                await this.ExecuteHttpActionAsync(action, context, requestContext);
             }
             else
             {
@@ -123,7 +124,7 @@ namespace NetworkSocket.Http
                 }
                 else
                 {
-                    this.ProcessStaticFileRequest(extenstion, requestContext);
+                    await this.ProcessStaticFileRequestAsync(extenstion, requestContext);
                 }
             }
         }
@@ -133,7 +134,8 @@ namespace NetworkSocket.Http
         /// </summary>
         /// <param name="extension">扩展名</param>
         /// <param name="requestContext">上下文</param>
-        private void ProcessStaticFileRequest(string extension, RequestContext requestContext)
+        /// <returns></returns>
+        private async Task ProcessStaticFileRequestAsync(string extension, RequestContext requestContext)
         {
             var contenType = this.MIMECollection[extension];
             var file = requestContext.Request.Url.AbsolutePath.TrimStart('/').Replace(@"/", @"\");
@@ -146,7 +148,7 @@ namespace NetworkSocket.Http
             else
             {
                 var result = new FileResult { FileName = file, ContentType = contenType };
-                result.TryExecuteResultAsyncNoWait(requestContext);
+                await result.ExecuteResultAsync(requestContext);
             }
         }
 
@@ -155,8 +157,9 @@ namespace NetworkSocket.Http
         /// </summary>
         /// <param name="action">httpAction</param>
         /// <param name="context">上下文</param>
-        /// <param name="requestContext">请求上下文</param>      
-        private async void ExecuteHttpAction(HttpAction action, IContenxt context, RequestContext requestContext)
+        /// <param name="requestContext">请求上下文</param>  
+        /// <returns></returns>
+        private async Task ExecuteHttpActionAsync(HttpAction action, IContenxt context, RequestContext requestContext)
         {
             var actionContext = new ActionContext(requestContext, action, context);
             var controller = this.GetHttpController(actionContext);
@@ -165,11 +168,7 @@ namespace NetworkSocket.Http
             {
                 try
                 {
-                    await controller.ExecuteAsync(actionContext).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    this.OnException(context.Session, ex);
+                    await controller.ExecuteAsync(actionContext);
                 }
                 finally
                 {

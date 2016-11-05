@@ -19,6 +19,11 @@ namespace NetworkSocket.Tasks
         private readonly static ConcurrentDictionary<Type, Func<Task, object>> cache = new ConcurrentDictionary<Type, Func<Task, object>>();
 
         /// <summary>
+        /// 表示已完成的task
+        /// </summary>
+        public static readonly Task CompletedTask = Task.FromResult(true);
+
+        /// <summary>
         /// 转换为TaskOf(T)类型
         /// </summary>
         /// <typeparam name="T"></typeparam>

@@ -104,7 +104,8 @@ namespace NetworkSocket.WebSocket
         /// 收到数据时
         /// </summary>
         /// <param name="inputStream">数据流</param>
-        protected override sealed void OnReceive(IStreamReader inputStream)
+        /// <returns></returns>
+        protected override sealed async Task OnReceiveAsync(IStreamReader inputStream)
         {
             if (this.handshake.IsWaitting == true)
             {
@@ -112,7 +113,7 @@ namespace NetworkSocket.WebSocket
             }
             else
             {
-                this.OnWebSocketRequest(inputStream);
+                await this.OnWebSocketRequestAsync(inputStream);
             }
         }
 
@@ -122,12 +123,13 @@ namespace NetworkSocket.WebSocket
         /// 收到请求数据
         /// </summary>
         /// <param name="inputStream">数据流</param>
-        private void OnWebSocketRequest(IStreamReader inputStream)
+        /// <returns></returns>
+        private async Task OnWebSocketRequestAsync(IStreamReader inputStream)
         {
             var frames = this.GenerateWebSocketFrame(inputStream);
             foreach (var frame in frames)
             {
-                this.OnFrameRequest(frame);
+                await this.OnFrameRequestAsync(frame);
             }
         }
 
@@ -162,7 +164,8 @@ namespace NetworkSocket.WebSocket
         /// 收到请求数据
         /// </summary>
         /// <param name="frame">请求数据</param>
-        private void OnFrameRequest(FrameRequest frame)
+        /// <returns></returns>
+        private async Task OnFrameRequestAsync(FrameRequest frame)
         {
             switch (frame.Frame)
             {
@@ -173,12 +176,12 @@ namespace NetworkSocket.WebSocket
                     break;
 
                 case FrameCodes.Binary:
-                    this.OnBinary(frame.Content);
+                    await this.OnBinaryAsync(frame.Content);
                     break;
 
                 case FrameCodes.Text:
                     var content = Encoding.UTF8.GetString(frame.Content);
-                    this.OnText(content);
+                    await this.OnTextAsync(content);
                     break;
 
                 case FrameCodes.Ping:
@@ -350,16 +353,20 @@ namespace NetworkSocket.WebSocket
         /// 收到服务端的Text请求
         /// </summary>
         /// <param name="text">内容</param>
-        protected virtual void OnText(string text)
+        /// <returns></returns>
+        protected virtual Task OnTextAsync(string text)
         {
+            return TaskExtend.CompletedTask;
         }
 
         /// <summary>
         /// 收到服务端的Binary请求
         /// </summary>
         /// <param name="bin">内容</param>
-        protected virtual void OnBinary(byte[] bin)
+        /// <returns></returns>
+        protected virtual Task OnBinaryAsync(byte[] bin)
         {
+            return TaskExtend.CompletedTask;
         }
 
         /// <summary>

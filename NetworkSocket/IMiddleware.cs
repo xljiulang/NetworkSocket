@@ -21,7 +21,7 @@ namespace NetworkSocket
         /// 提供IContenxt并执行此方法
         /// </summary>
         /// <param name="context">上下文</param>
-        /// <returns>返回是否执行成功</returns>
-        bool Invoke(IContenxt context);
+        /// <returns></returns>
+        Task Invoke(IContenxt context);
     }
 }

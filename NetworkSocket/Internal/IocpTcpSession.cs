@@ -88,7 +88,7 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="sender">事件源</param>
         /// <param name="arg">参数</param>
-        private void RecvCompleted(object sender, SocketAsyncEventArgs arg)
+        private async void RecvCompleted(object sender, SocketAsyncEventArgs arg)
         {
             if (arg.BytesTransferred == 0 || arg.SocketError != SocketError.Success)
             {
@@ -104,7 +104,7 @@ namespace NetworkSocket
             }
 
             // 重新进行一次接收
-            this.ReceiveHandler(this);
+            await this.ReceiveAsyncHandler(this);
             this.TryReceiveAsync();
         }
 

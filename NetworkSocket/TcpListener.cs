@@ -305,7 +305,7 @@ namespace NetworkSocket
         {
             // 创建会话，绑定处理委托
             var session = this.CreateSession();
-            session.ReceiveHandler = this.InvokeSession;
+            session.ReceiveAsyncHandler = this.InvokeSessionAsync;
             session.DisconnectHandler = this.RecyceSession;
             session.CloseHandler = this.RecyceSession;
 
@@ -325,12 +325,13 @@ namespace NetworkSocket
         /// 执行会话请求处理
         /// </summary>
         /// <param name="session">会话对象</param>
-        private void InvokeSession(TcpSessionBase session)
+        /// <returns></returns>
+        private async Task InvokeSessionAsync(TcpSessionBase session)
         {
             try
             {
                 var context = this.CreateContext(session);
-                this.middlewares.First.Value.Invoke(context);
+                await this.middlewares.First.Value.Invoke(context);
             }
             catch (Exception ex)
             {

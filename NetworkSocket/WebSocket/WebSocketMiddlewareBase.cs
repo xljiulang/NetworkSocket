@@ -29,17 +29,17 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="context">上下文</param>
         /// <returns></returns>
-        bool IMiddleware.Invoke(IContenxt context)
+        Task IMiddleware.Invoke(IContenxt context)
         {
             var protocol = context.Session.Protocol;
             if (protocol == Protocol.WebSocket)
             {
-                return this.OnWebSocketFrameRequest(context);
+                return this.OnWebSocketFrameRequestAsync(context);
             }
 
             if (protocol == Protocol.None || protocol == Protocol.Http)
             {
-                return this.OnWebSocketHandshakeRequest(context);
+                return this.OnWebSocketHandshakeRequestAsync(context);
             }
             else
             {
@@ -52,38 +52,38 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="context">上下文</param>
         /// <returns></returns>
-        private bool OnWebSocketHandshakeRequest(IContenxt context)
+        private async Task OnWebSocketHandshakeRequestAsync(IContenxt context)
         {
             try
             {
                 var result = HttpRequestParser.Parse(context);
                 if (result.IsHttp == false)
                 {
-                    return this.Next.Invoke(context);
+                    await this.Next.Invoke(context);
+                    return;
                 }
 
                 // 数据未完整
                 if (result.Request == null)
                 {
-                    return true;
+                    return;
                 }
 
                 if (result.Request.IsWebsocketRequest() == false)
                 {
-                    return this.Next.Invoke(context);
+                    await this.Next.Invoke(context);
+                    return;
                 }
 
                 context.InputStream.Clear(result.PackageLength);
                 const string seckey = "Sec-WebSocket-Key";
                 var secValue = result.Request.Headers[seckey];
                 this.ResponseHandshake(context, secValue);
-                return true;
             }
             catch (Exception)
             {
                 context.InputStream.Clear();
                 context.Session.Close();
-                return false;
             }
         }
 
@@ -118,14 +118,13 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="context">上下文</param>
         /// <returns></returns>
-        private bool OnWebSocketFrameRequest(IContenxt context)
+        private async Task OnWebSocketFrameRequestAsync(IContenxt context)
         {
             var requests = this.GenerateWebSocketRequest(context);
             foreach (var request in requests)
             {
-                this.OnWebSocketRequest(context, request);
+                await this.OnWebSocketRequestAsync(context, request);
             }
-            return true;
         }
 
         /// <summary>
@@ -161,7 +160,8 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="context">会话对象</param>
         /// <param name="frameRequest">数据帧</param>
-        private void OnWebSocketRequest(IContenxt context, FrameRequest frameRequest)
+        /// <returns></returns>
+        private async Task OnWebSocketRequestAsync(IContenxt context, FrameRequest frameRequest)
         {
             switch (frameRequest.Frame)
             {
@@ -172,12 +172,12 @@ namespace NetworkSocket.WebSocket
                     break;
 
                 case FrameCodes.Binary:
-                    this.OnBinary(context, frameRequest.Content);
+                    await this.OnBinaryAsync(context, frameRequest.Content);
                     break;
 
                 case FrameCodes.Text:
                     var content = Encoding.UTF8.GetString(frameRequest.Content);
-                    this.OnText(context, content);
+                    await this.OnTextAsync(context, content);
                     break;
 
                 case FrameCodes.Ping:
@@ -211,8 +211,10 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="context">会话对象</param>
         /// <param name="content">文本内容</param>
-        protected virtual void OnText(IContenxt context, string content)
+        /// <returns></returns>
+        protected virtual Task OnTextAsync(IContenxt context, string content)
         {
+            return TaskExtend.CompletedTask;
         }
 
         /// <summary>
@@ -220,8 +222,10 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="context">会话对象</param>
         /// <param name="content">二进制内容</param>
-        protected virtual void OnBinary(IContenxt context, byte[] content)
+        /// <returns></returns>
+        protected virtual Task OnBinaryAsync(IContenxt context, byte[] content)
         {
+            return TaskExtend.CompletedTask;
         }
 
         /// <summary>

@@ -23,7 +23,7 @@ namespace NetworkSocket.Flex
         /// </summary>
         /// <param name="context">上下文</param>
         /// <returns></returns>
-        bool IMiddleware.Invoke(IContenxt context)
+        Task IMiddleware.Invoke(IContenxt context)
         {
             if (context.Session.Protocol != Protocol.None || context.InputStream.Length != 23)
             {
@@ -34,7 +34,8 @@ namespace NetworkSocket.Flex
             var request = context.InputStream.ReadString(Encoding.ASCII);
             if (string.Equals(request, "<policy-file-request/>\0", StringComparison.OrdinalIgnoreCase))
             {
-                return this.SendPolicyXML(context);
+                this.SendPolicyXML(context);
+                return TaskExtend.CompletedTask;
             }
             else
             {

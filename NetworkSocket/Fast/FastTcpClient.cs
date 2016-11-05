@@ -93,13 +93,14 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 当接收到远程端的数据时，将触发此方法
         /// </summary>
-        /// <param name="inputStream">接收到的历史数据</param>        
-        protected sealed override void OnReceive(IStreamReader inputStream)
+        /// <param name="inputStream">接收到的历史数据</param>    
+        /// <returns></returns>
+        protected sealed override async Task OnReceiveAsync(IStreamReader inputStream)
         {
             var packages = this.GenerateFastPackets(inputStream);
             foreach (var package in packages)
             {
-                this.OnProcessPacket(package);
+                await this.ProcessPacketAsync(package);
             }
         }
 
@@ -131,7 +132,8 @@ namespace NetworkSocket.Fast
         /// 处理接收到服务发来的数据包
         /// </summary>
         /// <param name="packet">数据包</param>
-        private void OnProcessPacket(FastPacket packet)
+        /// <returns></returns>
+        private async Task ProcessPacketAsync(FastPacket packet)
         {
             var requestContext = new RequestContext(null, packet, null);
             if (packet.IsException == true)
@@ -148,7 +150,7 @@ namespace NetworkSocket.Fast
                 if (action != null)
                 {
                     var actionContext = new ActionContext(requestContext, action);
-                    this.ExecuteAction(actionContext);
+                    await this.ExecuteActionAsync(actionContext);
                 }
             }
         }
@@ -184,8 +186,9 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 执行Api行为
         /// </summary>
-        /// <param name="actionContext">上下文</param>   
-        private async void ExecuteAction(ActionContext actionContext)
+        /// <param name="actionContext">上下文</param>  
+        /// <returns></returns>
+        private async Task ExecuteActionAsync(ActionContext actionContext)
         {
             try
             {

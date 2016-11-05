@@ -110,14 +110,14 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="context">上下文</param>
         /// <returns></returns>
-        bool IMiddleware.Invoke(IContenxt context)
+        Task IMiddleware.Invoke(IContenxt context)
         {
             var protocal = context.Session.Protocol;
             if (protocal != Protocol.None && protocal != Protocol.Fast)
             {
                 return this.Next.Invoke(context);
             }
-            return this.OnFastRequest(context);
+            return this.OnFastRequestAsync(context);
         }
 
         /// <summary>
@@ -125,18 +125,19 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="context">上下文</param>
         /// <returns></returns>
-        private bool OnFastRequest(IContenxt context)
+        private async Task OnFastRequestAsync(IContenxt context)
         {
             var fastPacket = default(FastPacket);
             if (FastPacket.Parse(context.InputStream, out fastPacket) == false)
             {
-                return this.Next.Invoke(context);
+                await this.Next.Invoke(context);
+                return;
             }
 
             // 数据未完整
             if (fastPacket == null)
             {
-                return true;
+                return;
             }
 
             if (context.Session.Protocol == Protocol.None)
@@ -151,9 +152,8 @@ namespace NetworkSocket.Fast
             foreach (var packet in fastPackets)
             {
                 var requestContext = new RequestContext(fastSession, packet, context.AllSessions);
-                this.OnRecvFastPacket(requestContext);
+                await this.OnRecvFastPacketAsync(requestContext);
             }
-            return true;
         }
 
         /// <summary>
@@ -184,7 +184,8 @@ namespace NetworkSocket.Fast
         /// 接收到会话对象的数据包
         /// </summary>
         /// <param name="requestContext">请求上下文</param>
-        private void OnRecvFastPacket(RequestContext requestContext)
+        /// <returns></returns>
+        private async Task OnRecvFastPacketAsync(RequestContext requestContext)
         {
             if (requestContext.Packet.IsException == true)
             {
@@ -192,7 +193,7 @@ namespace NetworkSocket.Fast
             }
             else
             {
-                this.ProcessRequest(requestContext);
+                await this.ProcessRequestAsync(requestContext);
             }
         }
 
@@ -201,7 +202,8 @@ namespace NetworkSocket.Fast
         /// 处理正常的数据请求
         /// </summary>
         /// <param name="requestContext">请求上下文</param>
-        private async void ProcessRequest(RequestContext requestContext)
+        /// <returns></returns>
+        private async Task ProcessRequestAsync(RequestContext requestContext)
         {
             if (requestContext.Packet.IsFromClient == false)
             {
@@ -209,7 +211,7 @@ namespace NetworkSocket.Fast
             }
             else
             {
-                await this.TryExecuteRequestAsync(requestContext).ConfigureAwait(false);
+                await this.TryExecuteRequestAsync(requestContext);
             }
         }
 

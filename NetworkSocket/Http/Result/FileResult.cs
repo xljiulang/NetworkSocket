@@ -58,25 +58,7 @@ namespace NetworkSocket.Http
                 var result = new ErrorResult { Status = 404, Errors = "找不到文件：" + this.FileName };
                 result.ExecuteResult(context.Response);
             }
-        }
-
-        /// <summary>
-        /// 异步执行结果
-        /// </summary>
-        /// <param name="context">上下文</param>
-        /// <returns></returns>
-        internal async void TryExecuteResultAsyncNoWait(RequestContext context)
-        {           
-            try
-            {
-                await this.ExecuteResultAsync(context).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                var error = new ErrorResult { Status = 500, Errors = ex.Message };
-                error.ExecuteResult(context);
-            }
-        }
+        } 
 
         /// <summary>
         /// 异步执行结果

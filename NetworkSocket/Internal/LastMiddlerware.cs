@@ -22,11 +22,11 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="context">上下文</param>
         /// <returns></returns>
-        public bool Invoke(IContenxt context)
+        public Task Invoke(IContenxt context)
         {
             context.InputStream.Clear();
             context.Session.Close();
-            return true;
+            return TaskExtend.CompletedTask;
         }
     }
 }

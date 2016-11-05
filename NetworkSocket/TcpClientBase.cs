@@ -103,7 +103,7 @@ namespace NetworkSocket
         /// <param name="session">会话</param>
         private void BindHandler(TcpSessionBase session)
         {
-            session.ReceiveHandler = this.ReceiveHandler;
+            session.ReceiveAsyncHandler = this.ReceiveHandler;
             session.DisconnectHandler = this.DisconnectHandler;
         }
 
@@ -266,9 +266,9 @@ namespace NetworkSocket
         /// 接收处理
         /// </summary>
         /// <param name="session">会话</param>
-        private void ReceiveHandler(TcpSessionBase session)
+        private Task ReceiveHandler(TcpSessionBase session)
         {
-            this.OnReceive(session.InputStream);
+            return this.OnReceiveAsync(session.InputStream);
         }
 
         /// <summary>
@@ -302,7 +302,8 @@ namespace NetworkSocket
         /// 当接收到远程端的数据时，将触发此方法   
         /// </summary>       
         /// <param name="inputStream">接收到的数据</param>
-        protected abstract void OnReceive(IStreamReader inputStream);
+        /// <returns></returns>
+        protected abstract Task OnReceiveAsync(IStreamReader inputStream);
 
 
         /// <summary>

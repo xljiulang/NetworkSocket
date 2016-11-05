@@ -172,7 +172,7 @@ namespace NetworkSocket
         /// 接收数据完成后
         /// </summary>
         /// <param name="asyncResult">异步结果</param>
-        private void EndRead(IAsyncResult asyncResult)
+        private async void EndRead(IAsyncResult asyncResult)
         {
             var read = this.ReadInputStream(asyncResult);
             if (read <= 0)
@@ -189,7 +189,7 @@ namespace NetworkSocket
                 }
 
                 // 重新进行一次接收
-                this.ReceiveHandler(this);
+                await this.ReceiveAsyncHandler(this);
                 this.TryBeginRead();
             }
         }
