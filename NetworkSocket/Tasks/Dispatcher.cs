@@ -10,14 +10,14 @@ using System.Threading.Tasks;
 namespace NetworkSocket.Tasks
 {
     /// <summary>
-    /// 提供Async方法异步等待完成
+    /// 提供方法等待调度
     /// </summary>
-    public sealed class AsyncDispatcher : IDisposable
+    public sealed class Dispatcher : IDisposable
     {
         /// <summary>
         /// 获取当前线程关联的AsyncDispatcher
         /// </summary>
-        public static AsyncDispatcher Current
+        public static Dispatcher Current
         {
             get
             {
@@ -27,24 +27,29 @@ namespace NetworkSocket.Tasks
         }
 
         /// <summary>
-        /// 等待Async方法执行完成
-        /// 创建新的同步上下文关联asyncAction
-        /// 执行完成后切换为调用线程的同步上下文
+        /// 同步等待action方法执行完成
+        /// 创建新的同步上下文关联执行action
+        /// 执行完成后切换为原始同步上下文
         /// </summary>
-        /// <param name="asyncAction">Async方法的委托</param>
-        /// <exception cref="ArgumentNullException"></exception>
-        /// <returns></returns>
-        public static bool AwaitAsync(Action asyncAction)
+        /// <param name="action">要等待的同步或异步方法</param>
+        /// <exception cref="ArgumentNullException"></exception>      
+        /// <returns>当action有异步操作返回true</returns>
+        public static bool Wait(Action action)
         {
-            var dispatcher = AsyncDispatcher.Current;
-            if (dispatcher != null)
+            if (action == null)
             {
-                return dispatcher.Await(asyncAction);
+                throw new ArgumentNullException();
             }
 
-            using (dispatcher = new AsyncDispatcher())
+            var dispatcher = Dispatcher.Current;
+            if (dispatcher != null)
             {
-                return dispatcher.Await(asyncAction);
+                return dispatcher.WaitAction(action);
+            }
+
+            using (dispatcher = new Dispatcher())
+            {
+                return dispatcher.WaitAction(action);
             }
         }
 
@@ -54,24 +59,24 @@ namespace NetworkSocket.Tasks
         private readonly Lazy<SyncCallbackQueue> callbackQuque;
 
         /// <summary>
-        /// 提供Async方法异步等待完成
+        /// 提供方法等待调度
         /// </summary>
-        public AsyncDispatcher()
+        private Dispatcher()
         {
             this.callbackQuque = new Lazy<SyncCallbackQueue>(() => new SyncCallbackQueue());
         }
 
         /// <summary>
-        /// 等待Async方法执行完成
-        /// 创建新的同步上下文关联asyncAction
-        /// 执行完成后切换为调用线程的同步上下文
+        /// 同步等待action方法执行完成
+        /// 创建新的同步上下文关联执行action
+        /// 执行完成后切换为原始同步上下文
         /// </summary>
-        /// <param name="asyncAction">Async方法的委托</param>
+        /// <param name="action">要等待的同步或异步方法</param>
         /// <exception cref="ArgumentNullException"></exception>
-        /// <returns></returns>
-        public bool Await(Action asyncAction)
+        /// <returns>当action有异步操作返回true</returns>
+        public bool WaitAction(Action action)
         {
-            if (asyncAction == null)
+            if (action == null)
             {
                 throw new ArgumentNullException();
             }
@@ -81,7 +86,7 @@ namespace NetworkSocket.Tasks
             {
                 var currentContext = new AsyncSynchronizationContext(this);
                 SynchronizationContext.SetSynchronizationContext(currentContext);
-                asyncAction.Invoke();
+                action.Invoke();
                 return currentContext.WaitForPendingOperationsToComplete() > 0L;
             }
             finally
@@ -226,13 +231,13 @@ namespace NetworkSocket.Tasks
             /// <summary>
             /// 获取调度器
             /// </summary>
-            public AsyncDispatcher Dispatcher { get; private set; }
+            public Dispatcher Dispatcher { get; private set; }
 
             /// <summary>
             /// Async的同步上下文
             /// </summary>
             /// <param name="dispatcher">调度器</param>
-            public AsyncSynchronizationContext(AsyncDispatcher dispatcher)
+            public AsyncSynchronizationContext(Dispatcher dispatcher)
             {
                 this.Dispatcher = dispatcher;
             }

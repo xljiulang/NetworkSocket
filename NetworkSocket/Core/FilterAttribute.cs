@@ -66,7 +66,7 @@ namespace NetworkSocket.Core
         /// <returns></returns>
         void IFilter.OnExecuting(IActionContext filterContext)
         {
-            AsyncDispatcher.AwaitAsync(() => this.OnExecuting(filterContext));
+            Dispatcher.Wait(() => this.OnExecuting(filterContext));
         }
 
         /// <summary>
@@ -75,7 +75,7 @@ namespace NetworkSocket.Core
         /// <param name="filterContext">上下文</param>      
         void IFilter.OnExecuted(IActionContext filterContext)
         {
-            AsyncDispatcher.AwaitAsync(() => this.OnExecuted(filterContext));
+            Dispatcher.Wait(() => this.OnExecuted(filterContext));
         }
 
         /// <summary>
@@ -84,7 +84,7 @@ namespace NetworkSocket.Core
         /// <param name="filterContext">上下文</param>
         void IFilter.OnException(IExceptionContext filterContext)
         {
-            AsyncDispatcher.AwaitAsync(() => this.OnException(filterContext));
+            Dispatcher.Wait(() => this.OnException(filterContext));
         }
 
         /// <summary>

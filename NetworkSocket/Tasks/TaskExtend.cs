@@ -30,7 +30,7 @@ namespace NetworkSocket.Tasks
         /// <param name="task">任务</param>
         /// <returns></returns>
         public static Task<T> ToTask<T>(this Task task)
-        {
+        {           
             return task.ToTask<T>(task.GetType());
         }
 
