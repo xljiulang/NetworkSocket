@@ -21,7 +21,7 @@ namespace NetworkSocket.Tasks
         /// <summary>
         /// 表示已完成的task
         /// </summary>
-        public static readonly Task CompletedTask = Task.FromResult(true);
+        internal static readonly Task CompletedTask = Task.FromResult(true);
 
         /// <summary>
         /// 转换为TaskOf(T)类型

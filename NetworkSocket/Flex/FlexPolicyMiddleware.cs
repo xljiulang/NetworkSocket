@@ -23,11 +23,11 @@ namespace NetworkSocket.Flex
         /// </summary>
         /// <param name="context">上下文</param>
         /// <returns></returns>
-        Task IMiddleware.Invoke(IContenxt context)
+        async Task IMiddleware.Invoke(IContenxt context)
         {
             if (context.Session.Protocol != Protocol.None || context.InputStream.Length != 23)
             {
-                return this.Next.Invoke(context);
+                await this.Next.Invoke(context);
             }
 
             context.InputStream.Position = 0;
@@ -35,11 +35,10 @@ namespace NetworkSocket.Flex
             if (string.Equals(request, "<policy-file-request/>\0", StringComparison.OrdinalIgnoreCase))
             {
                 this.SendPolicyXML(context);
-                return TaskExtend.CompletedTask;
             }
             else
             {
-                return this.Next.Invoke(context);
+                await this.Next.Invoke(context);
             }
         }
 
