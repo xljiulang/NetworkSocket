@@ -62,7 +62,7 @@ listener.Start(1212);
 
 ##### 客户端代码
 ```
-// 浏览器请求
+// http请求
 $.getJSON("/Home/GetUsers",{name:"admin"},function(data){
     alert(data.length == 0)
 });
@@ -76,7 +76,7 @@ client.Connect(IPAddress.Loopback, 1212);
 var users = await client.InvokeApi<UserInfo[]>("GetUsers", "admin");
 var about = await client.InvokeApi<string>("About"); // about == "Fast"
 
-// websocket客户端请求
+// websocket请求
 var ws = new jsonWebSocket('ws://127.0.0.1:1212/);
 ws.invokeApi("GetUsers", ['admin'], function (data) {
     alert(data.length == 0)
@@ -86,6 +86,10 @@ ws.invokeApi("About", [], function (data) {
 });
 ```
 
+##### Async Void支持
+FilterAttributer提供void OnXXX(ActionContext filterContext)的重写方法，当重写为
+`async` void OnXXX(ActionContext filterContext)之后，不影响Filter的等待流程，但是执行线程不是在异步等待执行，
+而是转为同步等待执行。
 ##### 欢迎入群
 Q群 439800853
 
