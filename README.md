@@ -2,33 +2,31 @@
 程序包管理器控制台：
 <br>PM> `Install-Package NetworkSocket`
 
-##### 项目主页和文档（Project homepage and Documentation）
-非常感谢网友[少林扫地僧](http://zhangyihui.cnblogs.com/)无偿提供文档托管，[项目主页和文档](http://networksocket.nginx.online)
 
 ##### 服务端代码
 ```
 public class HomeController : HttpController
 {
-    [HttpPost]
-    public ActionResult Index(User user, bool fAdmin = false)
+    [HttpGet]
+    public UserInfo[] GetUsers(string name)
     {
-        return Json(new { state = true });
+        return new UserInfo[0];
     }
 }
 
 public class FastMathService : FastApiService
 {
     [Api]
-    public int GetSum(int x, int y, int z)
+    public UserInfo[] UserInfo(string name)
     {
-        return x + y + z;
+        return new UserInfo[0];
     }
 }
 
 public class WebSocketSystemService : JsonWebSocketApiService
 {
     [Api]
-    public UserInfo[] SearchUsers(string name)
+    public UserInfo[] GetUsers(string name)
     {
         return new UserInfo[0];
     }
@@ -44,14 +42,16 @@ listener.Start(1212);
 ##### 客户端代码
 ```
 // 浏览器请求
-$.post("/home/index",{account:"admin",password:"123456",fAdmin:true});
+$.post("/Home/GetUsers",{name:"admin",fAdmin:true});
+
 // fastClient请求
 var client = new FastTcpClient();
 client.Connect(IPAddress.Loopback, 1212);
-var sum = client.InvokeApi<Int32>("GetSum", 1, 2, 3).Result;
+var users = await client.InvokeApi<Int32>("GetUsers", "admin");
+
 // websocket客户端请求
 var ws = new jsonWebSocket('ws://127.0.0.1:1212/);
-ws.invokeApi("SearchUsers", ['张三'], function (data) {
+ws.invokeApi("GetUsers", ['admin'], function (data) {
     alert(data.length == 0)
 });
 ```
