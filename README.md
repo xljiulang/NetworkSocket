@@ -12,6 +12,13 @@ public class HomeController : HttpController
     {
         return new UserInfo[0];
     }
+    
+    [HttpGet]
+    public async Task<string> AboutAsync(string name)
+    {
+        await Task.Delay(TimeSpan.FromSeconds(1));
+        return "Http";
+    }
 }
 
 public class FastMathService : FastApiService
@@ -21,6 +28,13 @@ public class FastMathService : FastApiService
     {
         return new UserInfo[0];
     }
+    
+    [Api]
+    public async Task<string> AboutAsync(string name)
+    {
+        await Task.Delay(TimeSpan.FromSeconds(1));
+        return "Fast";
+    }
 }
 
 public class WebSocketSystemService : JsonWebSocketApiService
@@ -29,6 +43,13 @@ public class WebSocketSystemService : JsonWebSocketApiService
     public UserInfo[] GetUsers(string name)
     {
         return new UserInfo[0];
+    }
+    
+    [Api]
+    public async Task<string> AboutAsync(string name)
+    {
+        await Task.Delay(TimeSpan.FromSeconds(1));
+        return "WebSocket";
     }
 }
 
@@ -42,17 +63,26 @@ listener.Start(1212);
 ##### 客户端代码
 ```
 // 浏览器请求
-$.post("/Home/GetUsers",{name:"admin",fAdmin:true});
+$.getJSON("/Home/GetUsers",{name:"admin"},function(data){
+    alert(data.length == 0)
+});
+$.getJSON("/Home/About",{},function(data){
+    alert(data == "Http")
+});
 
 // fastClient请求
 var client = new FastTcpClient();
 client.Connect(IPAddress.Loopback, 1212);
-var users = await client.InvokeApi<Int32>("GetUsers", "admin");
+var users = await client.InvokeApi<UserInfo[]>("GetUsers", "admin");
+var about = await client.InvokeApi<string>("About"); // about == "Fast"
 
 // websocket客户端请求
 var ws = new jsonWebSocket('ws://127.0.0.1:1212/);
 ws.invokeApi("GetUsers", ['admin'], function (data) {
     alert(data.length == 0)
+});
+ws.invokeApi("About", [], function (data) {
+    alert(data == "WebSocket")
 });
 ```
 
