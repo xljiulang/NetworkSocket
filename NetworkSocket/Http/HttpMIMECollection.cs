@@ -135,6 +135,17 @@ namespace NetworkSocket.Http
         }
 
         /// <summary>
+        /// 是否包含
+        /// </summary>
+        /// <param name="extension">扩展名</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <returns></returns>
+        public bool Contains(string extension)
+        {
+            return this.mimes.ContainsKey(extension);
+        }
+
+        /// <summary>
         /// 删除
         /// </summary>
         /// <param name="mime">扩展类型</param>

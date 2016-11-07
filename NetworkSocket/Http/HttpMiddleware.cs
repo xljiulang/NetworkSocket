@@ -116,39 +116,41 @@ namespace NetworkSocket.Http
             }
             else
             {
-                var extenstion = Path.GetExtension(requestContext.Request.Path);
-                if (string.IsNullOrWhiteSpace(extenstion) == true)
-                {
-                    var exception = new HttpException(404, "请求的页面不存在");
-                    this.OnException(context.Session, exception);
-                }
-                else
-                {
-                    await this.ProcessStaticFileRequestAsync(extenstion, requestContext);
-                }
+                await this.ProcessStaticFileRequestAsync(context, requestContext);
             }
         }
 
         /// <summary>
         /// 处理静态资源请求
         /// </summary>
-        /// <param name="extension">扩展名</param>
-        /// <param name="requestContext">上下文</param>
+        /// <param name="context">上下文</param>
+        /// <param name="requestContext">请求上下文对象</param>
         /// <returns></returns>
-        private async Task ProcessStaticFileRequestAsync(string extension, RequestContext requestContext)
+        private async Task ProcessStaticFileRequestAsync(IContenxt context, RequestContext requestContext)
         {
-            var contenType = this.MIMECollection[extension];
-            var file = requestContext.Request.Url.AbsolutePath.TrimStart('/').Replace(@"/", @"\");
+            const char httpSeparator = '/';
+            var localPath = requestContext.Request.Url.LocalPath;
+            if (Path.DirectorySeparatorChar != httpSeparator)
+            {
+                localPath = localPath.TrimStart(httpSeparator).Replace(httpSeparator, Path.DirectorySeparatorChar);
+            }
 
-            if (string.IsNullOrWhiteSpace(contenType) == true)
+            var extension = Path.GetExtension(localPath);
+            if (string.IsNullOrWhiteSpace(extension) == true)
+            {
+                var exception = new HttpException(404, "请求的页面不存在");
+                this.OnException(context.Session, exception);
+            }
+            else if (this.MIMECollection.Contains(extension) == false)
             {
                 var exception = new HttpException(403, string.Format("未配置{0}格式的MIME ..", extension));
-                this.OnException(((IWrapper)requestContext.Response).UnWrap(), exception);
+                this.OnException(context.Session, exception);
             }
             else
             {
-                var result = new FileResult { FileName = file, ContentType = contenType };
-                await result.ExecuteResultAsync(requestContext);
+                var contenType = this.MIMECollection[extension];
+                var fileResult = new FileResult { FileName = localPath, ContentType = contenType };
+                await fileResult.ExecuteResultAsync(requestContext);
             }
         }
 
