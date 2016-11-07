@@ -51,7 +51,15 @@ namespace NetworkSocket.Tasks
         /// <summary>
         /// 队列
         /// </summary>
-        private readonly SyncCallbackQueue callbackQuque = new SyncCallbackQueue();
+        private readonly Lazy<SyncCallbackQueue> callbackQuque;
+
+        /// <summary>
+        /// 提供Async方法异步等待完成
+        /// </summary>
+        public AsyncDispatcher()
+        {
+            this.callbackQuque = new Lazy<SyncCallbackQueue>(() => new SyncCallbackQueue());
+        }
 
         /// <summary>
         /// 等待Async方法执行完成
@@ -87,9 +95,11 @@ namespace NetworkSocket.Tasks
         /// </summary>
         public void Dispose()
         {
-            this.callbackQuque.Dispose();
+            if (this.callbackQuque.IsValueCreated == true)
+            {
+                this.callbackQuque.Value.Dispose();
+            }
         }
-
 
 
         /// <summary>
@@ -243,7 +253,7 @@ namespace NetworkSocket.Tasks
             /// <param name="state"></param>
             public override void Post(SendOrPostCallback d, object state)
             {
-                this.Dispatcher.callbackQuque.Enqueue(d, state);
+                this.Dispatcher.callbackQuque.Value.Enqueue(d, state);
             }
 
             /// <summary>
@@ -262,7 +272,7 @@ namespace NetworkSocket.Tasks
             {
                 if (Interlocked.Decrement(ref this.taskCount) == 0L)
                 {
-                    this.Dispatcher.callbackQuque.MarkAsComplete();
+                    this.Dispatcher.callbackQuque.Value.MarkAsComplete();
                 }
                 base.OperationCompleted();
             }
@@ -276,7 +286,7 @@ namespace NetworkSocket.Tasks
                 var count = Interlocked.Read(ref this.taskCount);
                 if (count > 0L)
                 {
-                    this.Dispatcher.callbackQuque.InvokeAll();
+                    this.Dispatcher.callbackQuque.Value.InvokeAll();
                 }
                 return count;
             }
