@@ -1,8 +1,10 @@
-﻿using System;
+﻿using NetworkSocket.Tasks;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace NetworkSocket.Core
 {
@@ -53,7 +55,9 @@ namespace NetworkSocket.Core
                 .Cast<AttributeUsageAttribute>()
                 .First()
                 .AllowMultiple);
-        }         
+        }
+
+
 
         /// <summary>
         /// 在执行Api行为前触发       
@@ -62,7 +66,10 @@ namespace NetworkSocket.Core
         /// <returns></returns>
         void IFilter.OnExecuting(IActionContext filterContext)
         {
-            this.OnExecuting(filterContext);
+            using (var dispatcher = new AsyncDispatcher())
+            {
+                dispatcher.Await(() => this.OnExecuting(filterContext));
+            }
         }
 
         /// <summary>
@@ -71,7 +78,10 @@ namespace NetworkSocket.Core
         /// <param name="filterContext">上下文</param>      
         void IFilter.OnExecuted(IActionContext filterContext)
         {
-            this.OnExecuted(filterContext);
+            using (var dispatcher = new AsyncDispatcher())
+            {
+                dispatcher.Await(() => this.OnExecuted(filterContext));
+            }
         }
 
         /// <summary>
@@ -80,7 +90,10 @@ namespace NetworkSocket.Core
         /// <param name="filterContext">上下文</param>
         void IFilter.OnException(IExceptionContext filterContext)
         {
-            this.OnException(filterContext);
+            using (var dispatcher = new AsyncDispatcher())
+            {
+                dispatcher.Await(() => this.OnException(filterContext));
+            }
         }
 
         /// <summary>
