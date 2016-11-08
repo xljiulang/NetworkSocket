@@ -62,7 +62,7 @@ listener.Start(1212);
 
 ##### 客户端代码
 ```
-// http请求
+// http js请求
 $.getJSON("/Home/GetUsers",{name:"admin"},function(data){
     alert(data.length == 0)
 });
@@ -76,7 +76,7 @@ client.Connect(IPAddress.Loopback, 1212);
 var users = await client.InvokeApi<UserInfo[]>("GetUsers", "admin");
 var about = await client.InvokeApi<string>("About"); // about == "Fast"
 
-// websocket请求
+// websocket js请求
 var ws = new jsonWebSocket('ws://127.0.0.1:1212/);
 ws.invokeApi("GetUsers", ['admin'], function (data) {
     alert(data.length == 0)
@@ -84,6 +84,12 @@ ws.invokeApi("GetUsers", ['admin'], function (data) {
 ws.invokeApi("About", [], function (data) {
     alert(data == "WebSocket")
 });
+
+// websocketClient请求
+var client = new JsonWebSocketClient();
+await client.ConnectAsync(IPAddress.Loopback, 1212);
+var users = await client.InvokeApi<UserInfo[]>("GetUsers", "admin");
+var about = await client.InvokeApi<string>("About"); // about == "WebSocket"
 ```
 
 ##### Async Void支持
