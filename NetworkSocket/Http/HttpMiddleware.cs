@@ -128,14 +128,10 @@ namespace NetworkSocket.Http
         /// <returns></returns>
         private async Task ProcessStaticFileRequestAsync(IContenxt context, RequestContext requestContext)
         {
-            const char httpSeparator = '/';
-            var localPath = requestContext.Request.Url.LocalPath;
-            if (Path.DirectorySeparatorChar != httpSeparator)
-            {
-                localPath = localPath.TrimStart(httpSeparator).Replace(httpSeparator, Path.DirectorySeparatorChar);
-            }
-
+            const string currentDirectory = ".";
+            var localPath = currentDirectory + requestContext.Request.Url.LocalPath;
             var extension = Path.GetExtension(localPath);
+
             if (string.IsNullOrWhiteSpace(extension) == true)
             {
                 var exception = new HttpException(404, "请求的页面不存在");
