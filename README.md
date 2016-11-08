@@ -21,7 +21,7 @@ public class HomeController : HttpController
     }
 }
 
-public class FastMathService : FastApiService
+public class FastService : FastApiService
 {
     [Api]
     public UserInfo[] UserInfo(string name)
@@ -37,7 +37,7 @@ public class FastMathService : FastApiService
     }
 }
 
-public class WebSocketSystemService : JsonWebSocketApiService
+public class JsonWebSocketService : JsonWebSocketApiService
 {
     [Api]
     public UserInfo[] GetUsers(string name)
