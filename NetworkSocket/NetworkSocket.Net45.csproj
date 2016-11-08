@@ -223,6 +223,7 @@
     <Compile Include="WebSocket\Internal\WebSocketGlobalFilters.cs" />
     <Compile Include="WebSocket\JsonPacket.cs" />
     <Compile Include="WebSocket\JsonWebSocketApiService.cs" />
+    <Compile Include="WebSocket\JsonWebSocketClient.cs" />
     <Compile Include="WebSocket\JsonWebSocketFilterAttribute.cs" />
     <Compile Include="WebSocket\JsonWebSocketMiddleware.cs" />
     <Compile Include="WebSocket\JsonWebSocketSession.cs" />

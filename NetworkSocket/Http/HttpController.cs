@@ -143,18 +143,17 @@ namespace NetworkSocket.Http
                 if (actionContext.Result != null)
                 {
                     actionContext.Result.ExecuteResult(actionContext);
+                    return;
+                }
+
+                var actionResult = result as ActionResult;
+                if (actionResult == null)
+                {
+                    this.Restful(result).ExecuteResult(actionContext);
                 }
                 else
                 {
-                    var actionResult = result as ActionResult;
-                    if (actionResult == null)
-                    {
-                        this.Restful(result).ExecuteResult(actionContext);
-                    }
-                    else
-                    {
-                        actionResult.ExecuteResult(actionContext);
-                    }
+                    actionResult.ExecuteResult(actionContext);
                 }
             }
             finally

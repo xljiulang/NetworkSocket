@@ -159,19 +159,16 @@ namespace NetworkSocket.Http
         /// <returns></returns>
         private async Task ExecuteHttpActionAsync(HttpAction action, IContenxt context, RequestContext requestContext)
         {
-            var actionContext = new ActionContext(requestContext, action, context);
-            var controller = this.GetHttpController(actionContext);
-
-            if (controller != null)
+            try
             {
-                try
-                {
-                    await controller.ExecuteAsync(actionContext);
-                }
-                finally
-                {
-                    this.DependencyResolver.TerminateService(controller);
-                }
+                var actionContext = new ActionContext(requestContext, action, context);
+                var controller = this.GetHttpController(actionContext);
+                await controller.ExecuteAsync(actionContext);
+                this.DependencyResolver.TerminateService(controller);
+            }
+            catch (Exception ex)
+            {
+                this.OnException(context.Session, ex);
             }
         }
 
@@ -179,6 +176,7 @@ namespace NetworkSocket.Http
         /// 获取控制器的实例
         /// </summary>
         /// <param name="actionContext">上下文</param>
+        /// <exception cref="ResolveException"></exception>
         /// <returns></returns>
         private IHttpController GetHttpController(ActionContext actionContext)
         {
@@ -191,8 +189,7 @@ namespace NetworkSocket.Http
             }
             catch (Exception ex)
             {
-                this.OnException(actionContext.Session, ex);
-                return null;
+                throw new ResolveException(actionContext.Action.DeclaringService, ex);
             }
         }
     }

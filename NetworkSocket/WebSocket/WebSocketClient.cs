@@ -63,7 +63,7 @@ namespace NetworkSocket.WebSocket
         /// <param name="remoteEndPoint">远程ip和端口</param> 
         /// <exception cref="AuthenticationException"></exception>
         /// <returns></returns>
-        public sealed override SocketError Connect(EndPoint remoteEndPoint)
+        public override sealed SocketError Connect(EndPoint remoteEndPoint)
         {
             var state = base.Connect(remoteEndPoint);
             if (state == SocketError.Success)
@@ -84,7 +84,7 @@ namespace NetworkSocket.WebSocket
         /// <param name="remoteEndPoint">远程ip和端口</param> 
         /// <exception cref="AuthenticationException"></exception>
         /// <returns></returns>
-        public sealed override async Task<SocketError> ConnectAsync(EndPoint remoteEndPoint)
+        public override sealed async Task<SocketError> ConnectAsync(EndPoint remoteEndPoint)
         {
             var state = await base.ConnectAsync(remoteEndPoint);
             if (state == SocketError.Success)

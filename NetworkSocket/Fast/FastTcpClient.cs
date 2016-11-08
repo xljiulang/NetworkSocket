@@ -52,7 +52,6 @@ namespace NetworkSocket.Fast
         /// </summary>
         public FastTcpClient()
         {
-            this.TimeOut = TimeSpan.FromSeconds(30);
             this.Init();
         }
 
@@ -88,6 +87,7 @@ namespace NetworkSocket.Fast
             this.packetIdProvider = new PacketIdProvider();
             this.taskSetterTable = new TaskSetterTable<long>();
             this.Serializer = new DefaultSerializer();
+            this.TimeOut = TimeSpan.FromSeconds(30);
         }
 
         /// <summary>
@@ -146,12 +146,28 @@ namespace NetworkSocket.Fast
             }
             else
             {
+                await TryProcessRequestPackageAsync(requestContext);
+            }
+        }
+
+        /// <summary>
+        /// 处理服务器请求的数据包
+        /// </summary>
+        /// <param name="requestContext">上下文</param>
+        /// <returns></returns>
+        private async Task TryProcessRequestPackageAsync(RequestContext requestContext)
+        {
+            try
+            {
                 var action = this.GetApiAction(requestContext);
-                if (action != null)
-                {
-                    var actionContext = new ActionContext(requestContext, action);
-                    await this.ExecuteActionAsync(actionContext);
-                }
+                var actionContext = new ActionContext(requestContext, action);
+                await this.ExecuteActionAsync(actionContext);
+            }
+            catch (Exception ex)
+            {
+                var exceptionContext = new ExceptionContext(requestContext, ex);
+                Common.SendRemoteException(this, exceptionContext);
+                this.OnException(requestContext.Packet, ex);
             }
         }
 
@@ -159,6 +175,7 @@ namespace NetworkSocket.Fast
         /// 获取Api行为
         /// </summary>
         /// <param name="requestContext">请求上下文</param>
+        /// <exception cref="ApiNotExistException"></exception>
         /// <returns></returns>
         private ApiAction GetApiAction(RequestContext requestContext)
         {
@@ -167,19 +184,7 @@ namespace NetworkSocket.Fast
             {
                 return action;
             }
-
-            var exception = new ApiNotExistException(requestContext.Packet.ApiName);
-            var exceptionContext = new ExceptionContext(requestContext, exception);
-            Common.SendRemoteException(this, exceptionContext);
-
-            var exceptionHandled = false;
-            this.OnException(requestContext.Packet, exception, out exceptionHandled);
-            if (exceptionHandled == false)
-            {
-                throw exception;
-            }
-
-            return null;
+            throw new ApiNotExistException(requestContext.Packet.ApiName);
         }
 
 
@@ -190,52 +195,42 @@ namespace NetworkSocket.Fast
         /// <returns></returns>
         private async Task ExecuteActionAsync(ActionContext actionContext)
         {
-            try
-            {
-                var action = actionContext.Action;
-                var parameters = Common.GetAndUpdateParameterValues(this.Serializer, actionContext);
-                var result = await action.ExecuteAsync(this, action.ParameterValues);
+            var action = actionContext.Action;
+            var parameters = Common.GetAndUpdateParameterValues(this.Serializer, actionContext);
+            var result = await action.ExecuteAsync(this, action.ParameterValues);
 
-                if (action.IsVoidReturn == false && this.IsConnected == true)
-                {
-                    actionContext.Packet.Body = this.Serializer.Serialize(result);
-                    this.Send(actionContext.Packet.ToArraySegment());
-                }
-            }
-            catch (Exception ex)
+            if (action.IsVoidReturn == false && this.IsConnected == true)
             {
-                this.ProcessExecutingException(actionContext, ex);
+                actionContext.Packet.Body = this.Serializer.Serialize(result);
+                this.TrySendPackage(actionContext.Packet);
             }
         }
-
 
         /// <summary>
-        /// 处理Api行为执行过程中产生的异常
+        /// 发送数据包
         /// </summary>
-        /// <param name="actionContext">上下文</param>       
-        /// <param name="exception">异常项</param>
-        private void ProcessExecutingException(ActionContext actionContext, Exception exception)
+        /// <param name="package">数据包</param>
+        /// <returns></returns>
+        private bool TrySendPackage(FastPacket package)
         {
-            var exceptionContext = new ExceptionContext(actionContext, new ApiExecuteException(exception));
-            Common.SendRemoteException(this, exceptionContext);
-
-            var exceptionHandled = false;
-            this.OnException(actionContext.Packet, exception, out exceptionHandled);
-            if (exceptionHandled == false)
+            try
             {
-                throw exception;
+                return this.Send(package.ToArraySegment()) > 0;
+            }
+            catch (Exception)
+            {
+                return false;
             }
         }
+
 
         /// <summary>
         ///  当操作中遇到处理异常时，将触发此方法
         /// </summary>
         /// <param name="packet">数据包对象</param>
-        /// <param name="exception">异常对象</param>
-        /// <param name="exceptionHandled">异常是否已处理</param>
-        protected virtual void OnException(FastPacket packet, Exception exception, out bool exceptionHandled)
+        /// <param name="exception">异常对象</param> 
+        protected virtual void OnException(FastPacket packet, Exception exception)
         {
-            exceptionHandled = false;
         }
 
         /// <summary>

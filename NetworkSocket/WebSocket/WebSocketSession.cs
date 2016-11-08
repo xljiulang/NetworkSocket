@@ -123,6 +123,7 @@ namespace NetworkSocket.WebSocket
                 return false;
             }
         }
+
         /// <summary>
         /// 发送回复数据
         /// </summary>

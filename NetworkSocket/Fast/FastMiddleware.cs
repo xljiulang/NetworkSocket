@@ -220,52 +220,35 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="requestContext">上下文</param>
         /// <returns></returns>
-        private async Task<bool> TryExecuteRequestAsync(RequestContext requestContext)
+        private async Task TryExecuteRequestAsync(RequestContext requestContext)
         {
-            var action = this.TryGetApiAction(requestContext);
-            if (action == null)
-            {
-                return false;
-            }
-
-            var actionContext = new ActionContext(requestContext, action);
-            var fastApiService = this.TryGetFastApiService(actionContext);
-            if (fastApiService == null)
-            {
-                return false;
-            }
-
             try
             {
+                var action = this.GetApiAction(requestContext);
+                var actionContext = new ActionContext(requestContext, action);
+                var fastApiService = this.GetFastApiService(actionContext);
                 await fastApiService.ExecuteAsync(actionContext);
-                return true;
+                this.DependencyResolver.TerminateService(fastApiService);
             }
             catch (Exception ex)
             {
-                var context = new ExceptionContext(actionContext, ex);
+                var context = new ExceptionContext(requestContext, ex);
                 this.OnException(requestContext.Session, context);
-                return false;
-            }
-            finally
-            {
-                this.DependencyResolver.TerminateService(fastApiService);
             }
         }
-
 
         /// <summary>
         /// 获取Api行为
         /// </summary>
         /// <param name="requestContext">请求上下文</param>
+        /// <exception cref="ApiNotExistException"></exception>
         /// <returns></returns>
-        private ApiAction TryGetApiAction(RequestContext requestContext)
+        private ApiAction GetApiAction(RequestContext requestContext)
         {
             var action = this.apiActionList.TryGet(requestContext.Packet.ApiName);
             if (action == null)
             {
-                var exception = new ApiNotExistException(requestContext.Packet.ApiName);
-                var exceptionContext = new ExceptionContext(requestContext, exception);
-                this.OnException(requestContext.Session, exceptionContext);
+                throw new ApiNotExistException(requestContext.Packet.ApiName);
             }
             return action;
         }
@@ -274,8 +257,9 @@ namespace NetworkSocket.Fast
         /// 获取FastApiService实例
         /// </summary>
         /// <param name="actionContext">Api行为上下文</param>
+        /// <exception cref="ResolveException"></exception>
         /// <returns></returns>
-        private IFastApiService TryGetFastApiService(ActionContext actionContext)
+        private IFastApiService GetFastApiService(ActionContext actionContext)
         {
             try
             {
@@ -285,10 +269,7 @@ namespace NetworkSocket.Fast
             }
             catch (Exception ex)
             {
-                var exception = new ResolveException(actionContext.Action.DeclaringService, ex);
-                var exceptionContext = new ExceptionContext(actionContext, exception);
-                this.OnException(actionContext.Session, exceptionContext);
-                return null;
+                throw new ResolveException(actionContext.Action.DeclaringService, ex);
             }
         }
 

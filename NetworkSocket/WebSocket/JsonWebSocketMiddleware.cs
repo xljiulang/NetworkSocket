@@ -219,34 +219,19 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="requestContext">上下文</param>
         /// <returns></returns>
-        private async Task<bool> TryExecuteRequestAsync(RequestContext requestContext)
+        private async Task TryExecuteRequestAsync(RequestContext requestContext)
         {
-            var action = this.TryGetApiAction(requestContext);
-            if (action == null)
-            {
-                return false;
-            }
-
-            var actionContext = new ActionContext(requestContext, action);
-            var jsonWebSocketApiService = this.TryGetJsonWebSocketApiService(actionContext);
-            if (jsonWebSocketApiService == null)
-            {
-                return false;
-            }
-
             try
             {
+                var action = this.GetApiAction(requestContext);
+                var actionContext = new ActionContext(requestContext, action);
+                var jsonWebSocketApiService = this.GetJsonWebSocketApiService(actionContext);
                 await jsonWebSocketApiService.ExecuteAsync(actionContext);
-                return true;
+                this.DependencyResolver.TerminateService(jsonWebSocketApiService);
             }
             catch (Exception ex)
             {
                 this.OnException(requestContext, ex);
-                return false;
-            }
-            finally
-            {
-                this.DependencyResolver.TerminateService(jsonWebSocketApiService);
             }
         }
 
@@ -284,14 +269,14 @@ namespace NetworkSocket.WebSocket
         /// 获取Api行为
         /// </summary>
         /// <param name="requestContext">请求上下文</param>
+        /// <exception cref="ApiNotExistException"></exception>
         /// <returns></returns>
-        private ApiAction TryGetApiAction(RequestContext requestContext)
+        private ApiAction GetApiAction(RequestContext requestContext)
         {
             var action = this.apiActionList.TryGet(requestContext.Packet.api);
             if (action == null)
             {
-                var exception = new ApiNotExistException(requestContext.Packet.api);
-                this.OnException(requestContext, exception);
+                throw new ApiNotExistException(requestContext.Packet.api);
             }
             return action;
         }
@@ -300,8 +285,9 @@ namespace NetworkSocket.WebSocket
         /// 获取JsonWebSocketApiService实例
         /// </summary>
         /// <param name="actionContext">Api行为上下文</param>
+        /// <exception cref="ResolveException"></exception>
         /// <returns></returns>
-        private IJsonWebSocketApiService TryGetJsonWebSocketApiService(ActionContext actionContext)
+        private IJsonWebSocketApiService GetJsonWebSocketApiService(ActionContext actionContext)
         {
             try
             {
@@ -311,9 +297,7 @@ namespace NetworkSocket.WebSocket
             }
             catch (Exception ex)
             {
-                var exception = new ResolveException(actionContext.Action.DeclaringService, ex);
-                this.OnException(actionContext, exception);
-                return null;
+                throw new ResolveException(actionContext.Action.DeclaringService, ex);
             }
         }
 
