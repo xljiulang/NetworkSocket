@@ -17,9 +17,13 @@ namespace NetworkSocket.Core
         /// <returns></returns>
         public IEnumerable<IFilter> GetActionFilters(ApiAction apiAction)
         {
+            var paramtersFilters = apiAction.GetParametersFilterAttributes(cache: true);
             var methodFilters = apiAction.GetMethodFilterAttributes();
-            var classFilters = apiAction.GetClassFilterAttributes().Where(cf => cf.AllowMultiple || methodFilters.Any(mf => mf.TypeId == cf.TypeId) == false);
-            return methodFilters.Concat(classFilters).OrderBy(f => f.Order).ToArray();
+            var classFilters = apiAction.GetClassFilterAttributes()
+                .Where(cf => cf.AllowMultiple || methodFilters.Any(mf => mf.TypeId == cf.TypeId) == false);
+
+            var allFilters = paramtersFilters.Concat(methodFilters).Concat(classFilters).OrderBy(f => f.Order).ToArray();
+            return allFilters;
         }
     }
 }

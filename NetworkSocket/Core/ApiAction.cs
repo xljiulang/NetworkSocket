@@ -18,6 +18,11 @@ namespace NetworkSocket.Core
     public class ApiAction
     {
         /// <summary>
+        /// 参数过滤器
+        /// </summary>
+        private readonly IEnumerable<ParameterFilterAttribute> parametersFilterAttributes;
+
+        /// <summary>
         /// 参数值
         /// </summary>
         [ThreadStatic]
@@ -104,8 +109,21 @@ namespace NetworkSocket.Core
             {
                 this.ApiName = Regex.Replace(method.Name, @"Async$", string.Empty, RegexOptions.IgnoreCase);
             }
+            this.parametersFilterAttributes = this.GetParametersFilterAttribute(this.ParameterInfos);
         }
 
+
+        /// <summary>
+        /// 获取参数的参数过滤器
+        /// </summary>
+        /// <param name="parameters">参数</param>
+        /// <returns></returns>
+        private IEnumerable<ParameterFilterAttribute> GetParametersFilterAttribute(ParameterInfo[] parameters)
+        {
+            return parameters.SelectMany((p, i) =>
+                p.GetCustomAttributes<ParameterFilterAttribute>()
+                .Select(f => f.SetWithIndex(i)));
+        }
 
         /// <summary>
         /// 获取Api行为或Api行为的声明类型是否声明了特性
@@ -134,6 +152,23 @@ namespace NetworkSocket.Core
         public virtual IEnumerable<FilterAttribute> GetClassFilterAttributes()
         {
             return Attribute.GetCustomAttributes(this.DeclaringService, typeof(FilterAttribute), true).Cast<FilterAttribute>();
+        }
+
+        /// <summary>
+        /// 获取参数过滤器
+        /// <param name="cache">是否使用缓存</param>
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<ParameterFilterAttribute> GetParametersFilterAttributes(bool cache)
+        {
+            if (cache == true)
+            {
+                return this.parametersFilterAttributes;
+            }
+            else
+            {
+                return this.GetParametersFilterAttribute(this.ParameterInfos);
+            }
         }
 
         /// <summary>
