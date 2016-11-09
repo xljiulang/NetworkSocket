@@ -10,28 +10,20 @@ namespace NetworkSocket.Core
     /// 表示Api行为的参数过滤器
     /// </summary>
     [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false)]
-    public class ParameterFilterAttribute : FilterAttribute
+    public abstract class ParameterFilterAttribute : FilterAttribute
     {
         /// <summary>
-        /// 获取参数索引
+        /// 参数
         /// </summary>
-        public int Index { get; private set; }
+        private ApiParameter parameter;
 
         /// <summary>
-        /// Api行为的参数过滤器
+        /// 绑定参数
         /// </summary>
-        public ParameterFilterAttribute()
+        /// <param name="parameter">参数</param>
+        internal ParameterFilterAttribute BindParameter(ApiParameter parameter)
         {
-            this.Order = -1;
-        }
-
-        /// <summary>
-        /// 设置过滤器对应参数的索引
-        /// </summary>
-        /// <param name="index"></param>
-        internal ParameterFilterAttribute SetWithIndex(int index)
-        {
-            this.Index = index;
+            this.parameter = parameter;
             return this;
         }
 
@@ -39,8 +31,9 @@ namespace NetworkSocket.Core
         /// 执行前
         /// </summary>
         /// <param name="filterContext"></param>
-        protected override void OnExecuting(IActionContext filterContext)
+        protected sealed override void OnExecuting(IActionContext filterContext)
         {
+            this.OnOnExecuting(filterContext.Action, this.parameter);
         }
 
         /// <summary>
@@ -58,5 +51,14 @@ namespace NetworkSocket.Core
         protected sealed override void OnException(IExceptionContext filterContext)
         {
         }
+
+        /// <summary>
+        /// Api执行之前
+        /// 在此检测parameter的输入合理性
+        /// 不合理可以抛出异常
+        /// </summary>
+        /// <param name="action">关联的Api行为</param>
+        /// <param name="parameter">参数信息</param>
+        public abstract void OnOnExecuting(ApiAction action, ApiParameter parameter);
     }
 }

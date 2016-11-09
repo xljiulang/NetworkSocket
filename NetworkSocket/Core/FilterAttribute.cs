@@ -50,7 +50,7 @@ namespace NetworkSocket.Core
         /// <returns></returns>
         private static bool IsAllowMultiple(Type attributeType)
         {
-            return multiuseAttributeCache.GetOrAdd(attributeType, type => type
+            return multiuseAttributeCache.GetOrAdd(attributeType, type => type                
                 .GetCustomAttributes(typeof(AttributeUsageAttribute), true)
                 .Cast<AttributeUsageAttribute>()
                 .First()

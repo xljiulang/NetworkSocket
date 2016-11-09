@@ -57,6 +57,7 @@
   <ItemGroup>
     <Compile Include="ByteBits.cs" />
     <Compile Include="Core\ApiAction.cs" />
+    <Compile Include="Core\ApiParameter.cs" />
     <Compile Include="Core\ApiAttribute.cs" />
     <Compile Include="Core\FilterAttribute.cs" />
     <Compile Include="Core\IActionContext.cs" />

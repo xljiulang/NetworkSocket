@@ -89,7 +89,7 @@ namespace NetworkSocket.WebSocket
         /// <returns></returns>
         private async Task ExecuteActionAsync(ActionContext actionContext, IEnumerable<IFilter> filters)
         {
-            this.UpdateParameterValues(actionContext);
+            this.SetParameterValues(actionContext);
             this.ExecFiltersBeforeAction(filters, actionContext);
 
             if (actionContext.Result != null)
@@ -113,7 +113,7 @@ namespace NetworkSocket.WebSocket
         {
             try
             {
-                var parameters = actionContext.Action.ParameterValues;
+                var parameters = actionContext.Action.ParametersValues;
                 var result = await actionContext.Action.ExecuteAsync(this, parameters);
 
                 this.ExecFiltersAfterAction(filters, actionContext);
@@ -135,11 +135,11 @@ namespace NetworkSocket.WebSocket
         }
 
         /// <summary>
-        /// 获取和更新Api行为的参数值
+        /// 设置Api行为的参数值
         /// </summary> 
         /// <param name="context">上下文</param>        
         /// <exception cref="ArgumentException"></exception>    
-        private void UpdateParameterValues(ActionContext context)
+        private void SetParameterValues(ActionContext context)
         {
             var body = context.Packet.body as IList;
             if (body == null)
@@ -147,21 +147,15 @@ namespace NetworkSocket.WebSocket
                 throw new ArgumentException("body参数必须为数组");
             }
 
-            if (body.Count != context.Action.ParameterTypes.Length)
+            if (body.Count != context.Action.Parameters.Length)
             {
                 throw new ArgumentException("body参数数量不正确");
             }
 
-            var parameters = new object[body.Count];
             var serializer = context.Session.Middleware.JsonSerializer;
-
-            for (var i = 0; i < body.Count; i++)
-            {
-                var bodyParameter = body[i];
-                var parameterType = context.Action.ParameterTypes[i];
-                parameters[i] = serializer.Convert(bodyParameter, parameterType);
-            }
-            context.Action.ParameterValues = parameters;
+            context.Action.ParametersValues = context.Action.Parameters
+                .Select((p, i) => serializer.Convert(body[i], p.Type))
+                .ToArray();
         }
 
         /// <summary>

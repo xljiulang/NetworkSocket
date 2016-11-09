@@ -9,19 +9,20 @@ namespace NetworkSocket.Core
     /// <summary>
     /// 表示Api行为的参数值不能为NULL验证标记
     /// </summary>
-    public class NotNullAttribute : ParameterFilterAttribute
+    public sealed class NotNullAttribute : ParameterFilterAttribute
     {
         /// <summary>
-        /// 执行请求前
+        /// Api执行之前
+        /// 在此检测parameter的输入合理性
+        /// 不合理可以抛出异常
         /// </summary>
-        /// <param name="filterContext"></param>
-        protected override void OnExecuting(IActionContext filterContext)
+        /// <param name="action">关联的Api行为</param>
+        /// <param name="parameter">参数信息</param>
+        public override void OnOnExecuting(ApiAction action, ApiParameter parameter)
         {
-            var value = filterContext.Action.ParameterValues[this.Index];
-            if (value == null)
+            if (parameter.Value == null)
             {
-                var paramterName = filterContext.Action.ParameterInfos[this.Index].Name;
-                throw new ArgumentNullException(paramterName);
+                throw new ArgumentNullException(parameter.Name);
             }
         }
     }

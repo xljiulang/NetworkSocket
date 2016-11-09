@@ -39,7 +39,7 @@ namespace NetworkSocket.Http
         public override void ExecuteResult(RequestContext context)
         {
             var accept = context.Request.Headers["Accept"];
-            if (accept != null && accept.IndexOf("/xml", StringComparison.OrdinalIgnoreCase) > -1)
+            if (accept != null && accept.IndexOf("application/xml", StringComparison.OrdinalIgnoreCase) > -1)
             {
                 var gzip = context.Request.IsAcceptGZip();
                 var xml = this.SerializeXml(this.Data);

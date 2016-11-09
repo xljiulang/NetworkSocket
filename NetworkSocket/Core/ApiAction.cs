@@ -18,15 +18,21 @@ namespace NetworkSocket.Core
     public class ApiAction
     {
         /// <summary>
-        /// 参数过滤器
+        /// 类过滤器
         /// </summary>
-        private readonly IEnumerable<ParameterFilterAttribute> parametersFilterAttributes;
+        private readonly FilterAttribute[] classFiltersCache;
 
         /// <summary>
-        /// 参数值
+        /// 方法过滤器
         /// </summary>
-        [ThreadStatic]
-        private static object[] parameters;
+        private readonly FilterAttribute[] methodFiltersCache;
+
+        /// <summary>
+        /// 参数过滤器
+        /// </summary>
+        private readonly ParameterFilterAttribute[] parametersFiltersCache;
+
+
 
         /// <summary>
         /// 是否是Task类型返回
@@ -34,50 +40,24 @@ namespace NetworkSocket.Core
         private readonly bool isTaskReturn;
 
         /// <summary>
+        /// 获取方法成员信息
+        /// </summary>
+        public Method Method { get; private set; }
+
+        /// <summary>
         /// 获取Api行为的Api名称
         /// </summary>
-        public string ApiName { get; protected set; }
+        public string ApiName { get; private set; }
 
         /// <summary>
         /// 获取Api行为的方法成员返回类型是否为void
         /// </summary>
-        public bool IsVoidReturn { get; protected set; }
+        public bool IsVoidReturn { get; private set; }
 
         /// <summary>
         /// Api行为的方法成员返回类型
         /// </summary>
-        public Type ReturnType { get; protected set; }
-
-        /// <summary>
-        /// 获取Api行为的参数信息
-        /// </summary>
-        public ParameterInfo[] ParameterInfos { get; protected set; }
-
-        /// <summary>
-        /// 获取Api行为的方法成员参数类型
-        /// </summary>
-        public Type[] ParameterTypes { get; protected set; }
-
-        /// <summary>
-        /// 获取Api行为的参数值
-        /// </summary>
-        public object[] ParameterValues
-        {
-            get
-            {
-                return parameters;
-            }
-            internal set
-            {
-                parameters = value;
-            }
-        }
-
-
-        /// <summary>
-        /// 获取方法成员信息
-        /// </summary>
-        public Method Method { get; private set; }
+        public Type ReturnType { get; private set; }
 
         /// <summary>
         /// 获取声明该成员的服务类型
@@ -86,43 +66,122 @@ namespace NetworkSocket.Core
 
 
         /// <summary>
+        /// 获取Api参数
+        /// </summary>
+        public ApiParameter[] Parameters { get; private set; }
+
+        /// <summary>
+        /// 参数值
+        /// </summary>
+        [ThreadStatic]
+        private static object[] parameters;
+
+        /// <summary>
+        /// 获取或设置Api行为的参数值
+        /// ThreadStatic线程隔离
+        /// </summary>
+        public object[] ParametersValues
+        {
+            get
+            {
+                return parameters;
+            }
+            set
+            {
+                parameters = value;
+            }
+        }
+
+        /// <summary>
         /// Api行为
         /// </summary>
         /// <param name="method">方法信息</param>
         /// <exception cref="ArgumentException"></exception>
         public ApiAction(MethodInfo method)
         {
-            this.isTaskReturn = typeof(Task).IsAssignableFrom(method.ReturnType);
             this.Method = new Method(method);
-            this.DeclaringService = method.DeclaringType;
+            this.ApiName = this.GetApiName(method);
             this.ReturnType = method.ReturnType;
+            this.DeclaringService = method.DeclaringType;
+            this.isTaskReturn = typeof(Task).IsAssignableFrom(method.ReturnType);
             this.IsVoidReturn = method.ReturnType.Equals(typeof(void)) || method.ReturnType.Equals(typeof(Task));
-            this.ParameterInfos = method.GetParameters();
-            this.ParameterTypes = this.ParameterInfos.Select(item => item.ParameterType).ToArray();
+            this.Parameters = method.GetParameters().Select((p, i) => new ApiParameter(this, p, i)).ToArray();
 
+            this.classFiltersCache = this.GetClassFilterAttributes(cache: false).ToArray();
+            this.methodFiltersCache = this.GetMethodFilterAttributes(cache: false).ToArray();
+            this.parametersFiltersCache = this.GetParametersFilterAttributes(cache: false).ToArray();
+        }
+
+        /// <summary>
+        /// 获取ApiName
+        /// </summary>
+        /// <param name="method">方法</param>
+        /// <returns></returns>
+        private string GetApiName(MethodInfo method)
+        {
             var api = Attribute.GetCustomAttribute(method, typeof(ApiAttribute)) as ApiAttribute;
             if (api != null && string.IsNullOrWhiteSpace(api.Name) == false)
             {
-                this.ApiName = api.Name;
+                return api.Name;
             }
             else
             {
-                this.ApiName = Regex.Replace(method.Name, @"Async$", string.Empty, RegexOptions.IgnoreCase);
+                return Regex.Replace(method.Name, @"Async$", string.Empty, RegexOptions.IgnoreCase);
             }
-            this.parametersFilterAttributes = this.GetParametersFilterAttribute(this.ParameterInfos);
         }
 
+        /// <summary>
+        /// 获取类级过滤器特性
+        /// </summary>
+        /// <param name="cache">是否从缓存读取</param>
+        /// <returns></returns>
+        public virtual IEnumerable<FilterAttribute> GetClassFilterAttributes(bool cache)
+        {
+            if (cache == false)
+            {
+                return this.DeclaringService.GetCustomAttributes<FilterAttribute>(inherit: true);
+            }
+            else
+            {
+                return this.classFiltersCache;
+            }
+        }
+
+        /// <summary>
+        /// 获取方法级过滤器特性
+        /// </summary>
+        /// <param name="cache">是否从缓存读取</param>
+        /// <returns></returns>
+        public virtual IEnumerable<FilterAttribute> GetMethodFilterAttributes(bool cache)
+        {
+            if (cache == false)
+            {
+                return this.Method.Info.GetCustomAttributes<FilterAttribute>(inherit: true);
+            }
+            else
+            {
+                return this.methodFiltersCache;
+            }
+        }
 
         /// <summary>
         /// 获取参数的参数过滤器
         /// </summary>
-        /// <param name="parameters">参数</param>
+        /// <param name="cache">是否从缓存读取</param>
         /// <returns></returns>
-        private IEnumerable<ParameterFilterAttribute> GetParametersFilterAttribute(ParameterInfo[] parameters)
+        public virtual IEnumerable<ParameterFilterAttribute> GetParametersFilterAttributes(bool cache)
         {
-            return parameters.SelectMany((p, i) =>
-                p.GetCustomAttributes<ParameterFilterAttribute>()
-                .Select(f => f.SetWithIndex(i)));
+            if (cache == false)
+            {
+                return this.Parameters.SelectMany(p =>
+                    p.Info
+                    .GetCustomAttributes<ParameterFilterAttribute>(inherit: true)
+                    .Select(f => f.BindParameter(p)));
+            }
+            else
+            {
+                return this.parametersFiltersCache;
+            }
         }
 
         /// <summary>
@@ -136,40 +195,6 @@ namespace NetworkSocket.Core
             return this.Method.Info.IsDefined(type, inherit) || this.DeclaringService.IsDefined(type, inherit);
         }
 
-        /// <summary>
-        /// 获取方法级过滤器特性
-        /// </summary>
-        /// <returns></returns>
-        public virtual IEnumerable<FilterAttribute> GetMethodFilterAttributes()
-        {
-            return Attribute.GetCustomAttributes(this.Method.Info, typeof(FilterAttribute), true).Cast<FilterAttribute>();
-        }
-
-        /// <summary>
-        /// 获取类级过滤器特性
-        /// </summary>
-        /// <returns></returns>
-        public virtual IEnumerable<FilterAttribute> GetClassFilterAttributes()
-        {
-            return Attribute.GetCustomAttributes(this.DeclaringService, typeof(FilterAttribute), true).Cast<FilterAttribute>();
-        }
-
-        /// <summary>
-        /// 获取参数过滤器
-        /// <param name="cache">是否使用缓存</param>
-        /// </summary>
-        /// <returns></returns>
-        public IEnumerable<ParameterFilterAttribute> GetParametersFilterAttributes(bool cache)
-        {
-            if (cache == true)
-            {
-                return this.parametersFilterAttributes;
-            }
-            else
-            {
-                return this.GetParametersFilterAttribute(this.ParameterInfos);
-            }
-        }
 
         /// <summary>
         /// 执行Api行为

@@ -113,7 +113,7 @@ namespace NetworkSocket.Http
         /// <returns>如果输出Api的返回结果就返回true</returns>
         private async Task ExecuteActionAsync(ActionContext actionContext, IEnumerable<IFilter> filters)
         {
-            this.UpdateParameterValues(actionContext);
+            this.SetParameterValues(actionContext);
             this.ExecFiltersBeforeAction(filters, actionContext);
 
             if (actionContext.Result != null)
@@ -136,7 +136,7 @@ namespace NetworkSocket.Http
         {
             try
             {
-                var parameters = actionContext.Action.ParameterValues;
+                var parameters = actionContext.Action.ParametersValues;
                 var result = await actionContext.Action.ExecuteAsync(this, parameters);
 
                 this.ExecFiltersAfterAction(filters, actionContext);
@@ -164,20 +164,15 @@ namespace NetworkSocket.Http
 
 
         /// <summary>
-        /// 获取和更新Http Api的参数值
+        /// 设置Http Api的参数值
         /// </summary>
         /// <param name="actionContext"></param>
-        private void UpdateParameterValues(ActionContext actionContext)
+        private void SetParameterValues(ActionContext actionContext)
         {
             var action = actionContext.Action;
-            action.ParameterValues = new object[action.ParameterInfos.Length];
-
-            for (var i = 0; i < action.ParameterValues.Length; i++)
-            {
-                var paramter = action.ParameterInfos[i];
-                var pValue = this.Middleware.ModelBinder.BindModel(actionContext.Request, paramter);
-                action.ParameterValues[i] = pValue;
-            }
+            action.ParametersValues = action.Parameters
+                .Select((p, i) => this.Middleware.ModelBinder.BindModel(actionContext.Request, p.Info))
+                .ToArray();
         }
 
         /// <summary>

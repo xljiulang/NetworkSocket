@@ -114,7 +114,7 @@ namespace NetworkSocket.Fast
         {
             try
             {
-                var paramters = actionContext.Action.ParameterValues;
+                var paramters = actionContext.Action.ParametersValues;
                 var result = await actionContext.Action.ExecuteAsync(this, paramters);
 
                 this.ExecFiltersAfterAction(filters, actionContext);

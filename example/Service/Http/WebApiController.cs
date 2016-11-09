@@ -7,6 +7,7 @@ using System.Text;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using NetworkSocket.Tasks;
+using NetworkSocket.Core;
 
 namespace Service.Http
 {
@@ -24,7 +25,7 @@ namespace Service.Http
 
         [HttpPost]
         [Route("/{controller}/{action}.html")]
-        public async Task<object> Login(string account, string password)
+        public async Task<object> Login([NotNull]string account, [NotNull] string password)
         {
             await Task.Delay(3 * 1000);
             return new { account, password };
