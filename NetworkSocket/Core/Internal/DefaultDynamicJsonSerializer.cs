@@ -33,10 +33,10 @@ namespace NetworkSocket.Core
         /// 序列化为Json
         /// </summary>
         /// <param name="model">实体</param>
-        /// <param name="datetimeFomat">日志格式</param>
+        /// <param name="datetimeFomat">时期时间格式化</param>
         /// <exception cref="SerializerException"></exception>
         /// <returns></returns>
-        public string Serialize(object model, string datetimeFomat)
+        public string Serialize(object model, Func<DateTime, string> datetimeFomat)
         {
             if (model == null)
             {
@@ -51,10 +51,12 @@ namespace NetworkSocket.Core
 
                 if (datetimeFomat != null)
                 {
-                    json = Regex.Replace(json, @"\\/Date\((\d+)\)\\/", match => new DateTime(1970, 1, 1)
-                        .AddMilliseconds(long.Parse(match.Groups[1].Value))
-                        .ToLocalTime()
-                        .ToString("yyyy/MM/dd HH:mm:ss.fff"));
+                    json = Regex.Replace(json, @"\\/Date\((\d+)\)\\/", match =>
+                    {
+                        var ticks = match.Groups[1].Value;
+                        var dateTime = this.ToLocalDateTime(ticks);
+                        return datetimeFomat(dateTime);
+                    });
                 }
                 return json;
             }
@@ -64,8 +66,16 @@ namespace NetworkSocket.Core
             }
         }
 
-
-
+        /// <summary>
+        /// 转换为本地时间
+        /// </summary>
+        /// <param name="jsTicks"></param>
+        /// <returns></returns>
+        private DateTime ToLocalDateTime(string jsTicks)
+        {
+            var ticks = long.Parse(jsTicks);
+            return new DateTime(1970, 1, 1).AddMilliseconds(ticks).ToLocalTime();
+        }
 
         /// <summary>
         /// 反序列化json为动态类型
