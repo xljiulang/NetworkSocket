@@ -27,13 +27,23 @@ namespace NetworkSocket.Http
         }
 
         /// <summary>
+        /// 序列化成json文本
+        /// </summary>
+        /// <param name="data">内容</param>
+        /// <returns></returns>
+        protected virtual string SerializeJson(object data)
+        {
+            return new DefaultDynamicJsonSerializer().Serialize(this.Data);
+        }
+
+        /// <summary>
         /// 执行结果
         /// </summary>
         /// <param name="context">上下文</param>
         public override void ExecuteResult(RequestContext context)
         {
             var callback = context.Request["callback"];
-            var json = new DefaultDynamicJsonSerializer().Serialize(this.Data);
+            var json = this.SerializeJson(this.Data);
             var gzip = context.Request.IsAcceptGZip();
 
             if (callback == null)

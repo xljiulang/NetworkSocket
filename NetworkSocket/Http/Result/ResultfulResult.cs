@@ -1,4 +1,5 @@
 ﻿using NetworkSocket.Core;
+using NetworkSocket.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,20 +11,25 @@ namespace NetworkSocket.Http
     /// <summary>
     /// Resultful结果
     /// </summary>
-    public class RestfulResult : ActionResult
+    public class RestfulResult : JsonResult
     {
-        /// <summary>
-        /// 内容
-        /// </summary>
-        protected object Data { get; private set; }
-
         /// <summary>
         /// 内容
         /// </summary>
         /// <param name="data">内容</param>
         public RestfulResult(object data)
+            : base(data)
         {
-            this.Data = data;
+        }
+
+        /// <summary>
+        /// 序列化成xml文本
+        /// </summary>
+        /// <param name="data">内容</param>
+        /// <returns></returns>
+        protected virtual string SerializeXml(object data)
+        {
+            throw new NotImplementedException("SerializeXml");
         }
 
         /// <summary>
@@ -32,10 +38,18 @@ namespace NetworkSocket.Http
         /// <param name="context">上下文</param>
         public override void ExecuteResult(RequestContext context)
         {
-            // TODO
-            // application/xml
-
-            new JsonResult(this.Data).ExecuteResult(context);
+            var accept = context.Request.Headers["Accept"];
+            if (accept != null && accept.IndexOf("/xml", StringComparison.OrdinalIgnoreCase) > -1)
+            {
+                var gzip = context.Request.IsAcceptGZip();
+                var xml = this.SerializeXml(this.Data);
+                context.Response.ContentType = "application/xml";
+                context.Response.WriteResponse(xml, gzip);
+            }
+            else
+            {
+                base.ExecuteResult(context);
+            }
         }
     }
 }
