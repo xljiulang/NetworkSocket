@@ -12,6 +12,21 @@ namespace NetworkSocket.Util
     public static class ByteConverter
     {
         /// <summary>
+        /// 获取系统字节存储次序
+        /// </summary>
+        public readonly static Endians Endian = ByteConverter.GetSystemEndian();
+
+        /// <summary>
+        /// 系统字节存储次序
+        /// </summary>
+        /// <returns></returns>
+        private static unsafe Endians GetSystemEndian()
+        {
+            var int32 = 1;
+            return *(byte*)&int32 == 1 ? Endians.Little : Endians.Big;
+        }
+
+        /// <summary>
         /// 返回由字节数组中指定位置的8个字节转换来的64位有符号整数
         /// </summary>
         /// <param name="bytes">字节数组</param>
@@ -21,7 +36,7 @@ namespace NetworkSocket.Util
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <returns></returns>        
         public static unsafe long ToInt64(byte[] bytes, int startIndex, Endians endian)
-        {            
+        {
             fixed (byte* pbyte = &bytes[startIndex])
             {
                 if (endian == Endians.Little)
@@ -254,7 +269,7 @@ namespace NetworkSocket.Util
         /// <returns></returns>
         public static byte[] ToBytes(ushort value, Endians endian)
         {
-            return ToBytes((short)value, endian);             
+            return ToBytes((short)value, endian);
         }
     }
 }
