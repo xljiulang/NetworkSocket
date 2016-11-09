@@ -33,7 +33,7 @@ namespace NetworkSocket.Validation
             {
                 throw new ArgumentNullException();
             }
-            this.ValidRules = this.GetValidRules(property); ;
+            this.ValidRules = this.GetValidRules(property);
         }
 
         /// <summary>

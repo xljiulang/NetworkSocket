@@ -156,8 +156,7 @@ namespace NetworkSocket.WebSocket
         /// 收到文本内容
         /// </summary>
         /// <param name="text">内容</param>
-        /// <returns></returns>
-        protected sealed override async Task OnTextAsync(string text)
+        protected sealed override async void OnText(string text)
         {
             var package = this.TryGetJsonPacket(text);
             if (package == null)

@@ -8,6 +8,7 @@ using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Web.Script.Serialization;
 
 namespace NetworkSocket.Core
@@ -25,6 +26,18 @@ namespace NetworkSocket.Core
         /// <returns></returns>
         public string Serialize(object model)
         {
+            return this.Serialize(model, null);
+        }
+
+        /// <summary>
+        /// 序列化为Json
+        /// </summary>
+        /// <param name="model">实体</param>
+        /// <param name="datetimeFomat">日志格式</param>
+        /// <exception cref="SerializerException"></exception>
+        /// <returns></returns>
+        public string Serialize(object model, string datetimeFomat)
+        {
             if (model == null)
             {
                 return null;
@@ -34,13 +47,24 @@ namespace NetworkSocket.Core
             {
                 var serializer = new JavaScriptSerializer();
                 serializer.MaxJsonLength = int.MaxValue;
-                return serializer.Serialize(model);
+                var json = serializer.Serialize(model);
+
+                if (datetimeFomat != null)
+                {
+                    json = Regex.Replace(json, @"\\/Date\((\d+)\)\\/", match => new DateTime(1970, 1, 1)
+                        .AddMilliseconds(long.Parse(match.Groups[1].Value))
+                        .ToLocalTime()
+                        .ToString("yyyy/MM/dd HH:mm:ss.fff"));
+                }
+                return json;
             }
             catch (Exception ex)
             {
                 throw new SerializerException(ex);
             }
         }
+
+
 
 
         /// <summary>

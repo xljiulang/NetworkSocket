@@ -67,25 +67,23 @@ namespace NetworkSocket.Http
         /// <param name="context">上下文</param>
         /// <param name="result">解析结果</param>
         /// <returns></returns>
-        private async Task ProcessParseResultAsync(IContenxt context, HttpParseResult result)
+        private Task ProcessParseResultAsync(IContenxt context, HttpParseResult result)
         {
             if (result.IsHttp == false)
             {
-                await this.Next.Invoke(context);
-                return;
+                return this.Next.Invoke(context);
             }
 
             // 数据未完整
             if (result.Request == null)
             {
-                return;
+                return TaskExtend.CompletedTask;
             }
 
             // 协议升级
             if (result.Request.IsWebsocketRequest() == true)
             {
-                await this.Next.Invoke(context);
-                return;
+                return this.Next.Invoke(context);
             }
 
             context.InputStream.Clear(result.PackageLength);
@@ -96,7 +94,7 @@ namespace NetworkSocket.Http
 
             var response = new HttpResponse(context.Session);
             var requestContext = new RequestContext(result.Request, response);
-            await this.OnHttpRequestAsync(context, requestContext);
+            return this.OnHttpRequestAsync(context, requestContext);
         }
 
         /// <summary>

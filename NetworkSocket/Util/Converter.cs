@@ -276,7 +276,7 @@ namespace NetworkSocket.Util
                     var convert = Activator.CreateInstance<TDest>();
                     node.Value = convert;
                 }
-                return this.ReInitItems(); ;
+                return this.ReInitItems();
             }
 
             /// <summary>

@@ -21,7 +21,7 @@ namespace NetworkSocket.Tasks
         /// <summary>
         /// 表示已完成的task
         /// </summary>
-        internal static readonly Task CompletedTask = Task.FromResult(true);
+        public static readonly Task CompletedTask = Task.FromResult(true);
 
         /// <summary>
         /// 转换为TaskOf(T)类型
@@ -30,7 +30,7 @@ namespace NetworkSocket.Tasks
         /// <param name="task">任务</param>
         /// <returns></returns>
         public static Task<T> ToTask<T>(this Task task)
-        {           
+        {
             return task.ToTask<T>(task.GetType());
         }
 

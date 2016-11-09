@@ -95,13 +95,14 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="inputStream">接收到的历史数据</param>    
         /// <returns></returns>
-        protected sealed override async Task OnReceiveAsync(IStreamReader inputStream)
+        protected sealed override Task OnReceiveAsync(IStreamReader inputStream)
         {
             var packages = this.GenerateFastPackets(inputStream);
             foreach (var package in packages)
             {
-                await this.ProcessPacketAsync(package);
+                this.ProcessPacketAsync(package);
             }
+            return TaskExtend.CompletedTask;
         }
 
         /// <summary>
@@ -132,8 +133,7 @@ namespace NetworkSocket.Fast
         /// 处理接收到服务发来的数据包
         /// </summary>
         /// <param name="packet">数据包</param>
-        /// <returns></returns>
-        private async Task ProcessPacketAsync(FastPacket packet)
+        private async void ProcessPacketAsync(FastPacket packet)
         {
             var requestContext = new RequestContext(null, packet, null);
             if (packet.IsException == true)

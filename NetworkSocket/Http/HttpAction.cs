@@ -40,7 +40,7 @@ namespace NetworkSocket.Http
         public HttpAction(MethodInfo method, Type declaringType)
             : base(method)
         {
-            this.DeclaringService = declaringType;          
+            this.DeclaringService = declaringType;
             this.ControllerName = Regex.Replace(declaringType.Name, @"Controller$", string.Empty, RegexOptions.IgnoreCase);
             this.AllowMethod = HttpAction.GetAllowMethod(method);
             this.Route = this.GetRouteAttribute();
@@ -52,7 +52,7 @@ namespace NetworkSocket.Http
         /// <returns></returns>
         private RouteAttribute GetRouteAttribute()
         {
-            var route = this.Method.Info.GetCustomAttribute<RouteAttribute>(false); ;
+            var route = this.Method.Info.GetCustomAttribute<RouteAttribute>(false);
             if (route == null)
             {
                 route = this.DeclaringService.GetCustomAttribute<RouteAttribute>(false);

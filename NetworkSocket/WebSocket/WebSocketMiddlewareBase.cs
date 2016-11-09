@@ -118,13 +118,14 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="context">上下文</param>
         /// <returns></returns>
-        private async Task OnWebSocketFrameRequestAsync(IContenxt context)
+        private Task OnWebSocketFrameRequestAsync(IContenxt context)
         {
             var requests = this.GenerateWebSocketRequest(context);
             foreach (var request in requests)
             {
-                await this.OnWebSocketRequestAsync(context, request);
+                this.OnWebSocketRequest(context, request);
             }
+            return TaskExtend.CompletedTask;
         }
 
         /// <summary>
@@ -160,8 +161,7 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="context">会话对象</param>
         /// <param name="frameRequest">数据帧</param>
-        /// <returns></returns>
-        private async Task OnWebSocketRequestAsync(IContenxt context, FrameRequest frameRequest)
+        private void OnWebSocketRequest(IContenxt context, FrameRequest frameRequest)
         {
             switch (frameRequest.Frame)
             {
@@ -172,12 +172,12 @@ namespace NetworkSocket.WebSocket
                     break;
 
                 case FrameCodes.Binary:
-                    await this.OnBinaryAsync(context, frameRequest.Content);
+                    this.OnBinary(context, frameRequest.Content);
                     break;
 
                 case FrameCodes.Text:
                     var content = Encoding.UTF8.GetString(frameRequest.Content);
-                    await this.OnTextAsync(context, content);
+                    this.OnText(context, content);
                     break;
 
                 case FrameCodes.Ping:
@@ -211,10 +211,8 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="context">会话对象</param>
         /// <param name="content">文本内容</param>
-        /// <returns></returns>
-        protected virtual Task OnTextAsync(IContenxt context, string content)
+        protected virtual void OnText(IContenxt context, string content)
         {
-            return TaskExtend.CompletedTask;
         }
 
         /// <summary>
@@ -222,10 +220,8 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="context">会话对象</param>
         /// <param name="content">二进制内容</param>
-        /// <returns></returns>
-        protected virtual Task OnBinaryAsync(IContenxt context, byte[] content)
+        protected virtual void OnBinary(IContenxt context, byte[] content)
         {
-            return TaskExtend.CompletedTask;
         }
 
         /// <summary>

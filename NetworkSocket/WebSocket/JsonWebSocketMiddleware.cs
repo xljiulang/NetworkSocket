@@ -127,7 +127,7 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="context">上下文</param>
         /// <param name="content">内容</param>
-        protected sealed override async Task OnTextAsync(IContenxt context, string content)
+        protected sealed override async void OnText(IContenxt context, string content)
         {
             var jsonPacket = this.TryGetJsonPacket(context, content);
             if (jsonPacket == null)

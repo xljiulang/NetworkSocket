@@ -124,13 +124,14 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="inputStream">数据流</param>
         /// <returns></returns>
-        private async Task OnWebSocketRequestAsync(IStreamReader inputStream)
+        private Task OnWebSocketRequestAsync(IStreamReader inputStream)
         {
             var frames = this.GenerateWebSocketFrame(inputStream);
             foreach (var frame in frames)
             {
-                await this.OnFrameRequestAsync(frame);
+                this.OnFrameRequest(frame);
             }
+            return TaskExtend.CompletedTask;
         }
 
         /// <summary>
@@ -164,8 +165,7 @@ namespace NetworkSocket.WebSocket
         /// 收到请求数据
         /// </summary>
         /// <param name="frame">请求数据</param>
-        /// <returns></returns>
-        private async Task OnFrameRequestAsync(FrameRequest frame)
+        private void OnFrameRequest(FrameRequest frame)
         {
             switch (frame.Frame)
             {
@@ -176,12 +176,12 @@ namespace NetworkSocket.WebSocket
                     break;
 
                 case FrameCodes.Binary:
-                    await this.OnBinaryAsync(frame.Content);
+                    this.OnBinary(frame.Content);
                     break;
 
                 case FrameCodes.Text:
                     var content = Encoding.UTF8.GetString(frame.Content);
-                    await this.OnTextAsync(content);
+                    this.OnText(content);
                     break;
 
                 case FrameCodes.Ping:
@@ -353,20 +353,16 @@ namespace NetworkSocket.WebSocket
         /// 收到服务端的Text请求
         /// </summary>
         /// <param name="text">内容</param>
-        /// <returns></returns>
-        protected virtual Task OnTextAsync(string text)
+        protected virtual void OnText(string text)
         {
-            return TaskExtend.CompletedTask;
         }
 
         /// <summary>
         /// 收到服务端的Binary请求
         /// </summary>
         /// <param name="bin">内容</param>
-        /// <returns></returns>
-        protected virtual Task OnBinaryAsync(byte[] bin)
+        protected virtual void OnBinary(byte[] bin)
         {
-            return TaskExtend.CompletedTask;
         }
 
         /// <summary>

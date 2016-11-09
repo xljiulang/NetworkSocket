@@ -78,7 +78,7 @@ namespace NetworkSocket.Fast
             this.PacketIdProvider = new PacketIdProvider();
             this.TaskSetterTable = new TaskSetterTable<long>();
 
-            this.TimeOut = TimeSpan.FromSeconds(30); ;
+            this.TimeOut = TimeSpan.FromSeconds(30);
             this.Serializer = new DefaultSerializer();
             this.GlobalFilters = new FastGlobalFilters();
             this.DependencyResolver = new DefaultDependencyResolver();
@@ -125,19 +125,18 @@ namespace NetworkSocket.Fast
         /// </summary>
         /// <param name="context">上下文</param>
         /// <returns></returns>
-        private async Task OnFastRequestAsync(IContenxt context)
+        private Task OnFastRequestAsync(IContenxt context)
         {
             var fastPacket = default(FastPacket);
             if (FastPacket.Parse(context.InputStream, out fastPacket) == false)
             {
-                await this.Next.Invoke(context);
-                return;
+                return this.Next.Invoke(context);
             }
 
             // 数据未完整
             if (fastPacket == null)
             {
-                return;
+                return TaskExtend.CompletedTask;
             }
 
             if (context.Session.Protocol == Protocol.None)
@@ -152,8 +151,9 @@ namespace NetworkSocket.Fast
             foreach (var packet in fastPackets)
             {
                 var requestContext = new RequestContext(fastSession, packet, context.AllSessions);
-                await this.OnRecvFastPacketAsync(requestContext);
+                this.OnRecvFastPacketAsync(requestContext);
             }
+            return TaskExtend.CompletedTask;
         }
 
         /// <summary>
@@ -184,8 +184,7 @@ namespace NetworkSocket.Fast
         /// 接收到会话对象的数据包
         /// </summary>
         /// <param name="requestContext">请求上下文</param>
-        /// <returns></returns>
-        private async Task OnRecvFastPacketAsync(RequestContext requestContext)
+        private async void OnRecvFastPacketAsync(RequestContext requestContext)
         {
             if (requestContext.Packet.IsException == true)
             {
