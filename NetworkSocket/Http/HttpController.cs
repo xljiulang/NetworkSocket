@@ -1,5 +1,6 @@
 ﻿using NetworkSocket.Core;
 using NetworkSocket.Exceptions;
+using NetworkSocket.Tasks;
 using NetworkSocket.Util;
 using System;
 using System.Collections.Generic;
@@ -20,25 +21,20 @@ namespace NetworkSocket.Http
     public abstract class HttpController : HttpFilterAttribute, IHttpController
     {
         /// <summary>
-        /// 逻辑调用上下文
+        /// 获取http中间件的实例
         /// </summary>
-        private readonly LogicalContext<ActionContext> logicalContext = new LogicalContext<ActionContext>();
+        internal protected HttpMiddleware Middleware { get; internal set; }
 
         /// <summary>
         /// 获取当前Api行为上下文
         /// </summary>
-        protected ActionContext CurrentContext
-        {
-            get
-            {
-                return this.logicalContext.GetValue();
-            }
-        }
+        protected ActionContext CurrentContext { get; private set; }
+
 
         /// <summary>
         /// 获取请求上下文对象
         /// </summary>
-        public HttpRequest Request
+        protected HttpRequest Request
         {
             get
             {
@@ -49,18 +45,13 @@ namespace NetworkSocket.Http
         /// <summary>
         /// 获取回复上下文对象
         /// </summary>
-        public HttpResponse Response
+        protected HttpResponse Response
         {
             get
             {
                 return this.CurrentContext.Response;
             }
         }
-
-        /// <summary>
-        /// 获取http中间件的实例
-        /// </summary>
-        public HttpMiddleware Middleware { get; internal set; }
 
         /// <summary>
         /// 异步执行Api行为
@@ -71,17 +62,13 @@ namespace NetworkSocket.Http
             var filters = Enumerable.Empty<IFilter>();
             try
             {
-                this.logicalContext.SetValue(actionContext);
+                this.CurrentContext = actionContext;
                 filters = this.Middleware.FilterAttributeProvider.GetActionFilters(actionContext.Action);
                 await this.ExecuteActionAsync(actionContext, filters);
             }
             catch (Exception ex)
             {
                 this.ProcessExecutingException(actionContext, filters, ex);
-            }
-            finally
-            {
-                this.logicalContext.FreeValue();
             }
         }
 
@@ -134,31 +121,24 @@ namespace NetworkSocket.Http
         /// <returns></returns>
         private async Task ExecutingActionAsync(ActionContext actionContext, IEnumerable<IFilter> filters)
         {
-            try
+            var parameters = actionContext.Action.Parameters.Select(p => p.Value).ToArray();
+            var result = await actionContext.Action.ExecuteAsync(this, parameters);
+
+            this.ExecFiltersAfterAction(filters, actionContext);
+            if (actionContext.Result != null)
             {
-                var parameters = actionContext.Action.ParametersValues;
-                var result = await actionContext.Action.ExecuteAsync(this, parameters);
-
-                this.ExecFiltersAfterAction(filters, actionContext);
-                if (actionContext.Result != null)
-                {
-                    actionContext.Result.ExecuteResult(actionContext);
-                    return;
-                }
-
-                var actionResult = result as ActionResult;
-                if (actionResult == null)
-                {
-                    this.Restful(result).ExecuteResult(actionContext);
-                }
-                else
-                {
-                    actionResult.ExecuteResult(actionContext);
-                }
+                actionContext.Result.ExecuteResult(actionContext);
+                return;
             }
-            finally
+
+            var actionResult = result as ActionResult;
+            if (actionResult == null)
             {
-                this.logicalContext.FreeValue();
+                this.Restful(result).ExecuteResult(actionContext);
+            }
+            else
+            {
+                actionResult.ExecuteResult(actionContext);
             }
         }
 
@@ -169,10 +149,10 @@ namespace NetworkSocket.Http
         /// <param name="actionContext"></param>
         private void SetParameterValues(ActionContext actionContext)
         {
-            var action = actionContext.Action;
-            action.ParametersValues = action.Parameters
-                .Select((p, i) => this.Middleware.ModelBinder.BindModel(actionContext.Request, p.Info))
-                .ToArray();
+            foreach (var parameter in actionContext.Action.Parameters)
+            {
+                parameter.Value = this.Middleware.ModelBinder.BindModel(actionContext.Request, parameter.Info);
+            }
         }
 
         /// <summary>

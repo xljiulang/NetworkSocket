@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NetworkSocket.Core
@@ -13,9 +15,9 @@ namespace NetworkSocket.Core
     public sealed class ApiParameter
     {
         /// <summary>
-        /// 关联的api
+        /// 线程本地保存的参数值 
         /// </summary>
-        private readonly ApiAction instance;
+        private readonly ThreadLocal<object> localValue = new ThreadLocal<object>();
 
         /// <summary>
         /// 获取参数信息
@@ -51,31 +53,27 @@ namespace NetworkSocket.Core
 
         /// <summary>
         /// 获取参数的值
+        /// 该值为线程独立保存
         /// </summary>
         public object Value
         {
             get
             {
-                if (this.instance.ParametersValues != null && this.instance.ParametersValues.Length > this.Index)
-                {
-                    return this.instance.ParametersValues[this.Index];
-                }
-                else
-                {
-                    return DBNull.Value;
-                }
+                return this.localValue.IsValueCreated ? this.localValue.Value : DBNull.Value;
+            }
+            set
+            {
+                this.localValue.Value = value;
             }
         }
 
         /// <summary>
         /// Api参数
         /// </summary>
-        /// <param name="instance">关联的api</param>
         /// <param name="info">参数信息</param>
         /// <param name="index">参数索引</param>     
-        internal ApiParameter(ApiAction instance, ParameterInfo info, int index)
+        internal ApiParameter(ParameterInfo info, int index)
         {
-            this.instance = instance;
             this.Info = info;
             this.Index = index;
         }

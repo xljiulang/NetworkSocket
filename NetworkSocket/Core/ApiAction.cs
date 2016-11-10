@@ -64,33 +64,10 @@ namespace NetworkSocket.Core
         /// </summary>
         public Type DeclaringService { get; protected set; }
 
-
         /// <summary>
         /// 获取Api参数
         /// </summary>
         public ApiParameter[] Parameters { get; private set; }
-
-        /// <summary>
-        /// 参数值
-        /// </summary>
-        [ThreadStatic]
-        private static object[] parameters;
-
-        /// <summary>
-        /// 获取或设置Api行为的参数值
-        /// ThreadStatic线程隔离
-        /// </summary>
-        public object[] ParametersValues
-        {
-            get
-            {
-                return parameters;
-            }
-            set
-            {
-                parameters = value;
-            }
-        }
 
         /// <summary>
         /// Api行为
@@ -105,7 +82,7 @@ namespace NetworkSocket.Core
             this.DeclaringService = method.DeclaringType;
             this.isTaskReturn = typeof(Task).IsAssignableFrom(method.ReturnType);
             this.IsVoidReturn = method.ReturnType.Equals(typeof(void)) || method.ReturnType.Equals(typeof(Task));
-            this.Parameters = method.GetParameters().Select((p, i) => new ApiParameter(this, p, i)).ToArray();
+            this.Parameters = method.GetParameters().Select((p, i) => new ApiParameter(p, i)).ToArray();
 
             this.classFiltersCache = this.GetClassFilterAttributes(cache: false).ToArray();
             this.methodFiltersCache = this.GetMethodFilterAttributes(cache: false).ToArray();

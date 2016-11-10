@@ -131,22 +131,23 @@ namespace NetworkSocket.Fast
         /// <returns></returns>
         public static object[] GetAndUpdateParameterValues(ISerializer serializer, ActionContext actionContext)
         {
+            var parameters = actionContext.Action.Parameters;
             var bodyParameters = actionContext.Packet.GetBodyParameters();
-            var parameterValues = actionContext.Action.Parameters.Select((p, i) =>
+
+            for (var i = 0; i < parameters.Length; i++)
             {
+                var parameter = parameters[i];
                 var value = bodyParameters[i];
                 if (value == null || value.Length == 0)
                 {
-                    return p.Type.IsValueType ? Activator.CreateInstance(p.Type) : null;
+                    parameter.Value = parameter.Type.IsValueType ? Activator.CreateInstance(parameter.Type) : null;
                 }
                 else
                 {
-                    return serializer.Deserialize(value, p.Type);
+                    parameter.Value = serializer.Deserialize(value, parameter.Type);
                 }
-            }).ToArray();
-
-            actionContext.Action.ParametersValues = parameterValues;
-            return parameterValues;
+            }
+            return parameters.Select(p => p.Value).ToArray();
         }
     }
 }

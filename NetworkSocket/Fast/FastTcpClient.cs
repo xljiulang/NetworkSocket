@@ -197,7 +197,7 @@ namespace NetworkSocket.Fast
         {
             var action = actionContext.Action;
             var parameters = Common.GetAndUpdateParameterValues(this.Serializer, actionContext);
-            var result = await action.ExecuteAsync(this, action.ParametersValues);
+            var result = await action.ExecuteAsync(this, parameters);
 
             if (action.IsVoidReturn == false && this.IsConnected == true)
             {

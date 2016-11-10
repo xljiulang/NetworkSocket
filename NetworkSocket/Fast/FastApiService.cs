@@ -1,5 +1,6 @@
 ﻿using NetworkSocket.Core;
 using NetworkSocket.Exceptions;
+using NetworkSocket.Tasks;
 using NetworkSocket.Util;
 using System;
 using System.Collections.Generic;
@@ -19,25 +20,15 @@ namespace NetworkSocket.Fast
     public abstract class FastApiService : FastFilterAttribute, IFastApiService
     {
         /// <summary>
-        /// 逻辑调用上下文
-        /// </summary>
-        private readonly LogicalContext<ActionContext> logicalContext = new LogicalContext<ActionContext>();
-
-        /// <summary>
         /// 获取当前Api行为上下文
         /// </summary>
-        protected ActionContext CurrentContext
-        {
-            get
-            {
-                return this.logicalContext.GetValue();
-            }
-        }
+        protected ActionContext CurrentContext { get; private set; }
+
 
         /// <summary>
         /// 获取关联的服务器实例
         /// </summary>
-        private FastMiddleware Middleware
+        protected FastMiddleware Middleware
         {
             get
             {
@@ -55,17 +46,13 @@ namespace NetworkSocket.Fast
             var filters = Enumerable.Empty<IFilter>();
             try
             {
-                this.logicalContext.SetValue(actionContext);
+                this.CurrentContext = actionContext;
                 filters = this.Middleware.FilterAttributeProvider.GetActionFilters(actionContext.Action);
                 await this.ExecuteActionAsync(actionContext, filters);
             }
             catch (Exception ex)
             {
                 this.ProcessExecutingException(actionContext, filters, ex);
-            }
-            finally
-            {
-                this.logicalContext.FreeValue();
             }
         }
 
@@ -112,26 +99,19 @@ namespace NetworkSocket.Fast
         /// <returns></returns>
         private async Task ExecutingActionAsync(ActionContext actionContext, IEnumerable<IFilter> filters)
         {
-            try
-            {
-                var paramters = actionContext.Action.ParametersValues;
-                var result = await actionContext.Action.ExecuteAsync(this, paramters);
+            var paramters = actionContext.Action.Parameters.Select(p => p.Value).ToArray();
+            var result = await actionContext.Action.ExecuteAsync(this, paramters);
 
-                this.ExecFiltersAfterAction(filters, actionContext);
-                if (actionContext.Result != null)
-                {
-                    var exceptionContext = new ExceptionContext(actionContext, actionContext.Result);
-                    Common.SendRemoteException(actionContext.Session, exceptionContext);
-                }
-                else if (actionContext.Action.IsVoidReturn == false && actionContext.Session.IsConnected)  // 返回数据
-                {
-                    actionContext.Packet.Body = this.Middleware.Serializer.Serialize(result);
-                    actionContext.Session.UnWrap().Send(actionContext.Packet.ToArraySegment());
-                }
-            }
-            finally
+            this.ExecFiltersAfterAction(filters, actionContext);
+            if (actionContext.Result != null)
             {
-                this.logicalContext.FreeValue();
+                var exceptionContext = new ExceptionContext(actionContext, actionContext.Result);
+                Common.SendRemoteException(actionContext.Session, exceptionContext);
+            }
+            else if (actionContext.Action.IsVoidReturn == false && actionContext.Session.IsConnected)  // 返回数据
+            {
+                actionContext.Packet.Body = this.Middleware.Serializer.Serialize(result);
+                actionContext.Session.UnWrap().Send(actionContext.Packet.ToArraySegment());
             }
         }
 

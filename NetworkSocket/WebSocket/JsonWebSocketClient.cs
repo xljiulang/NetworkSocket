@@ -219,8 +219,8 @@ namespace NetworkSocket.WebSocket
             try
             {
                 var action = this.GetApiAction(package);
-                this.SetParameterValues(action, package);
-                var result = await action.ExecuteAsync(this, action.ParametersValues);
+                var parameters = this.GetAndUpdateParameterValues(action, package);
+                var result = await action.ExecuteAsync(this, parameters);
 
                 if (action.IsVoidReturn == false && this.IsConnected)
                 {
@@ -281,8 +281,9 @@ namespace NetworkSocket.WebSocket
         /// </summary> 
         /// <param name="action">api行为</param>        
         /// <param name="package">数据包</param>
-        /// <exception cref="ArgumentException"></exception>    
-        private void SetParameterValues(ApiAction action, JsonPacket package)
+        /// <exception cref="ArgumentException"></exception>   
+        /// <returns></returns>
+        private object[] GetAndUpdateParameterValues(ApiAction action, JsonPacket package)
         {
             var body = package.body as IList;
             if (body == null)
@@ -295,9 +296,13 @@ namespace NetworkSocket.WebSocket
                 throw new ArgumentException("body参数数量不正确");
             }
 
-            action.ParametersValues = action.Parameters
-                .Select((p, i) => this.JsonSerializer.Convert(body[i], p.Type))
-                .ToArray();
+            for (var i = 0; i < body.Count; i++)
+            {
+                var parameter = action.Parameters[i];
+                parameter.Value = this.JsonSerializer.Convert(body[i], parameter.Type);
+            }
+
+            return action.Parameters.Select(p => p.Value).ToArray();
         }
 
         /// <summary>

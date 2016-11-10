@@ -1,5 +1,6 @@
 ﻿using NetworkSocket.Core;
 using NetworkSocket.Exceptions;
+using NetworkSocket.Tasks;
 using NetworkSocket.Util;
 using System;
 using System.Collections;
@@ -19,25 +20,15 @@ namespace NetworkSocket.WebSocket
     public abstract class JsonWebSocketApiService : JsonWebSocketFilterAttribute, IJsonWebSocketApiService
     {
         /// <summary>
-        /// 逻辑调用上下文
-        /// </summary>
-        private readonly LogicalContext<ActionContext> logicalContext = new LogicalContext<ActionContext>();
-
-        /// <summary>
         /// 获取当前Api行为上下文
         /// </summary>
-        protected ActionContext CurrentContext
-        {
-            get
-            {
-                return this.logicalContext.GetValue();
-            }
-        }
+        protected ActionContext CurrentContext { get; private set; }
+
 
         /// <summary>
         /// 获取关联的服务器实例
         /// </summary>
-        private JsonWebSocketMiddleware Server
+        protected JsonWebSocketMiddleware Middleware
         {
             get
             {
@@ -54,17 +45,13 @@ namespace NetworkSocket.WebSocket
             var filters = Enumerable.Empty<IFilter>();
             try
             {
-                this.logicalContext.SetValue(actionContext);
-                filters = this.Server.FilterAttributeProvider.GetActionFilters(actionContext.Action);
+                this.CurrentContext = actionContext;
+                filters = this.Middleware.FilterAttributeProvider.GetActionFilters(actionContext.Action);
                 await this.ExecuteActionAsync(actionContext, filters);
             }
             catch (Exception ex)
             {
                 this.ProcessExecutingException(actionContext, filters, ex);
-            }
-            finally
-            {
-                this.logicalContext.FreeValue();
             }
         }
 
@@ -77,7 +64,7 @@ namespace NetworkSocket.WebSocket
         private void ProcessExecutingException(ActionContext actionContext, IEnumerable<IFilter> actionfilters, Exception exception)
         {
             var exceptionContext = new ExceptionContext(actionContext, new ApiExecuteException(exception));
-            this.Server.SendRemoteException(exceptionContext, exceptionContext.Exception);
+            this.Middleware.SendRemoteException(exceptionContext, exceptionContext.Exception);
             this.ExecAllExceptionFilters(actionfilters, exceptionContext);
         }
 
@@ -95,7 +82,7 @@ namespace NetworkSocket.WebSocket
             if (actionContext.Result != null)
             {
                 var exceptionContext = new ExceptionContext(actionContext, actionContext.Result);
-                this.Server.SendRemoteException(actionContext, actionContext.Result);
+                this.Middleware.SendRemoteException(actionContext, actionContext.Result);
             }
             else
             {
@@ -111,26 +98,19 @@ namespace NetworkSocket.WebSocket
         /// <returns></returns>
         private async Task ExecutingActionAsync(ActionContext actionContext, IEnumerable<IFilter> filters)
         {
-            try
-            {
-                var parameters = actionContext.Action.ParametersValues;
-                var result = await actionContext.Action.ExecuteAsync(this, parameters);
+            var parameters = actionContext.Action.Parameters.Select(p => p.Value).ToArray();
+            var result = await actionContext.Action.ExecuteAsync(this, parameters);
 
-                this.ExecFiltersAfterAction(filters, actionContext);
-                if (actionContext.Result != null)
-                {
-                    this.Server.SendRemoteException(actionContext, actionContext.Result);
-                }
-                else if (actionContext.Action.IsVoidReturn == false && actionContext.Session.IsConnected)  // 返回数据
-                {
-                    actionContext.Packet.body = result;
-                    var packetJson = this.Server.JsonSerializer.Serialize(actionContext.Packet);
-                    actionContext.Session.UnWrap().SendText(packetJson);
-                }
-            }
-            finally
+            this.ExecFiltersAfterAction(filters, actionContext);
+            if (actionContext.Result != null)
             {
-                this.logicalContext.FreeValue();
+                this.Middleware.SendRemoteException(actionContext, actionContext.Result);
+            }
+            else if (actionContext.Action.IsVoidReturn == false && actionContext.Session.IsConnected)  // 返回数据
+            {
+                actionContext.Packet.body = result;
+                var packetJson = this.Middleware.JsonSerializer.Serialize(actionContext.Packet);
+                actionContext.Session.UnWrap().SendText(packetJson);
             }
         }
 
@@ -153,9 +133,12 @@ namespace NetworkSocket.WebSocket
             }
 
             var serializer = context.Session.Middleware.JsonSerializer;
-            context.Action.ParametersValues = context.Action.Parameters
-                .Select((p, i) => serializer.Convert(body[i], p.Type))
-                .ToArray();
+            for (var i = 0; i < context.Action.Parameters.Length; i++)
+            {
+                var parameter = context.Action.Parameters[i];
+                var value = serializer.Convert(body[i], parameter.Type);
+                parameter.Value = value;
+            }
         }
 
         /// <summary>
@@ -210,7 +193,7 @@ namespace NetworkSocket.WebSocket
         /// <returns></returns>
         private IEnumerable<IFilter> GetTotalFilters(IEnumerable<IFilter> filters)
         {
-            return this.Server
+            return this.Middleware
                 .GlobalFilters
                 .Cast<IFilter>()
                 .Concat(new[] { this })
