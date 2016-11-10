@@ -16,19 +16,63 @@ namespace Service.Http
     /// </summary>
     public class WebApiController : HttpController
     {
-        [Route("/{version}/{controller}/{action}")]
+        /// <summary>
+        /// /WebApi/About
+        /// </summary>
+        /// <returns></returns>     
         public object About()
         {
             var names = typeof(HttpController).Assembly.GetName();
             return new { assembly = names.Name, version = names.Version.ToString() };
         }
 
+        /// <summary>
+        /// /V2/WebApi/About
+        /// </summary>
+        /// <returns></returns>
+        [Route("/v2/{controller}/about")]
+        public object About_V2()
+        {
+            var names = typeof(HttpController).Assembly.GetName();
+            return new { assembly = names.Name, version = names.Version.ToString() };
+        }
+
+
+        /// <summary>
+        /// 伪静态 /WebApi/Login.html
+        /// async await 异步
+        /// </summary>
+        /// <param name="account"></param>
+        /// <param name="password"></param>
+        /// <returns></returns>
         [HttpPost]
         [Route("/{controller}/{action}.html")]
         public async Task<object> Login([NotNull]string account, [NotNull] string password)
         {
-            await Task.Delay(3 * 1000);
+            await Task.FromResult(0);
             return new { account, password };
+        }
+
+        /// <summary>
+        /// /NetworkSocket/RouteDataTest
+        /// </summary>
+        /// <returns></returns>
+        [Route("/{namespace}/{action}")]
+        public string GetNamespace()
+        {
+            var space = this.CurrentContext.Action.RouteData["namespace"];
+            return space;
+        }
+
+        /// <summary>
+        /// /NetworkSocket/WebApi/RouteDataTest
+        /// </summary>
+        /// <returns></returns>
+        [Route("/{namespace}/{controller}/GetNamespace")]
+        public string GetNamespaceWithController()
+        {
+            var space = this.CurrentContext.Action.RouteData["namespace"];
+            return space;
         }
     }
 }

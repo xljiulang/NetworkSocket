@@ -14,12 +14,7 @@ namespace NetworkSocket.Http
     public abstract class RouteBaseAttribute : Attribute
     {
         /// <summary>
-        /// 获取关联的http行为
-        /// </summary>
-        protected HttpAction HttpAction { get; private set; }
-
-        /// <summary>
-        /// 获取路由映射 
+        /// 获取路由映射配置
         /// </summary>
         public string Rule { get; private set; }
 
@@ -57,10 +52,10 @@ namespace NetworkSocket.Http
         /// </summary>
         /// <param name="url"></param>
         /// <returns></returns>
-        internal RouteDataCollection MatchURL(Uri url)
+        internal IEnumerable<KeyValuePair<string, string>> MatchURL(Uri url)
         {
-            RouteDataCollection routeData;
-            if (this.IsMatchURL(url, out routeData))
+            IEnumerable<KeyValuePair<string, string>> routeData;
+            if (this.IsMatchURL(url, out routeData) == true)
             {
                 return routeData;
             }
@@ -83,6 +78,6 @@ namespace NetworkSocket.Http
         /// <param name="url">url</param>
         /// <param name="routeData">路由数据集合</param>
         /// <returns></returns>
-        protected abstract bool IsMatchURL(Uri url, out RouteDataCollection routeData);
+        protected abstract bool IsMatchURL(Uri url, out IEnumerable<KeyValuePair<string, string>> routeData);
     }
 }

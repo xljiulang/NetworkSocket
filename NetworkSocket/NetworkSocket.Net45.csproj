@@ -61,6 +61,7 @@
     <Compile Include="Core\ApiAttribute.cs" />
     <Compile Include="Core\FilterAttribute.cs" />
     <Compile Include="Core\IActionContext.cs" />
+    <Compile Include="Core\ICloneable.cs" />
     <Compile Include="Core\IDependencyResolver.cs" />
     <Compile Include="Core\IDependencyResolverSupportable.cs" />
     <Compile Include="Core\IDynamicJsonSerializer.cs" />
@@ -135,7 +136,7 @@
     <Compile Include="Http\IModelBinder.cs" />
     <Compile Include="Http\Internal\DefaultModelBinder.cs" />
     <Compile Include="Http\Internal\HttpGlobalFilters.cs" />
-    <Compile Include="Http\Internal\HttpRouteTable.cs" />
+    <Compile Include="Http\Internal\HttpActionTable.cs" />
     <Compile Include="Http\Internal\MultipartHead.cs" />
     <Compile Include="Http\Internal\BinderProperty.cs" />
     <Compile Include="Http\Internal\HttpRequestParser.cs" />

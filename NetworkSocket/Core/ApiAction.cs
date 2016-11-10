@@ -15,7 +15,7 @@ namespace NetworkSocket.Core
     /// 表示Api行为    
     /// </summary>
     [DebuggerDisplay("ApiName = {ApiName}")]
-    public class ApiAction : ICloneable
+    public class ApiAction : ICloneable<ApiAction>
     {
         /// <summary>
         /// 获取方法成员信息
@@ -102,7 +102,6 @@ namespace NetworkSocket.Core
         /// <returns></returns>
         public virtual IEnumerable<FilterAttribute> GetMethodFilterAttributes()
         {
-
             return this.Method.Info.GetCustomAttributes<FilterAttribute>(inherit: true);
         }
 
@@ -114,7 +113,7 @@ namespace NetworkSocket.Core
         {
             return this.Parameters.SelectMany(p => p.Info
                 .GetCustomAttributes<ParameterFilterAttribute>(inherit: true)
-                .Select(filter => filter.BindParameter(p)));
+                .Select(filter => filter.InitWith(p)));
         }
 
         /// <summary>
@@ -169,10 +168,10 @@ namespace NetworkSocket.Core
         }
 
         /// <summary>
-        /// 克隆自身
+        /// 克隆构造器
         /// </summary>
         /// <returns></returns>
-        public virtual object Clone()
+        ApiAction ICloneable<ApiAction>.CloneConstructor()
         {
             return new ApiAction
             {

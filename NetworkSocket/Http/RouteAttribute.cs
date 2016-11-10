@@ -13,7 +13,8 @@ namespace NetworkSocket.Http
     /// 其中{controller}/{action}可以写固定值
     /// *代表匹配多个字，?代表单个字
     /// </summary>
-    public class RouteAttribute : RouteBaseAttribute
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
+    public sealed class RouteAttribute : RouteBaseAttribute
     {
         /// <summary>
         /// 路由规则正则
@@ -60,7 +61,7 @@ namespace NetworkSocket.Http
                 this.tokens.Add(token);
                 return string.Format(@"(?<{0}>\w+)", token);
             });
-            this.ruleRegex = new Regex(pattern, RegexOptions.IgnoreCase);
+            this.ruleRegex = new Regex("^" + pattern + "$", RegexOptions.IgnoreCase);
         }
 
         /// <summary>
@@ -69,22 +70,19 @@ namespace NetworkSocket.Http
         /// </summary>
         /// <param name="url">url</param>
         /// <param name="routeData">路由数据集合</param>
-        protected override bool IsMatchURL(Uri url, out RouteDataCollection routeData)
+        protected override bool IsMatchURL(Uri url, out IEnumerable<KeyValuePair<string, string>> routeData)
         {
-            routeData = null;
             var match = this.ruleRegex.Match(url.AbsolutePath);
-            if (match.Success == false)
+            if (match.Success == true)
             {
+                routeData = this.tokens.Select(key => new KeyValuePair<string, string>(key, match.Groups[key].Value));
+                return true;
+            }
+            else
+            {
+                routeData = null;
                 return false;
             }
-
-            routeData = new RouteDataCollection();
-            foreach (var token in this.tokens)
-            {
-                var capture = match.Groups[token];
-                routeData.Set(token, capture.Value);
-            }
-            return true;
         }
 
         /// <summary>

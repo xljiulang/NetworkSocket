@@ -16,9 +16,9 @@ namespace NetworkSocket.Http
     public class HttpMiddleware : HttpMiddlewareBase, IDependencyResolverSupportable, IFilterSupportable
     {
         /// <summary>
-        /// http路由
+        /// http行为表
         /// </summary>
-        private readonly HttpRouteTable routeTable;
+        private readonly HttpActionTable httpActionTable;
 
         /// <summary>
         /// 获取模型生成器
@@ -52,7 +52,7 @@ namespace NetworkSocket.Http
         public HttpMiddleware()
         {
             var httpActions = this.FindAllHttpActions();
-            this.routeTable = new HttpRouteTable(httpActions);
+            this.httpActionTable = new HttpActionTable(httpActions);
 
             this.ModelBinder = new DefaultModelBinder();
             this.GlobalFilters = new HttpGlobalFilters();
@@ -109,7 +109,7 @@ namespace NetworkSocket.Http
         /// <returns></returns>
         protected override async Task OnHttpRequestAsync(IContenxt context, RequestContext requestContext)
         {
-            var action = this.routeTable.MatchHttpAction(requestContext.Request);
+            var action = this.httpActionTable.TryGetAndClone(requestContext.Request);
             if (action != null)
             {
                 await this.ExecuteHttpActionAsync(action, context, requestContext);

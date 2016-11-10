@@ -7,7 +7,7 @@ using System.Text;
 namespace NetworkSocket.Core
 {
     /// <summary>
-    /// 表示Api行为列表
+    /// 表示Api行为表
     /// </summary>
     internal class ApiActionTable
     {
@@ -17,7 +17,7 @@ namespace NetworkSocket.Core
         private readonly Dictionary<string, ApiAction> dictionary;
 
         /// <summary>
-        /// Api行为列表
+        /// Api行为表
         /// </summary>
         public ApiActionTable()
         {
@@ -77,24 +77,14 @@ namespace NetworkSocket.Core
         /// </summary>
         /// <param name="name">行为名称</param>
         /// <returns></returns>
-        public ApiAction TryGet(string name)
+        public ApiAction TryGetAndClone(string name)
         {
             ApiAction apiAction;
             if (this.dictionary.TryGetValue(name, out apiAction))
             {
-                return apiAction.Clone() as ApiAction;
+                return ((ICloneable<ApiAction>)apiAction).CloneConstructor();
             }
             return null;
-        }
-
-        /// <summary>
-        /// 获取是否存在
-        /// </summary>
-        /// <param name="name">行为名称</param>
-        /// <returns></returns>
-        public bool IsExist(string name)
-        {
-            return this.dictionary.ContainsKey(name);
         }
     }
 }

@@ -21,7 +21,7 @@ namespace NetworkSocket.Core
         /// 绑定参数
         /// </summary>
         /// <param name="parameter">参数</param>
-        internal ParameterFilterAttribute BindParameter(ApiParameter parameter)
+        internal ParameterFilterAttribute InitWith(ApiParameter parameter)
         {
             this.parameter = parameter;
             return this;

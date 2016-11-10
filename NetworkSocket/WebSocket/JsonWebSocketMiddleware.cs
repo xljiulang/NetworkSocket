@@ -273,7 +273,7 @@ namespace NetworkSocket.WebSocket
         /// <returns></returns>
         private ApiAction GetApiAction(RequestContext requestContext)
         {
-            var action = this.apiActionTable.TryGet(requestContext.Packet.api);
+            var action = this.apiActionTable.TryGetAndClone(requestContext.Packet.api);
             if (action == null)
             {
                 throw new ApiNotExistException(requestContext.Packet.api);

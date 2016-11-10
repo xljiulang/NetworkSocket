@@ -244,7 +244,7 @@ namespace NetworkSocket.Fast
         /// <returns></returns>
         private ApiAction GetApiAction(RequestContext requestContext)
         {
-            var action = this.apiActionTable.TryGet(requestContext.Packet.ApiName);
+            var action = this.apiActionTable.TryGetAndClone(requestContext.Packet.ApiName);
             if (action == null)
             {
                 throw new ApiNotExistException(requestContext.Packet.ApiName);

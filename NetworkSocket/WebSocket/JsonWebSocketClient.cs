@@ -264,7 +264,7 @@ namespace NetworkSocket.WebSocket
         /// <returns></returns>
         private ApiAction GetApiAction(JsonPacket package)
         {
-            var action = this.apiActionTable.TryGet(package.api);
+            var action = this.apiActionTable.TryGetAndClone(package.api);
             if (action == null)
             {
                 throw new ApiNotExistException(package.api);
