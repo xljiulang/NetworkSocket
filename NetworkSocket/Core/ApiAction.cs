@@ -15,49 +15,27 @@ namespace NetworkSocket.Core
     /// 表示Api行为    
     /// </summary>
     [DebuggerDisplay("ApiName = {ApiName}")]
-    public class ApiAction
+    public class ApiAction : ICloneable
     {
-        /// <summary>
-        /// 类过滤器
-        /// </summary>
-        private readonly FilterAttribute[] classFiltersCache;
-
-        /// <summary>
-        /// 方法过滤器
-        /// </summary>
-        private readonly FilterAttribute[] methodFiltersCache;
-
-        /// <summary>
-        /// 参数过滤器
-        /// </summary>
-        private readonly ParameterFilterAttribute[] parametersFiltersCache;
-
-
-
-        /// <summary>
-        /// 是否是Task类型返回
-        /// </summary>
-        private readonly bool isTaskReturn;
-
         /// <summary>
         /// 获取方法成员信息
         /// </summary>
-        public Method Method { get; private set; }
+        public Method Method { get; protected set; }
 
         /// <summary>
         /// 获取Api行为的Api名称
         /// </summary>
-        public string ApiName { get; private set; }
+        public string ApiName { get; protected set; }
 
         /// <summary>
         /// 获取Api行为的方法成员返回类型是否为void
         /// </summary>
-        public bool IsVoidReturn { get; private set; }
+        public bool IsVoidReturn { get; protected set; }
 
         /// <summary>
-        /// Api行为的方法成员返回类型
+        /// 获取Api行为的方法成员返回类型Task或TaskOf(T)
         /// </summary>
-        public Type ReturnType { get; private set; }
+        public bool IsTaskReturn { get; protected set; }
 
         /// <summary>
         /// 获取声明该成员的服务类型
@@ -67,7 +45,14 @@ namespace NetworkSocket.Core
         /// <summary>
         /// 获取Api参数
         /// </summary>
-        public ApiParameter[] Parameters { get; private set; }
+        public ApiParameter[] Parameters { get; protected set; }
+
+        /// <summary>
+        /// Api行为
+        /// </summary>
+        protected ApiAction()
+        {
+        }
 
         /// <summary>
         /// Api行为
@@ -78,15 +63,10 @@ namespace NetworkSocket.Core
         {
             this.Method = new Method(method);
             this.ApiName = this.GetApiName(method);
-            this.ReturnType = method.ReturnType;
             this.DeclaringService = method.DeclaringType;
-            this.isTaskReturn = typeof(Task).IsAssignableFrom(method.ReturnType);
+            this.IsTaskReturn = typeof(Task).IsAssignableFrom(method.ReturnType);
             this.IsVoidReturn = method.ReturnType.Equals(typeof(void)) || method.ReturnType.Equals(typeof(Task));
-            this.Parameters = method.GetParameters().Select((p, i) => new ApiParameter(p, i)).ToArray();
-
-            this.classFiltersCache = this.GetClassFilterAttributes(cache: false).ToArray();
-            this.methodFiltersCache = this.GetMethodFilterAttributes(cache: false).ToArray();
-            this.parametersFiltersCache = this.GetParametersFilterAttributes(cache: false).ToArray();
+            this.Parameters = method.GetParameters().Select(p => new ApiParameter(p)).ToArray();
         }
 
         /// <summary>
@@ -110,55 +90,31 @@ namespace NetworkSocket.Core
         /// <summary>
         /// 获取类级过滤器特性
         /// </summary>
-        /// <param name="cache">是否从缓存读取</param>
         /// <returns></returns>
-        public virtual IEnumerable<FilterAttribute> GetClassFilterAttributes(bool cache)
+        public virtual IEnumerable<FilterAttribute> GetClassFilterAttributes()
         {
-            if (cache == false)
-            {
-                return this.DeclaringService.GetCustomAttributes<FilterAttribute>(inherit: true);
-            }
-            else
-            {
-                return this.classFiltersCache;
-            }
+            return this.DeclaringService.GetCustomAttributes<FilterAttribute>(inherit: true);
         }
 
         /// <summary>
         /// 获取方法级过滤器特性
         /// </summary>
-        /// <param name="cache">是否从缓存读取</param>
         /// <returns></returns>
-        public virtual IEnumerable<FilterAttribute> GetMethodFilterAttributes(bool cache)
+        public virtual IEnumerable<FilterAttribute> GetMethodFilterAttributes()
         {
-            if (cache == false)
-            {
-                return this.Method.Info.GetCustomAttributes<FilterAttribute>(inherit: true);
-            }
-            else
-            {
-                return this.methodFiltersCache;
-            }
+
+            return this.Method.Info.GetCustomAttributes<FilterAttribute>(inherit: true);
         }
 
         /// <summary>
         /// 获取参数的参数过滤器
         /// </summary>
-        /// <param name="cache">是否从缓存读取</param>
         /// <returns></returns>
-        public virtual IEnumerable<ParameterFilterAttribute> GetParametersFilterAttributes(bool cache)
+        public virtual IEnumerable<ParameterFilterAttribute> GetParametersFilterAttributes()
         {
-            if (cache == false)
-            {
-                return this.Parameters.SelectMany(p =>
-                    p.Info
-                    .GetCustomAttributes<ParameterFilterAttribute>(inherit: true)
-                    .Select(f => f.BindParameter(p)));
-            }
-            else
-            {
-                return this.parametersFiltersCache;
-            }
+            return this.Parameters.SelectMany(p => p.Info
+                .GetCustomAttributes<ParameterFilterAttribute>(inherit: true)
+                .Select(filter => filter.BindParameter(p)));
         }
 
         /// <summary>
@@ -192,10 +148,10 @@ namespace NetworkSocket.Core
         /// <returns></returns>
         public Task<object> ExecuteAsync(object service, params object[] parameters)
         {
-            if (this.isTaskReturn == true)
+            if (this.IsTaskReturn == true)
             {
                 var task = this.Execute(service, parameters) as Task;
-                return task == null ? Task.FromResult<object>(null) : task.ToTask<object>(this.ReturnType);
+                return task == null ? Task.FromResult<object>(null) : task.ToTask<object>(this.Method.Info.ReturnType);
             }
             else
             {
@@ -210,6 +166,23 @@ namespace NetworkSocket.Core
         public override string ToString()
         {
             return this.ApiName;
+        }
+
+        /// <summary>
+        /// 克隆自身
+        /// </summary>
+        /// <returns></returns>
+        public virtual object Clone()
+        {
+            return new ApiAction
+            {
+                ApiName = this.ApiName,
+                Method = this.Method,
+                IsTaskReturn = this.IsTaskReturn,
+                IsVoidReturn = this.IsVoidReturn,
+                DeclaringService = this.DeclaringService,
+                Parameters = this.Parameters.Select(p => new ApiParameter(p.Info)).ToArray()
+            };
         }
     }
 }

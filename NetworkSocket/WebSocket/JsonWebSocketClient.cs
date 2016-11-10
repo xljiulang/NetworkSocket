@@ -21,7 +21,7 @@ namespace NetworkSocket.WebSocket
         /// <summary>
         /// 所有Api行为
         /// </summary>
-        private ApiActionList apiActionList;
+        private ApiActionTable apiActionTable;
 
         /// <summary>
         /// 数据包id提供者
@@ -81,7 +81,7 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         private void Init()
         {
-            this.apiActionList = new ApiActionList(this.FindApiActions());
+            this.apiActionTable = new ApiActionTable(this.FindApiActions());
             this.packetIdProvider = new PacketIdProvider();
             this.taskSetterTable = new TaskSetterTable<long>();
             this.TimeOut = TimeSpan.FromSeconds(30);
@@ -264,7 +264,7 @@ namespace NetworkSocket.WebSocket
         /// <returns></returns>
         private ApiAction GetApiAction(JsonPacket package)
         {
-            var action = this.apiActionList.TryGet(package.api);
+            var action = this.apiActionTable.TryGet(package.api);
             if (action == null)
             {
                 throw new ApiNotExistException(package.api);

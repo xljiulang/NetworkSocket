@@ -32,9 +32,22 @@ namespace NetworkSocket.Http
         /// <returns></returns>
         public HttpAction MatchHttpAction(HttpRequest request)
         {
-            return this.httpActions.FirstOrDefault(item =>
-                request.HttpMethod == (request.HttpMethod & item.AllowMethod) &&
-                item.Route.IsMatch(request.Url));
+            foreach (var action in this.httpActions)
+            {
+                if (request.HttpMethod != (request.HttpMethod & action.AllowMethod))
+                {
+                    continue;
+                }
+
+                var routeData = action.Route.MatchURL(request.Url);
+                if (routeData != null)
+                {
+                    var actionClone = action.Clone() as HttpAction;
+                    actionClone.RouteData = routeData;
+                    return actionClone;
+                }
+            }
+            return null;
         }
     }
 }

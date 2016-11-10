@@ -15,19 +15,9 @@ namespace NetworkSocket.Core
     public sealed class ApiParameter
     {
         /// <summary>
-        /// 线程本地保存的参数值 
-        /// </summary>
-        private readonly ThreadLocal<object> localValue = new ThreadLocal<object>();
-
-        /// <summary>
         /// 获取参数信息
         /// </summary>
         public ParameterInfo Info { get; private set; }
-
-        /// <summary>
-        /// 获取参数索引
-        /// </summary>
-        public int Index { get; private set; }
 
         /// <summary>
         /// 获取参数类型
@@ -52,30 +42,18 @@ namespace NetworkSocket.Core
         }
 
         /// <summary>
-        /// 获取参数的值
-        /// 该值为线程独立保存
+        /// 获取参数的值        
         /// </summary>
-        public object Value
-        {
-            get
-            {
-                return this.localValue.IsValueCreated ? this.localValue.Value : DBNull.Value;
-            }
-            set
-            {
-                this.localValue.Value = value;
-            }
-        }
+        public object Value { get; set; }
+
 
         /// <summary>
         /// Api参数
         /// </summary>
-        /// <param name="info">参数信息</param>
-        /// <param name="index">参数索引</param>     
-        internal ApiParameter(ParameterInfo info, int index)
+        /// <param name="info">参数信息</param>         
+        public ApiParameter(ParameterInfo info)
         {
             this.Info = info;
-            this.Index = index;
         }
 
         /// <summary>

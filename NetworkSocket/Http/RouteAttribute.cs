@@ -13,8 +13,7 @@ namespace NetworkSocket.Http
     /// 其中{controller}/{action}可以写固定值
     /// *代表匹配多个字，?代表单个字
     /// </summary>
-    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
-    public class RouteAttribute : Attribute
+    public class RouteAttribute : RouteBaseAttribute
     {
         /// <summary>
         /// 路由规则正则
@@ -22,14 +21,14 @@ namespace NetworkSocket.Http
         private Regex ruleRegex;
 
         /// <summary>
-        /// 获取路由映射 
+        /// 路由规则
         /// </summary>
-        public string Rule { get; private set; }
+        private string fixRule;
 
         /// <summary>
-        /// 获取路由的值
+        /// tokens
         /// </summary>
-        public NameValueCollection RouteDatas { get; private set; }
+        private readonly List<string> tokens = new List<string>();
 
         /// <summary>
         /// 表示路由映射
@@ -41,61 +40,51 @@ namespace NetworkSocket.Http
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
         public RouteAttribute(string rule)
+            : base(rule)
         {
-            if (string.IsNullOrEmpty(rule))
-            {
-                throw new ArgumentNullException();
-            }
-
-            if (rule.StartsWith("/") == false)
-            {
-                throw new ArgumentException("route必须以/开始");
-            }
-
-            this.Rule = rule;
-            this.RouteDatas = new RouteDataCollection();
         }
 
         /// <summary>
-        /// 绑定httpAction
+        /// 初始化
         /// </summary>
-        /// <param name="httpAction">http行为</param>
-        /// <returns></returns>
-        internal RouteAttribute BindHttpAction(HttpAction httpAction)
+        /// <param name="httpAction">http行为</param> 
+        protected override void Init(HttpAction httpAction)
         {
-            this.Rule = Regex.Replace(this.Rule, @"\{controller\}", httpAction.ControllerName, RegexOptions.IgnoreCase);
-            this.Rule = Regex.Replace(this.Rule, @"\{action\}", httpAction.ApiName, RegexOptions.IgnoreCase);
+            this.fixRule = Regex.Replace(this.Rule, @"\{controller\}", httpAction.ControllerName, RegexOptions.IgnoreCase);
+            this.fixRule = Regex.Replace(this.fixRule, @"\{action\}", httpAction.ApiName, RegexOptions.IgnoreCase);
 
-            var glob = Regex.Escape(this.Rule).Replace(@"\*", ".*").Replace(@"\?", ".").Replace(@"\{", "{");
+            var glob = Regex.Escape(this.fixRule).Replace(@"\*", ".*").Replace(@"\?", ".").Replace(@"\{", "{");
             var pattern = Regex.Replace(glob, @"\{\w+\}", (m) =>
             {
                 var token = m.Value.TrimStart('{').TrimEnd('}');
-                this.RouteDatas.Set(token, null);
+                this.tokens.Add(token);
                 return string.Format(@"(?<{0}>\w+)", token);
             });
             this.ruleRegex = new Regex(pattern, RegexOptions.IgnoreCase);
-            return this;
         }
 
         /// <summary>
         /// 与url进行匹配
-        /// 同时更新RouteDatas的值
+        /// 生成路由数据集合
         /// </summary>
-        /// <param name="url">请求的完整url</param>
-        /// <returns></returns>
-        public virtual bool IsMatch(Uri url)
+        /// <param name="url">url</param>
+        /// <param name="routeData">路由数据集合</param>
+        protected override bool IsMatchURL(Uri url, out RouteDataCollection routeData)
         {
+            routeData = null;
             var match = this.ruleRegex.Match(url.AbsolutePath);
-            if (match.Success == true)
+            if (match.Success == false)
             {
-                for (var i = 0; i < this.RouteDatas.Keys.Count; i++)
-                {
-                    var key = this.RouteDatas.Keys[i];
-                    var capture = match.Groups[key];
-                    this.RouteDatas.Set(key, capture.Value);
-                }
+                return false;
             }
-            return match.Success;
+
+            routeData = new RouteDataCollection();
+            foreach (var token in this.tokens)
+            {
+                var capture = match.Groups[token];
+                routeData.Set(token, capture.Value);
+            }
+            return true;
         }
 
         /// <summary>
@@ -104,40 +93,7 @@ namespace NetworkSocket.Http
         /// <returns></returns>
         public override string ToString()
         {
-            return this.Rule;
-        }
-
-
-
-        /// <summary>
-        /// 路由数据集合
-        /// </summary>
-        private class RouteDataCollection : NameValueCollection
-        {
-            /// <summary>
-            /// 路由数据集合
-            /// </summary>
-            public RouteDataCollection()
-                : base(StringComparer.OrdinalIgnoreCase)
-            {
-            }
-
-            /// <summary>
-            /// 清除
-            /// </summary>
-            public override void Clear()
-            {
-                throw new NotSupportedException();
-            }
-
-            /// <summary>
-            /// 移除项
-            /// </summary>
-            /// <param name="name">项名</param>
-            public override void Remove(string name)
-            {
-                throw new NotSupportedException();
-            }
+            return this.fixRule;
         }
     }
 }

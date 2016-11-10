@@ -14,12 +14,17 @@ namespace NetworkSocket.Http
     /// 表示Http的Api行为    
     /// </summary>
     [DebuggerDisplay("Route = {Route}")]
-    public class HttpAction : ApiAction
+    public sealed class HttpAction : ApiAction
     {
         /// <summary>
-        /// 获取路由
+        /// 获取路由映射
         /// </summary>
-        public RouteAttribute Route { get; private set; }
+        public RouteBaseAttribute Route { get; private set; }
+
+        /// <summary>
+        /// 获取路由映射数据
+        /// </summary>
+        public RouteDataCollection RouteData { get; internal set; }
 
         /// <summary>
         /// 获取是允许的请求方式
@@ -29,7 +34,14 @@ namespace NetworkSocket.Http
         /// <summary>
         /// 获取控制器名称
         /// </summary>
-        public string ControllerName { get; protected set; }
+        public string ControllerName { get; private set; }
+
+        /// <summary>
+        /// Http的Api行为 
+        /// </summary>
+        private HttpAction()
+        {
+        }
 
         /// <summary>
         /// Http的Api行为 
@@ -50,12 +62,12 @@ namespace NetworkSocket.Http
         /// 获取路由地址
         /// </summary> 
         /// <returns></returns>
-        private RouteAttribute GetRouteAttribute()
+        private RouteBaseAttribute GetRouteAttribute()
         {
-            var route = this.Method.Info.GetCustomAttribute<RouteAttribute>(false);
+            var route = this.Method.Info.GetCustomAttribute<RouteBaseAttribute>(false);
             if (route == null)
             {
-                route = this.DeclaringService.GetCustomAttribute<RouteAttribute>(false);
+                route = this.DeclaringService.GetCustomAttribute<RouteBaseAttribute>(false);
             }
 
             if (route == null)
@@ -63,8 +75,7 @@ namespace NetworkSocket.Http
                 var rule = string.Format("/{0}/{1}", this.ControllerName, this.ApiName);
                 route = new RouteAttribute(rule);
             }
-
-            return route.BindHttpAction(this);
+            return route.InitWith(this);
         }
 
         /// <summary>
@@ -94,6 +105,27 @@ namespace NetworkSocket.Http
                 return false;
             }
             return true;
+        }
+
+        /// <summary>
+        /// 克隆自身
+        /// </summary>
+        /// <returns></returns>
+        public override object Clone()
+        {
+            return new HttpAction
+            {
+                ApiName = this.ApiName,
+                Method = this.Method,
+                IsTaskReturn = this.IsTaskReturn,
+                IsVoidReturn = this.IsVoidReturn,
+                DeclaringService = this.DeclaringService,
+                Parameters = this.Parameters.Select(p => new ApiParameter(p.Info)).ToArray(),
+                AllowMethod = this.AllowMethod,
+                ControllerName = this.ControllerName,
+                Route = this.Route,
+                RouteData = null
+            };
         }
     }
 }

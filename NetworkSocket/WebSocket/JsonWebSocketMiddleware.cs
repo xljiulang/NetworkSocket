@@ -19,7 +19,7 @@ namespace NetworkSocket.WebSocket
         /// <summary>
         /// 所有Api行为
         /// </summary>
-        private ApiActionList apiActionList;
+        private ApiActionTable apiActionTable;
 
         /// <summary>
         /// 获取数据包ID生成提供者
@@ -64,7 +64,7 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         public JsonWebSocketMiddleware()
         {
-            this.apiActionList = new ApiActionList();
+            this.apiActionTable = new ApiActionTable();
             this.PacketIdProvider = new PacketIdProvider();
             this.TaskSetterTable = new TaskSetterTable<long>();
 
@@ -93,7 +93,7 @@ namespace NetworkSocket.WebSocket
             foreach (var type in jsonWebSockeApiServices)
             {
                 var actions = this.GetServiceApiActions(type);
-                this.apiActionList.AddRange(actions);
+                this.apiActionTable.AddRange(actions);
             }
         }
 
@@ -273,7 +273,7 @@ namespace NetworkSocket.WebSocket
         /// <returns></returns>
         private ApiAction GetApiAction(RequestContext requestContext)
         {
-            var action = this.apiActionList.TryGet(requestContext.Packet.api);
+            var action = this.apiActionTable.TryGet(requestContext.Packet.api);
             if (action == null)
             {
                 throw new ApiNotExistException(requestContext.Packet.api);

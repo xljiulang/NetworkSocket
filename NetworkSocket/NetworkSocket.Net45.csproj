@@ -69,9 +69,11 @@
     <Compile Include="Core\IFilterAttributeProvider.cs" />
     <Compile Include="Core\IFilterSupportable.cs" />
     <Compile Include="Core\IGlobalFilters.cs" />
-    <Compile Include="Core\Internal\ApiActionList.cs" />
+    <Compile Include="Core\Internal\ApiActionTable.cs" />
     <Compile Include="Core\NotNullAttribute.cs" />
     <Compile Include="Core\ParameterFilterAttribute.cs" />
+    <Compile Include="Http\RouteBaseAttribute.cs" />
+    <Compile Include="Http\RouteDataCollection.cs" />
     <Compile Include="Tasks\Dispatcher.cs" />
     <Compile Include="Core\Internal\DefaultDependencyResolver.cs" />
     <Compile Include="Core\Internal\DefaultDynamicJsonSerializer.cs" />

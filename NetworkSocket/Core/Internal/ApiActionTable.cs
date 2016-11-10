@@ -9,7 +9,7 @@ namespace NetworkSocket.Core
     /// <summary>
     /// 表示Api行为列表
     /// </summary>
-    internal class ApiActionList
+    internal class ApiActionTable
     {
         /// <summary>
         /// Api行为字典
@@ -19,7 +19,7 @@ namespace NetworkSocket.Core
         /// <summary>
         /// Api行为列表
         /// </summary>
-        public ApiActionList()
+        public ApiActionTable()
         {
             this.dictionary = new Dictionary<string, ApiAction>(StringComparer.CurrentCultureIgnoreCase);
         }
@@ -30,7 +30,7 @@ namespace NetworkSocket.Core
         /// <param name="apiActions">Api行为</param>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public ApiActionList(IEnumerable<ApiAction> apiActions)
+        public ApiActionTable(IEnumerable<ApiAction> apiActions)
             : this()
         {
             this.AddRange(apiActions);
@@ -82,7 +82,7 @@ namespace NetworkSocket.Core
             ApiAction apiAction;
             if (this.dictionary.TryGetValue(name, out apiAction))
             {
-                return apiAction;
+                return apiAction.Clone() as ApiAction;
             }
             return null;
         }

@@ -21,7 +21,7 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 所有Api行为
         /// </summary>
-        private ApiActionList apiActionList;
+        private ApiActionTable apiActionTable;
 
         /// <summary>
         /// 数据包id提供者
@@ -83,7 +83,7 @@ namespace NetworkSocket.Fast
         /// </summary>
         private void Init()
         {
-            this.apiActionList = new ApiActionList(Common.GetServiceApiActions(this.GetType()));
+            this.apiActionTable = new ApiActionTable(Common.GetServiceApiActions(this.GetType()));
             this.packetIdProvider = new PacketIdProvider();
             this.taskSetterTable = new TaskSetterTable<long>();
             this.Serializer = new DefaultSerializer();
@@ -179,7 +179,7 @@ namespace NetworkSocket.Fast
         /// <returns></returns>
         private ApiAction GetApiAction(RequestContext requestContext)
         {
-            var action = this.apiActionList.TryGet(requestContext.Packet.ApiName);
+            var action = this.apiActionTable.TryGet(requestContext.Packet.ApiName);
             if (action != null)
             {
                 return action;
@@ -285,7 +285,7 @@ namespace NetworkSocket.Fast
         {
             base.Dispose();
 
-            this.apiActionList = null;
+            this.apiActionTable = null;
             this.taskSetterTable.Clear();
             this.taskSetterTable = null;
             this.packetIdProvider = null;

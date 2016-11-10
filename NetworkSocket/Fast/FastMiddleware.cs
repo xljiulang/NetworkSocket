@@ -23,7 +23,7 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 所有Api行为
         /// </summary>
-        private ApiActionList apiActionList;
+        private ApiActionTable apiActionTable;
 
         /// <summary>
         /// 获取数据包id提供者
@@ -74,7 +74,7 @@ namespace NetworkSocket.Fast
         /// </summary>
         public FastMiddleware()
         {
-            this.apiActionList = new ApiActionList();
+            this.apiActionTable = new ApiActionTable();
             this.PacketIdProvider = new PacketIdProvider();
             this.TaskSetterTable = new TaskSetterTable<long>();
 
@@ -101,7 +101,7 @@ namespace NetworkSocket.Fast
             foreach (var type in fastApiServices)
             {
                 var actions = Common.GetServiceApiActions(type);
-                this.apiActionList.AddRange(actions);
+                this.apiActionTable.AddRange(actions);
             }
         }
 
@@ -244,7 +244,7 @@ namespace NetworkSocket.Fast
         /// <returns></returns>
         private ApiAction GetApiAction(RequestContext requestContext)
         {
-            var action = this.apiActionList.TryGet(requestContext.Packet.ApiName);
+            var action = this.apiActionTable.TryGet(requestContext.Packet.ApiName);
             if (action == null)
             {
                 throw new ApiNotExistException(requestContext.Packet.ApiName);
