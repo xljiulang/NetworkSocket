@@ -9,7 +9,7 @@ namespace NetworkSocket.Util.Converts
     /// 表示简单类型转换单元
     /// 支持基元类型、guid和枚举相互转换
     /// </summary>
-    public class PrimitiveContert : IConvert
+    public class SimpleContert : IConvert
     {
         /// <summary>
         /// 转换器实例

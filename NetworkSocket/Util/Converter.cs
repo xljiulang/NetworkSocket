@@ -61,7 +61,7 @@ namespace NetworkSocket.Util
             this.Items = new ContertItems(this)
                 .AddLast<NoConvert>()
                 .AddLast<NullConvert>()
-                .AddLast<PrimitiveContert>()
+                .AddLast<SimpleContert>()
                 .AddLast<NullableConvert>()
                 .AddLast<DictionaryConvert>()
                 .AddLast<ArrayConvert>()

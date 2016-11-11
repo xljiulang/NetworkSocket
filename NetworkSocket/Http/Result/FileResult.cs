@@ -213,7 +213,7 @@ namespace NetworkSocket.Http
             var buffer = new byte[fileStream.Length];
             fileStream.Read(buffer, 0, buffer.Length);
 
-            var zipBuffer = GZip.Compress(buffer);
+            var zipBuffer = Compression.GZipCompress(buffer);
             response.WriteHeader(zipBuffer.Length, true);
             response.WriteContent(zipBuffer);
         }
@@ -230,7 +230,7 @@ namespace NetworkSocket.Http
             var buffer = new byte[fileStream.Length];
             await fileStream.ReadAsync(buffer, 0, buffer.Length);
 
-            var zipBuffer = GZip.Compress(buffer);
+            var zipBuffer = Compression.GZipCompress(buffer);
             response.WriteHeader(zipBuffer.Length, true);
             response.WriteContent(zipBuffer);
         }

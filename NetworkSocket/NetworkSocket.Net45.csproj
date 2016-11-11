@@ -111,7 +111,7 @@
     <Compile Include="ISubscriber.cs" />
     <Compile Include="TagItem.cs" />
     <Compile Include="Tasks\TaskSetter.cs" />
-    <Compile Include="Util\GZip.cs" />
+    <Compile Include="Util\Compression.cs" />
     <Compile Include="Http\HttpAction.cs" />
     <Compile Include="Http\HttpController.cs" />
     <Compile Include="Http\HttpEvent.cs" />
@@ -138,7 +138,6 @@
     <Compile Include="Http\Internal\HttpGlobalFilters.cs" />
     <Compile Include="Http\Internal\HttpActionTable.cs" />
     <Compile Include="Http\Internal\MultipartHead.cs" />
-    <Compile Include="Http\Internal\BinderProperty.cs" />
     <Compile Include="Http\Internal\HttpRequestParser.cs" />
     <Compile Include="Http\Internal\HttpParseResult.cs" />
     <Compile Include="Http\NoneActionAttribute.cs" />
@@ -192,7 +191,7 @@
     <Compile Include="Util\Converts\NoConvert.cs" />
     <Compile Include="Util\Converts\NullableConvert.cs" />
     <Compile Include="Util\Converts\NullConvert.cs" />
-    <Compile Include="Util\Converts\PrimitiveContert.cs" />
+    <Compile Include="Util\Converts\SimpleContert.cs" />
     <Compile Include="Util\IConvert.cs" />
     <Compile Include="Util\TcpSnapshot.cs" />
     <Compile Include="Util\HttpUtility.cs" />

@@ -168,7 +168,7 @@ namespace NetworkSocket.Http
             var contentBytes = this.Charset.GetBytes(content);
             if (gzip == true)
             {
-                contentBytes = GZip.Compress(contentBytes);
+                contentBytes = Compression.GZipCompress(contentBytes);
             }
 
             var headerBytes = this.GenerateHeader(contentBytes.Length, gzip);

@@ -11,16 +11,16 @@ namespace NetworkSocket.Util
     /// <summary>
     /// GZip
     /// </summary>
-    public static class GZip
+    public static class Compression
     {
         /// <summary>
         /// Gzip压缩
         /// </summary>
         /// <param name="buffer">数据</param>        
         /// <returns></returns>
-        public static byte[] Compress(byte[] buffer)
+        public static byte[] GZipCompress(byte[] buffer)
         {
-            return GZip.Compress(buffer, 0, buffer.Length);
+            return Compression.GZipCompress(buffer, 0, buffer.Length);
         }
 
         /// <summary>
@@ -30,7 +30,7 @@ namespace NetworkSocket.Util
         /// <param name="offset">偏移量</param>
         /// <param name="length">长度</param>
         /// <returns></returns>
-        public static byte[] Compress(byte[] buffer, int offset, int length)
+        public static byte[] GZipCompress(byte[] buffer, int offset, int length)
         {
             if (buffer == null || buffer.Length == 0)
             {
