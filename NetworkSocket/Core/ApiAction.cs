@@ -111,19 +111,20 @@ namespace NetworkSocket.Core
         /// <returns></returns>
         public virtual IEnumerable<ParameterFilterAttribute> GetParametersFilterAttributes()
         {
-            return this.Parameters.SelectMany(p => this.GetParameterFilterAttributes(p));
+            return this.Parameters.SelectMany((p, i) => this.GetParameterFilterAttributes(p, i));
         }
 
         /// <summary>
         /// 获取参数的参数过滤器
         /// </summary>
         /// <param name="parameter">参数</param>
+        /// <param name="index">索引</param>
         /// <returns></returns>
-        private IEnumerable<ParameterFilterAttribute> GetParameterFilterAttributes(ApiParameter parameter)
+        private IEnumerable<ParameterFilterAttribute> GetParameterFilterAttributes(ApiParameter parameter, int index)
         {
             return parameter.Info
                 .GetCustomAttributes<ParameterFilterAttribute>(inherit: true)
-                .Select(filter => filter.InitWith(parameter));
+                .Select(filter => filter.InitWith(index));
         }
 
         /// <summary>

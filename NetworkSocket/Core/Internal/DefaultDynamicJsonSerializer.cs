@@ -149,28 +149,15 @@ namespace NetworkSocket.Core
                 this.data = data;
             }
 
-
             /// <summary>
             /// 获取成员的值 
             /// </summary>
-            /// <param name="member">成员名称</param>
-            /// <returns></returns>
-            public object GetValue(string member)
-            {
-                object value;
-                this.TryGetValue(member, out value);
-                return value;
-            }
-
-            /// <summary>
-            /// 获取成员的值 
-            /// </summary>
-            /// <param name="member">成员名称</param>
+            /// <param name="memberName">成员名称</param>
             /// <param name="value">值</param>
             /// <returns></returns>
-            private bool TryGetValue(string member, out object value)
+            public bool TryGetValue(string memberName, out object value)
             {
-                var key = this.data.Keys.FirstOrDefault(item => string.Equals(member, item, StringComparison.OrdinalIgnoreCase));
+                var key = this.data.Keys.FirstOrDefault(item => string.Equals(memberName, item, StringComparison.OrdinalIgnoreCase));
                 if (key == null)
                 {
                     value = null;

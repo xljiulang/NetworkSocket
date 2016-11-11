@@ -1,4 +1,5 @@
-﻿using NetworkSocket.Reflection;
+﻿using NetworkSocket.Core;
+using NetworkSocket.Reflection;
 using NetworkSocket.Util;
 using System;
 using System.Collections.Concurrent;
@@ -15,19 +16,88 @@ namespace NetworkSocket.Http
     internal class DefaultModelBinder : IModelBinder
     {
         /// <summary>
-        /// 生成模型
+        /// 生成和绑定所有参数的值
+        /// </summary>
+        /// <param name="context">上下文</param>
+        public void BindAllParameterValue(ActionContext context)
+        {
+            if (context.Request.IsRawJson())
+            {
+                this.BindParametersFromRawJson(context);
+            }
+            else
+            {
+                this.BindParametersFromForm(context);
+            }
+        }
+
+        /// <summary>
+        /// 生成和绑定所有参数的值
+        /// Raw Json
+        /// </summary>
+        /// <param name="context">上下文</param>
+        private void BindParametersFromRawJson(ActionContext context)
+        {
+            var json = Encoding.UTF8.GetString(context.Request.Body);
+            var raw = new DefaultDynamicJsonSerializer().Deserialize(json) as IMemberValue;
+            foreach (var parameter in context.Action.Parameters)
+            {
+                parameter.Value = this.GetValueFromRaw(raw, parameter);
+            }
+        }
+
+        /// <summary>
+        /// 从Raw数据获取参数值
+        /// </summary>
+        /// <param name="raw">原始数据</param>
+        /// <param name="parameter">参数</param>       
+        /// <returns></returns>
+        private object GetValueFromRaw(IMemberValue raw, ApiParameter parameter)
+        {
+            if (raw != null)
+            {
+                object value = null;
+                if (raw.TryGetValue(parameter.Name, out value))
+                {
+                    return Converter.Cast(value, parameter.Type);
+                }
+            }
+
+            var defaultValue = parameter.Info.DefaultValue;
+            if (defaultValue == DBNull.Value)
+            {
+                defaultValue = null;
+            }
+            return defaultValue;
+        }
+
+        /// <summary>
+        /// 生成和绑定所有参数的值
+        /// form/query
+        /// </summary>
+        /// <param name="context">上下文</param>
+        private void BindParametersFromForm(ActionContext context)
+        {
+            foreach (var parameter in context.Action.Parameters)
+            {
+                parameter.Value = this.GetValueFromForm(context.Request, parameter);
+            }
+        }
+
+        /// <summary>
+        /// 从表单获取参数值
         /// </summary>
         /// <param name="request">请求数据</param>
         /// <param name="parameter">参数</param>       
         /// <returns></returns>
-        public object BindModel(HttpRequest request, ParameterInfo parameter)
+        private object GetValueFromForm(HttpRequest request, ApiParameter parameter)
         {
             var name = parameter.Name;
-            var targetType = parameter.ParameterType;
+            var targetType = parameter.Type;
 
             if (targetType.IsClass == true && targetType.IsArray == false && targetType != typeof(string))
             {
-                return this.ConvertToClass(request, parameter);
+                return this.FormToClass(request, parameter);
             }
 
             // 转换为数组
@@ -39,22 +109,22 @@ namespace NetworkSocket.Http
 
             // 转换为简单类型 保留参数默认值
             var value = values.FirstOrDefault();
-            if (value == null && parameter.DefaultValue != DBNull.Value)
+            if (value == null && parameter.Info.DefaultValue != DBNull.Value)
             {
-                return parameter.DefaultValue;
+                return parameter.Info.DefaultValue;
             }
             return Converter.Cast(value, targetType);
         }
 
         /// <summary>
-        /// 转换为类
+        /// 表单转换为类
         /// </summary>
-        /// <param name="parameter">参数</param>
         /// <param name="request">请求数据</param>
+        /// <param name="parameter">参数</param>       
         /// <returns></returns>
-        public object ConvertToClass(HttpRequest request, ParameterInfo parameter)
+        private object FormToClass(HttpRequest request, ApiParameter parameter)
         {
-            var targetType = parameter.ParameterType;
+            var targetType = parameter.Type;
             if (targetType.IsByRef && targetType.IsInterface && targetType.IsAbstract)
             {
                 throw new NotSupportedException("不支持的类型：" + targetType.Name);

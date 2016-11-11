@@ -14,8 +14,9 @@ namespace NetworkSocket.Core
         /// <summary>
         /// 获取成员的值 
         /// </summary>
-        /// <param name="member">成员名称</param>
+        /// <param name="memberName">成员名称</param>
+        /// <param name="value">值</param>
         /// <returns></returns>
-        object GetValue(string member);
+        bool TryGetValue(string memberName, out object value);
     }
 }

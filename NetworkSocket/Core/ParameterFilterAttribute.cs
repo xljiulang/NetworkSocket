@@ -13,17 +13,17 @@ namespace NetworkSocket.Core
     public abstract class ParameterFilterAttribute : FilterAttribute
     {
         /// <summary>
-        /// 参数
+        /// 参数索引
         /// </summary>
-        private ApiParameter parameter;
+        private int index;
 
         /// <summary>
         /// 绑定参数
         /// </summary>
-        /// <param name="parameter">参数</param>
-        internal ParameterFilterAttribute InitWith(ApiParameter parameter)
+        /// <param name="index">参数索引</param>
+        internal ParameterFilterAttribute InitWith(int index )
         {
-            this.parameter = parameter;
+            this.index = index;
             return this;
         }
 
@@ -33,7 +33,7 @@ namespace NetworkSocket.Core
         /// <param name="filterContext"></param>
         protected sealed override void OnExecuting(IActionContext filterContext)
         {
-            this.OnOnExecuting(filterContext.Action, this.parameter);
+            this.OnOnExecuting(filterContext.Action,  filterContext.Action.Parameters[this.index]);
         }
 
         /// <summary>

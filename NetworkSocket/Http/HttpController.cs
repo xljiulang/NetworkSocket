@@ -100,7 +100,7 @@ namespace NetworkSocket.Http
         /// <returns>如果输出Api的返回结果就返回true</returns>
         private async Task ExecuteActionAsync(ActionContext actionContext, IEnumerable<IFilter> filters)
         {
-            this.SetParameterValues(actionContext);
+            this.Middleware.ModelBinder.BindAllParameterValue(actionContext);
             this.ExecFiltersBeforeAction(filters, actionContext);
 
             if (actionContext.Result != null)
@@ -139,19 +139,6 @@ namespace NetworkSocket.Http
             else
             {
                 actionResult.ExecuteResult(actionContext);
-            }
-        }
-
-
-        /// <summary>
-        /// 设置Http Api的参数值
-        /// </summary>
-        /// <param name="actionContext"></param>
-        private void SetParameterValues(ActionContext actionContext)
-        {
-            foreach (var parameter in actionContext.Action.Parameters)
-            {
-                parameter.Value = this.Middleware.ModelBinder.BindModel(actionContext.Request, parameter.Info);
             }
         }
 

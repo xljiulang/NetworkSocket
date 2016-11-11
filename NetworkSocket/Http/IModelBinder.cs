@@ -7,16 +7,14 @@ using System.Text;
 namespace NetworkSocket.Http
 {
     /// <summary>
-    /// 定义模型生成器的接口
+    /// 定义绑定参数模型的接口
     /// </summary>
     public interface IModelBinder
     {
         /// <summary>
-        /// 生成参数的模型
+        /// 生成和绑定所有参数的值
         /// </summary>
-        /// <param name="request">http请求</param>
-        /// <param name="parameter">HttpAction的一个参数</param>       
-        /// <returns></returns>
-        object BindModel(HttpRequest request, ParameterInfo parameter);
+        /// <param name="context">上下文</param>
+        void BindAllParameterValue(ActionContext context);
     }
 }

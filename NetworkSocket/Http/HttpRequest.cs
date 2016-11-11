@@ -148,6 +148,17 @@ namespace NetworkSocket.Http
 
         /// <summary>
         /// Content-Type是否为
+        /// application/json
+        /// </summary>
+        /// <returns></returns>
+        public bool IsRawJson()
+        {
+            var contentType = this.Headers["Content-Type"];
+            return StringEquals(contentType, "application/json");
+        }
+
+        /// <summary>
+        /// Content-Type是否为
         /// multipart/form-data
         /// </summary>
         /// <returns></returns>
