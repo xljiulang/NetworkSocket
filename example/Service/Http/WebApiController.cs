@@ -38,15 +38,13 @@ namespace Service.Http
         }
 
 
-        /// <summary>
-        /// 伪静态 /WebApi/Login.html
+        /// <summary>       
         /// async await 异步
         /// </summary>
         /// <param name="account"></param>
         /// <param name="password"></param>
         /// <returns></returns>
-        [HttpPost]
-        [Route("/{controller}/{action}.html")]
+        [HttpPost]     
         public async Task<object> Login([NotNull]string account, [NotNull] string password)
         {
             await Task.FromResult(0);
@@ -54,25 +52,25 @@ namespace Service.Http
         }
 
         /// <summary>
-        /// /NetworkSocket/RouteDataTest
+        /// /{namespace}/RouteDataTest
         /// </summary>
         /// <returns></returns>
         [Route("/{namespace}/{action}")]
-        public string GetNamespace()
+        public string RouteDataTest()
         {
             var space = this.CurrentContext.Action.RouteData["namespace"];
             return space;
         }
 
         /// <summary>
-        /// /NetworkSocket/WebApi/RouteDataTest
+        /// /{namespace}/WebApi/RouteDataTest
         /// </summary>
         /// <returns></returns>
-        [Route("/{namespace}/{controller}/GetNamespace")]
-        public string GetNamespaceWithController()
+        [Route("/{namespace}/{controller}/{action}")]
+        public object RouteDataTest(string value)
         {
             var space = this.CurrentContext.Action.RouteData["namespace"];
-            return space;
+            return new { @namespace = space, value };
         }
     }
 }

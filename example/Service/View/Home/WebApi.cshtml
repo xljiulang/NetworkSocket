@@ -22,7 +22,9 @@
     </script>
 
     <style type="text/css">
-        body { padding: 10px; }
+        body {
+            padding: 10px;
+        }
     </style>
 </head>
 
@@ -32,16 +34,15 @@
         <pre><span style="color: #0000ff;">namespace</span><span style="color: #000000;"> MixServer.Controller
 {
     </span><span style="color: #808080;">///</span> <span style="color: #808080;">&lt;summary&gt;</span>
-    <span style="color: #808080;">///</span><span style="color: #008000;"> WebApi控制器
+        <span style="color: #808080;">///</span><span style="color: #008000;"> WebApi控制器
     </span><span style="color: #808080;">///</span> <span style="color: #808080;">&lt;/summary&gt;</span>
-    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> WebApiController : HttpController
+        <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> WebApiController : HttpController
     {
         </span><span style="color: #0000ff;">public</span><span style="color: #000000;"> JsonResult About()
         {
             </span><span style="color: #0000ff;">var</span> names = <span style="color: #0000ff;">typeof</span><span style="color: #000000;">(HttpController).Assembly.GetName();
             </span><span style="color: #0000ff;">return</span> Json(<span style="color: #0000ff;">new</span> { assembly = names.Name, version =<span style="color: #000000;"> names.Version.ToString() });
         }
-
         [HttpPost]
         </span><span style="color: #0000ff;">public</span> JsonResult Login(<span style="color: #0000ff;">string</span> account, <span style="color: #0000ff;">string</span><span style="color: #000000;"> password)
         {
@@ -68,8 +69,7 @@
                 <td>/V2/WebApi/About</td>
                 <td>GET/POST</td>
                 <td>
-                    <form>
-                    </form>
+                    <form></form>
                 </td>
                 <td>
                     <button class="btn btn-small" onclick="request(this);">请求</button>
@@ -77,7 +77,7 @@
                 <td></td>
             </tr>
             <tr>
-                <td>/WebApi/Login.html</td>
+                <td>/WebApi/Login</td>
                 <td>POST</td>
                 <td>
                     <form>
@@ -86,6 +86,31 @@
 
                         <label>密码</label>
                         <input type="password" name="password" value="123456" />
+                    </form>
+                </td>
+                <td>
+                    <button class="btn btn-small" onclick="request(this);">请求</button>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>/MyNamespace/RouteDataTest</td>
+                <td>GET/POST</td>
+                <td>
+                    <form></form>
+                </td>
+                <td>
+                    <button class="btn btn-small" onclick="request(this);">请求</button>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>/MyNamespace/WebApi/RouteDataTest</td>
+                <td>GET/POST</td>
+                <td>
+                    <form>
+                        <label>value</label>
+                        <input type="text" name="value" value="NetworkSocket" />
                     </form>
                 </td>
                 <td>
