@@ -62,6 +62,7 @@ namespace NetworkSocket.Fast
         /// <param name="api">api名称</param>
         /// <param name="id">标识符</param>
         /// <param name="fromClient">是否为客户端的封包</param>
+        /// <exception cref="ArgumentNullException"></exception>
         public FastPacket(string api, long id, bool fromClient)
         {
             if (string.IsNullOrEmpty(api))

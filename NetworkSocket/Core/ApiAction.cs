@@ -106,14 +106,24 @@ namespace NetworkSocket.Core
         }
 
         /// <summary>
-        /// 获取参数的参数过滤器
+        /// 获取所有参数的参数过滤器
         /// </summary>
         /// <returns></returns>
         public virtual IEnumerable<ParameterFilterAttribute> GetParametersFilterAttributes()
         {
-            return this.Parameters.SelectMany(p => p.Info
+            return this.Parameters.SelectMany(p => this.GetParameterFilterAttributes(p));
+        }
+
+        /// <summary>
+        /// 获取参数的参数过滤器
+        /// </summary>
+        /// <param name="parameter">参数</param>
+        /// <returns></returns>
+        private IEnumerable<ParameterFilterAttribute> GetParameterFilterAttributes(ApiParameter parameter)
+        {
+            return parameter.Info
                 .GetCustomAttributes<ParameterFilterAttribute>(inherit: true)
-                .Select(filter => filter.InitWith(p)));
+                .Select(filter => filter.InitWith(parameter));
         }
 
         /// <summary>

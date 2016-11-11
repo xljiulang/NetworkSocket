@@ -55,11 +55,11 @@ namespace NetworkSocket.Http
         internal IEnumerable<KeyValuePair<string, string>> MatchURL(Uri url)
         {
             IEnumerable<KeyValuePair<string, string>> routeData;
-            if (this.IsMatchURL(url, out routeData) == true)
+            if (this.IsMatchURL(url, out routeData) == false)
             {
-                return routeData;
+                return null;
             }
-            return null;
+            return routeData == null ? Enumerable.Empty<KeyValuePair<string, string>>() : routeData;
         }
 
 
