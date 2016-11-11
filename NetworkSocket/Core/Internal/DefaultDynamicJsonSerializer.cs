@@ -117,7 +117,7 @@ namespace NetworkSocket.Core
         /// 表示动态Json对象
         /// </summary>   
         [DebuggerTypeProxy(typeof(DebugView))]
-        private class JObject : DynamicObject
+        private class JObject : DynamicObject, IMemberValue
         {
             /// <summary>
             /// 解析Json
@@ -147,6 +147,36 @@ namespace NetworkSocket.Core
             private JObject(IDictionary<string, object> data)
             {
                 this.data = data;
+            }
+
+
+            /// <summary>
+            /// 获取成员的值 
+            /// </summary>
+            /// <param name="member">成员名称</param>
+            /// <returns></returns>
+            public object GetValue(string member)
+            {
+                object value;
+                this.TryGetValue(member, out value);
+                return value;
+            }
+
+            /// <summary>
+            /// 获取成员的值 
+            /// </summary>
+            /// <param name="member">成员名称</param>
+            /// <param name="value">值</param>
+            /// <returns></returns>
+            private bool TryGetValue(string member, out object value)
+            {
+                var key = this.data.Keys.FirstOrDefault(item => string.Equals(member, item, StringComparison.OrdinalIgnoreCase));
+                if (key == null)
+                {
+                    value = null;
+                    return true;
+                }
+                return this.data.TryGetValue(key, out value);
             }
 
             /// <summary>
@@ -186,20 +216,10 @@ namespace NetworkSocket.Core
             /// <returns></returns>
             public override bool TryGetMember(GetMemberBinder binder, out object result)
             {
-                result = null;
-                var key = this.data.Keys.FirstOrDefault(item => string.Equals(binder.Name, item, StringComparison.OrdinalIgnoreCase));
-                if (key == null)
+                if (this.TryGetValue(binder.Name, out result))
                 {
-                    return true;
+                    result = this.CastToJObject(result);
                 }
-
-                object value;
-                if (this.data.TryGetValue(key, out value) == false)
-                {
-                    return true;
-                }
-
-                result = this.CastToJObject(value);
                 return true;
             }
 
@@ -309,6 +329,7 @@ namespace NetworkSocket.Core
             }
 
             #endregion
+
         }
         #endregion
     }

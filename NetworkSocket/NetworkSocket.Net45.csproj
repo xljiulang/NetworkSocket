@@ -71,6 +71,7 @@
     <Compile Include="Core\IFilterSupportable.cs" />
     <Compile Include="Core\IGlobalFilters.cs" />
     <Compile Include="Core\Internal\ApiActionTable.cs" />
+    <Compile Include="Core\Internal\IMemberValue.cs" />
     <Compile Include="Core\NotNullAttribute.cs" />
     <Compile Include="Core\ParameterFilterAttribute.cs" />
     <Compile Include="Http\RouteBaseAttribute.cs" />
