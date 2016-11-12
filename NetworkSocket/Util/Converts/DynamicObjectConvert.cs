@@ -39,56 +39,36 @@ namespace NetworkSocket.Util.Converts
             var instance = Activator.CreateInstance(targetType);
             var setters = Property.GetProperties(targetType);
 
-            foreach (var set in setters)
+            foreach (var setter in setters)
             {
-                if (set.Info.CanWrite == false)
+                if (setter.Info.CanWrite == false)
                 {
                     continue;
                 }
 
                 object targetValue;
-                if (this.TryGetValue(dynamicObject, set.Name, out targetValue) == true)
+                if (dynamicObject.TryGetMember(new MemberBinder(setter.Name, ignoreCase: true), out targetValue) == false)
                 {
-                    targetValue = this.Converter.Convert(targetValue, set.Info.PropertyType);
-                    set.SetValue(instance, targetValue);
+                    continue;
                 }
-            }
 
+                var valueCast = this.Converter.Convert(targetValue, setter.Info.PropertyType);
+                setter.SetValue(instance, targetValue);
+            }
             return instance;
         }
 
         /// <summary>
-        /// 获取动态类型的值
+        /// 表示成员值的获取绑定
         /// </summary>
-        /// <param name="dynamicObject">实例</param>
-        /// <param name="key">键名</param>
-        /// <param name="value">值</param>
-        /// <returns></returns>
-        private bool TryGetValue(DynamicObject dynamicObject, string key, out object value)
-        {
-            var keys = dynamicObject.GetDynamicMemberNames();
-            key = keys.FirstOrDefault(item => string.Equals(item, key, StringComparison.OrdinalIgnoreCase));
-
-            if (key != null)
-            {
-                return dynamicObject.TryGetMember(new KeyBinder(key, false), out value);
-            }
-
-            value = null;
-            return false;
-        }
-
-        /// <summary>
-        /// 表示键的信息获取绑定
-        /// </summary>
-        private class KeyBinder : GetMemberBinder
+        private class MemberBinder : GetMemberBinder
         {
             /// <summary>
             /// 键的信息获取绑定
             /// </summary>
             /// <param name="key">键名</param>
             /// <param name="ignoreCase">是否忽略大小写</param>
-            public KeyBinder(string key, bool ignoreCase)
+            public MemberBinder(string key, bool ignoreCase)
                 : base(key, ignoreCase)
             {
             }

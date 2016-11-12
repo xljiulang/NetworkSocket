@@ -117,7 +117,7 @@ namespace NetworkSocket.Core
         /// 表示动态Json对象
         /// </summary>   
         [DebuggerTypeProxy(typeof(DebugView))]
-        private class JObject : DynamicObject, IMemberValue
+        private class JObject : DynamicObject
         {
             /// <summary>
             /// 解析Json
@@ -138,7 +138,7 @@ namespace NetworkSocket.Core
             /// <summary>
             /// 数据字典
             /// </summary>
-            private IDictionary<string, object> data;
+            private readonly IDictionary<string, object> data;
 
             /// <summary>
             /// 表示动态Json对象
@@ -146,24 +146,7 @@ namespace NetworkSocket.Core
             /// <param name="data">内容字典</param>
             private JObject(IDictionary<string, object> data)
             {
-                this.data = data;
-            }
-
-            /// <summary>
-            /// 获取成员的值 
-            /// </summary>
-            /// <param name="memberName">成员名称</param>
-            /// <param name="value">值</param>
-            /// <returns></returns>
-            public bool TryGetValue(string memberName, out object value)
-            {
-                var key = this.data.Keys.FirstOrDefault(item => string.Equals(memberName, item, StringComparison.OrdinalIgnoreCase));
-                if (key == null)
-                {
-                    value = null;
-                    return true;
-                }
-                return this.data.TryGetValue(key, out value);
+                this.data = data.ToDictionary(k => k.Key, kv => kv.Value, StringComparer.OrdinalIgnoreCase);
             }
 
             /// <summary>
@@ -203,7 +186,7 @@ namespace NetworkSocket.Core
             /// <returns></returns>
             public override bool TryGetMember(GetMemberBinder binder, out object result)
             {
-                if (this.TryGetValue(binder.Name, out result))
+                if (this.data.TryGetValue(binder.Name, out result))
                 {
                     result = this.CastToJObject(result);
                 }
@@ -316,7 +299,6 @@ namespace NetworkSocket.Core
             }
 
             #endregion
-
         }
         #endregion
     }

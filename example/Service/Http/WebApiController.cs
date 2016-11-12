@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using NetworkSocket.Tasks;
 using NetworkSocket.Core;
+using Models;
 
 namespace Service.Http
 {
@@ -44,7 +45,7 @@ namespace Service.Http
         /// <param name="account"></param>
         /// <param name="password"></param>
         /// <returns></returns>
-        [HttpPost]     
+        [HttpPost]
         public async Task<object> Login([NotNull]string account, [NotNull] string password)
         {
             await Task.FromResult(0);
@@ -71,6 +72,23 @@ namespace Service.Http
         {
             var space = this.CurrentContext.Action.RouteData["namespace"];
             return new { @namespace = space, value };
+        }
+
+        /// <summary>
+        /// POST /WebApi/RawJsonTest HTTP/1.1
+        /// Host: localhost:1212
+        /// Content-Type: application/json; chartset=utf-8
+        /// Cache-Control: no-cache
+        /// 
+        /// {"u1":{"account":"xljiulang","Password":"123456","Name":"老9"},"u2":{"Account":"xljiulang2","Password":"123456","Name":"老92"}}
+        /// </summary>
+        /// <param name="U1"></param>
+        /// <param name="u2"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public object RawJsonTest(UserInfo U1, UserInfo u2)
+        {
+            return new { u1 = U1, u2 };
         }
     }
 }

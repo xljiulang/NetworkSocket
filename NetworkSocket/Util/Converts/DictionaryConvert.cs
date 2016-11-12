@@ -34,23 +34,29 @@ namespace NetworkSocket.Util.Converts
             {
                 return this.NextConvert.Convert(value, targetType);
             }
+            else
+            {
+                dic = dic.ToDictionary(kv => kv.Key, kv => kv.Value, StringComparer.OrdinalIgnoreCase);
+            }
 
             var instance = Activator.CreateInstance(targetType);
             var setters = Property.GetProperties(targetType);
 
-            foreach (var set in setters)
+            foreach (var setter in setters)
             {
-                if (set.Info.CanWrite == false)
+                if (setter.Info.CanWrite == false)
                 {
                     continue;
                 }
 
-                var key = dic.Keys.FirstOrDefault(k => string.Equals(k, set.Name, StringComparison.OrdinalIgnoreCase));
-                if (key != null)
+                object targetValue;
+                if (dic.TryGetValue(setter.Name, out targetValue) == false)
                 {
-                    var targetValue = this.Converter.Convert(dic[key], set.Info.PropertyType);
-                    set.SetValue(instance, targetValue);
+                    continue;
                 }
+
+                var valueCast = this.Converter.Convert(targetValue, setter.Info.PropertyType);
+                setter.SetValue(instance, valueCast);
             }
 
             return instance;

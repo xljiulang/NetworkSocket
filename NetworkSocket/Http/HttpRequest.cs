@@ -142,6 +142,11 @@ namespace NetworkSocket.Http
         /// <returns></returns>
         public bool IsApplicationFormRequest()
         {
+            if (this.HttpMethod == HttpMethod.GET)
+            {
+                return false;
+            }
+
             var contentType = this.Headers["Content-Type"];
             return StringEquals(contentType, "application/x-www-form-urlencoded");
         }
@@ -150,11 +155,33 @@ namespace NetworkSocket.Http
         /// Content-Type是否为
         /// application/json
         /// </summary>
+        /// <param name="charset">字符编码</param>
         /// <returns></returns>
-        public bool IsRawJson()
+        public bool IsRawJson(out Encoding charset)
         {
-            var contentType = this.Headers["Content-Type"];
-            return StringEquals(contentType, "application/json");
+            if (this.HttpMethod == HttpMethod.GET)
+            {
+                charset = null;
+                return false;
+            }
+
+            var contentType = new ContentType(this);
+            if (contentType.IsMatch("application/json") == false)
+            {
+                charset = null;
+                return false;
+            }
+
+            string encoding;
+            if (contentType.TryGetExtend("chartset", out encoding))
+            {
+                charset = Encoding.GetEncoding(encoding);
+            }
+            else
+            {
+                charset = Encoding.UTF8;
+            }
+            return true;
         }
 
         /// <summary>
@@ -164,19 +191,19 @@ namespace NetworkSocket.Http
         /// <returns></returns>
         public bool IsMultipartFormRequest(out string boundary)
         {
-            var contentType = this.Headers["Content-Type"];
-            if (string.IsNullOrEmpty(contentType) == false)
+            if (this.HttpMethod == HttpMethod.GET)
             {
-                if (Regex.IsMatch(contentType, "multipart/form-data", RegexOptions.IgnoreCase))
-                {
-                    var match = Regex.Match(contentType, "(?<=boundary=).+");
-                    boundary = match.Value;
-                    return match.Success;
-                }
+                boundary = null;
+                return false;
             }
 
-            boundary = null;
-            return false;
+            var contentType = new ContentType(this);
+            if (contentType.IsMatch("multipart/form-data") == false)
+            {
+                boundary = null;
+                return false;
+            }
+            return contentType.TryGetExtend("boundary", out boundary);
         }
 
         /// <summary>

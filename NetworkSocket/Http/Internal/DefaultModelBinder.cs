@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Web.Script.Serialization;
 
 namespace NetworkSocket.Http
 {
@@ -21,9 +22,10 @@ namespace NetworkSocket.Http
         /// <param name="context">上下文</param>
         public void BindAllParameterValue(ActionContext context)
         {
-            if (context.Request.IsRawJson())
+            Encoding chartset;
+            if (context.Request.IsRawJson(out chartset))
             {
-                this.BindParametersFromRawJson(context);
+                this.BindParametersFromRawJson(context, chartset);
             }
             else
             {
@@ -36,10 +38,21 @@ namespace NetworkSocket.Http
         /// Raw Json
         /// </summary>
         /// <param name="context">上下文</param>
-        private void BindParametersFromRawJson(ActionContext context)
+        /// <param name="chartset">字符编码</param>
+        private void BindParametersFromRawJson(ActionContext context, Encoding chartset)
         {
-            var json = Encoding.UTF8.GetString(context.Request.Body);
-            var raw = new DefaultDynamicJsonSerializer().Deserialize(json) as IMemberValue;
+            if (context.Action.Parameters.Length == 0)
+            {
+                return;
+            }
+
+            var json = chartset.GetString(context.Request.Body);
+            var raw = new JavaScriptSerializer().Deserialize(json, typeof(object)) as IDictionary<string, object>;
+            if (raw != null)
+            {
+                raw = raw.ToDictionary(kv => kv.Key, kv => kv.Value, StringComparer.OrdinalIgnoreCase);
+            }
+
             foreach (var parameter in context.Action.Parameters)
             {
                 parameter.Value = this.GetValueFromRaw(raw, parameter);
@@ -52,7 +65,7 @@ namespace NetworkSocket.Http
         /// <param name="raw">原始数据</param>
         /// <param name="parameter">参数</param>       
         /// <returns></returns>
-        private object GetValueFromRaw(IMemberValue raw, ApiParameter parameter)
+        private object GetValueFromRaw(IDictionary<string, object> raw, ApiParameter parameter)
         {
             if (raw != null)
             {
