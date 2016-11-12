@@ -57,6 +57,16 @@ namespace NetworkSocket.Core
         }
 
         /// <summary>
+        /// 是否定义指定类型的特性
+        /// </summary>
+        /// <typeparam name="T">特性的类型</typeparam>
+        /// <returns></returns>
+        public bool IsDefined<T>() where T : Attribute
+        {
+            return this.Info.IsDefined(typeof(T), false);
+        }
+
+        /// <summary>
         /// 转换为字符串
         /// </summary>
         /// <returns></returns>

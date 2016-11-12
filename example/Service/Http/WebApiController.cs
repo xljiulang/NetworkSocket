@@ -75,20 +75,39 @@ namespace Service.Http
         }
 
         /// <summary>
-        /// POST /WebApi/RawJsonTest HTTP/1.1
+        /// POST /WebApi/RawJson?other=q HTTP/1.1
         /// Host: localhost:1212
         /// Content-Type: application/json; chartset=utf-8
         /// Cache-Control: no-cache
         /// 
-        /// {"u1":{"account":"xljiulang","Password":"123456","Name":"老9"},"u2":{"Account":"xljiulang2","Password":"123456","Name":"老92"}}
+        /// {"Account":"xljiulang","Password":"123456","Name":"老9"}
         /// </summary>
-        /// <param name="U1"></param>
-        /// <param name="u2"></param>
+        /// <param name="userInfo">请求体的Json映射得到</param>
+        /// <param name="other">这是从URL获取</param>
         /// <returns></returns>
         [HttpPost]
-        public object RawJsonTest(UserInfo U1, UserInfo u2)
+        public UserInfo RawJson([Body]UserInfo userInfo, [Query]string other)
         {
-            return new { u1 = U1, u2 };
+            return userInfo;
+        }
+
+        /// <summary>
+        /// POST /WebApi/RawJson2?other=q HTTP/1.1
+        /// Host: localhost:1212
+        /// Content-Type: application/json; chartset=utf-8
+        /// Cache-Control: no-cache
+        /// 
+        /// {"Account":"xljiulang","Password":"123456","Name":"老9"}
+        /// </summary>
+        /// <param name="account">请求体Json的Account，可以为一个复杂的类</param>
+        /// <param name="password">请求体Json的Password，可以为一个复杂的类</param>
+        /// <param name="name">请求体Json的Name，可以为一个复杂的类</param>
+        /// <param name="other">这是从URL获取,多个参数可以用一个对象来接收</param>
+        /// <returns></returns>
+        [HttpPost]
+        public UserInfo RawJson2(string account, string password, string name, [Query]string[] other)
+        {
+            return new UserInfo { Account = account, Password = password, Name = name };
         }
     }
 }

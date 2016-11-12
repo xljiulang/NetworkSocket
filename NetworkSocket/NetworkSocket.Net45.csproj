@@ -73,7 +73,9 @@
     <Compile Include="Core\Internal\ApiActionTable.cs" />
     <Compile Include="Core\NotNullAttribute.cs" />
     <Compile Include="Core\ParameterFilterAttribute.cs" />
+    <Compile Include="Http\BodyAttribute.cs" />
     <Compile Include="Http\Internal\ContentType.cs" />
+    <Compile Include="Http\QueryAttribute.cs" />
     <Compile Include="Http\RouteBaseAttribute.cs" />
     <Compile Include="Http\RouteData.cs" />
     <Compile Include="Http\RouteDataCollection.cs" />

@@ -157,7 +157,7 @@ namespace NetworkSocket.Http
         /// </summary>
         /// <param name="charset">字符编码</param>
         /// <returns></returns>
-        public bool IsRawJson(out Encoding charset)
+        public bool IsRawJsonRequest(out Encoding charset)
         {
             if (this.HttpMethod == HttpMethod.GET)
             {
