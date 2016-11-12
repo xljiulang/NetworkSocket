@@ -30,10 +30,11 @@ namespace NetworkSocket.Http
         /// 序列化成json文本
         /// </summary>
         /// <param name="data">内容</param>
+        /// <param name="datetimeFomat">时期时间格式化</param>
         /// <returns></returns>
-        protected virtual string SerializeJson(object data)
+        protected virtual string SerializeJson(object data, Func<DateTime, string> datetimeFomat)
         {
-            return new DefaultDynamicJsonSerializer().Serialize(this.Data);
+            return new DefaultDynamicJsonSerializer().Serialize(this.Data, datetimeFomat);
         }
 
         /// <summary>
@@ -43,7 +44,7 @@ namespace NetworkSocket.Http
         public override void ExecuteResult(RequestContext context)
         {
             var callback = context.Request["callback"];
-            var json = this.SerializeJson(this.Data);
+            var json = this.SerializeJson(this.Data, null);
             var gzip = context.Request.IsAcceptGZip();
 
             if (callback == null)

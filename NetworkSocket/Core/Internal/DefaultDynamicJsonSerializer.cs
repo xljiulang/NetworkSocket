@@ -26,14 +26,7 @@ namespace NetworkSocket.Core
         /// <returns></returns>
         public string Serialize(object model)
         {
-            try
-            {
-                return JSON.Parse(model);
-            }
-            catch (Exception ex)
-            {
-                throw new SerializerException(ex);
-            }
+            return this.Serialize(model, null);
         }
 
         /// <summary>
@@ -41,16 +34,10 @@ namespace NetworkSocket.Core
         /// </summary>
         /// <param name="model">实体</param>
         /// <param name="datetimeFomat">时期时间格式化</param>
-        /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="SerializerException"></exception>
         /// <returns></returns>
         public string Serialize(object model, Func<DateTime, string> datetimeFomat)
         {
-            if (datetimeFomat == null)
-            {
-                throw new ArgumentNullException("datetimeFomat");
-            }
-
             try
             {
                 return JSON.Parse(model, datetimeFomat);
@@ -105,19 +92,7 @@ namespace NetworkSocket.Core
             /// 序列化得到Json
             /// </summary>
             /// <param name="model">模型</param>
-            /// <exception cref="ArgumentNullException"></exception> 
-            /// <returns></returns>
-            public static string Parse(object model)
-            {
-                return JSON.Parse(model, (time) => time.ToString());
-            }
-
-            /// <summary>
-            /// 序列化得到Json
-            /// </summary>
-            /// <param name="model">模型</param>
             /// <param name="datetimeFomat">时期时间格式化</param>
-            /// <exception cref="ArgumentNullException"></exception> 
             /// <returns></returns>
             public static string Parse(object model, Func<DateTime, string> datetimeFomat)
             {
@@ -128,7 +103,7 @@ namespace NetworkSocket.Core
 
                 if (datetimeFomat == null)
                 {
-                    throw new ArgumentNullException("datetimeFomat");
+                    datetimeFomat = (time) => time.ToString();
                 }
 
                 var serializer = new JavaScriptSerializer();
