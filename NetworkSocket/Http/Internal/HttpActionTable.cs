@@ -67,7 +67,7 @@ namespace NetworkSocket.Http
             var clone = ((ICloneable<HttpAction>)action).CloneConstructor();
             foreach (var kv in routeData)
             {
-                clone.RouteData.Set(kv.Key, kv.Value);
+                clone.RouteDatas.Set(kv.Key, kv.Value);
             }
             return clone;
         }

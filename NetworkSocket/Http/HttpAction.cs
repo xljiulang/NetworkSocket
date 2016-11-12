@@ -24,7 +24,7 @@ namespace NetworkSocket.Http
         /// <summary>
         /// 获取路由映射数据
         /// </summary>
-        public RouteDataCollection RouteData { get; private set; }
+        public RouteDataCollection RouteDatas { get; private set; }
 
         /// <summary>
         /// 获取是允许的请求方式
@@ -56,7 +56,7 @@ namespace NetworkSocket.Http
             this.ControllerName = Regex.Replace(declaringType.Name, @"Controller$", string.Empty, RegexOptions.IgnoreCase);
             this.AllowMethod = HttpAction.GetAllowMethod(method);
             this.Route = this.GetRouteAttribute();
-            this.RouteData = new RouteDataCollection();
+            this.RouteDatas = new RouteDataCollection();
         }
 
         /// <summary>
@@ -125,7 +125,7 @@ namespace NetworkSocket.Http
                 AllowMethod = this.AllowMethod,
                 ControllerName = this.ControllerName,
                 Route = this.Route,
-                RouteData = new RouteDataCollection()
+                RouteDatas = new RouteDataCollection()
             };
         }
     }

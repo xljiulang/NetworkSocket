@@ -75,6 +75,7 @@
     <Compile Include="Core\ParameterFilterAttribute.cs" />
     <Compile Include="Http\Internal\ContentType.cs" />
     <Compile Include="Http\RouteBaseAttribute.cs" />
+    <Compile Include="Http\RouteData.cs" />
     <Compile Include="Http\RouteDataCollection.cs" />
     <Compile Include="Tasks\Dispatcher.cs" />
     <Compile Include="Core\Internal\DefaultDependencyResolver.cs" />

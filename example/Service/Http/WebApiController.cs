@@ -59,7 +59,7 @@ namespace Service.Http
         [Route("/{namespace}/{action}")]
         public string RouteDataTest()
         {
-            var space = this.CurrentContext.Action.RouteData["namespace"];
+            var space = this.CurrentContext.Action.RouteDatas["namespace"];
             return space;
         }
 
@@ -70,7 +70,7 @@ namespace Service.Http
         [Route("/{namespace}/{controller}/{action}")]
         public object RouteDataTest(string value)
         {
-            var space = this.CurrentContext.Action.RouteData["namespace"];
+            var space = this.CurrentContext.Action.RouteDatas["namespace"];
             return new { @namespace = space, value };
         }
 

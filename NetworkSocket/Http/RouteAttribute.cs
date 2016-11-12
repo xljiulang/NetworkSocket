@@ -27,9 +27,9 @@ namespace NetworkSocket.Http
         private string fixRule;
 
         /// <summary>
-        /// tokens
+        /// keys
         /// </summary>
-        private readonly List<string> tokens = new List<string>();
+        private readonly List<string> keys = new List<string>();
 
         /// <summary>
         /// 表示路由映射
@@ -57,9 +57,9 @@ namespace NetworkSocket.Http
             var glob = Regex.Escape(this.fixRule).Replace(@"\*", ".*").Replace(@"\?", ".").Replace(@"\{", "{");
             var pattern = Regex.Replace(glob, @"\{\w+\}", (m) =>
             {
-                var token = m.Value.TrimStart('{').TrimEnd('}');
-                this.tokens.Add(token);
-                return string.Format(@"(?<{0}>\w+)", token);
+                var key = m.Value.TrimStart('{').TrimEnd('}');
+                this.keys.Add(key);
+                return string.Format(@"(?<{0}>\w+)", key);
             });
             this.ruleRegex = new Regex("^" + pattern + "$", RegexOptions.IgnoreCase);
         }
@@ -70,12 +70,12 @@ namespace NetworkSocket.Http
         /// </summary>
         /// <param name="url">url</param>
         /// <param name="routeData">路由数据集合</param>
-        protected override bool IsMatchURL(Uri url, out IEnumerable<KeyValuePair<string, string>> routeData)
+        protected override bool IsMatchURL(Uri url, out IEnumerable<RouteData> routeData)
         {
             var match = this.ruleRegex.Match(url.AbsolutePath);
             if (match.Success == true)
             {
-                routeData = this.tokens.Select(key => new KeyValuePair<string, string>(key, match.Groups[key].Value));
+                routeData = this.keys.Select(key => new RouteData(key, match.Groups[key].Value));
                 return true;
             }
             else

@@ -52,14 +52,14 @@ namespace NetworkSocket.Http
         /// </summary>
         /// <param name="url"></param>
         /// <returns></returns>
-        internal IEnumerable<KeyValuePair<string, string>> MatchURL(Uri url)
+        internal IEnumerable<RouteData> MatchURL(Uri url)
         {
-            IEnumerable<KeyValuePair<string, string>> routeData;
+            IEnumerable<RouteData> routeData;
             if (this.IsMatchURL(url, out routeData) == false)
             {
                 return null;
             }
-            return routeData == null ? Enumerable.Empty<KeyValuePair<string, string>>() : routeData;
+            return routeData == null ? Enumerable.Empty<RouteData>() : routeData;
         }
 
 
@@ -78,6 +78,6 @@ namespace NetworkSocket.Http
         /// <param name="url">url</param>
         /// <param name="routeData">路由数据集合</param>
         /// <returns></returns>
-        protected abstract bool IsMatchURL(Uri url, out IEnumerable<KeyValuePair<string, string>> routeData);
+        protected abstract bool IsMatchURL(Uri url, out IEnumerable<RouteData> routeData);
     }
 }
