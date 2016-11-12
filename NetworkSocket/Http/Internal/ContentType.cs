@@ -45,15 +45,17 @@ namespace NetworkSocket.Http
         /// ContentType的值是否与value相等
         /// </summary>
         /// <param name="value">目标值</param>
+        /// <param name="ignoreCase">忽略大小写</param>
         /// <returns></returns>
-        public bool IsMatch(string value)
+        public bool IsMatch(string value, bool ignoreCase = true)
         {
             if (this.content == null)
             {
                 return false;
             }
 
-            return Regex.IsMatch(this.content, string.Format(@"^{0}(?=;|$)", value), RegexOptions.IgnoreCase);
+            var option = ignoreCase ? RegexOptions.IgnoreCase : RegexOptions.None;
+            return Regex.IsMatch(this.content, string.Format(@"^{0}(?=;|$)", value), option);
         }
 
         /// <summary>

@@ -147,8 +147,8 @@ namespace NetworkSocket.Http
                 return false;
             }
 
-            var contentType = this.Headers["Content-Type"];
-            return StringEquals(contentType, "application/x-www-form-urlencoded");
+            var contentType = new ContentType(this);
+            return contentType.IsMatch("application/x-www-form-urlencoded");
         }
 
         /// <summary>
