@@ -16,7 +16,7 @@ namespace NetworkSocket.Core
     /// <summary>
     /// 默认提供的动态Json序列化工具
     /// </summary>
-    internal sealed class DefaultDynamicJsonSerializer : IDynamicJsonSerializer
+    internal class DefaultDynamicJsonSerializer : IDynamicJsonSerializer
     {
         /// <summary>
         /// 序列化为Json
@@ -26,39 +26,9 @@ namespace NetworkSocket.Core
         /// <returns></returns>
         public string Serialize(object model)
         {
-            return this.Serialize(model, null);
-        }
-
-        /// <summary>
-        /// 序列化为Json
-        /// </summary>
-        /// <param name="model">实体</param>
-        /// <param name="datetimeFomat">时期时间格式化</param>
-        /// <exception cref="SerializerException"></exception>
-        /// <returns></returns>
-        public string Serialize(object model, Func<DateTime, string> datetimeFomat)
-        {
-            if (model == null)
-            {
-                return null;
-            }
-
             try
             {
-                var serializer = new JavaScriptSerializer();
-                serializer.MaxJsonLength = int.MaxValue;
-                var json = serializer.Serialize(model);
-
-                if (datetimeFomat != null)
-                {
-                    json = Regex.Replace(json, @"\\/Date\((\d+)\)\\/", match =>
-                    {
-                        var ticks = match.Groups[1].Value;
-                        var dateTime = this.ToLocalDateTime(ticks);
-                        return datetimeFomat(dateTime);
-                    });
-                }
-                return json;
+                return JSON.Parse(model);
             }
             catch (Exception ex)
             {
@@ -67,14 +37,28 @@ namespace NetworkSocket.Core
         }
 
         /// <summary>
-        /// 转换为本地时间
+        /// 序列化为Json
         /// </summary>
-        /// <param name="jsTicks"></param>
+        /// <param name="model">实体</param>
+        /// <param name="datetimeFomat">时期时间格式化</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="SerializerException"></exception>
         /// <returns></returns>
-        private DateTime ToLocalDateTime(string jsTicks)
+        public string Serialize(object model, Func<DateTime, string> datetimeFomat)
         {
-            var ticks = long.Parse(jsTicks);
-            return new DateTime(1970, 1, 1).AddMilliseconds(ticks).ToLocalTime();
+            if (datetimeFomat == null)
+            {
+                throw new ArgumentNullException("datetimeFomat");
+            }
+
+            try
+            {
+                return JSON.Parse(model, datetimeFomat);
+            }
+            catch (Exception ex)
+            {
+                throw new SerializerException(ex);
+            }
         }
 
         /// <summary>
@@ -111,6 +95,270 @@ namespace NetworkSocket.Core
             return Converter.Cast(value, targetType);
         }
 
+        #region Json
+        /// <summary>
+        /// 提供Json序列化
+        /// </summary>
+        private static class JSON
+        {
+            /// <summary>
+            /// 序列化得到Json
+            /// </summary>
+            /// <param name="model">模型</param>
+            /// <exception cref="ArgumentNullException"></exception> 
+            /// <returns></returns>
+            public static string Parse(object model)
+            {
+                return JSON.Parse(model, (time) => time.ToString());
+            }
+
+            /// <summary>
+            /// 序列化得到Json
+            /// </summary>
+            /// <param name="model">模型</param>
+            /// <param name="datetimeFomat">时期时间格式化</param>
+            /// <exception cref="ArgumentNullException"></exception> 
+            /// <returns></returns>
+            public static string Parse(object model, Func<DateTime, string> datetimeFomat)
+            {
+                if (model == null)
+                {
+                    return null;
+                }
+
+                if (datetimeFomat == null)
+                {
+                    throw new ArgumentNullException("datetimeFomat");
+                }
+
+                var serializer = new JavaScriptSerializer();
+                var dateTimeConverter = new DateTimeConverter(datetimeFomat);
+                serializer.MaxJsonLength = int.MaxValue;
+                serializer.RegisterConverters(new JavaScriptConverter[] { dateTimeConverter });
+
+                var json = serializer.Serialize(model);
+                return dateTimeConverter.Decode(json);
+            }
+
+            /// <summary>
+            /// 时间转换器
+            /// </summary>
+            private class DateTimeConverter : JavaScriptConverter
+            {
+                /// <summary>
+                /// 获取转换器是否已使用过
+                /// </summary>              
+                private bool isUsed = false;
+
+                /// <summary>
+                /// 时期时间格式化
+                /// </summary>
+                private readonly Func<DateTime, string> datetimeFomat;
+
+                /// <summary>
+                /// 时间转换
+                /// </summary>
+                /// <param name="datetimeFomat">时期时间格式化</param>
+                public DateTimeConverter(Func<DateTime, string> datetimeFomat)
+                {
+                    this.datetimeFomat = datetimeFomat;
+                }
+
+                /// <summary>
+                /// 时间解码
+                /// </summary>
+                /// <param name="json">json内容</param>
+                /// <returns></returns>
+                public string Decode(string json)
+                {
+                    return this.isUsed ? UriEscapeValue.Decode(json) : json;
+                }
+
+                /// <summary>
+                /// 反序化
+                /// </summary>
+                /// <param name="dictionary"></param>
+                /// <param name="type"></param>
+                /// <param name="serializer"></param>
+                /// <returns></returns>
+                public override object Deserialize(IDictionary<string, object> dictionary, Type type, JavaScriptSerializer serializer)
+                {
+                    throw new NotImplementedException();
+                }
+
+                /// <summary>
+                /// 序列化对象
+                /// </summary>
+                /// <param name="obj">对象</param>
+                /// <param name="serializer">序列化实例</param>
+                /// <returns></returns>
+                public override IDictionary<string, object> Serialize(object obj, JavaScriptSerializer serializer)
+                {
+                    var dateTime = Converter.Cast<Nullable<DateTime>>(obj);
+                    if (dateTime.HasValue == false)
+                    {
+                        return null;
+                    }
+
+                    this.isUsed = true;
+                    var dateTimeString = this.datetimeFomat(dateTime.Value);
+                    return new UriEscapeValue(dateTimeString);
+                }
+
+                /// <summary>
+                /// 支持的类型
+                /// </summary>
+                public override IEnumerable<Type> SupportedTypes
+                {
+                    get
+                    {
+                        yield return typeof(DateTime);
+                        yield return typeof(Nullable<DateTime>);
+                    }
+                }
+
+                /// <summary>
+                /// 表示将值进行Uri转义              
+                /// </summary>
+                private class UriEscapeValue : Uri, IDictionary<string, object>
+                {
+                    /// <summary>
+                    /// 标记
+                    /// </summary>
+                    private static readonly string Mask = "UriEscaped_";
+
+                    /// <summary>
+                    /// 表达式
+                    /// </summary>
+                    private static readonly string Pattern = Mask + ".+?(?=\")";
+
+                    /// <summary>
+                    /// 将值进行Uri转义  
+                    /// </summary>
+                    /// <param name="value">值</param>
+                    public UriEscapeValue(string value)
+                        : base(UriEscapeValue.Mask + value, UriKind.Relative)
+                    {
+                    }
+
+                    /// <summary>
+                    /// URI解码
+                    /// </summary>
+                    /// <param name="content">内容</param>
+                    /// <returns></returns>
+                    public static string Decode(string content)
+                    {
+                        return Regex.Replace(content, Pattern, m =>
+                        {
+                            var vlaue = m.Value.Substring(UriEscapeValue.Mask.Length);
+                            return HttpUtility.UrlDecode(vlaue, Encoding.UTF8);
+                        });
+                    }
+
+                    #region IDictionary<string, object>
+                    void IDictionary<string, object>.Add(string key, object value)
+                    {
+                        throw new NotImplementedException();
+                    }
+
+                    bool IDictionary<string, object>.ContainsKey(string key)
+                    {
+                        throw new NotImplementedException();
+                    }
+
+                    ICollection<string> IDictionary<string, object>.Keys
+                    {
+                        get
+                        {
+                            throw new NotImplementedException();
+                        }
+                    }
+
+                    bool IDictionary<string, object>.Remove(string key)
+                    {
+                        throw new NotImplementedException();
+                    }
+
+                    bool IDictionary<string, object>.TryGetValue(string key, out object value)
+                    {
+                        throw new NotImplementedException();
+                    }
+
+                    ICollection<object> IDictionary<string, object>.Values
+                    {
+                        get
+                        {
+                            throw new NotImplementedException();
+                        }
+                    }
+
+                    object IDictionary<string, object>.this[string key]
+                    {
+                        get
+                        {
+                            throw new NotImplementedException();
+                        }
+                        set
+                        {
+                            throw new NotImplementedException();
+                        }
+                    }
+
+                    void ICollection<KeyValuePair<string, object>>.Add(KeyValuePair<string, object> item)
+                    {
+                        throw new NotImplementedException();
+                    }
+
+                    void ICollection<KeyValuePair<string, object>>.Clear()
+                    {
+                        throw new NotImplementedException();
+                    }
+
+                    bool ICollection<KeyValuePair<string, object>>.Contains(KeyValuePair<string, object> item)
+                    {
+                        throw new NotImplementedException();
+                    }
+
+                    void ICollection<KeyValuePair<string, object>>.CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
+                    {
+                        throw new NotImplementedException();
+                    }
+
+                    int ICollection<KeyValuePair<string, object>>.Count
+                    {
+                        get
+                        {
+                            throw new NotImplementedException();
+                        }
+                    }
+
+                    bool ICollection<KeyValuePair<string, object>>.IsReadOnly
+                    {
+                        get
+                        {
+                            throw new NotImplementedException();
+                        }
+                    }
+
+                    bool ICollection<KeyValuePair<string, object>>.Remove(KeyValuePair<string, object> item)
+                    {
+                        throw new NotImplementedException();
+                    }
+
+                    IEnumerator<KeyValuePair<string, object>> IEnumerable<KeyValuePair<string, object>>.GetEnumerator()
+                    {
+                        throw new NotImplementedException();
+                    }
+
+                    IEnumerator IEnumerable.GetEnumerator()
+                    {
+                        throw new NotImplementedException();
+                    }
+                    #endregion
+                }
+            }
+        }
+        #endregion
 
         #region JObject
         /// <summary>

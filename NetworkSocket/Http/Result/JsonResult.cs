@@ -33,7 +33,7 @@ namespace NetworkSocket.Http
         /// <returns></returns>
         protected virtual string SerializeJson(object data)
         {
-            return new DefaultDynamicJsonSerializer().Serialize(this.Data, (time) => time.ToString("yyyy-MM-dd HH:mm:ss"));
+            return new DefaultDynamicJsonSerializer().Serialize(this.Data);
         }
 
         /// <summary>
