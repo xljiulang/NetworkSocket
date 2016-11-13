@@ -64,17 +64,11 @@ namespace NetworkSocket.WebSocket
 
             ByteBits byte0 = streamReader[0];
             var fin = byte0[0];
-            var frameCode = (FrameCodes)(byte)byte0.Take(4, 4);
-
-            if (fin == false || frameCode == FrameCodes.Continuation)
-            {
-                return null;
-            }
-
             var rsv = byte0.Take(1, 3);
+            var frameCode = (FrameCodes)(byte)byte0.Take(4, 4);                       
+          
             ByteBits byte1 = streamReader[1];
             var mask = byte1[0];
-
             if (requiredMask && mask == false)
             {
                 throw new NotSupportedException("mask is required");

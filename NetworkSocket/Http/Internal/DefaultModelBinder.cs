@@ -183,12 +183,7 @@ namespace NetworkSocket.Http
         /// <returns></returns>
         private object QueryFormToClass(HttpRequest request, ApiParameter parameter)
         {
-            var targetType = parameter.Type;
-            if (targetType.IsByRef && targetType.IsInterface && targetType.IsAbstract)
-            {
-                throw new NotSupportedException("不支持的类型：" + targetType.Name);
-            }
-
+            var targetType = parameter.Type; 
             var instance = Activator.CreateInstance(targetType);
             var setters = ModelProperty.GetSetProperties(targetType);
             foreach (var setter in setters)

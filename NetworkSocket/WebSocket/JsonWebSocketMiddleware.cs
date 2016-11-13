@@ -126,10 +126,11 @@ namespace NetworkSocket.WebSocket
         /// 接收到文本信息时
         /// </summary>
         /// <param name="context">上下文</param>
-        /// <param name="content">内容</param>
-        protected sealed override async void OnText(IContenxt context, string content)
+        /// <param name="frame">数据帧</param>
+        protected sealed override async void OnText(IContenxt context, FrameRequest frame)
         {
-            var jsonPacket = this.TryGetJsonPacket(context, content);
+            var text = Encoding.UTF8.GetString(frame.Content);
+            var jsonPacket = this.TryGetJsonPacket(context, text);
             if (jsonPacket == null)
             {
                 return;

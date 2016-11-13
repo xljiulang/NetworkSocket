@@ -176,12 +176,11 @@ namespace NetworkSocket.WebSocket
                     break;
 
                 case FrameCodes.Binary:
-                    this.OnBinary(frame.Content);
+                    this.OnBinary(frame);
                     break;
 
-                case FrameCodes.Text:
-                    var content = Encoding.UTF8.GetString(frame.Content);
-                    this.OnText(content);
+                case FrameCodes.Text: 
+                    this.OnText(frame);
                     break;
 
                 case FrameCodes.Ping:
@@ -352,16 +351,16 @@ namespace NetworkSocket.WebSocket
         /// <summary>
         /// 收到服务端的Text请求
         /// </summary>
-        /// <param name="text">内容</param>
-        protected virtual void OnText(string text)
+        /// <param name="frame">数据帧</param>
+        protected virtual void OnText(FrameRequest frame)
         {
         }
 
         /// <summary>
         /// 收到服务端的Binary请求
         /// </summary>
-        /// <param name="bin">内容</param>
-        protected virtual void OnBinary(byte[] bin)
+        /// <param name="frame">数据帧</param>
+        protected virtual void OnBinary( FrameRequest frame)
         {
         }
 

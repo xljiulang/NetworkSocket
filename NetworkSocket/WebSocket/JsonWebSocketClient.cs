@@ -155,9 +155,10 @@ namespace NetworkSocket.WebSocket
         /// <summary>
         /// 收到文本内容
         /// </summary>
-        /// <param name="text">内容</param>
-        protected sealed override async void OnText(string text)
+        /// <param name="frame">数据帧</param>
+        protected sealed override async void OnText(FrameRequest frame)
         {
+            var text = Encoding.UTF8.GetString(frame.Content);
             var package = this.TryGetJsonPacket(text);
             if (package == null)
             {
