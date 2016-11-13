@@ -8,7 +8,6 @@ namespace NetworkSocket.Exceptions
     /// <summary>
     /// 表示Api执行异常
     /// </summary>
-    [Serializable]
     public class ApiExecuteException : Exception
     {
         /// <summary>

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Web;
 
 namespace NetworkSocket.Reflection
 {
@@ -60,7 +59,7 @@ namespace NetworkSocket.Reflection
             var instance = Expression.Parameter(typeof(object), "instance");
             var parameters = Expression.Parameter(typeof(object[]), "parameters");
 
-            var instanceCast = method.IsStatic ? null : Expression.Convert(instance, method.ReflectedType);
+            var instanceCast = method.IsStatic ? null : Expression.Convert(instance, method.DeclaringType);
             var parametersCast = method.GetParameters().Select((p, i) =>
             {
                 var parameter = Expression.ArrayIndex(parameters, Expression.Constant(i));

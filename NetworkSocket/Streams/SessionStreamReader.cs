@@ -15,12 +15,12 @@ namespace NetworkSocket.Streams
     /// </summary>
     [DebuggerDisplay("Position = {Position}, Length = {Length}")]
     [DebuggerTypeProxy(typeof(DebugView))]
-    public class InputStreamReader : IStreamReader
+    public class SessionStreamReader : ISessionStreamReader
     {
         /// <summary>
         /// 获取所读取的数据流对象
         /// </summary>
-        public MemoryStream Stream { get; private set; }
+        public SessionStream Stream { get; private set; }
 
         /// <summary>
         /// 获取同步锁对象
@@ -77,9 +77,9 @@ namespace NetworkSocket.Streams
         /// <summary>
         /// 对内存流读取
         /// </summary>
-        /// <param name="stream">内存流</param>
+        /// <param name="stream">会话数据流</param>
         /// <exception cref="ArgumentNullException"></exception>
-        public InputStreamReader(MemoryStream stream)
+        public SessionStreamReader(SessionStream stream)
         {
             if (stream == null)
             {
@@ -437,13 +437,13 @@ namespace NetworkSocket.Streams
             /// <summary>
             /// 查看的对象
             /// </summary>
-            private InputStreamReader view;
+            private SessionStreamReader view;
 
             /// <summary>
             /// 调试视图
             /// </summary>
             /// <param name="view">查看的对象</param>
-            public DebugView(InputStreamReader view)
+            public DebugView(SessionStreamReader view)
             {
                 this.view = view;
             }

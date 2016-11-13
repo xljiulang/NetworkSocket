@@ -174,18 +174,18 @@ namespace NetworkSocket
         /// <param name="asyncResult">异步结果</param>
         private async void EndRead(IAsyncResult asyncResult)
         {
-            var read = this.ReadInputStream(asyncResult);
+            var read = this.ReadSessionStream(asyncResult);
             if (read <= 0)
             {
                 this.DisconnectHandler(this);
             }
             else
             {
-                lock (this.InputStream.SyncRoot)
+                lock (this.StreamReader.SyncRoot)
                 {
-                    this.InputStream.Stream.Seek(0, SeekOrigin.End);
-                    this.InputStream.Stream.Write(this.bufferRange.Array, this.bufferRange.Offset, read);
-                    this.InputStream.Stream.Seek(0, SeekOrigin.Begin);
+                    this.StreamReader.Stream.Seek(0, SeekOrigin.End);
+                    this.StreamReader.Stream.Write(this.bufferRange.Array, this.bufferRange.Offset, read);
+                    this.StreamReader.Stream.Seek(0, SeekOrigin.Begin);
                 }
 
                 // 重新进行一次接收
@@ -199,7 +199,7 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="asyncResult"></param>
         /// <returns></returns>
-        private int ReadInputStream(IAsyncResult asyncResult)
+        private int ReadSessionStream(IAsyncResult asyncResult)
         {
             try
             {

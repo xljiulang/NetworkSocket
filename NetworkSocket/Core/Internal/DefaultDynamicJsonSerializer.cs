@@ -5,7 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
-using System.IO;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -33,10 +33,10 @@ namespace NetworkSocket.Core
         /// 序列化为Json
         /// </summary>
         /// <param name="model">实体</param>
-        /// <param name="datetimeFomat">时期时间格式化</param>
+        /// <param name="datetimeFomat">时期时间格式</param>
         /// <exception cref="SerializerException"></exception>
         /// <returns></returns>
-        public string Serialize(object model, Func<DateTime, string> datetimeFomat)
+        public string Serialize(object model, string datetimeFomat)
         {
             try
             {
@@ -118,18 +118,13 @@ namespace NetworkSocket.Core
             /// 序列化得到Json
             /// </summary>
             /// <param name="model">模型</param>
-            /// <param name="datetimeFomat">时期时间格式化</param>
+            /// <param name="datetimeFomat">时期时间格式</param>
             /// <returns></returns>
-            public static string Parse(object model, Func<DateTime, string> datetimeFomat)
+            public static string Parse(object model, string datetimeFomat)
             {
                 if (model == null)
                 {
                     return null;
-                }
-
-                if (datetimeFomat == null)
-                {
-                    datetimeFomat = (time) => time.ToString();
                 }
 
                 var serializer = new JavaScriptSerializer();
@@ -154,13 +149,13 @@ namespace NetworkSocket.Core
                 /// <summary>
                 /// 时期时间格式化
                 /// </summary>
-                private readonly Func<DateTime, string> datetimeFomat;
+                private readonly string datetimeFomat;
 
                 /// <summary>
                 /// 时间转换
                 /// </summary>
-                /// <param name="datetimeFomat">时期时间格式化</param>
-                public DateTimeConverter(Func<DateTime, string> datetimeFomat)
+                /// <param name="datetimeFomat">时期时间格式</param>
+                public DateTimeConverter(string datetimeFomat)
                 {
                     this.datetimeFomat = datetimeFomat;
                 }
@@ -202,7 +197,7 @@ namespace NetworkSocket.Core
                     }
 
                     this.isUsed = true;
-                    var dateTimeString = this.datetimeFomat(dateTime.Value);
+                    var dateTimeString = dateTime.Value.ToString(this.datetimeFomat, DateTimeFormatInfo.InvariantInfo);
                     return new UriEscapeValue(dateTimeString);
                 }
 

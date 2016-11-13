@@ -84,9 +84,9 @@ namespace NetworkSocket
         public IWrapper Wrapper { get; private set; }
 
         /// <summary>
-        /// 获取接收到的未处理数据
+        /// 获取接收到数据读取器
         /// </summary>      
-        public InputStreamReader InputStream { get; private set; }
+        public SessionStreamReader StreamReader { get; private set; }
 
         /// <summary>
         /// 获取本机终结点
@@ -105,7 +105,7 @@ namespace NetworkSocket
         public TcpSessionBase()
         {
             this.Tag = new Tag();
-            this.InputStream = new InputStreamReader(new MemoryStream());
+            this.StreamReader = new SessionStreamReader(new SessionStream());
         }
 
         /// <summary>
@@ -117,7 +117,7 @@ namespace NetworkSocket
             this.Socket = socket;
             this.socketClosed = false;
 
-            this.InputStream.Clear();
+            this.StreamReader.Clear();
             this.Tag.ID = null;
             ((IDictionary)this.Tag).Clear();
             this.UnSubscribe();
@@ -267,9 +267,9 @@ namespace NetworkSocket
             var inOptionValue = new byte[12];
             var outOptionValue = new byte[12];
 
-            ByteConverter.ToBytes(1, Endians.Little).CopyTo(inOptionValue, 0);
-            ByteConverter.ToBytes(dueTime, Endians.Little).CopyTo(inOptionValue, 4);
-            ByteConverter.ToBytes(period, Endians.Little).CopyTo(inOptionValue, 8);
+            ByteConverter.ToBytes(1, ByteConverter.Endian).CopyTo(inOptionValue, 0);
+            ByteConverter.ToBytes(dueTime, ByteConverter.Endian).CopyTo(inOptionValue, 4);
+            ByteConverter.ToBytes(period, ByteConverter.Endian).CopyTo(inOptionValue, 8);
 
             try
             {
@@ -411,14 +411,14 @@ namespace NetworkSocket
         protected virtual void Dispose(bool disposing)
         {
             this.Close(false);
-            this.InputStream.Stream.Dispose();
+            this.StreamReader.Stream.Dispose();
 
             if (disposing)
             {
                 this.socketRoot = null;
                 this.Socket = null;
                 this.Tag = null;
-                this.InputStream = null;
+                this.StreamReader = null;
                 this.CloseHandler = null;
                 this.DisconnectHandler = null;
                 this.ReceiveAsyncHandler = null;

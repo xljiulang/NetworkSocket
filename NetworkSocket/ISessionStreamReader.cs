@@ -8,7 +8,7 @@ namespace NetworkSocket
     /// <summary>
     /// 定义会话收到的数据流读取接口
     /// </summary>
-    public interface IStreamReader
+    public interface ISessionStreamReader
     {
         /// <summary>
         /// 获取同步锁对象
@@ -46,7 +46,7 @@ namespace NetworkSocket
 
         /// <summary>
         /// 从流中读取2个字节，并将流内的位置向前推进2个字节，
-        /// 返回其Int16表示类型
+        /// 返回其Int16的Endians.Big表示类型      
         /// </summary>
         /// <returns></returns>
         short ReadInt16();
@@ -61,7 +61,7 @@ namespace NetworkSocket
 
         /// <summary>
         /// 从流中读取2个字节，并将流内的位置向前推进2个字节，
-        /// 返回其UInt16表示类型
+        /// 返回其UInt16的Endians.Big表示类型
         /// </summary>
         /// <returns></returns>
         uint ReadUInt16();
@@ -76,7 +76,7 @@ namespace NetworkSocket
 
         /// <summary>
         /// 从流中读取4个字节，并将流内的位置向前推进4个字节，
-        /// 返回其Int32表示类型
+        /// 返回其Int32的Endians.Big表示类型
         /// </summary>
         /// <returns></returns>
         int ReadInt32();
@@ -91,7 +91,7 @@ namespace NetworkSocket
 
         /// <summary>
         /// 从流中读取4个字节，并将流内的位置向前推进4个字节，
-        /// 返回其UInt32表示类型
+        /// 返回其UInt32的Endians.Big表示类型
         /// </summary>
         /// <returns></returns>
         uint ReadUInt32();
@@ -106,7 +106,7 @@ namespace NetworkSocket
 
         /// <summary>
         /// 从流中读取8个字节，并将流内的位置向前推进8个字节，
-        /// 返回其Int64表示类型
+        /// 返回其Int64的Endians.Big表示类型
         /// </summary>
         /// <returns></returns>
         long ReadInt64();
@@ -121,7 +121,7 @@ namespace NetworkSocket
 
         /// <summary>
         /// 从流中读取8个字节，并将流内的位置向前推进8个字节，
-        /// 返回其UInt64表示类型
+        /// 返回其UInt64的Endians.Big表示类型
         /// </summary>
         /// <returns></returns>
         ulong ReadUInt64();
@@ -165,7 +165,7 @@ namespace NetworkSocket
         string ReadString(Encoding encode, int count);
 
         /// <summary>
-        /// 清空所有数据  
+        /// 清空流的所有数据  
         /// </summary>
         void Clear();
 

@@ -9,7 +9,6 @@ namespace NetworkSocket.Exceptions
     /// <summary>
     /// 表示依赖反转异常
     /// </summary>
-    [Serializable]
     [DebuggerDisplay("Message = {Message}")]
     public class ResolveException : Exception
     {

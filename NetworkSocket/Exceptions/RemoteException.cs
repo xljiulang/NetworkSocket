@@ -9,7 +9,6 @@ namespace NetworkSocket.Exceptions
     /// <summary>
     /// 表示远程端Api行为异常
     /// </summary>
-    [Serializable]
     [DebuggerDisplay("Message = {Message}")]
     public class RemoteException : Exception
     {

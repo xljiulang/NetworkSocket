@@ -10,7 +10,6 @@ namespace NetworkSocket
     /// 表示byte的位集合
     /// 位索引为高位到低位顺序
     /// </summary>
-    [Serializable]
     [DebuggerDisplay("{value}")]
     [DebuggerTypeProxy(typeof(DebugView))]
     public struct ByteBits : IComparable<ByteBits>

@@ -51,18 +51,18 @@ namespace NetworkSocket.WebSocket
         /// 解析请求的数据
         /// 返回请求数据包
         /// </summary>
-        /// <param name="stream">所有收到的数据</param>  
+        /// <param name="streamReader">数据读取器</param>  
         /// <param name="requiredMask">是否要求必须Mask</param>
         /// <exception cref="NotSupportedException"></exception>
         /// <returns></returns>
-        public unsafe static FrameRequest Parse(IStreamReader stream, bool requiredMask = true)
+        public unsafe static FrameRequest Parse(ISessionStreamReader streamReader, bool requiredMask = true)
         {
-            if (stream.Length < 2)
+            if (streamReader.Length < 2)
             {
                 return null;
             }
 
-            ByteBits byte0 = stream[0];
+            ByteBits byte0 = streamReader[0];
             var fin = byte0[0];
             var frameCode = (FrameCodes)(byte)byte0.Take(4, 4);
 
@@ -72,7 +72,7 @@ namespace NetworkSocket.WebSocket
             }
 
             var rsv = byte0.Take(1, 3);
-            ByteBits byte1 = stream[1];
+            ByteBits byte1 = streamReader[1];
             var mask = byte1[0];
 
             if (requiredMask && mask == false)
@@ -87,29 +87,29 @@ namespace NetworkSocket.WebSocket
 
             var contentSize = 0;
             var contentLength = (int)byte1.Take(1, 7);
-            stream.Position = 2;
+            streamReader.Position = 2;
 
             if (contentLength == 127)
             {
                 contentSize = 8;
-                contentLength = (int)stream.ReadUInt64();
+                contentLength = (int)streamReader.ReadUInt64();
             }
             else if (contentLength == 126)
             {
                 contentSize = 2;
-                contentLength = (int)stream.ReadUInt16();
+                contentLength = (int)streamReader.ReadUInt16();
             }
 
             var maskSize = mask ? 4 : 0;
             var packetLength = 2 + maskSize + contentSize + contentLength;
-            if (stream.Length < packetLength)
+            if (streamReader.Length < packetLength)
             {
                 return null;
             }
 
-            var maskingKey = mask ? stream.ReadArray(4) : null;
-            var content = stream.ReadArray(contentLength);
-            stream.Clear(packetLength);
+            var maskingKey = mask ? streamReader.ReadArray(4) : null;
+            var content = streamReader.ReadArray(contentLength);
+            streamReader.Clear(packetLength);
 
             if (mask && contentLength > 0)
             {

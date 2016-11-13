@@ -103,17 +103,17 @@ namespace NetworkSocket.WebSocket
         /// <summary>
         /// 收到数据时
         /// </summary>
-        /// <param name="inputStream">数据流</param>
+        /// <param name="streamReader">数据读取器</param>
         /// <returns></returns>
-        protected override sealed async Task OnReceiveAsync(IStreamReader inputStream)
+        protected override sealed async Task OnReceiveAsync(ISessionStreamReader streamReader)
         {
             if (this.handshake.IsWaitting == true)
             {
-                this.handshake.TrySetResult(inputStream);
+                this.handshake.TrySetResult(streamReader);
             }
             else
             {
-                await this.OnWebSocketRequestAsync(inputStream);
+                await this.OnWebSocketRequestAsync(streamReader);
             }
         }
 
@@ -122,11 +122,11 @@ namespace NetworkSocket.WebSocket
         /// <summary>
         /// 收到请求数据
         /// </summary>
-        /// <param name="inputStream">数据流</param>
+        /// <param name="streamReader">数据读取器</param>
         /// <returns></returns>
-        private Task OnWebSocketRequestAsync(IStreamReader inputStream)
+        private Task OnWebSocketRequestAsync(ISessionStreamReader streamReader)
         {
-            var frames = this.GenerateWebSocketFrame(inputStream);
+            var frames = this.GenerateWebSocketFrame(streamReader);
             foreach (var frame in frames)
             {
                 this.OnFrameRequest(frame);
@@ -137,16 +137,16 @@ namespace NetworkSocket.WebSocket
         /// <summary>
         /// 解析生成请求帧
         /// </summary>
-        /// <param name="inputStream">数据流</param>
+        /// <param name="streamReader">数据读取器</param>
         /// <returns></returns>
-        private IList<FrameRequest> GenerateWebSocketFrame(IStreamReader inputStream)
+        private IList<FrameRequest> GenerateWebSocketFrame(ISessionStreamReader streamReader)
         {
             var list = new List<FrameRequest>();
             while (true)
             {
                 try
                 {
-                    var request = FrameRequest.Parse(inputStream, false);
+                    var request = FrameRequest.Parse(streamReader, false);
                     if (request == null)
                     {
                         return list;

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Remoting.Messaging;
-using System.Text;
-
+﻿
 namespace NetworkSocket
 {
     /// <summary>
@@ -17,9 +12,9 @@ namespace NetworkSocket
         public ISession Session { get; set; }
 
         /// <summary>
-        /// 获取当前会话收到的数据
+        /// 获取当前会话收到的数据读取器
         /// </summary>
-        public IStreamReader InputStream { get; set; }      
+        public ISessionStreamReader StreamReader { get; set; }      
 
         /// <summary>
         /// 获取或设置所有会话对象

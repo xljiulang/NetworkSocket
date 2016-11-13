@@ -96,11 +96,11 @@ namespace NetworkSocket
                 return;
             }
 
-            lock (this.InputStream.SyncRoot)
+            lock (this.StreamReader.SyncRoot)
             {
-                this.InputStream.Stream.Seek(0, SeekOrigin.End);
-                this.InputStream.Stream.Write(arg.Buffer, arg.Offset, arg.BytesTransferred);
-                this.InputStream.Stream.Seek(0, SeekOrigin.Begin);
+                this.StreamReader.Stream.Seek(0, SeekOrigin.End);
+                this.StreamReader.Stream.Write(arg.Buffer, arg.Offset, arg.BytesTransferred);
+                this.StreamReader.Stream.Seek(0, SeekOrigin.Begin);
             }
 
             // 重新进行一次接收

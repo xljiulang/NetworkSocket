@@ -292,7 +292,7 @@ namespace NetworkSocket
             return new Context
             {
                 Session = session,
-                InputStream = session.InputStream,
+                StreamReader = session.StreamReader,
                 AllSessions = this.SessionManager
             };
         }

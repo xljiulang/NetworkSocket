@@ -3,7 +3,7 @@
 2、新增ParameterFilter特性过滤器与NotNull特性过滤器；
 3、ISession增加ISubscriber支持；
 4、移除ByteRange类型，使用ArraySegment<byte>替换；
-5、新增InputStreamReader与Dispatcher;
+5、新增SessionStreamReader与Dispatcher;
 6、ITag获取值返回结构体TagItem；
 7、TcpClientBase重构；
 8、新增Protocol结构体，替换原来的Protocol字符串值；

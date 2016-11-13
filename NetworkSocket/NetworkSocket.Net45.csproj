@@ -79,6 +79,7 @@
     <Compile Include="Http\RouteBaseAttribute.cs" />
     <Compile Include="Http\RouteData.cs" />
     <Compile Include="Http\RouteDataCollection.cs" />
+    <Compile Include="Streams\SessionStream.cs" />
     <Compile Include="Tasks\Dispatcher.cs" />
     <Compile Include="Core\Internal\DefaultDependencyResolver.cs" />
     <Compile Include="Core\Internal\DefaultDynamicJsonSerializer.cs" />
@@ -158,7 +159,7 @@
     <Compile Include="IListener.cs" />
     <Compile Include="IMiddleware.cs" />
     <Compile Include="Core\Internal\DomainAssembly.cs" />
-    <Compile Include="Streams\InputStreamReader.cs" />
+    <Compile Include="Streams\SessionStreamReader.cs" />
     <Compile Include="Internal\BufferManager.cs" />
     <Compile Include="Internal\Context.cs" />
     <Compile Include="Internal\LastMiddlerware.cs" />
@@ -171,7 +172,7 @@
     <Compile Include="Internal\TcpSessionCollection.cs" />
     <Compile Include="Internal\TcpSessionQueue.cs" />
     <Compile Include="Internal\SslTcpSession.cs" />
-    <Compile Include="IStreamReader.cs" />
+    <Compile Include="ISessionStreamReader.cs" />
     <Compile Include="ISession.cs" />
     <Compile Include="ISessionManager.cs" />
     <Compile Include="ITag.cs" />

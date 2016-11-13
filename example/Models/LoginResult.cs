@@ -8,7 +8,6 @@ namespace Models
     /// <summary>
     /// 表示登录结果
     /// </summary>
-    [Serializable]
     public class LoginResult
     {
         public bool State { get; set; }

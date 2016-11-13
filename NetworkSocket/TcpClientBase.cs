@@ -268,7 +268,7 @@ namespace NetworkSocket
         /// <param name="session">会话</param>
         private Task ReceiveHandler(TcpSessionBase session)
         {
-            return this.OnReceiveAsync(session.InputStream);
+            return this.OnReceiveAsync(session.StreamReader);
         }
 
         /// <summary>
@@ -301,9 +301,9 @@ namespace NetworkSocket
         /// <summary>
         /// 当接收到远程端的数据时，将触发此方法   
         /// </summary>       
-        /// <param name="inputStream">接收到的数据</param>
+        /// <param name="streamReader">接收到的数据读取器</param>
         /// <returns></returns>
-        protected abstract Task OnReceiveAsync(IStreamReader inputStream);
+        protected abstract Task OnReceiveAsync(ISessionStreamReader streamReader);
 
 
         /// <summary>

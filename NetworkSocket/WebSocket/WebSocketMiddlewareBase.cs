@@ -75,14 +75,14 @@ namespace NetworkSocket.WebSocket
                     return;
                 }
 
-                context.InputStream.Clear(result.PackageLength);
+                context.StreamReader.Clear(result.PackageLength);
                 const string seckey = "Sec-WebSocket-Key";
                 var secValue = result.Request.Headers[seckey];
                 this.ResponseHandshake(context, secValue);
             }
             catch (Exception)
             {
-                context.InputStream.Clear();
+                context.StreamReader.Clear();
                 context.Session.Close();
             }
         }
@@ -140,7 +140,7 @@ namespace NetworkSocket.WebSocket
             {
                 try
                 {
-                    var request = FrameRequest.Parse(context.InputStream);
+                    var request = FrameRequest.Parse(context.StreamReader);
                     if (request == null)
                     {
                         return list;

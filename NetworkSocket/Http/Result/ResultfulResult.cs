@@ -29,7 +29,7 @@ namespace NetworkSocket.Http
         /// <returns></returns>
         protected virtual string SerializeXml(object data)
         {
-            throw new NotImplementedException("SerializeXml");
+            throw new NotImplementedException("不支持application/xml的返回类型");
         }
 
         /// <summary>

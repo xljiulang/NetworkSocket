@@ -93,11 +93,11 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 当接收到远程端的数据时，将触发此方法
         /// </summary>
-        /// <param name="inputStream">接收到的历史数据</param>    
+        /// <param name="streamReader">数据读取器</param>    
         /// <returns></returns>
-        protected sealed override Task OnReceiveAsync(IStreamReader inputStream)
+        protected sealed override Task OnReceiveAsync(ISessionStreamReader streamReader)
         {
-            var packages = this.GenerateFastPackets(inputStream);
+            var packages = this.GenerateFastPackets(streamReader);
             foreach (var package in packages)
             {
                 this.ProcessPacketAsync(package);
@@ -108,15 +108,15 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 生成数据包
         /// </summary>
-        /// <param name="inputStream">数据流</param>
+        /// <param name="streamReader">数据流</param>
         /// <returns></returns>
-        private IList<FastPacket> GenerateFastPackets(IStreamReader inputStream)
+        private IList<FastPacket> GenerateFastPackets(ISessionStreamReader streamReader)
         {
             var list = new List<FastPacket>();
             while (true)
             {
                 var packet = default(FastPacket);
-                if (FastPacket.Parse(inputStream, out packet) == false)
+                if (FastPacket.Parse(streamReader, out packet) == false)
                 {
                     return list;
                 }

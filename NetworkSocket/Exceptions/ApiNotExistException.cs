@@ -9,7 +9,6 @@ namespace NetworkSocket.Exceptions
     /// <summary>
     /// 表示Api不存在引发的异常
     /// </summary>
-    [Serializable]
     [DebuggerDisplay("Message = {Message}")]
     public class ApiNotExistException : Exception
     {

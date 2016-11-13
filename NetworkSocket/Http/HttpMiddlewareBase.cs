@@ -86,7 +86,7 @@ namespace NetworkSocket.Http
                 return this.Next.Invoke(context);
             }
 
-            context.InputStream.Clear(result.PackageLength);
+            context.StreamReader.Clear(result.PackageLength);
             if (context.Session.Protocol == Protocol.None)
             {
                 context.Session.SetProtocolWrapper(Protocol.Http, null);

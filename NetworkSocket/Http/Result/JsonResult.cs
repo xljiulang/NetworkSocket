@@ -1,9 +1,5 @@
 ﻿using NetworkSocket.Core;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Web.Script.Serialization;
 
 namespace NetworkSocket.Http
 {
@@ -30,9 +26,9 @@ namespace NetworkSocket.Http
         /// 序列化成json文本
         /// </summary>
         /// <param name="data">内容</param>
-        /// <param name="datetimeFomat">时期时间格式化</param>
+        /// <param name="datetimeFomat">时期时间格式</param>
         /// <returns></returns>
-        protected virtual string SerializeJson(object data, Func<DateTime, string> datetimeFomat)
+        protected virtual string SerializeJson(object data, string datetimeFomat)
         {
             return new DefaultDynamicJsonSerializer().Serialize(this.Data, datetimeFomat);
         }

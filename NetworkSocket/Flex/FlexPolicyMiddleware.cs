@@ -25,13 +25,13 @@ namespace NetworkSocket.Flex
         /// <returns></returns>
         async Task IMiddleware.Invoke(IContenxt context)
         {
-            if (context.Session.Protocol != Protocol.None || context.InputStream.Length != 23)
+            if (context.Session.Protocol != Protocol.None || context.StreamReader.Length != 23)
             {
                 await this.Next.Invoke(context);
             }
 
-            context.InputStream.Position = 0;
-            var request = context.InputStream.ReadString(Encoding.ASCII);
+            context.StreamReader.Position = 0;
+            var request = context.StreamReader.ReadString(Encoding.ASCII);
             if (string.Equals(request, "<policy-file-request/>\0", StringComparison.OrdinalIgnoreCase))
             {
                 this.SendPolicyXML(context);

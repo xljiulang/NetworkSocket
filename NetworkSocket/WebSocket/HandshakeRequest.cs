@@ -127,20 +127,20 @@ namespace NetworkSocket.WebSocket
         /// <summary>
         /// 设置握手结果
         /// </summary>
-        /// <param name="inputStream">输入流</param>
+        /// <param name="streamReader">数据读取器</param>
         /// <returns></returns>
-        public bool TrySetResult(IStreamReader inputStream)
+        public bool TrySetResult(ISessionStreamReader streamReader)
         {
-            inputStream.Position = 0;
-            var index = inputStream.IndexOf(DoubleCrlf);
+            streamReader.Position = 0;
+            var index = streamReader.IndexOf(DoubleCrlf);
             if (index < 0)
             {
                 return false;
             }
 
             var length = index + DoubleCrlf.Length;
-            var header = inputStream.ReadString(Encoding.ASCII, length);
-            inputStream.Clear(length);
+            var header = streamReader.ReadString(Encoding.ASCII, length);
+            streamReader.Clear(length);
 
             const string pattern = @"^HTTP/1.1 101 Switching Protocols\r\n((?<field_name>[^:\r\n]+):\s(?<field_value>[^\r\n]*)\r\n)+\r\n";
             var match = Regex.Match(header, pattern, RegexOptions.IgnoreCase);
