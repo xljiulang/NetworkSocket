@@ -14,6 +14,11 @@ namespace NetworkSocket.Core
     internal sealed class DefaultSerializer : ISerializer
     {
         /// <summary>
+        /// json序列化
+        /// </summary>
+        private readonly DefaultDynamicJsonSerializer jsonSerializer = new DefaultDynamicJsonSerializer();
+
+        /// <summary>
         /// 序列化为二进制
         /// </summary>
         /// <param name="model">实体</param>
@@ -21,22 +26,8 @@ namespace NetworkSocket.Core
         /// <returns></returns>
         public byte[] Serialize(object model)
         {
-            if (model == null)
-            {
-                return null;
-            }
-
-            try
-            {
-                var serializer = new JavaScriptSerializer();
-                serializer.MaxJsonLength = int.MaxValue;
-                var json = serializer.Serialize(model);
-                return Encoding.UTF8.GetBytes(json);
-            }
-            catch (Exception ex)
-            {
-                throw new SerializerException(ex);
-            }
+            var json = this.jsonSerializer.Serialize(model);
+            return json == null ? null : Encoding.UTF8.GetBytes(json);
         }
 
         /// <summary>
@@ -48,23 +39,15 @@ namespace NetworkSocket.Core
         /// <returns></returns>
         public object Deserialize(byte[] bytes, Type type)
         {
-            if (bytes == null || bytes.Length == 0 || type == null)
+            if (bytes == null || bytes.Length == 0)
             {
                 return null;
             }
 
-            try
-            {
-                var json = Encoding.UTF8.GetString(bytes);
-                var serializer = new JavaScriptSerializer();
-                serializer.MaxJsonLength = int.MaxValue;
-                return serializer.Deserialize(json, type);
-            }
-            catch (Exception ex)
-            {
-                throw new SerializerException(ex);
-            }
+            var json = Encoding.UTF8.GetString(bytes);
+            return this.jsonSerializer.Deserialize(json, type);
         }
+
 
         /// <summary>
         /// 字符串显示

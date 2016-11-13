@@ -47,7 +47,7 @@ namespace NetworkSocket.Http
             }
 
             var json = chartset.GetString(context.Request.Body);
-            var body = new JavaScriptSerializer().Deserialize(json, typeof(object));
+            var body = new DefaultDynamicJsonSerializer().Deserialize(json, typeof(object));
             var bodyLazy = new Lazy<IDictionary<string, object>>(() =>
             {
                 var dic = body as IDictionary<string, object>;

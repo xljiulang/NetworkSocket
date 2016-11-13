@@ -68,6 +68,32 @@ namespace NetworkSocket.Core
         }
 
         /// <summary>
+        /// 反序列化为实体
+        /// </summary>
+        /// <param name="json">json</param>
+        /// <param name="type">实体类型</param>
+        /// <exception cref="SerializerException"></exception>
+        /// <returns></returns>
+        public object Deserialize(string json, Type type)
+        {
+            if (string.IsNullOrEmpty(json) || type == null)
+            {
+                return null;
+            }
+
+            try
+            {
+                var serializer = new JavaScriptSerializer();
+                serializer.MaxJsonLength = int.MaxValue;
+                return serializer.Deserialize(json, type);
+            }
+            catch (Exception ex)
+            {
+                throw new SerializerException(ex);
+            }
+        }
+
+        /// <summary>
         /// 将值转换为目标类型
         /// 这些值有可能是反序列化得到的动态类型的值
         /// </summary>       
@@ -169,7 +195,7 @@ namespace NetworkSocket.Core
                 /// <returns></returns>
                 public override IDictionary<string, object> Serialize(object obj, JavaScriptSerializer serializer)
                 {
-                    var dateTime = Converter.Cast<Nullable<DateTime>>(obj);
+                    var dateTime = (DateTime?)obj;
                     if (dateTime.HasValue == false)
                     {
                         return null;
