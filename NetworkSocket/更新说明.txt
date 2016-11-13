@@ -1,5 +1,4 @@
 ﻿1.6.8
-公共新特性：
 1、Api的执行全部全部转换为异步执行；
 2、新增ParameterFilter特性过滤器与NotNull特性过滤器；
 3、ISession增加ISubscriber支持；
@@ -15,5 +14,6 @@
 13、http更加灵活易用的Route特性；
 14、websocket新增WebSocketClient；
 15、websocket新增JsonWebSocketClient；
-16、重构各个middlware，消除上下文重入可能产生的问题；
-17、修复http和websocket回复头CRLF的问题；
+16、重构各个middleware，消除上下文重入可能产生的问题；
+17、修复http和websocket回复头CRLF的问题，http静态文件路径问题；
+18、删除httpMiddleware处理了websocket握手的耦合；
