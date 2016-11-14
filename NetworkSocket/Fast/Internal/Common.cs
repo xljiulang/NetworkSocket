@@ -116,11 +116,11 @@ namespace NetworkSocket.Fast
         /// <param name="timeout">超时时间</param>
         /// <exception cref="SocketException"></exception>   
         /// <returns></returns>
-        public static Task<T> InvokeApi<T>(ISession session, TaskSetterTable<long> taskSetActionTable, ISerializer serializer, FastPacket packet, TimeSpan timeout)
+        public static ApiResult<T> InvokeApi<T>(ISession session, TaskSetterTable<long> taskSetActionTable, ISerializer serializer, FastPacket packet, TimeSpan timeout)
         {
-            var task = taskSetActionTable.Create<T>(packet.Id, timeout);
+            var taskSetter = taskSetActionTable.Create<T>(packet.Id).TimeoutAfter(timeout);
             session.Send(packet.ToArraySegment());
-            return task;
+            return new ApiResult<T>(taskSetter);
         }
 
         /// <summary>

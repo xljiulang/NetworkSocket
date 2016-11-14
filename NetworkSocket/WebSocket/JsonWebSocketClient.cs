@@ -133,7 +133,7 @@ namespace NetworkSocket.WebSocket
         /// <exception cref="SocketException"></exception>         
         /// <exception cref="SerializerException"></exception>
         /// <returns>远程数据任务</returns>  
-        public Task<T> InvokeApi<T>(string api, params object[] parameters)
+        public ApiResult<T> InvokeApi<T>(string api, params object[] parameters)
         {
             var packet = new JsonPacket
             {
@@ -144,11 +144,11 @@ namespace NetworkSocket.WebSocket
                 body = parameters
             };
 
-            // 登记TaskSetAction             
-            var task = this.taskSetterTable.Create<T>(packet.id, this.TimeOut);
+            // 登记taskSetter             
+            var taskSetter = this.taskSetterTable.Create<T>(packet.id).TimeoutAfter(this.TimeOut);
             var packetJson = this.JsonSerializer.Serialize(packet);
             this.SendText(packetJson);
-            return task;
+            return new ApiResult<T>(taskSetter);
         }
 
 

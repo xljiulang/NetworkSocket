@@ -23,6 +23,7 @@ namespace NetworkSocket.Tasks
         /// </summary>
         private readonly CancellationTokenSource cancellationTokenSource;
 
+
         /// <summary>
         /// 获取任务的返回值类型
         /// </summary>
@@ -46,6 +47,17 @@ namespace NetworkSocket.Tasks
         }
 
         /// <summary>
+        /// 获取是否已超时
+        /// </summary>
+        public bool IsTimeout
+        {
+            get
+            {
+                return this.cancellationTokenSource.IsCancellationRequested;
+            }
+        }
+
+        /// <summary>
         /// 任务行为
         /// </summary>
         public TaskSetter()
@@ -58,55 +70,30 @@ namespace NetworkSocket.Tasks
         /// 任务行为
         /// 超时后回调timeoutCallback
         /// </summary>
-        /// <param name="timeout">超时时间</param>
         /// <param name="timeoutCallback">超时回调</param>
         /// <exception cref="ArgumentNullException"></exception>
-        public TaskSetter(TimeSpan timeout, Action timeoutCallback)
+        public TaskSetter(Action<ITaskSetter> timeoutCallback)
         {
             if (timeoutCallback == null)
             {
                 throw new ArgumentNullException("timeoutCallback");
             }
             this.taskSource = new TaskCompletionSource<TResult>();
-            this.cancellationTokenSource = new CancellationTokenSource(timeout);
-            this.cancellationTokenSource.Token.Register(timeoutCallback);
-        }
-
-        /// <summary>
-        /// 任务行为
-        /// 超时后回调timeoutCallback
-        /// </summary>
-        /// <param name="timeout">超时时间</param>
-        /// <param name="timeoutCallback">超时回调</param>
-        /// <exception cref="ArgumentNullException"></exception>
-        public TaskSetter(TimeSpan timeout, Action<ITaskSetter> timeoutCallback)
-        {
-            if (timeoutCallback == null)
-            {
-                throw new ArgumentNullException("timeoutCallback");
-            }
-            this.taskSource = new TaskCompletionSource<TResult>();
-            this.cancellationTokenSource = new CancellationTokenSource(timeout);
+            this.cancellationTokenSource = new CancellationTokenSource();
             this.cancellationTokenSource.Token.Register((state) => timeoutCallback(state as ITaskSetter), this);
         }
 
         /// <summary>
-        /// 任务行为
-        /// 超时后回调timeoutCallback
+        /// 在timeout触发超时
+        /// 从此刻算起计算超时
         /// </summary>
         /// <param name="timeout">超时时间</param>
-        /// <param name="timeoutCallback">超时回调</param>
-        /// <param name="state">用户参数</param>
-        /// <exception cref="ArgumentNullException"></exception>
-        public TaskSetter(TimeSpan timeout, Action<object> timeoutCallback, object state)
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        /// <returns></returns>
+        public TaskSetter<TResult> TimeoutAfter(TimeSpan timeout)
         {
-            if (timeoutCallback == null)
-            {
-                throw new ArgumentNullException("timeoutCallback");
-            }
-            this.taskSource = new TaskCompletionSource<TResult>();
-            this.cancellationTokenSource = new CancellationTokenSource(timeout);
-            this.cancellationTokenSource.Token.Register(timeoutCallback, state);
+            this.cancellationTokenSource.CancelAfter(timeout);
+            return this;
         }
 
         /// <summary>

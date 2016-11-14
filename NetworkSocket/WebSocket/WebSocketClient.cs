@@ -179,7 +179,7 @@ namespace NetworkSocket.WebSocket
                     this.OnBinary(frame);
                     break;
 
-                case FrameCodes.Text: 
+                case FrameCodes.Text:
                     this.OnText(frame);
                     break;
 
@@ -297,7 +297,7 @@ namespace NetworkSocket.WebSocket
         public async Task<bool> PingAsync(TimeSpan waitTime)
         {
             var id = Guid.NewGuid();
-            var task = this.pingTable.Create<bool>(id, waitTime);
+            var task = this.pingTable.Create<bool>(id).TimeoutAfter(waitTime).Task;
 
             try
             {
@@ -360,7 +360,7 @@ namespace NetworkSocket.WebSocket
         /// 收到服务端的Binary请求
         /// </summary>
         /// <param name="frame">数据帧</param>
-        protected virtual void OnBinary( FrameRequest frame)
+        protected virtual void OnBinary(FrameRequest frame)
         {
         }
 

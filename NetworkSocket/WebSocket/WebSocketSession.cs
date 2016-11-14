@@ -189,7 +189,7 @@ namespace NetworkSocket.WebSocket
         public async Task<bool> PingAsync(TimeSpan waitTime)
         {
             var id = Guid.NewGuid();
-            var task = this.pingTable.Create<bool>(id, waitTime);
+            var task = this.pingTable.Create<bool>(id).TimeoutAfter(waitTime).Task;
 
             try
             {

@@ -1,4 +1,5 @@
-﻿using NetworkSocket.Exceptions;
+﻿using NetworkSocket.Core;
+using NetworkSocket.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -113,7 +114,7 @@ namespace NetworkSocket.Fast
         /// <exception cref="SocketException"></exception>      
         /// <exception cref="SerializerException"></exception>
         /// <returns>远程数据任务</returns>         
-        public Task<T> InvokeApi<T>(string api, params object[] parameters)
+        public ApiResult<T> InvokeApi<T>(string api, params object[] parameters)
         {
             var id = this.Middleware.PacketIdProvider.NewId();
             var packet = new FastPacket(api, id, false);

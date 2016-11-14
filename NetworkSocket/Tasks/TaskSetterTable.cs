@@ -36,9 +36,8 @@ namespace NetworkSocket.Tasks
         /// </summary>
         /// <typeparam name="TResult">任务结果类型</typeparam>
         /// <param name="id">任务id</param>
-        /// <param name="timeout">任务超时时间，触发返回任务超时异常</param>
         /// <returns></returns>
-        public Task<TResult> Create<TResult>(T id, TimeSpan timeout)
+        public TaskSetter<TResult> Create<TResult>(T id)
         {
             Action<ITaskSetter> callBack = (setter) =>
             {
@@ -46,9 +45,9 @@ namespace NetworkSocket.Tasks
                 setter.SetException(new TimeoutException());
             };
 
-            var taskSetter = new TaskSetter<TResult>(timeout, callBack);
+            var taskSetter = new TaskSetter<TResult>(callBack);
             this.table.TryAdd(id, taskSetter);
-            return taskSetter.Task;
+            return taskSetter;
         }
 
         /// <summary>      

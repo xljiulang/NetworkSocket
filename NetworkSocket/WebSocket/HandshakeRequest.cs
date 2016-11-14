@@ -96,7 +96,7 @@ namespace NetworkSocket.WebSocket
             try
             {
                 this.IsWaitting = true;
-                this.taskSetter = new TaskSetter<SocketError>(this.timeout, () => this.TrySetResult(SocketError.TimedOut));
+                this.taskSetter = new TaskSetter<SocketError>((s) => this.TrySetResult(SocketError.TimedOut)).TimeoutAfter(this.timeout);
 
                 var content = this.GenerateHandshakeContent(client, out this.secKey);
                 var handshakeBuffer = Encoding.ASCII.GetBytes(content);
