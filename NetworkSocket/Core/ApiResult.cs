@@ -38,8 +38,9 @@ namespace NetworkSocket.Core
         /// 从此刻算起计算超时
         /// </summary>
         /// <param name="timeout">超时时间</param>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <returns></returns>
-        public ApiResult<TResult> TimeOutAfter(TimeSpan timeout)
+        public ApiResult<TResult> TimeoutAfter(TimeSpan timeout)
         {
             this.taskSetter.TimeoutAfter(timeout);
             return this;
