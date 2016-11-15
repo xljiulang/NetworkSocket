@@ -12,7 +12,7 @@ namespace NetworkSocket.Core
     /// 表示异步Api结果
     /// </summary>
     /// <typeparam name="TResult">结果类型</typeparam>
-    public class ApiResult<TResult>
+    public class ApiResult<TResult> : IApiResult, IApiResult<TResult>
     {
         /// <summary>
         /// taskSetter
@@ -44,10 +44,10 @@ namespace NetworkSocket.Core
         {
             this.taskSetter.TimeoutAfter(timeout);
             return this;
-        } 
+        }
 
         /// <summary>
-        /// 返回Awaiter对象
+        /// 返回TaskAwaiter对象
         /// </summary>
         /// <returns></returns>
         public TaskAwaiter<TResult> GetAwaiter()
@@ -64,5 +64,17 @@ namespace NetworkSocket.Core
         {
             return apiResult.taskSetter.Task;
         }
+
+        #region IApiResult
+        Task IApiResult.GetTask()
+        {
+            return this.taskSetter.Task;
+        }
+
+        Task<TResult> IApiResult<TResult>.GetTask()
+        {
+            return this.taskSetter.Task;
+        }
+        #endregion
     }
 }

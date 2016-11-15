@@ -51,7 +51,7 @@ namespace FastClient
         /// <returns></returns>
         public Task<LoginResult> Login(UserInfo user, Boolean ifAdmin)
         {
-            return this.InvokeApi<LoginResult>("Login", user, ifAdmin).TimeOutAfter(TimeSpan.FromSeconds(1));
+            return this.InvokeApi<LoginResult>("Login", user, ifAdmin).TimeoutAfter(TimeSpan.FromSeconds(1));
         }
 
         /// <summary>

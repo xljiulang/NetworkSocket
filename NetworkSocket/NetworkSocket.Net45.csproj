@@ -62,6 +62,7 @@
     <Compile Include="Core\ApiResult.cs" />
     <Compile Include="Core\FilterAttribute.cs" />
     <Compile Include="Core\IActionContext.cs" />
+    <Compile Include="Core\IApiResult.cs" />
     <Compile Include="Core\ICloneable.cs" />
     <Compile Include="Core\IDependencyResolver.cs" />
     <Compile Include="Core\IDependencyResolverSupportable.cs" />
