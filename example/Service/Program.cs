@@ -13,6 +13,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading.Tasks;
 
 namespace Service
 {
@@ -29,11 +30,30 @@ namespace Service
             var listener = new TcpListener();
             ConfigMiddleware(listener);
             ConfigValidation();
-            listener.Start(1212);
 
-            Process.Start("http://localhost:1212/home/index");
+            listener.Start(1212);
+            Process.Start("http://localhost:1212");
             Console.ReadLine();
         }
+
+        /// <summary>
+        /// 查找服务器证书
+        /// </summary>
+        /// <returns></returns>
+        private static X509Certificate2 FindCert()
+        {
+            var store = new X509Store(StoreName.My, StoreLocation.LocalMachine);
+            store.Open(OpenFlags.ReadWrite);
+
+            var cert = store.Certificates
+                .Cast<X509Certificate2>()
+                .Where(item => item.IssuerName.Name == "CN=localhost")
+                .FirstOrDefault();
+
+            store.Close();
+            return cert;
+        }
+
 
         /// <summary>
         /// 配置模型验证

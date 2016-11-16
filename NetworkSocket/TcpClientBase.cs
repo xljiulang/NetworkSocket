@@ -277,7 +277,7 @@ namespace NetworkSocket
         /// <param name="session">会话</param>
         private void DisconnectHandler(TcpSessionBase session)
         {
-            session.Close(false);
+            session.Shutdown();
             this.OnDisconnected();
             this.ReconnectLoopAsync();
         }
@@ -336,7 +336,7 @@ namespace NetworkSocket
         /// </summary>     
         public virtual void Close()
         {
-            this.session.Close(true);
+            this.session.Shutdown();
         }
 
         /// <summary>

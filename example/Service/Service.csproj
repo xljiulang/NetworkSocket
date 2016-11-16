@@ -59,6 +59,7 @@
     <Compile Include="Websocket\WebSocketNickNameFilter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <None Include="tools\makecert.bat" />
     <None Include="View\Home\CusMiddleware.cshtml" />
   </ItemGroup>
   <ItemGroup>
@@ -72,6 +73,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="tools\makecert.exe" />
     <None Include="View\Chat\Index.cshtml" />
     <Content Include="js\chatUI.js" />
     <Content Include="js\bootstrap\css\bootstrap-ie6.min.css" />

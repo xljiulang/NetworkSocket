@@ -18,7 +18,8 @@
     <script src="/js/chatUI.js"></script>
 
     <script type="text/javascript">
-        var address = 'ws://' + location.host;
+
+        var address = location.protocol.replace('http', 'ws') + '//' + location.host;
         var ws = new jsonWebSocket(address);
 
         // 断开连接
@@ -67,18 +68,51 @@
     </script>
 
     <style type="text/css">
-        body { padding: 10px; }
-        ul { margin: 0; padding: 10px; }
-        .box { border: 1px solid #ddd; }
-        .box > .title { line-height: 32px; background: #ddd; padding: 0 8px; }
-        .list { height: 360px; overflow-y: scroll; }
-        .member-list > li { padding: 0 6px; }
+        body {
+            padding: 10px;
+        }
 
-        .chat-list > li { padding: 6px; margin: 10px 0; }
-        .chat-list > li > div { display: inline; border-radius: 6px; }
-        .chat-list > li p { color: blue; }
+        ul {
+            margin: 0;
+            padding: 10px;
+        }
 
-        .template { display: none; }
+        .box {
+            border: 1px solid #ddd;
+        }
+
+            .box > .title {
+                line-height: 32px;
+                background: #ddd;
+                padding: 0 8px;
+            }
+
+        .list {
+            height: 360px;
+            overflow-y: scroll;
+        }
+
+        .member-list > li {
+            padding: 0 6px;
+        }
+
+        .chat-list > li {
+            padding: 6px;
+            margin: 10px 0;
+        }
+
+            .chat-list > li > div {
+                display: inline;
+                border-radius: 6px;
+            }
+
+            .chat-list > li p {
+                color: blue;
+            }
+
+        .template {
+            display: none;
+        }
     </style>
 </head>
 
@@ -111,8 +145,7 @@
             <div class="span8">
                 <div class="box">
                     <div class="title">聊天栏</div>
-                    <ul class="list chat-list" style="list-style: none;">
-                    </ul>
+                    <ul class="list chat-list" style="list-style: none;"></ul>
                 </div>
 
                 <div style="margin-top: 20px;">
@@ -123,8 +156,7 @@
             <div class="span4">
                 <div class="box">
                     <div class="title">在线成员列表</div>
-                    <ul class="list member-list" style="list-style: decimal;">
-                    </ul>
+                    <ul class="list member-list" style="list-style: decimal;"></ul>
                 </div>
             </div>
         </div>

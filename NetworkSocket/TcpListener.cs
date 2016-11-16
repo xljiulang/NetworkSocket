@@ -81,7 +81,7 @@ namespace NetworkSocket
         /// </summary>
         public TcpListener()
         {
-            this.middlewares.AddLast(new LastMiddlerware());
+            this.middlewares.AddLast(new DefaultMiddlerware());
             this.Events = new Events();
             this.SessionManager = this.workSessions;
         }
@@ -172,7 +172,7 @@ namespace NetworkSocket
         /// <exception cref="SocketException"></exception>
         public void Start(int port)
         {
-            var backlog = 1024;
+            var backlog = 128;
             this.Start(port, backlog);
         }
 
@@ -289,7 +289,7 @@ namespace NetworkSocket
         /// <returns></returns>
         private IContenxt CreateContext(TcpSessionBase session)
         {
-            return new Context
+            return new DefaultContext
             {
                 Session = session,
                 StreamReader = session.StreamReader,
@@ -306,8 +306,8 @@ namespace NetworkSocket
             // 创建会话，绑定处理委托
             var session = this.CreateSession();
             session.ReceiveAsyncHandler = this.InvokeSessionAsync;
-            session.DisconnectHandler = this.RecyceSession;
-            session.CloseHandler = this.RecyceSession;
+            session.DisconnectHandler = this.ReuseSession;
+            session.CloseHandler = this.ReuseSession;
 
             session.Bind(socket);
             session.TrySetKeepAlive(this.KeepAlivePeriod);
@@ -344,13 +344,13 @@ namespace NetworkSocket
         /// 关闭会话并通知连接断开
         /// </summary>
         /// <param name="session">会话对象</param>
-        private void RecyceSession(TcpSessionBase session)
+        private void ReuseSession(TcpSessionBase session)
         {
             if (this.workSessions.Remove(session) == true)
             {
                 var context = this.CreateContext(session);
                 this.Events.RaiseDisconnected(this, context);
-                session.Close(false);
+                session.Shutdown();
                 this.freeSessions.Add(session);
             }
         }

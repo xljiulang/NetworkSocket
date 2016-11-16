@@ -30,6 +30,7 @@ namespace Service.Http
         /// 首页
         /// </summary>
         /// <returns></returns>
+        [Route("/")]
         public ActionResult Index()
         {
             return View();
