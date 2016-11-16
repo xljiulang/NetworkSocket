@@ -14,10 +14,10 @@ namespace NetworkSocket
         /// <summary>
         /// 值
         /// </summary>
-        private object value;
+        private readonly object value;
 
         /// <summary>
-        /// 是否为NULL
+        /// 获取值是否为NULL
         /// </summary>
         public bool IsNull
         {
@@ -91,6 +91,15 @@ namespace NetworkSocket
         public DateTime AsDateTime()
         {
             return this.As<DateTime>();
+        }
+
+        /// <summary>
+        /// 获取值
+        /// </summary>
+        /// <returns></returns>
+        public object GetValue()
+        {
+            return this.value;
         }
 
         /// <summary>

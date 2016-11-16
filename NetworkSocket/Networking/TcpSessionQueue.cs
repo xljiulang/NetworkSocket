@@ -33,7 +33,7 @@ namespace NetworkSocket
         /// 添加会话对象
         /// </summary>
         /// <param name="session">会话对象</param>
-        public void Add(TcpSessionBase session)
+        public void Enqueue(TcpSessionBase session)
         {
             this.queue.Enqueue(session);
         }
@@ -43,14 +43,14 @@ namespace NetworkSocket
         /// 如果取出失败则返回null
         /// </summary>
         /// <returns></returns>
-        public TcpSessionBase Take()
+        public TcpSessionBase Dequeue()
         {
             TcpSessionBase session;
             if (this.queue.TryDequeue(out session))
             {
                 return session;
             }
-            return default(TcpSessionBase);
+            return null;
         }
 
         /// <summary>

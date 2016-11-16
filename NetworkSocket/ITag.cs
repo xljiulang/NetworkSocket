@@ -28,5 +28,12 @@ namespace NetworkSocket
         /// <param name="key">键</param>
         /// <returns></returns>
         TagItem Get(string key);
+
+        /// <summary>
+        /// 删除键
+        /// </summary>
+        /// <param name="key">键</param>
+        /// <returns></returns>
+        bool Remove(string key);
     }
 }

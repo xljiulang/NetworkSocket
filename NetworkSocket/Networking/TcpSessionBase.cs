@@ -64,6 +64,11 @@ namespace NetworkSocket
         }
 
         /// <summary>
+        /// 获取会话的唯一标识符
+        /// </summary>
+        public Guid ID { get; private set; }
+
+        /// <summary>
         /// 获取会话是否提供SSL/TLS安全
         /// </summary>
         public abstract bool IsSecurity { get; }
@@ -98,13 +103,13 @@ namespace NetworkSocket
         /// </summary>
         public EndPoint RemoteEndPoint { get; private set; }
 
-
         /// <summary>
         /// 表示会话对象
         /// </summary>  
         public TcpSessionBase()
         {
-            this.Tag = new Tag();
+            this.ID = Guid.NewGuid();
+            this.Tag = new DefaultTag();
             this.StreamReader = new SessionStreamReader(new SessionStream());
         }
 
@@ -291,6 +296,26 @@ namespace NetworkSocket
         public override string ToString()
         {
             return this.RemoteEndPoint == null ? string.Empty : this.RemoteEndPoint.ToString();
+        }
+
+        /// <summary>
+        /// 获取哈希值
+        /// </summary>
+        /// <returns></returns>
+        public override int GetHashCode()
+        {
+            return this.ID.GetHashCode();
+        }
+
+        /// <summary>
+        /// 比较是否相等
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public override bool Equals(object obj)
+        {
+            var other = obj as TcpSessionBase;
+            return other != null && other.ID == this.ID;
         }
 
         #region ISubscriber

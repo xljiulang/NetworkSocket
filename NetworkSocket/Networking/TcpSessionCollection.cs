@@ -19,7 +19,7 @@ namespace NetworkSocket
         /// <summary>
         /// 线程安全字典
         /// </summary>
-        private readonly ConcurrentDictionary<int, TcpSessionBase> dic = new ConcurrentDictionary<int, TcpSessionBase>();
+        private readonly ConcurrentDictionary<Guid, TcpSessionBase> dic = new ConcurrentDictionary<Guid, TcpSessionBase>();
 
         /// <summary>
         /// 获取元素数量 
@@ -53,8 +53,7 @@ namespace NetworkSocket
         {
             if (session != null)
             {
-                var key = session.GetHashCode();
-                this.dic.TryAdd(key, session);
+                this.dic.TryAdd(session.ID, session);
             }
         }
 
@@ -77,8 +76,7 @@ namespace NetworkSocket
             {
                 return false;
             }
-            var key = session.GetHashCode();
-            return this.dic.ContainsKey(key);
+            return this.dic.ContainsKey(session.ID);
         }
 
         /// <summary>
@@ -116,8 +114,7 @@ namespace NetworkSocket
             {
                 return false;
             }
-            var key = session.GetHashCode();
-            return this.dic.TryRemove(key, out session);
+            return this.dic.TryRemove(session.ID, out session);
         }
 
         /// <summary>
@@ -147,10 +144,9 @@ namespace NetworkSocket
         /// <returns></returns>
         public IEnumerator<TcpSessionBase> GetEnumerator()
         {
-            var enumerator = this.dic.GetEnumerator();
-            while (enumerator.MoveNext())
+            foreach (var item in this.dic)
             {
-                yield return enumerator.Current.Value;
+                yield return item.Value;
             }
         }
 
@@ -169,13 +165,11 @@ namespace NetworkSocket
         /// </summary>
         public void Dispose()
         {
-            var kvs = this.dic.ToArray();
-            foreach (var kv in kvs)
+            foreach (var item in this)
             {
-                IDisposable disposable = kv.Value;
-                disposable.Dispose();
+                item.Dispose();
             }
-            this.dic.Clear();
+            this.Clear();
         }
     }
 

@@ -103,22 +103,7 @@ namespace NetworkSocket
                 throw new InvalidOperationException("实例已经IsListening，不能UseSSL");
             }
             this.Certificate = cer;
-        }
-
-        /// <summary>
-        /// Tcp监听服务
-        /// </summary>
-        /// <param name="certificate">服务器证书</param>
-        /// <exception cref="ArgumentNullException"></exception>
-        public TcpListener(X509Certificate certificate)
-            : this()
-        {
-            if (certificate == null)
-            {
-                throw new ArgumentNullException("certificate");
-            }
-            this.Certificate = certificate;
-        }
+        } 
 
         /// <summary>
         /// 使用中间件
@@ -266,7 +251,7 @@ namespace NetworkSocket
         /// <returns></returns>
         private TcpSessionBase CreateSession()
         {
-            var session = this.freeSessions.Take();
+            var session = this.freeSessions.Dequeue();
             if (session != null)
             {
                 return session;
@@ -351,7 +336,7 @@ namespace NetworkSocket
                 var context = this.CreateContext(session);
                 this.Events.RaiseDisconnected(this, context);
                 session.Shutdown();
-                this.freeSessions.Add(session);
+                this.freeSessions.Enqueue(session);
             }
         }
 
