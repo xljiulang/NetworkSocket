@@ -57,7 +57,10 @@ namespace NetworkSocket
         /// <returns></returns>
         public static ArraySegment<byte> AllocBuffer()
         {
-            return BufferPool.GetAvailableSlab().AllocBuffer();
+            lock (syncRoot)
+            {
+                return BufferPool.GetAvailableSlab().AllocBuffer();
+            }
         }
 
         /// <summary>
@@ -66,8 +69,11 @@ namespace NetworkSocket
         /// <param name="arg">SocketAsyncEventArgs对象</param>
         public static void SetBuffer(SocketAsyncEventArgs arg)
         {
-            var buffer = BufferPool.AllocBuffer();
-            arg.SetBuffer(buffer.Array, buffer.Offset, buffer.Count);
+            lock (syncRoot)
+            {
+                var buffer = BufferPool.AllocBuffer();
+                arg.SetBuffer(buffer.Array, buffer.Offset, buffer.Count);
+            }
         }
 
         /// <summary>
