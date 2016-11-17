@@ -59,8 +59,8 @@ namespace NetworkSocket
         /// </summary>
         public void Dispose()
         {
-            var sessions = this.queue.ToArray();
-            foreach (var session in sessions)
+            TcpSessionBase session;
+            while (this.queue.TryDequeue(out session))
             {
                 session.Dispose();
             }

@@ -14,12 +14,12 @@ namespace NetworkSocket
     /// </summary>   
     [DebuggerDisplay("Count = {Count}")]
     [DebuggerTypeProxy(typeof(SessionCollectionDebugView))]
-    internal class TcpSessionCollection : ICollection<TcpSessionBase>, ISessionManager, IDisposable
+    internal class TcpSessionCollection : ISessionManager, IEnumerable<TcpSessionBase>, IDisposable
     {
         /// <summary>
         /// 线程安全字典
         /// </summary>
-        private readonly ConcurrentDictionary<Guid, TcpSessionBase> dic = new ConcurrentDictionary<Guid, TcpSessionBase>();
+        private readonly ConcurrentDictionary<Guid, TcpSessionBase> sessions = new ConcurrentDictionary<Guid, TcpSessionBase>();
 
         /// <summary>
         /// 获取元素数量 
@@ -28,18 +28,7 @@ namespace NetworkSocket
         {
             get
             {
-                return this.dic.Count;
-            }
-        }
-
-        /// <summary>
-        /// 是否为只读
-        /// </summary>
-        public bool IsReadOnly
-        {
-            get
-            {
-                return false;
+                return this.sessions.Count;
             }
         }
 
@@ -53,53 +42,7 @@ namespace NetworkSocket
         {
             if (session != null)
             {
-                this.dic.TryAdd(session.ID, session);
-            }
-        }
-
-        /// <summary>
-        /// 清除所有元素
-        /// </summary>
-        public void Clear()
-        {
-            this.dic.Clear();
-        }
-
-        /// <summary>
-        /// 是否包含
-        /// </summary>
-        /// <param name="session">会话</param>
-        /// <returns></returns>
-        public bool Contains(TcpSessionBase session)
-        {
-            if (session == null)
-            {
-                return false;
-            }
-            return this.dic.ContainsKey(session.ID);
-        }
-
-        /// <summary>
-        /// 复制到数组
-        /// </summary>
-        /// <param name="array"></param>
-        /// <param name="arrayIndex"></param>
-        public void CopyTo(TcpSessionBase[] array, int arrayIndex)
-        {
-            var index = 0;
-            var kvs = this.dic.ToArray();
-
-            for (var i = arrayIndex; i < array.Length; i++)
-            {
-                if (index == kvs.Length)
-                {
-                    break;
-                }
-                else
-                {
-                    array[i] = kvs[index].Value;
-                    index++;
-                }
+                this.sessions.TryAdd(session.ID, session);
             }
         }
 
@@ -114,7 +57,7 @@ namespace NetworkSocket
             {
                 return false;
             }
-            return this.dic.TryRemove(session.ID, out session);
+            return this.sessions.TryRemove(session.ID, out session);
         }
 
         /// <summary>
@@ -122,7 +65,7 @@ namespace NetworkSocket
         /// </summary>
         /// <typeparam name="TWapper">包装类型</typeparam>
         /// <returns></returns>
-        public IEnumerable<TWapper> FilterWrappers<TWapper>() where TWapper : class, IWrapper
+        IEnumerable<TWapper> ISessionManager.FilterWrappers<TWapper>()
         {
             return this.Select(item => item.Wrapper).OfType<TWapper>();
         }
@@ -132,11 +75,10 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="protocol">协议类型</param>
         /// <returns></returns>
-        public IEnumerable<ISession> FilterProtocol(Protocol protocol)
+        IEnumerable<ISession> ISessionManager.FilterProtocol(Protocol protocol)
         {
             return this.Where(item => item.Protocol == protocol);
         }
-
 
         /// <summary>
         /// 获取枚举器
@@ -144,7 +86,7 @@ namespace NetworkSocket
         /// <returns></returns>
         public IEnumerator<TcpSessionBase> GetEnumerator()
         {
-            return this.dic.Values.GetEnumerator();
+            return this.sessions.Values.GetEnumerator();
         }
 
         /// <summary>
@@ -156,7 +98,6 @@ namespace NetworkSocket
             return this.GetEnumerator();
         }
 
-
         /// <summary>
         /// 释放资源
         /// </summary>
@@ -166,40 +107,41 @@ namespace NetworkSocket
             {
                 item.Dispose();
             }
-            this.Clear();
+            this.sessions.Clear();
         }
-    }
 
-
-    /// <summary>
-    /// 调试视图
-    /// </summary>
-    internal class SessionCollectionDebugView
-    {
-        /// <summary>
-        /// 查看的对象
-        /// </summary>
-        private TcpSessionCollection view;
 
         /// <summary>
         /// 调试视图
         /// </summary>
-        /// <param name="view">查看的对象</param>
-        public SessionCollectionDebugView(TcpSessionCollection view)
+        private class SessionCollectionDebugView
         {
-            this.view = view;
-        }
+            /// <summary>
+            /// 查看的对象
+            /// </summary>
+            private TcpSessionCollection view;
 
-        /// <summary>
-        /// 查看的内容
-        /// </summary>
-        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-        public TcpSessionBase[] Values
-        {
-            get
+            /// <summary>
+            /// 调试视图
+            /// </summary>
+            /// <param name="view">查看的对象</param>
+            public SessionCollectionDebugView(TcpSessionCollection view)
             {
-                return this.view.ToArray();
+                this.view = view;
+            }
+
+            /// <summary>
+            /// 查看的内容
+            /// </summary>
+            [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+            public TcpSessionBase[] Values
+            {
+                get
+                {
+                    return this.view.ToArray();
+                }
             }
         }
     }
+
 }
