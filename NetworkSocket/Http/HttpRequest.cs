@@ -250,6 +250,16 @@ namespace NetworkSocket.Http
         }
 
         /// <summary>
+        /// 是否支持KeepAlive
+        /// </summary>
+        /// <returns></returns>
+        public bool IsKeepAlive()
+        {
+            var connection = this.Headers["Connection"];
+            return StringEquals(connection, "keep-alive");
+        }
+
+        /// <summary>
         /// 获取是否相等
         /// 不区分大小写
         /// </summary>

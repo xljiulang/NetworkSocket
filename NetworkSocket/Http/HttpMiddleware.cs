@@ -118,6 +118,11 @@ namespace NetworkSocket.Http
             {
                 await this.ProcessStaticFileRequestAsync(context, requestContext);
             }
+
+            if (requestContext.Request.IsKeepAlive() == false)
+            {
+                requestContext.Response.End();
+            }
         }
 
         /// <summary>

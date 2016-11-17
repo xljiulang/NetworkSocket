@@ -17,3 +17,8 @@
 16、重构各个middleware，消除上下文重入可能产生的问题；
 17、修复http和websocket回复头CRLF的问题，http静态文件路径问题；
 18、删除httpMiddleware处理了websocket握手的耦合；
+
+
+重写SSLSession; 
+增加IPlug接口，删除Events对象;
+
