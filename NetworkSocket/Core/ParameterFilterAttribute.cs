@@ -33,7 +33,7 @@ namespace NetworkSocket.Core
         /// <param name="filterContext"></param>
         protected sealed override void OnExecuting(IActionContext filterContext)
         {
-            this.OnOnExecuting(filterContext.Action,  filterContext.Action.Parameters[this.index]);
+            this.OnExecuting(filterContext.Action,  filterContext.Action.Parameters[this.index]);
         }
 
         /// <summary>
@@ -59,6 +59,6 @@ namespace NetworkSocket.Core
         /// </summary>
         /// <param name="action">关联的Api行为</param>
         /// <param name="parameter">参数信息</param>
-        public abstract void OnOnExecuting(ApiAction action, ApiParameter parameter);
+        public abstract void OnExecuting(ApiAction action, ApiParameter parameter);
     }
 }

@@ -18,7 +18,7 @@ namespace NetworkSocket.Core
         /// </summary>
         /// <param name="action">关联的Api行为</param>
         /// <param name="parameter">参数信息</param>
-        public override void OnOnExecuting(ApiAction action, ApiParameter parameter)
+        public override void OnExecuting(ApiAction action, ApiParameter parameter)
         {
             if (parameter.Value == null)
             {
