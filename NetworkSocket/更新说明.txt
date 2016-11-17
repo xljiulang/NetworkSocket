@@ -21,4 +21,4 @@
 
 重写SSLSession; 
 增加IPlug接口，删除Events对象;
-
+新增ApiResult<T>，兼容原有返回值的Task<T>

@@ -56,35 +56,49 @@ namespace NetworkSocket.WebSocket
         {
             try
             {
-                var result = HttpRequestParser.Parse(context);
-                if (result.IsHttp == false)
+                var request = await this.GetHandshakeRequest(context);
+                if (request != null)
                 {
-                    await this.Next.Invoke(context);
-                    return;
+                    const string seckey = "Sec-WebSocket-Key";
+                    var secValue = request.Headers[seckey];
+                    this.ResponseHandshake(context, secValue);
                 }
-
-                // 数据未完整
-                if (result.Request == null)
-                {
-                    return;
-                }
-
-                if (result.Request.IsWebsocketRequest() == false)
-                {
-                    await this.Next.Invoke(context);
-                    return;
-                }
-
-                context.StreamReader.Clear(result.PackageLength);
-                const string seckey = "Sec-WebSocket-Key";
-                var secValue = result.Request.Headers[seckey];
-                this.ResponseHandshake(context, secValue);
             }
             catch (Exception)
             {
                 context.StreamReader.Clear();
                 context.Session.Close();
             }
+        }
+
+        /// <summary>
+        /// 获取握手请求信息
+        /// </summary>
+        /// <param name="context">上下文</param>
+        /// <returns></returns>
+        private async Task<HttpRequest> GetHandshakeRequest(IContenxt context)
+        {
+            var result = HttpRequestParser.Parse(context);
+            if (result.IsHttp == false)
+            {
+                await this.Next.Invoke(context);
+                return null;
+            }
+
+            // 数据未完整
+            if (result.Request == null)
+            {
+                return null;
+            }
+
+            if (result.Request.IsWebsocketRequest() == false)
+            {
+                await this.Next.Invoke(context);
+                return null;
+            }
+
+            context.StreamReader.Clear(result.PackageLength);
+            return result.Request;
         }
 
         /// <summary>
@@ -95,9 +109,9 @@ namespace NetworkSocket.WebSocket
         private void ResponseHandshake(IContenxt context, string secValue)
         {
             var wrapper = new WebSocketSession(context.Session);
-            var hansshakeResponse = new HandshakeResponse(secValue);
+            var handshakeResponse = new HandshakeResponse(secValue);
 
-            if (wrapper.TrySend(hansshakeResponse) == true)
+            if (wrapper.TrySend(handshakeResponse) == true)
             {
                 this.OnSetProtocolWrapper(context.Session, wrapper);
             }
@@ -175,7 +189,7 @@ namespace NetworkSocket.WebSocket
                     this.OnBinary(context, frameRequest);
                     break;
 
-                case FrameCodes.Text: 
+                case FrameCodes.Text:
                     this.OnText(context, frameRequest);
                     break;
 

@@ -21,7 +21,7 @@ namespace NetworkSocket.Http
         /// <summary>
         /// 支持的http方法
         /// </summary>
-        private static readonly string[] MethodNames = Enum.GetNames(typeof(HttpMethod));
+        private static readonly HashSet<string> MethodNames = new HashSet<string>(Enum.GetNames(typeof(HttpMethod)), StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// 支持的http方法最大长度
@@ -123,10 +123,10 @@ namespace NetworkSocket.Http
         /// <returns></returns>
         private static bool IsHttp(ISessionStreamReader streamReader, out int headerLength)
         {
-            var methodLength = HttpRequestParser.GetMthodLength(streamReader);
+            var methodLength = HttpRequestParser.GetMethodLength(streamReader);
             var methodName = streamReader.ReadString(Encoding.ASCII, methodLength);
 
-            if (HttpRequestParser.MethodNames.Any(m => m.StartsWith(methodName, StringComparison.OrdinalIgnoreCase)) == false)
+            if (HttpRequestParser.MethodNames.Contains(methodName) == false)
             {
                 headerLength = 0;
                 return false;
@@ -149,7 +149,7 @@ namespace NetworkSocket.Http
         /// </summary>
         /// <param name="streamReader">数据读取器</param>
         /// <returns></returns>
-        private static int GetMthodLength(ISessionStreamReader streamReader)
+        private static int GetMethodLength(ISessionStreamReader streamReader)
         {
             var maxLength = Math.Min(streamReader.Length, HttpRequestParser.MedthodMaxLength + 1);
             for (var i = 0; i < maxLength; i++)
