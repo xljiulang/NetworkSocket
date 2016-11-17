@@ -39,10 +39,14 @@ namespace NetworkSocket
         private TcpSessionCollection workSessions = new TcpSessionCollection();
 
         /// <summary>
+        /// 所有插件
+        /// </summary>
+        private List<IPlug> plugs = new List<IPlug>();
+
+        /// <summary>
         /// 所有中间件
         /// </summary>
         private LinkedList<IMiddleware> middlewares = new LinkedList<IMiddleware>();
-
 
 
         /// <summary>
@@ -67,11 +71,6 @@ namespace NetworkSocket
         public X509Certificate Certificate { get; private set; }
 
         /// <summary>
-        /// 获取事件对象
-        /// </summary>
-        public Events Events { get; private set; }
-
-        /// <summary>
         /// 获取会话提供者
         /// </summary>
         public ISessionManager SessionManager { get; private set; }
@@ -82,7 +81,6 @@ namespace NetworkSocket
         public TcpListener()
         {
             this.middlewares.AddLast(new DefaultMiddlerware());
-            this.Events = new Events();
             this.SessionManager = this.workSessions;
         }
 
@@ -103,35 +101,25 @@ namespace NetworkSocket
                 throw new InvalidOperationException("实例已经IsListening，不能UseSSL");
             }
             this.Certificate = cer;
-        } 
+        }
+
 
         /// <summary>
-        /// 使用中间件
+        /// 使用协议中间件
         /// </summary>
-        /// <typeparam name="TMiddleware">中间值类型</typeparam>
+        /// <typeparam name="TMiddleware">中间件类型</typeparam>
         /// <returns></returns>
         public TMiddleware Use<TMiddleware>() where TMiddleware : IMiddleware
         {
             var middleware = Activator.CreateInstance<TMiddleware>();
-            return this.Use(middleware);
-        }
-
-        /// <summary>
-        /// 使用中间件
-        /// </summary>
-        /// <typeparam name="TMiddleware">中间值类型</typeparam>
-        /// <param name="middleware">中间件实例</param>
-        /// <returns></returns>
-        public TMiddleware Use<TMiddleware>(TMiddleware middleware) where TMiddleware : IMiddleware
-        {
-            this.Use((IMiddleware)middleware);
+            this.Use(middleware);
             return middleware;
         }
 
         /// <summary>
-        /// 使用中间件
+        /// 使用协议中间件
         /// </summary>
-        /// <param name="middleware">中间件</param>
+        /// <param name="middleware">协议中间件</param>
         /// <exception cref="ArgumentNullException"></exception>
         public void Use(IMiddleware middleware)
         {
@@ -147,6 +135,33 @@ namespace NetworkSocket
                 node.Value.Next = node.Next.Value;
                 node = node.Next;
             }
+        }
+
+
+        /// <summary>
+        /// 使用插件
+        /// </summary>
+        /// <typeparam name="TPlug">插件类型</typeparam>
+        /// <returns></returns>
+        public TPlug UsePlug<TPlug>() where TPlug : IPlug
+        {
+            var plug = Activator.CreateInstance<TPlug>();
+            this.plugs.Add(plug);
+            return plug;
+        }
+
+        /// <summary>
+        /// 使用插件
+        /// </summary>
+        /// <param name="plug">插件</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        public void UsePlug(IPlug plug)
+        {
+            if (plug == null)
+            {
+                throw new ArgumentNullException();
+            }
+            this.plugs.Add(plug);
         }
 
         /// <summary>
@@ -241,7 +256,7 @@ namespace NetworkSocket
             else
             {
                 var exception = new SocketException((int)socketError);
-                this.Events.RaiseException(this, exception);
+                this.plugs.ForEach(p => p.OnException(this, exception));
             }
         }
 
@@ -298,12 +313,12 @@ namespace NetworkSocket
             session.TrySetKeepAlive(this.KeepAlivePeriod);
             this.workSessions.Add(session);
 
-            // 通知已连接
-            var context = this.CreateContext(session);
-            this.Events.RaiseConnected(this, context);
-
             // 开始接收数据
             session.LoopReceive();
+
+            // 通知已连接
+            var context = this.CreateContext(session);
+            this.plugs.ForEach(p => p.OnConnected(this, context));
         }
 
         /// <summary>
@@ -320,7 +335,7 @@ namespace NetworkSocket
             }
             catch (Exception ex)
             {
-                this.Events.RaiseException(this, ex);
+                this.plugs.ForEach(p => p.OnException(this, ex));
             }
         }
 
@@ -334,8 +349,7 @@ namespace NetworkSocket
             if (this.workSessions.Remove(session) == true)
             {
                 var context = this.CreateContext(session);
-                this.Events.RaiseDisconnected(this, context);
-                session.Shutdown();
+                this.plugs.ForEach(p => p.OnDisconnected(this, context));
                 this.freeSessions.Enqueue(session);
             }
         }
@@ -382,19 +396,20 @@ namespace NetworkSocket
             this.workSessions.Dispose();
             this.freeSessions.Dispose();
             this.middlewares.Clear();
+            this.plugs.Clear();
 
             if (disposing == true)
             {
                 this.listenSocket = null;
                 this.acceptArg = null;
                 this.middlewares = null;
+                this.plugs = null;
                 this.workSessions = null;
                 this.freeSessions = null;
 
                 this.LocalEndPoint = null;
                 this.IsListening = false;
                 this.KeepAlivePeriod = TimeSpan.Zero;
-                this.Events = null;
             }
         }
         #endregion

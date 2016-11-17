@@ -28,6 +28,17 @@ namespace NetworkSocket
         }
 
         /// <summary>
+        /// 获取值
+        /// </summary>
+        public object Value
+        {
+            get
+            {
+                return this.value;
+            }
+        }
+
+        /// <summary>
         /// ITag的数据项
         /// </summary>
         /// <param name="value">数据</param>
@@ -91,16 +102,7 @@ namespace NetworkSocket
         public DateTime AsDateTime()
         {
             return this.As<DateTime>();
-        }
-
-        /// <summary>
-        /// 获取值
-        /// </summary>
-        /// <returns></returns>
-        public object GetValue()
-        {
-            return this.value;
-        }
+        } 
 
         /// <summary>
         /// 转换为字符串
@@ -109,6 +111,6 @@ namespace NetworkSocket
         public override string ToString()
         {
             return this.IsNull ? null : this.value.ToString();
-        }
+        } 
     }
 }

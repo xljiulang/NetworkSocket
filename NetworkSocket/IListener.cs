@@ -15,8 +15,14 @@ namespace NetworkSocket
         /// <summary>
         /// 使用中间件
         /// </summary>
-        /// <param name="middleware">中间件</param>
+        /// <param name="middleware">协议中间件</param>
         void Use(IMiddleware middleware);
+
+        /// <summary>
+        /// 使用插件
+        /// </summary>
+        /// <param name="plug">插件</param>
+        void UsePlug(IPlug plug);
 
         /// <summary>
         /// 使用SSL安全传输

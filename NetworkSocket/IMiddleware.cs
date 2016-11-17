@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace NetworkSocket
 {
     /// <summary>
-    /// 定义中间件的行为
+    /// 定义协议中间件的行为
     /// </summary>
     public interface IMiddleware
     {

@@ -144,10 +144,7 @@ namespace NetworkSocket
         /// <returns></returns>
         public IEnumerator<TcpSessionBase> GetEnumerator()
         {
-            foreach (var item in this.dic)
-            {
-                yield return item.Value;
-            }
+            return this.dic.Values.GetEnumerator();
         }
 
         /// <summary>

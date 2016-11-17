@@ -35,6 +35,7 @@ namespace NetworkSocket
         /// <param name="session">会话对象</param>
         public void Enqueue(TcpSessionBase session)
         {
+            session.Shutdown();
             this.queue.Enqueue(session);
         }
 

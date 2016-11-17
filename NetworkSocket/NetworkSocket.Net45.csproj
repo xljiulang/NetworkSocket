@@ -81,6 +81,7 @@
     <Compile Include="Http\RouteBaseAttribute.cs" />
     <Compile Include="Http\RouteData.cs" />
     <Compile Include="Http\RouteDataCollection.cs" />
+    <Compile Include="IPlug.cs" />
     <Compile Include="Streams\SessionStream.cs" />
     <Compile Include="Tasks\Dispatcher.cs" />
     <Compile Include="Core\Internal\DefaultDependencyResolver.cs" />
@@ -91,7 +92,6 @@
     <Compile Include="Core\Internal\PacketIdProvider.cs" />
     <Compile Include="Core\ISerializer.cs" />
     <Compile Include="Endians.cs" />
-    <Compile Include="Events.cs" />
     <Compile Include="Exceptions\ApiExecuteException.cs" />
     <Compile Include="Exceptions\ApiNotExistException.cs" />
     <Compile Include="Exceptions\HttpException.cs" />
