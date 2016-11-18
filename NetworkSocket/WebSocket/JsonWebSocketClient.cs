@@ -159,7 +159,7 @@ namespace NetworkSocket.WebSocket
         protected sealed override async void OnText(FrameRequest frame)
         {
             var text = Encoding.UTF8.GetString(frame.Content);
-            var package = this.TryGetJsonPacket(text);
+            var package = this.GenerateJsonPacket(text);
             if (package == null)
             {
                 return;
@@ -206,7 +206,7 @@ namespace NetworkSocket.WebSocket
             }
             else
             {
-                await this.TryExecuteRequestAsync(package);
+                await this.ExecuteRequestAsync(package);
             }
         }
 
@@ -215,7 +215,7 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="package">数据包</param>
         /// <returns></returns>
-        private async Task TryExecuteRequestAsync(JsonPacket package)
+        private async Task ExecuteRequestAsync(JsonPacket package)
         {
             try
             {
@@ -337,11 +337,11 @@ namespace NetworkSocket.WebSocket
 
 
         /// <summary>
-        /// 尝试获取数据包
+        /// 生成json请求数据包
         /// </summary>     
         /// <param name="text">内容</param>        
         /// <returns></returns>
-        private JsonPacket TryGetJsonPacket(string text)
+        private JsonPacket GenerateJsonPacket(string text)
         {
             try
             {

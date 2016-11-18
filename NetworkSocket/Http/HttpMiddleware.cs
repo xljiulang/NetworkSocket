@@ -189,8 +189,7 @@ namespace NetworkSocket.Http
             {
                 var controllerType = actionContext.Action.DeclaringService;
                 var controller = this.DependencyResolver.GetService(controllerType) as HttpController;
-                controller.Middleware = this;
-                return controller;
+                return controller.Init(this);
             }
             catch (Exception ex)
             {

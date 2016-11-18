@@ -263,8 +263,8 @@ namespace NetworkSocket.Fast
             try
             {
                 var serviceType = actionContext.Action.DeclaringService;
-                var instance = this.DependencyResolver.GetService(serviceType);
-                return instance as IFastApiService;
+                var fastApiService = this.DependencyResolver.GetService(serviceType) as FastApiService;
+                return fastApiService.Init(this);
             }
             catch (Exception ex)
             {

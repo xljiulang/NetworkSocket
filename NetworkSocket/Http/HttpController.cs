@@ -17,7 +17,7 @@ namespace NetworkSocket.Http
         /// <summary>
         /// 获取http中间件的实例
         /// </summary>
-        internal protected HttpMiddleware Middleware { get; internal set; }
+        protected HttpMiddleware Middleware { get; private set; }
 
         /// <summary>
         /// 获取当前Api行为上下文
@@ -45,6 +45,23 @@ namespace NetworkSocket.Http
             {
                 return this.CurrentContext.Response;
             }
+        }
+        /// <summary>
+        /// http控制器
+        /// </summary>
+        public HttpController()
+        {
+        }
+
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        /// <param name="middleware">关联的中间件</param>
+        /// <returns></returns>
+        internal HttpController Init(HttpMiddleware middleware)
+        {
+            this.Middleware = middleware;
+            return this;
         }
 
         /// <summary>

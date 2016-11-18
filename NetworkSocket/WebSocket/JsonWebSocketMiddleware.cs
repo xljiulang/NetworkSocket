@@ -130,15 +130,13 @@ namespace NetworkSocket.WebSocket
         protected sealed override async void OnText(IContenxt context, FrameRequest frame)
         {
             var text = Encoding.UTF8.GetString(frame.Content);
-            var jsonPacket = this.TryGetJsonPacket(context, text);
-            if (jsonPacket == null)
+            var requestContext = this.GenerateRequestContext(context, text);
+            if (requestContext == null)
             {
                 return;
             }
 
-            var session = (JsonWebSocketSession)context.Session.Wrapper;
-            var requestContext = new RequestContext(session, jsonPacket, context.AllSessions);
-            if (jsonPacket.state == false)
+            if (requestContext.Packet.state == false)
             {
                 this.ProcessRemoteException(requestContext);
             }
@@ -148,35 +146,49 @@ namespace NetworkSocket.WebSocket
             }
         }
 
-
         /// <summary>
-        /// 尝试获取数据包
-        /// </summary>     
+        /// 生成请求上下文
+        /// </summary>
         /// <param name="context">上下文</param>
-        /// <param name="content">内容</param>        
+        /// <param name="content">内容</param>
         /// <returns></returns>
-        private JsonPacket TryGetJsonPacket(IContenxt context, string content)
+        private RequestContext GenerateRequestContext(IContenxt context, string content)
         {
             try
             {
-                var packet = this.JsonSerializer.Deserialize(content);
-                var jsonPacket = new JsonPacket
-                {
-                    api = packet.api,
-                    id = packet.id ?? 0,
-                    state = packet.state ?? true,
-                    fromClient = packet.fromClient ?? true,
-                    body = packet.body
-                };
-                return jsonPacket;
+                var jsonPacket = this.GenerateJsonPacket(context, content);
+                var session = (JsonWebSocketSession)context.Session.Wrapper;
+                return new RequestContext(session, jsonPacket, context.AllSessions);
             }
             catch (Exception ex)
             {
                 var session = (JsonWebSocketSession)context.Session.Wrapper;
-                var requestContext = new RequestContext(session, null, context.AllSessions);
-                this.OnException(requestContext, ex);
+                var requestContenxt = new RequestContext(session, null, context.AllSessions);
+                this.SendRemoteException(requestContenxt, ex);
+                this.OnException(requestContenxt, ex);
                 return null;
             }
+        }
+
+        /// <summary>
+        /// 生成json请求数据包
+        /// </summary>     
+        /// <param name="context">上下文</param>
+        /// <param name="content">内容</param>  
+        /// <exception cref="SerializerException"></exception>
+        /// <returns></returns>
+        private JsonPacket GenerateJsonPacket(IContenxt context, string content)
+        {
+            var packet = this.JsonSerializer.Deserialize(content);
+            var jsonPacket = new JsonPacket
+            {
+                api = packet.api,
+                id = packet.id ?? 0,
+                state = packet.state ?? true,
+                fromClient = packet.fromClient ?? true,
+                body = packet.body
+            };
+            return jsonPacket;
         }
 
         /// <summary>
@@ -197,6 +209,8 @@ namespace NetworkSocket.WebSocket
             taskSetter.SetException(exception);
         }
 
+
+
         /// <summary>
         /// 处理正常的数据请求
         /// </summary>
@@ -207,10 +221,17 @@ namespace NetworkSocket.WebSocket
             if (requestContext.Packet.fromClient == false)
             {
                 this.SetApiActionTaskResult(requestContext);
+                return;
             }
-            else
+
+            try
             {
-                await this.TryExecuteRequestAsync(requestContext);
+                await this.ExecuteRequestAsync(requestContext);
+            }
+            catch (Exception ex)
+            {
+                this.SendRemoteException(requestContext, ex);
+                this.OnException(requestContext, ex);
             }
         }
 
@@ -219,21 +240,16 @@ namespace NetworkSocket.WebSocket
         /// 执行请求
         /// </summary>
         /// <param name="requestContext">上下文</param>
+        /// <exception cref="ResolveException"></exception>
+        /// <exception cref="ApiNotExistException"></exception>
         /// <returns></returns>
-        private async Task TryExecuteRequestAsync(RequestContext requestContext)
+        private async Task ExecuteRequestAsync(RequestContext requestContext)
         {
-            try
-            {
-                var action = this.GetApiAction(requestContext);
-                var actionContext = new ActionContext(requestContext, action);
-                var jsonWebSocketApiService = this.GetJsonWebSocketApiService(actionContext);
-                await jsonWebSocketApiService.ExecuteAsync(actionContext);
-                this.DependencyResolver.TerminateService(jsonWebSocketApiService);
-            }
-            catch (Exception ex)
-            {
-                this.OnException(requestContext, ex);
-            }
+            var action = this.GetApiAction(requestContext);
+            var actionContext = new ActionContext(requestContext, action);
+            var jsonWebSocketApiService = this.GetJsonWebSocketApiService(actionContext);
+            await jsonWebSocketApiService.ExecuteAsync(actionContext);
+            this.DependencyResolver.TerminateService(jsonWebSocketApiService);
         }
 
         /// <summary>
@@ -293,8 +309,8 @@ namespace NetworkSocket.WebSocket
             try
             {
                 var serviceType = actionContext.Action.DeclaringService;
-                var instance = this.DependencyResolver.GetService(serviceType);
-                return instance as IJsonWebSocketApiService;
+                var jsonWebSocketApiService = this.DependencyResolver.GetService(serviceType) as JsonWebSocketApiService;
+                return jsonWebSocketApiService.Init(this);
             }
             catch (Exception ex)
             {
@@ -309,10 +325,6 @@ namespace NetworkSocket.WebSocket
         /// <param name="exception">异常</param>
         protected virtual void OnException(RequestContext context, Exception exception)
         {
-            if (context.Packet != null)
-            {
-                this.SendRemoteException(context, exception);
-            }
         }
 
         /// <summary>       

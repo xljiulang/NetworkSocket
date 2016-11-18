@@ -18,13 +18,12 @@ namespace NetworkSocket.Fast
         /// <summary>
         /// 会话对象
         /// </summary>
-        private ISession session;
+        private readonly ISession session;
 
         /// <summary>
-        /// 获取中间件实例
+        /// 中间件实例
         /// </summary>
-        internal FastMiddleware Middleware { get; private set; }
-
+        private readonly FastMiddleware middleware;
 
         /// <summary>
         /// 获取用户数据字典
@@ -78,7 +77,7 @@ namespace NetworkSocket.Fast
         public FastSession(ISession session, FastMiddleware middleware)
         {
             this.session = session;
-            this.Middleware = middleware;
+            this.middleware = middleware;
         }
 
         /// <summary>      
@@ -98,9 +97,9 @@ namespace NetworkSocket.Fast
         /// <exception cref="SerializerException"></exception>   
         public void InvokeApi(string api, params object[] parameters)
         {
-            var id = this.Middleware.PacketIdProvider.NewId();
+            var id = this.middleware.PacketIdProvider.NewId();
             var packet = new FastPacket(api, id, false);
-            packet.SetBodyParameters(this.Middleware.Serializer, parameters);
+            packet.SetBodyParameters(this.middleware.Serializer, parameters);
             this.session.Send(packet.ToArraySegment());
         }
 
@@ -116,10 +115,10 @@ namespace NetworkSocket.Fast
         /// <returns>远程数据任务</returns>         
         public ApiResult<T> InvokeApi<T>(string api, params object[] parameters)
         {
-            var id = this.Middleware.PacketIdProvider.NewId();
+            var id = this.middleware.PacketIdProvider.NewId();
             var packet = new FastPacket(api, id, false);
-            packet.SetBodyParameters(this.Middleware.Serializer, parameters);
-            return Common.InvokeApi<T>(this.session, this.Middleware.TaskSetterTable, this.Middleware.Serializer, packet, this.Middleware.TimeOut);
+            packet.SetBodyParameters(this.middleware.Serializer, parameters);
+            return Common.InvokeApi<T>(this.session, this.middleware.TaskSetterTable, this.middleware.Serializer, packet, this.middleware.TimeOut);
         }
 
 

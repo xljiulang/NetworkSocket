@@ -14,7 +14,7 @@ namespace NetworkSocket.Http
         /// <summary>
         /// 会话对象
         /// </summary>
-        private ISession session;
+        private readonly ISession session;
 
         /// <summary>
         /// 获取用户数据字典

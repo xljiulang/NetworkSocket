@@ -13,20 +13,32 @@ namespace NetworkSocket.Fast
     public abstract class FastApiService : FastFilterAttribute, IFastApiService
     {
         /// <summary>
+        /// 获取关联的服务器实例
+        /// </summary>
+        protected FastMiddleware Middleware { get; private set; }
+
+        /// <summary>
         /// 获取当前Api行为上下文
         /// </summary>
         protected ActionContext CurrentContext { get; private set; }
 
 
         /// <summary>
-        /// 获取关联的服务器实例
+        /// Fast协议的Api服务基类
         /// </summary>
-        protected FastMiddleware Middleware
+        public FastApiService()
         {
-            get
-            {
-                return CurrentContext.Session.Middleware;
-            }
+        }
+
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        /// <param name="middleware">关联的中间件</param>
+        /// <returns></returns>
+        internal FastApiService Init(FastMiddleware middleware)
+        {
+            this.Middleware = middleware;
+            return this;
         }
 
         /// <summary>
@@ -58,8 +70,8 @@ namespace NetworkSocket.Fast
         private void ProcessExecutingException(ActionContext actionContext, IEnumerable<IFilter> filters, Exception exception)
         {
             var exceptionContext = new ExceptionContext(actionContext, new ApiExecuteException(exception));
-            Common.SendRemoteException(actionContext.Session, exceptionContext);
             this.ExecAllExceptionFilters(filters, exceptionContext);
+            Common.SendRemoteException(actionContext.Session, exceptionContext);
         }
 
         /// <summary>

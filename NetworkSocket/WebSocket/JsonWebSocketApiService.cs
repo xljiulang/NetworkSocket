@@ -14,20 +14,31 @@ namespace NetworkSocket.WebSocket
     public abstract class JsonWebSocketApiService : JsonWebSocketFilterAttribute, IJsonWebSocketApiService
     {
         /// <summary>
+        /// 获取关联的服务器实例
+        /// </summary>
+        protected JsonWebSocketMiddleware Middleware { get; private set; }
+
+        /// <summary>
         /// 获取当前Api行为上下文
         /// </summary>
         protected ActionContext CurrentContext { get; private set; }
 
+        /// <summary>
+        /// JsonWebsocket协议的Api服务基类
+        /// </summary>
+        public JsonWebSocketApiService()
+        {
+        }
 
         /// <summary>
-        /// 获取关联的服务器实例
+        /// 初始化
         /// </summary>
-        protected JsonWebSocketMiddleware Middleware
+        /// <param name="middleware">关联的中间件</param>
+        /// <returns></returns>
+        internal JsonWebSocketApiService Init(JsonWebSocketMiddleware middleware)
         {
-            get
-            {
-                return CurrentContext.Session.Middleware;
-            }
+            this.Middleware = middleware;
+            return this;
         }
 
         /// <summary>
@@ -58,8 +69,8 @@ namespace NetworkSocket.WebSocket
         private void ProcessExecutingException(ActionContext actionContext, IEnumerable<IFilter> actionfilters, Exception exception)
         {
             var exceptionContext = new ExceptionContext(actionContext, new ApiExecuteException(exception));
-            this.Middleware.SendRemoteException(exceptionContext, exceptionContext.Exception);
             this.ExecAllExceptionFilters(actionfilters, exceptionContext);
+            this.Middleware.SendRemoteException(exceptionContext, exceptionContext.Exception);
         }
 
         /// <summary>
@@ -126,7 +137,7 @@ namespace NetworkSocket.WebSocket
                 throw new ArgumentException("body参数数量不正确");
             }
 
-            var serializer = context.Session.Middleware.JsonSerializer;
+            var serializer = this.Middleware.JsonSerializer;
             for (var i = 0; i < context.Action.Parameters.Length; i++)
             {
                 var parameter = context.Action.Parameters[i];

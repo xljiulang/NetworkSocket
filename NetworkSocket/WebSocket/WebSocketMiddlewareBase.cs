@@ -75,6 +75,7 @@ namespace NetworkSocket.WebSocket
         /// 获取握手请求信息
         /// </summary>
         /// <param name="context">上下文</param>
+        /// <exception cref="HttpException"></exception>
         /// <returns></returns>
         private async Task<HttpRequest> GetHandshakeRequest(IContenxt context)
         {

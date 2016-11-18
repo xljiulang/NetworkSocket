@@ -21,9 +21,9 @@ namespace NetworkSocket.WebSocket
         private readonly WebSocketSession session;
 
         /// <summary>
-        /// 获取中间件实例
+        /// 中间件实例
         /// </summary>
-        internal JsonWebSocketMiddleware Middleware { get; private set; }
+        private readonly JsonWebSocketMiddleware middleware;
 
         /// <summary>
         /// 获取用户数据字典
@@ -76,7 +76,7 @@ namespace NetworkSocket.WebSocket
         /// <param name="session">WebSocket会话</param>
         public JsonWebSocketSession(JsonWebSocketMiddleware server, WebSocketSession session)
         {
-            this.Middleware = server;
+            this.middleware = server;
             this.session = session;
         }
 
@@ -122,12 +122,12 @@ namespace NetworkSocket.WebSocket
             var packet = new JsonPacket
             {
                 api = api,
-                id = this.Middleware.PacketIdProvider.NewId(),
+                id = this.middleware.PacketIdProvider.NewId(),
                 state = true,
                 fromClient = false,
                 body = parameters
             };
-            var packetJson = this.Middleware.JsonSerializer.Serialize(packet);
+            var packetJson = this.middleware.JsonSerializer.Serialize(packet);
             this.session.SendText(packetJson);
         }
 
@@ -146,15 +146,15 @@ namespace NetworkSocket.WebSocket
             var packet = new JsonPacket
             {
                 api = api,
-                id = this.Middleware.PacketIdProvider.NewId(),
+                id = this.middleware.PacketIdProvider.NewId(),
                 state = true,
                 fromClient = false,
                 body = parameters
             };
 
             // 登记taskSetter             
-            var taskSetter = this.Middleware.TaskSetterTable.Create<T>(packet.id).TimeoutAfter(this.Middleware.TimeOut);
-            var packetJson = this.Middleware.JsonSerializer.Serialize(packet);
+            var taskSetter = this.middleware.TaskSetterTable.Create<T>(packet.id).TimeoutAfter(this.middleware.TimeOut);
+            var packetJson = this.middleware.JsonSerializer.Serialize(packet);
             this.session.SendText(packetJson);
             return new ApiResult<T>(taskSetter);
         }
