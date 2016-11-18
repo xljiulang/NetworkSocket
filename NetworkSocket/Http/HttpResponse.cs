@@ -127,7 +127,7 @@ namespace NetworkSocket.Http
         /// <returns></returns>
         public bool WriteHeader(int contentLength, bool gzip = false)
         {
-            var headerByes = this.GenerateHeader(contentLength, gzip);
+            var headerByes = this.GenerateResponseHeader(contentLength, gzip);
             return this.TrySend(headerByes);
         }
 
@@ -171,7 +171,7 @@ namespace NetworkSocket.Http
                 contentBytes = Compression.GZipCompress(contentBytes);
             }
 
-            var headerBytes = this.GenerateHeader(contentBytes.Length, gzip);
+            var headerBytes = this.GenerateResponseHeader(contentBytes.Length, gzip);
             var buffer = this.ConcatBuffer(headerBytes, contentBytes);
             return this.TrySend(buffer);
         }
@@ -182,9 +182,9 @@ namespace NetworkSocket.Http
         /// <param name="contentLength">内容长度</param>
         /// <param name="gzip">gzip模式</param>
         /// <returns></returns>
-        private byte[] GenerateHeader(int contentLength, bool gzip)
+        private byte[] GenerateResponseHeader(int contentLength, bool gzip)
         {
-            var header = new ResponseHeader(this.Status, this.StatusDescription);
+            var header = HeaderBuilder.NewResonse(this.Status, this.StatusDescription);
             if (this.Charset == null)
             {
                 header.Add("Content-Type", this.ContentType);
@@ -205,15 +205,13 @@ namespace NetworkSocket.Http
                 header.Add("Content-Encoding", "gzip");
             }
 
-            var assemblyName = typeof(HttpMiddleware).Assembly.GetName();
             header.Add("Date", DateTime.Now.ToUniversalTime().ToString("r"));
-            header.Add("Server", assemblyName.Name + assemblyName.Version.ToString());
+            header.Add("Server", "NetworkSocket");
 
             foreach (var key in this.Headers.AllKeys)
             {
                 header.Add(key, this.Headers[key]);
             }
-
             return header.ToByteArray();
         }
 

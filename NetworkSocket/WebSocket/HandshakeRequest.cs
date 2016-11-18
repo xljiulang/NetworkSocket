@@ -19,17 +19,6 @@ namespace NetworkSocket.WebSocket
     public sealed class HandshakeRequest
     {
         /// <summary>
-        /// 换行
-        /// </summary>
-        private static readonly string CRLF = "\r\n";
-
-        /// <summary>
-        /// 获取双换行
-        /// </summary>
-        private static readonly byte[] DoubleCrlf = Encoding.ASCII.GetBytes("\r\n\r\n");
-
-
-        /// <summary>
         /// 安全key
         /// </summary>
         private string secKey;
@@ -97,9 +86,7 @@ namespace NetworkSocket.WebSocket
             {
                 this.IsWaitting = true;
                 this.taskSetter = new TaskSetter<SocketError>((s) => this.TrySetResult(SocketError.TimedOut)).TimeoutAfter(this.timeout);
-
-                var content = this.GenerateHandshakeContent(client, out this.secKey);
-                var handshakeBuffer = Encoding.ASCII.GetBytes(content);
+                var handshakeBuffer = this.GenerateHandshakeBuffer(client, out this.secKey);
                 client.Send(handshakeBuffer);
             }
             catch (SocketException ex)
@@ -131,33 +118,28 @@ namespace NetworkSocket.WebSocket
         /// <returns></returns>
         public bool TrySetResult(ISessionStreamReader streamReader)
         {
-            streamReader.Position = 0;
-            var index = streamReader.IndexOf(DoubleCrlf);
-            if (index < 0)
+            var result = HttpResponseParser.Parse(streamReader);
+            if (result.IsHttp == false)
             {
                 return false;
             }
-
-            var length = index + DoubleCrlf.Length;
-            var header = streamReader.ReadString(Encoding.ASCII, length);
-            streamReader.Clear(length);
-
-            const string pattern = @"^HTTP/1.1 101 Switching Protocols\r\n((?<field_name>[^:\r\n]+):\s(?<field_value>[^\r\n]*)\r\n)+\r\n";
-            var match = Regex.Match(header, pattern, RegexOptions.IgnoreCase);
-            if (match.Success == true)
+            else
             {
-                var httpHeader = HttpHeader.Parse(match.Groups["field_name"].Captures, match.Groups["field_value"].Captures);
-                var secAccept = httpHeader["Sec-WebSocket-Accept"];
+                streamReader.Clear();
+            }
 
+            if (result.Status == 101)
+            {
                 const string guid = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
                 var bytes = SHA1.Create().ComputeHash(Encoding.UTF8.GetBytes(this.secKey + guid));
                 var secValue = Convert.ToBase64String(bytes);
-
+                var secAccept = result.Header["Sec-WebSocket-Accept"];
                 if (secValue == secAccept)
                 {
                     return this.TrySetResult(SocketError.Success);
                 }
             }
+
             return this.TrySetResult(SocketError.SocketError);
         }
 
@@ -168,7 +150,7 @@ namespace NetworkSocket.WebSocket
         /// <param name="client">客户端</param>
         /// <param name="secKey">安全Key</param>
         /// <returns></returns>
-        private string GenerateHandshakeContent(WebSocketClient client, out string secKey)
+        private byte[] GenerateHandshakeBuffer(WebSocketClient client, out string secKey)
         {
             var host = client.RemoteEndPoint.ToString();
             var dnsEndpoint = client.RemoteEndPoint as DnsEndPoint;
@@ -180,17 +162,14 @@ namespace NetworkSocket.WebSocket
             var keyBytes = SHA1.Create().ComputeHash(Guid.NewGuid().ToByteArray());
             secKey = Convert.ToBase64String(keyBytes);
 
-            var builder = new StringBuilder()
-                .AppendFormat("GET / HTTP/1.1").Append(CRLF)
-                .AppendFormat("{0}: {1}", "Host", host).Append(CRLF)
-                .AppendFormat("{0}: {1}", "Connection", "Upgrade").Append(CRLF)
-                .AppendFormat("{0}: {1}", "Upgrade", "websocket").Append(CRLF)
-                .AppendFormat("{0}: {1}", "Origin", "http://" + host).Append(CRLF)
-                .AppendFormat("{0}: {1}", "Sec-WebSocket-Version", "13").Append(CRLF)
-                .AppendFormat("{0}: {1}", "Sec-WebSocket-Key", this.secKey).Append(CRLF)
-                .Append(CRLF);
-
-            return builder.ToString();
+            var header = HeaderBuilder.NewRequest(HttpMethod.GET, "/");
+            header.Add("Host", host);
+            header.Add("Connection", "Upgrade");
+            header.Add("Upgrade", "websocket");
+            header.Add("Origin", "http://" + host);
+            header.Add("Sec-WebSocket-Version", "13");
+            header.Add("Sec-WebSocket-Key", this.secKey);
+            return header.ToByteArray();
         }
     }
 }

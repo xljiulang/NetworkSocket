@@ -1,4 +1,5 @@
-﻿using NetworkSocket.Http;
+﻿using NetworkSocket.Exceptions;
+using NetworkSocket.Http;
 using NetworkSocket.Tasks;
 using NetworkSocket.Util;
 using System;

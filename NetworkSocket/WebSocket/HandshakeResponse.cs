@@ -1,6 +1,7 @@
 ﻿using NetworkSocket.Http;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -12,11 +13,6 @@ namespace NetworkSocket.WebSocket
     /// </summary>
     public class HandshakeResponse : WebsocketResponse
     {
-        /// <summary>
-        /// 换行
-        /// </summary>
-        private static readonly string CRLF = "\r\n";
-
         /// <summary>
         /// Sec-WebSocket-Key
         /// </summary>
@@ -48,14 +44,13 @@ namespace NetworkSocket.WebSocket
         /// <returns></returns>
         public override ArraySegment<byte> ToArraySegment(bool mask)
         {
-            var builder = new StringBuilder();
-            builder.Append("HTTP/1.1 101 Switching Protocols").Append(CRLF);
-            builder.Append("Upgrade: websocket").Append(CRLF);
-            builder.Append("Connection: Upgrade").Append(CRLF);
-            builder.Append("Sec-WebSocket-Accept: " + this.CreateResponseKey()).Append(CRLF);
-            builder.Append("Server: NetworkSocket").Append(CRLF).Append(CRLF);
-
-            return new ArraySegment<byte>(Encoding.UTF8.GetBytes(builder.ToString()));
+            var builder = HeaderBuilder.NewResonse(101, "Switching Protocols");
+            builder.Add("Upgrade", "websocket");
+            builder.Add("Connection", "Upgrade");
+            builder.Add("Sec-WebSocket-Accept", this.CreateResponseKey());
+            builder.Add("Server", "NetworkSocket");
+            var bytes = builder.ToByteArray();
+            return new ArraySegment<byte>(bytes);
         }
     }
 }

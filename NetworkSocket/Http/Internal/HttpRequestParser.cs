@@ -41,10 +41,10 @@ namespace NetworkSocket.Http
         /// <param name="context">上下文</param>   
         /// <exception cref="HttpException"></exception>
         /// <returns></returns>
-        public static HttpParseResult Parse(IContenxt context)
+        public static HttpRequestParseResult Parse(IContenxt context)
         {
             var headerLength = 0;
-            var result = new HttpParseResult();
+            var result = new HttpRequestParseResult();
             context.StreamReader.Position = 0;
 
             result.IsHttp = HttpRequestParser.IsHttp(context.StreamReader, out headerLength);

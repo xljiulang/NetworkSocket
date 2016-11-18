@@ -67,7 +67,7 @@ namespace NetworkSocket.Http
         /// <param name="context">上下文</param>
         /// <param name="result">解析结果</param>
         /// <returns></returns>
-        private Task ProcessParseResultAsync(IContenxt context, HttpParseResult result)
+        private Task ProcessParseResultAsync(IContenxt context, HttpRequestParseResult result)
         {
             if (result.IsHttp == false)
             {
