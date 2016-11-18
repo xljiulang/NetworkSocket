@@ -19,6 +19,22 @@ namespace NetworkSocket.Http
         private static readonly byte Space = 32;
 
         /// <summary>
+        /// 换行
+        /// </summary>
+        private static readonly byte[] CRLF = Encoding.ASCII.GetBytes("\r\n");
+
+        /// <summary>
+        /// 获取双换行
+        /// </summary>
+        private static readonly byte[] DoubleCrlf = Encoding.ASCII.GetBytes("\r\n\r\n");
+
+        /// <summary>
+        /// 请求头键值分隔
+        /// </summary>
+        private static readonly byte[] KvSpliter = Encoding.ASCII.GetBytes(": ");
+
+
+        /// <summary>
         /// 支持的http方法
         /// </summary>
         private static readonly HashSet<string> MethodNames = new HashSet<string>(Enum.GetNames(typeof(HttpMethod)), StringComparer.OrdinalIgnoreCase);
@@ -28,10 +44,6 @@ namespace NetworkSocket.Http
         /// </summary>
         private static readonly int MedthodMaxLength = MethodNames.Max(m => m.Length);
 
-        /// <summary>
-        /// 获取双换行
-        /// </summary>
-        private static readonly byte[] DoubleCrlf = Encoding.ASCII.GetBytes("\r\n\r\n");
 
 
 
@@ -47,53 +59,20 @@ namespace NetworkSocket.Http
             var result = new HttpRequestParseResult();
             context.StreamReader.Position = 0;
 
-            result.IsHttp = HttpRequestParser.IsHttp(context.StreamReader, out headerLength);
+            result.IsHttp = HttpRequestParser.IsHttpRequest(context.StreamReader, out headerLength);
             if (result.IsHttp == false || headerLength <= 0)
             {
                 return result;
             }
 
-            var headerString = context.StreamReader.ReadString(Encoding.ASCII, headerLength);
-            const string pattern = @"^(?<method>[^\s]+)\s(?<path>[^\s]+)\sHTTP\/1\.1\r\n" +
-                @"((?<field_name>[^:\r\n]+):\s(?<field_value>[^\r\n]*)\r\n)+" +
-                @"\r\n";
-
-            var match = Regex.Match(headerString, pattern, RegexOptions.IgnoreCase);
-            result.IsHttp = match.Success;
-            if (result.IsHttp == false)
-            {
-                return result;
-            }
-
-            var httpMethod = HttpRequestParser.CastHttpMethod(match.Groups["method"].Value);
-            var httpHeader = HttpHeader.Parse(match.Groups["field_name"].Captures, match.Groups["field_value"].Captures);
-            var contentLength = httpHeader.TryGet<int>("Content-Length");
-
-            if (httpMethod == HttpMethod.POST && context.StreamReader.Length - headerLength < contentLength)
+            var contentLength = 0; 
+            var request = HttpRequestParser.GetRequest(context, headerLength, out contentLength);
+            if (request == null)
             {
                 return result;// 数据未完整                 
             }
 
-            var request = new HttpRequest
-            {
-                LocalEndPoint = context.Session.LocalEndPoint,
-                RemoteEndPoint = context.Session.RemoteEndPoint,
-                HttpMethod = httpMethod,
-                Headers = httpHeader
-            };
-
-            var scheme = context.Session.IsSecurity ? "https" : "http";
-            var host = httpHeader["Host"];
-            if (string.IsNullOrEmpty(host) == true)
-            {
-                host = context.Session.LocalEndPoint.ToString();
-            }
-            var url = string.Format("{0}://{1}{2}", scheme, host, match.Groups["path"].Value);
-            request.Url = new Uri(url);
-            request.Path = request.Url.AbsolutePath;
-            request.Query = HttpNameValueCollection.Parse(request.Url.Query.TrimStart('?'));
-
-            switch (httpMethod)
+            switch (request.HttpMethod)
             {
                 case HttpMethod.GET:
                     request.Body = new byte[0];
@@ -102,6 +81,7 @@ namespace NetworkSocket.Http
                     break;
 
                 default:
+                    context.StreamReader.Position = headerLength;
                     request.Body = context.StreamReader.ReadArray(contentLength);
                     context.StreamReader.Position = headerLength;
                     HttpRequestParser.GeneratePostFormAndFiles(request, context.StreamReader);
@@ -114,15 +94,15 @@ namespace NetworkSocket.Http
         }
 
 
-
         /// <summary>
-        /// 是否为http协议
+        /// 是否为http请求协议
         /// </summary>
         /// <param name="streamReader">数据读取器</param>
         /// <param name="headerLength">头数据长度，包括双换行</param>
         /// <returns></returns>
-        private static bool IsHttp(ISessionStreamReader streamReader, out int headerLength)
+        private static bool IsHttpRequest(ISessionStreamReader streamReader, out int headerLength)
         {
+            streamReader.Position = 0;
             var methodLength = HttpRequestParser.GetMethodLength(streamReader);
             var methodName = streamReader.ReadString(Encoding.ASCII, methodLength);
 
@@ -160,6 +140,78 @@ namespace NetworkSocket.Http
                 }
             }
             return maxLength;
+        }
+
+        /// <summary>
+        /// 解析http头
+        /// 生成请求对象
+        /// </summary>
+        /// <param name="context">上下文</param>
+        /// <param name="headerLength">请求头长度</param>
+        /// <param name="contentLength">内容长度</param>
+        public static HttpRequest GetRequest(IContenxt context, int headerLength, out int contentLength)
+        {
+            var reader = context.StreamReader;
+            reader.Position = 0;
+
+            var spaceIndex = reader.IndexOf(Space);
+            var httpMethod = HttpRequestParser.CastHttpMethod(reader.ReadString(Encoding.ASCII, spaceIndex));
+            reader.Position += 1;
+
+            spaceIndex = reader.IndexOf(Space);
+            var path = reader.ReadString(Encoding.ASCII, spaceIndex);
+            reader.Position += reader.IndexOf(CRLF) + CRLF.Length;
+
+            var httpHeader = new HttpHeader();
+            while (reader.Position < headerLength)
+            {
+                var keyLength = reader.IndexOf(KvSpliter);
+                if (keyLength <= 0)
+                {
+                    break;
+                }
+
+                var lineLength = reader.IndexOf(CRLF) + CRLF.Length;
+                if (lineLength < CRLF.Length)
+                {
+                    break;
+                }
+
+                var key = reader.ReadString(Encoding.ASCII, keyLength);
+                reader.Position += KvSpliter.Length;
+                var value = reader.ReadString(Encoding.ASCII, lineLength - keyLength - KvSpliter.Length - CRLF.Length);
+                reader.Position += CRLF.Length;
+                httpHeader.Add(key, value);
+            }
+
+            contentLength = 0;
+            if (httpMethod != HttpMethod.GET)
+            {
+                contentLength = httpHeader.TryGet<int>("Content-Length");
+                if (reader.Length - headerLength < contentLength)
+                {
+                    return null;// 数据未完整  
+                }
+            }
+
+            var request = new HttpRequest
+            {
+                LocalEndPoint = context.Session.LocalEndPoint,
+                RemoteEndPoint = context.Session.RemoteEndPoint,
+                HttpMethod = httpMethod,
+                Headers = httpHeader
+            };
+
+            var scheme = context.Session.IsSecurity ? "https" : "http";
+            var host = httpHeader["Host"];
+            if (string.IsNullOrEmpty(host) == true)
+            {
+                host = context.Session.LocalEndPoint.ToString();
+            }
+            request.Url = new Uri(string.Format("{0}://{1}{2}", scheme, host, path));
+            request.Path = request.Url.AbsolutePath;
+            request.Query = HttpNameValueCollection.Parse(request.Url.Query.TrimStart('?'));
+            return request;
         }
 
         /// <summary>
