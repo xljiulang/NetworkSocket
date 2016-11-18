@@ -429,6 +429,28 @@ namespace NetworkSocket.Streams
             return true;
         }
 
+
+        /// <summary>
+        /// 从Position位置开始查找第一个匹配的值
+        /// 返回相对于Position的偏移量
+        /// </summary>
+        /// <param name="b">要匹配的数据</param>
+        public unsafe int IndexOf(byte b)
+        {
+            fixed (byte* pBuffer = &this.Stream.GetBuffer()[0])
+            {
+                for (var i = this.Position; i < this.Length; i++)
+                {
+                    var value = *(pBuffer + i);
+                    if (value == b)
+                    {
+                        return i - this.Position;
+                    }
+                }
+            }
+            return -1;
+        }
+
         /// <summary>
         /// 调试视图
         /// </summary>

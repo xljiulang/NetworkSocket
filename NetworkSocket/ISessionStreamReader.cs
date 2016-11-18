@@ -183,5 +183,13 @@ namespace NetworkSocket
         /// <param name="binary">要匹配的数据</param>
         /// <returns></returns>
         int IndexOf(byte[] binary);
+
+
+        /// <summary>
+        /// 从Position位置开始查找第一个匹配的值
+        /// 返回相对于Position的偏移量
+        /// </summary>
+        /// <param name="b">要匹配的数据</param>
+        int IndexOf(byte b);
     }
 }
