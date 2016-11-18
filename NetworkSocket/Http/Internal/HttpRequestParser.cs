@@ -33,6 +33,10 @@ namespace NetworkSocket.Http
         /// </summary>
         private static readonly byte[] KvSpliter = Encoding.ASCII.GetBytes(": ");
 
+        /// <summary>
+        /// http11
+        /// </summary>
+        private static readonly byte[] Http11 = Encoding.ASCII.GetBytes("HTTP/1.1");
 
         /// <summary>
         /// 支持的http方法
@@ -65,7 +69,7 @@ namespace NetworkSocket.Http
                 return result;
             }
 
-            var contentLength = 0; 
+            var contentLength = 0;
             var request = HttpRequestParser.GetRequest(context, headerLength, out contentLength);
             if (request == null)
             {
@@ -102,45 +106,39 @@ namespace NetworkSocket.Http
         /// <returns></returns>
         private static bool IsHttpRequest(ISessionStreamReader streamReader, out int headerLength)
         {
+            headerLength = 0;
             streamReader.Position = 0;
-            var methodLength = HttpRequestParser.GetMethodLength(streamReader);
-            var methodName = streamReader.ReadString(Encoding.ASCII, methodLength);
 
-            if (HttpRequestParser.MethodNames.Contains(methodName) == false)
+            var methodLength = streamReader.IndexOf(Space);
+            if (methodLength < 0)
             {
-                headerLength = 0;
                 return false;
             }
 
-            streamReader.Position = 0;
-            var headerIndex = streamReader.IndexOf(HttpRequestParser.DoubleCrlf);
-            if (headerIndex < 0)
+            var methodName = streamReader.ReadString(Encoding.ASCII, methodLength);
+            if (HttpRequestParser.MethodNames.Contains(methodName) == false)
             {
-                headerLength = 0;
-                return true;
+                return false;
             }
 
-            headerLength = headerIndex + HttpRequestParser.DoubleCrlf.Length;
+            var otherLength = streamReader.IndexOf(CRLF);
+            if (otherLength < Http11.Length || streamReader.IndexOf(Http11) < 0)
+            {
+                return false;
+            }
+
+            streamReader.Position += otherLength + CRLF.Length;
+            var kvIndex = streamReader.IndexOf(HttpRequestParser.DoubleCrlf);
+            if (kvIndex < 0)
+            {
+                return false;
+            }
+
+            var lineLength = methodLength + otherLength + CRLF.Length;
+            headerLength = lineLength + kvIndex + DoubleCrlf.Length;
             return true;
         }
 
-        /// <summary>
-        /// 获取当前的http方法长度
-        /// </summary>
-        /// <param name="streamReader">数据读取器</param>
-        /// <returns></returns>
-        private static int GetMethodLength(ISessionStreamReader streamReader)
-        {
-            var maxLength = Math.Min(streamReader.Length, HttpRequestParser.MedthodMaxLength + 1);
-            for (var i = 0; i < maxLength; i++)
-            {
-                if (streamReader[i] == HttpRequestParser.Space)
-                {
-                    return i;
-                }
-            }
-            return maxLength;
-        }
 
         /// <summary>
         /// 解析http头
@@ -152,17 +150,17 @@ namespace NetworkSocket.Http
         public static HttpRequest GetRequest(IContenxt context, int headerLength, out int contentLength)
         {
             var reader = context.StreamReader;
+
             reader.Position = 0;
+            var methodLength = reader.IndexOf(Space);
+            var httpMethod = HttpRequestParser.CastHttpMethod(reader.ReadString(Encoding.ASCII, methodLength));
 
-            var spaceIndex = reader.IndexOf(Space);
-            var httpMethod = HttpRequestParser.CastHttpMethod(reader.ReadString(Encoding.ASCII, spaceIndex));
             reader.Position += 1;
-
-            spaceIndex = reader.IndexOf(Space);
-            var path = reader.ReadString(Encoding.ASCII, spaceIndex);
-            reader.Position += reader.IndexOf(CRLF) + CRLF.Length;
+            var pathLenth = reader.IndexOf(Space);
+            var path = reader.ReadString(Encoding.ASCII, pathLenth);
 
             var httpHeader = new HttpHeader();
+            reader.Position += reader.IndexOf(CRLF) + CRLF.Length;
             while (reader.Position < headerLength)
             {
                 var keyLength = reader.IndexOf(KvSpliter);
