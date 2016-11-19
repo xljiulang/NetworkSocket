@@ -237,6 +237,11 @@ namespace NetworkSocket
                 throw new ArgumentNullException();
             }
 
+            if (this.IsConnected == true)
+            {
+                return SocketError.Success;
+            }
+
             var addressFamily = AddressFamily.InterNetwork;
             if (remoteEndPoint.AddressFamily != AddressFamily.Unspecified)
             {

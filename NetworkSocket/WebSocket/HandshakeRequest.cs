@@ -68,24 +68,26 @@ namespace NetworkSocket.WebSocket
         /// 执行握手请求
         /// </summary>
         /// <param name="client">客户端</param>
+        /// <param name="path">请求路径</param>
         /// <returns></returns>
-        public SocketError Execute(WebSocketClient client)
+        public SocketError Execute(WebSocketClient client, string path)
         {
-            return this.ExecuteAsync(client).ConfigureAwait(false).GetAwaiter().GetResult();
+            return this.ExecuteAsync(client, path).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         /// <summary>
         /// 异步执行握手请求
         /// </summary>     
         /// <param name="client">客户端</param>
+        /// <param name="path">请求路径</param>
         /// <returns></returns>
-        public Task<SocketError> ExecuteAsync(WebSocketClient client)
+        public Task<SocketError> ExecuteAsync(WebSocketClient client, string path)
         {
             try
             {
                 this.IsWaitting = true;
                 this.taskSetter = new TaskSetter<SocketError>((s) => this.TrySetResult(SocketError.TimedOut)).TimeoutAfter(this.timeout);
-                var handshakeBuffer = this.GenerateHandshakeBuffer(client, out this.secKey);
+                var handshakeBuffer = this.GenerateHandshakeBuffer(client, path, out this.secKey);
                 client.Send(handshakeBuffer);
             }
             catch (SocketException ex)
@@ -147,9 +149,10 @@ namespace NetworkSocket.WebSocket
         /// 生成握手内容
         /// </summary>
         /// <param name="client">客户端</param>
+        /// <param name="path">路径</param>
         /// <param name="secKey">安全Key</param>
         /// <returns></returns>
-        private byte[] GenerateHandshakeBuffer(WebSocketClient client, out string secKey)
+        private byte[] GenerateHandshakeBuffer(WebSocketClient client, string path, out string secKey)
         {
             var host = client.RemoteEndPoint.ToString();
             var dnsEndpoint = client.RemoteEndPoint as DnsEndPoint;
@@ -161,7 +164,7 @@ namespace NetworkSocket.WebSocket
             var keyBytes = SHA1.Create().ComputeHash(Guid.NewGuid().ToByteArray());
             secKey = Convert.ToBase64String(keyBytes);
 
-            var header = HeaderBuilder.NewRequest(HttpMethod.GET, "/");
+            var header = HeaderBuilder.NewRequest(HttpMethod.GET, path);
             header.Add("Host", host);
             header.Add("Connection", "Upgrade");
             header.Add("Upgrade", "websocket");

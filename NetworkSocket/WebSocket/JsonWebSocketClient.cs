@@ -45,33 +45,28 @@ namespace NetworkSocket.WebSocket
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         public TimeSpan TimeOut { get; set; }
 
-        /// <summary>
-        /// JsonWebsocket协议客户端
-        /// </summary>
-        public JsonWebSocketClient()
-        {
-            this.Init();
-        }
 
         /// <summary>
-        /// SSL支持的JsonWebsocket协议客户端
+        /// JsonWebsocket客户端
         /// </summary>
-        /// <param name="targetHost">目标主机</param>
+        /// <param name="address">地址 ws://locahost/websocket</param>
         /// <exception cref="ArgumentNullException"></exception>
-        public JsonWebSocketClient(string targetHost)
-            : base(targetHost)
+        /// <exception cref="ArgumentException"></exception>
+        public JsonWebSocketClient(Uri address)
+            : base(address)
         {
             this.Init();
         }
 
         /// <summary>
-        /// SSL支持的JsonWebsocket协议客户端
+        /// SSL支持的JsonWebsocket客户端
         /// </summary>  
-        /// <param name="targetHost">目标主机</param>
+        /// <param name="address">地址 wss://locahost/websocket</param>
         /// <param name="certificateValidationCallback">远程证书验证回调</param>
         /// <exception cref="ArgumentNullException"></exception>
-        public JsonWebSocketClient(string targetHost, RemoteCertificateValidationCallback certificateValidationCallback)
-            : base(targetHost, certificateValidationCallback)
+        /// <exception cref="ArgumentException"></exception>
+        public JsonWebSocketClient(Uri address, RemoteCertificateValidationCallback certificateValidationCallback)
+            : base(address, certificateValidationCallback)
         {
             this.Init();
         }

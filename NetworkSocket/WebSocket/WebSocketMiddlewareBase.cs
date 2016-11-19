@@ -99,7 +99,7 @@ namespace NetworkSocket.WebSocket
                 return null;
             }
 
-            context.StreamReader.Clear(result.PackageLength);
+            context.StreamReader.Clear();
             return result.Request;
         }
 

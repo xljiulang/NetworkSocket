@@ -20,9 +20,9 @@ namespace NetworkSocket.WebSocket
     public class WebSocketClient : TcpClientBase
     {
         /// <summary>
-        /// 握手请求
+        /// 请求地址
         /// </summary>
-        private readonly HandshakeRequest handshake = new HandshakeRequest(TimeSpan.FromSeconds(2));
+        private readonly Uri address;
 
         /// <summary>
         /// ping任务表
@@ -30,31 +30,81 @@ namespace NetworkSocket.WebSocket
         private readonly TaskSetterTable<Guid> pingTable = new TaskSetterTable<Guid>();
 
         /// <summary>
-        /// WebSocket客户端
+        /// 握手请求
         /// </summary>
-        public WebSocketClient()
-        {
-        }
+        private readonly HandshakeRequest handshake = new HandshakeRequest(TimeSpan.FromSeconds(5d));
 
         /// <summary>
-        /// SSL支持的WebSocket客户端
+        /// WebSocket客户端
         /// </summary>
-        /// <param name="targetHost">目标主机</param>
+        /// <param name="address">地址 ws://locahost/websocket</param>
         /// <exception cref="ArgumentNullException"></exception>
-        public WebSocketClient(string targetHost)
-            : base(targetHost)
+        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="SocketException"></exception>
+        public WebSocketClient(Uri address)
+            : base()
         {
+            this.CheckAddress(address, "ws");
+            this.address = address;
         }
 
         /// <summary>
         /// SSL支持的WebSocket客户端
         /// </summary>  
-        /// <param name="targetHost">目标主机</param>
+        /// <param name="address">地址 wss://locahost/websocket</param>
         /// <param name="certificateValidationCallback">远程证书验证回调</param>
         /// <exception cref="ArgumentNullException"></exception>
-        public WebSocketClient(string targetHost, RemoteCertificateValidationCallback certificateValidationCallback)
-            : base(targetHost, certificateValidationCallback)
+        /// <exception cref="ArgumentException"></exception>
+        public WebSocketClient(Uri address, RemoteCertificateValidationCallback certificateValidationCallback)
+            : base(address.Host, certificateValidationCallback)
         {
+            this.CheckAddress(address, "wss");
+            this.address = address;
+        }
+
+        /// <summary>
+        /// 检测地址有效性
+        /// </summary>
+        /// <param name="address">地址 ws://locahost/websocket</param>
+        /// <param name="scheme">scheme</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentException"></exception>
+        private void CheckAddress(Uri address, string scheme)
+        {
+            if (address == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            if (address.IsAbsoluteUri == false)
+            {
+                throw new ArgumentException("address必须为AbsoluteUri");
+            }
+
+            if (string.Equals(address.Scheme, scheme, StringComparison.OrdinalIgnoreCase) == false)
+            {
+                throw new ArgumentException("address的Scheme必须为" + scheme);
+            }
+        }
+
+        /// <summary>
+        /// 连接到对应的Address
+        /// </summary>
+        /// <exception cref="AuthenticationException"></exception>
+        /// <returns></returns>
+        public virtual SocketError Connect()
+        {
+            return this.Connect(this.address.Host, this.address.Port);
+        }
+
+        /// <summary>
+        /// 连接到对应的Address
+        /// </summary>
+        /// <exception cref="AuthenticationException"></exception>
+        /// <returns></returns>
+        public Task<SocketError> ConnectAsync()
+        {
+            return this.ConnectAsync(this.address.Host, this.address.Port);
         }
 
         /// <summary>
@@ -68,7 +118,7 @@ namespace NetworkSocket.WebSocket
             var state = base.Connect(remoteEndPoint);
             if (state == SocketError.Success)
             {
-                state = this.handshake.Execute(this);
+                state = this.handshake.Execute(this, this.address.AbsolutePath);
             }
 
             if (state != SocketError.Success)
@@ -89,7 +139,7 @@ namespace NetworkSocket.WebSocket
             var state = await base.ConnectAsync(remoteEndPoint);
             if (state == SocketError.Success)
             {
-                state = await this.handshake.ExecuteAsync(this);
+                state = await this.handshake.ExecuteAsync(this, this.address.AbsolutePath);
             }
 
             if (state != SocketError.Success)

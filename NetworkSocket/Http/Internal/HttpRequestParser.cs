@@ -125,10 +125,21 @@ namespace NetworkSocket.Http
             // HTTP Method
             reader.Position = 0;
             var methodLength = reader.IndexOf(Space);
-            if (methodLength <= 0 || methodLength > MedthodMaxLength)
+            if (methodLength < 0)
+            {
+                if (reader.Length > MedthodMaxLength)
+                {
+                    return false;
+                }
+                var partMethodName = reader.ReadString(Encoding.ASCII);
+                return MethodNames.Any(item => item.StartsWith(partMethodName, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (methodLength > MedthodMaxLength)
             {
                 return false;
             }
+
             var methodName = reader.ReadString(Encoding.ASCII, methodLength);
             if (MethodNames.Contains(methodName) == false)
             {
