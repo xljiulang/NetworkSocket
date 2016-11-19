@@ -26,7 +26,7 @@ namespace NetworkSocket.Http
         /// <summary>
         /// 获取双换行
         /// </summary>
-        private static readonly byte[] DoubleCrlf = Encoding.ASCII.GetBytes("\r\n\r\n");
+        private static readonly byte[] DoubleCRLF = Encoding.ASCII.GetBytes("\r\n\r\n");
 
         /// <summary>
         /// 请求头键值分隔
@@ -34,9 +34,9 @@ namespace NetworkSocket.Http
         private static readonly byte[] KvSpliter = Encoding.ASCII.GetBytes(": ");
 
         /// <summary>
-        /// http11
+        /// http1.1
         /// </summary>
-        private static readonly byte[] Http11 = Encoding.ASCII.GetBytes("HTTP/1.1");
+        private static readonly byte[] HttpVersion11 = Encoding.ASCII.GetBytes("HTTP/1.1");
 
         /// <summary>
         /// 支持的http方法
@@ -50,30 +50,39 @@ namespace NetworkSocket.Http
 
 
 
+        /// <summary>
+        /// 解析连接请求信息        
+        /// </summary>
+        /// <param name="context">上下文</param>   
+        /// <returns></returns>
+        public static HttpRequestParseResult Parse(IContenxt context)
+        {
+            var result = HttpRequestParser.ParseInternal(context);
+            context.StreamReader.Position = 0;
+            return result;
+        }
 
         /// <summary>
         /// 解析连接请求信息        
         /// </summary>
         /// <param name="context">上下文</param>   
-        /// <exception cref="HttpException"></exception>
         /// <returns></returns>
-        public static HttpRequestParseResult Parse(IContenxt context)
+        private static HttpRequestParseResult ParseInternal(IContenxt context)
         {
             var headerLength = 0;
+            var contentLength = 0;
+            var request = default(HttpRequest);
             var result = new HttpRequestParseResult();
-            context.StreamReader.Position = 0;
 
-            result.IsHttp = HttpRequestParser.IsHttpRequest(context.StreamReader, out headerLength);
-            if (result.IsHttp == false || headerLength <= 0)
+            result.IsHttp = HttpRequestParser.GetRequest(context, out request, out headerLength, out contentLength);
+            if (result.IsHttp == false)
             {
                 return result;
             }
 
-            var contentLength = 0;
-            var request = HttpRequestParser.GetRequest(context, headerLength, out contentLength);
-            if (request == null)
+            if (request == null) // 数据未完整     
             {
-                return result;// 数据未完整                 
+                return result;
             }
 
             switch (request.HttpMethod)
@@ -99,68 +108,69 @@ namespace NetworkSocket.Http
 
 
         /// <summary>
-        /// 是否为http请求协议
-        /// </summary>
-        /// <param name="streamReader">数据读取器</param>
-        /// <param name="headerLength">头数据长度，包括双换行</param>
-        /// <returns></returns>
-        private static bool IsHttpRequest(ISessionStreamReader streamReader, out int headerLength)
-        {
-            headerLength = 0;
-            streamReader.Position = 0;
-
-            var methodLength = streamReader.IndexOf(Space);
-            if (methodLength < 0)
-            {
-                return false;
-            }
-
-            var methodName = streamReader.ReadString(Encoding.ASCII, methodLength);
-            if (HttpRequestParser.MethodNames.Contains(methodName) == false)
-            {
-                return false;
-            }
-
-            var otherLength = streamReader.IndexOf(CRLF);
-            if (otherLength < Http11.Length || streamReader.IndexOf(Http11) < 0)
-            {
-                return false;
-            }
-
-            streamReader.Position += otherLength + CRLF.Length;
-            var kvIndex = streamReader.IndexOf(HttpRequestParser.DoubleCrlf);
-            if (kvIndex < 0)
-            {
-                return false;
-            }
-
-            var lineLength = methodLength + otherLength + CRLF.Length;
-            headerLength = lineLength + kvIndex + DoubleCrlf.Length;
-            return true;
-        }
-
-
-        /// <summary>
         /// 解析http头
         /// 生成请求对象
         /// </summary>
         /// <param name="context">上下文</param>
+        /// <param name="request">请求对象</param>
         /// <param name="headerLength">请求头长度</param>
-        /// <param name="contentLength">内容长度</param>
-        public static HttpRequest GetRequest(IContenxt context, int headerLength, out int contentLength)
+        /// <param name="contentLength">请求内容长度</param>       
+        /// <returns></returns>
+        public static bool GetRequest(IContenxt context, out HttpRequest request, out int headerLength, out int contentLength)
         {
+            request = null;
+            headerLength = 0;
+            contentLength = 0;
             var reader = context.StreamReader;
 
+            // HTTP Method
             reader.Position = 0;
             var methodLength = reader.IndexOf(Space);
-            var httpMethod = HttpRequestParser.CastHttpMethod(reader.ReadString(Encoding.ASCII, methodLength));
+            if (methodLength <= 0 || methodLength > MedthodMaxLength)
+            {
+                return false;
+            }
+            var methodName = reader.ReadString(Encoding.ASCII, methodLength);
+            if (MethodNames.Contains(methodName) == false)
+            {
+                return false;
+            }
+            var httpMethod = (HttpMethod)Enum.Parse(typeof(HttpMethod), methodName, true);
 
+            // HTTP Path
             reader.Position += 1;
-            var pathLenth = reader.IndexOf(Space);
-            var path = reader.ReadString(Encoding.ASCII, pathLenth);
+            var pathLength = reader.IndexOf(Space);
+            if (pathLength < 0)
+            {
+                return false;
+            }
+            var path = reader.ReadString(Encoding.ASCII, pathLength);
+
+
+            // HTTP Version
+            reader.Position += 1;
+            if (reader.StartWith(HttpVersion11) == false)
+            {
+                return false;
+            }
+            reader.Position += HttpVersion11.Length;
+            if (reader.StartWith(CRLF) == false)
+            {
+                return false;
+            }
+
+            // HTTP Second line
+            reader.Position += CRLF.Length;
+            var endIndex = reader.IndexOf(DoubleCRLF);
+            if (endIndex < 0)
+            {
+                return false;
+            }
 
             var httpHeader = new HttpHeader();
-            reader.Position += reader.IndexOf(CRLF) + CRLF.Length;
+            headerLength = reader.Position + endIndex + DoubleCRLF.Length;
+
+
             while (reader.Position < headerLength)
             {
                 var keyLength = reader.IndexOf(KvSpliter);
@@ -168,31 +178,34 @@ namespace NetworkSocket.Http
                 {
                     break;
                 }
+                var key = reader.ReadString(Encoding.ASCII, keyLength);
 
-                var lineLength = reader.IndexOf(CRLF) + CRLF.Length;
-                if (lineLength < CRLF.Length)
+                reader.Position += KvSpliter.Length;
+                var valueLength = reader.IndexOf(CRLF);
+                if (valueLength < 0)
                 {
                     break;
                 }
+                var value = reader.ReadString(Encoding.ASCII, valueLength);
 
-                var key = reader.ReadString(Encoding.ASCII, keyLength);
-                reader.Position += KvSpliter.Length;
-                var value = reader.ReadString(Encoding.ASCII, lineLength - keyLength - KvSpliter.Length - CRLF.Length);
+                if (reader.StartWith(CRLF) == false)
+                {
+                    break;
+                }
                 reader.Position += CRLF.Length;
                 httpHeader.Add(key, value);
             }
 
-            contentLength = 0;
             if (httpMethod != HttpMethod.GET)
             {
                 contentLength = httpHeader.TryGet<int>("Content-Length");
                 if (reader.Length - headerLength < contentLength)
                 {
-                    return null;// 数据未完整  
+                    return true;// 数据未完整  
                 }
             }
 
-            var request = new HttpRequest
+            request = new HttpRequest
             {
                 LocalEndPoint = context.Session.LocalEndPoint,
                 RemoteEndPoint = context.Session.RemoteEndPoint,
@@ -209,24 +222,9 @@ namespace NetworkSocket.Http
             request.Url = new Uri(string.Format("{0}://{1}{2}", scheme, host, path));
             request.Path = request.Url.AbsolutePath;
             request.Query = HttpNameValueCollection.Parse(request.Url.Query.TrimStart('?'));
-            return request;
+            return true;
         }
 
-        /// <summary>
-        /// 转换http方法
-        /// </summary>
-        /// <param name="method">方法字符串</param>
-        /// <exception cref="HttpException"></exception>
-        /// <returns></returns>
-        private static HttpMethod CastHttpMethod(string method)
-        {
-            var httpMethod = HttpMethod.GET;
-            if (Enum.TryParse<HttpMethod>(method, true, out httpMethod))
-            {
-                return httpMethod;
-            }
-            throw new HttpException(501, "不支持的http方法：" + method);
-        }
 
         /// <summary>
         /// 生成Post得到的表单和文件
@@ -288,8 +286,8 @@ namespace NetworkSocket.Http
             streamReader.Position = streamReader.Position + boundaryBytes.Length;
             while (streamReader.Position < maxPosition)
             {
-                var headLength = streamReader.IndexOf(HttpRequestParser.DoubleCrlf) + HttpRequestParser.DoubleCrlf.Length;
-                if (headLength < HttpRequestParser.DoubleCrlf.Length)
+                var headLength = streamReader.IndexOf(HttpRequestParser.DoubleCRLF) + HttpRequestParser.DoubleCRLF.Length;
+                if (headLength < HttpRequestParser.DoubleCRLF.Length)
                 {
                     break;
                 }

@@ -49,30 +49,6 @@ namespace NetworkSocket.Http
             {
                 return defaultValue;
             }
-        }
-
-
-        /// <summary>
-        /// 生成Http头数据
-        /// </summary>
-        /// <param name="keys">键</param>
-        /// <param name="values">值</param>
-        /// <returns></returns>      
-        public static HttpHeader Parse(CaptureCollection keys, CaptureCollection values)
-        {
-            var header = new HttpHeader();
-            if (keys.Count != values.Count)
-            {
-                return header;
-            }
-
-            for (var i = 0; i < keys.Count; i++)
-            {
-                var key = keys[i].Value;
-                var value = values[i].Value;
-                header[key] = value;
-            }
-            return header;
-        }
+        } 
     }
 }

@@ -450,7 +450,7 @@ namespace NetworkSocket.Streams
                 return false;
             }
 
-            fixed (byte* pBytes = &this.Stream.GetBuffer()[0], pBin = &bin[0])
+            fixed (byte* pBytes = &this.Stream.GetBuffer()[this.Position], pBin = &bin[0])
             {
                 return this.StartWith(pBytes, pBin, bin.Length);
             }

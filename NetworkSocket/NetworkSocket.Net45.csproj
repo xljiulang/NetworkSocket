@@ -77,6 +77,7 @@
     <Compile Include="Core\ParameterFilterAttribute.cs" />
     <Compile Include="Http\BodyAttribute.cs" />
     <Compile Include="Http\Internal\ContentType.cs" />
+    <Compile Include="Http\Internal\HttpRequestParser.cs" />
     <Compile Include="Http\Internal\HttpResponseParseResult.cs" />
     <Compile Include="Http\Internal\HttpResponseParser.cs" />
     <Compile Include="Http\QueryAttribute.cs" />
@@ -147,7 +148,6 @@
     <Compile Include="Http\Internal\HttpGlobalFilters.cs" />
     <Compile Include="Http\Internal\HttpActionTable.cs" />
     <Compile Include="Http\Internal\MultipartHead.cs" />
-    <Compile Include="Http\Internal\HttpRequestParser.cs" />
     <Compile Include="Http\Internal\HttpRequestParseResult.cs" />
     <Compile Include="Http\NoneActionAttribute.cs" />
     <Compile Include="Http\Result\ActionResult.cs" />
