@@ -381,52 +381,32 @@ namespace NetworkSocket.Streams
         /// 从Position位置开始查找第一个匹配的值
         /// 返回相对于Position的偏移量
         /// </summary>
-        /// <param name="binary">要匹配的数据</param>
+        /// <param name="bin">要匹配的数据</param>
         /// <returns></returns>
-        public int IndexOf(byte[] binary)
+        public unsafe int IndexOf(byte[] bin)
         {
-            if (binary == null || binary.Length == 0)
+            if (bin == null || bin.Length == 0)
             {
                 return -1;
             }
 
-            if (this.Position + binary.Length > this.Length)
+            if (this.Position + bin.Length > this.Length)
             {
                 return -1;
             }
 
-            var maxPosition = this.Length - binary.Length;
-            for (var p = this.Position; p <= maxPosition; p++)
+            var count = this.Length - bin.Length - this.Position;
+            fixed (byte* pBytes = &this.Stream.GetBuffer()[this.Position], pBin = &bin[0])
             {
-                if (this.SequenceEqual(p, binary) == true)
+                for (var i = 0; i <= count; i++)
                 {
-                    return p - this.Position;
-                }
-            }
-
-            return -1;
-        }
-
-        /// <summary>
-        /// 是否和目标binary相等
-        /// </summary>
-        /// <param name="index">索引</param>
-        /// <param name="binary">要匹配的数据</param>
-        /// <returns></returns>
-        unsafe private bool SequenceEqual(int index, byte[] binary)
-        {
-            fixed (byte* p1 = &this.Stream.GetBuffer()[index], p2 = &binary[0])
-            {
-                for (var i = 0; i < binary.Length; i++)
-                {
-                    if (*(p1 + i) != *(p2 + i))
+                    if (this.StartWith(pBytes + i, pBin, bin.Length) == true)
                     {
-                        return false;
+                        return i;
                     }
                 }
             }
-
-            return true;
+            return -1;
         }
 
 
@@ -437,18 +417,63 @@ namespace NetworkSocket.Streams
         /// <param name="b">要匹配的数据</param>
         public unsafe int IndexOf(byte b)
         {
-            fixed (byte* pBuffer = &this.Stream.GetBuffer()[0])
+            fixed (byte* pBytes = &this.Stream.GetBuffer()[this.Position])
             {
-                for (var i = this.Position; i < this.Length; i++)
+                var length = this.Length - this.Position;
+                for (var i = 0; i < length; i++)
                 {
-                    var value = *(pBuffer + i);
-                    if (value == b)
+                    if (*(pBytes + i) == b)
                     {
-                        return i - this.Position;
+                        return i;
                     }
                 }
             }
             return -1;
+        }
+
+
+        /// <summary>
+        /// 从Position位置开始
+        /// 是否开始包含bin
+        /// </summary>
+        /// <param name="bin">要匹配的数据</param>
+        /// <returns></returns>
+        public unsafe bool StartWith(byte[] bin)
+        {
+            if (bin == null || bin.Length == 0)
+            {
+                return false;
+            }
+
+            if (this.Position + bin.Length > this.Length)
+            {
+                return false;
+            }
+
+            fixed (byte* pBytes = &this.Stream.GetBuffer()[0], pBin = &bin[0])
+            {
+                return this.StartWith(pBytes, pBin, bin.Length);
+            }
+        }
+
+
+        /// <summary>
+        /// 是否开始包含pBin
+        /// </summary>
+        /// <param name="pBytes">数据源</param>
+        /// <param name="pBin">要匹配的数据</param>
+        /// <param name="length">匹配长度</param>
+        /// <returns></returns>
+        private unsafe bool StartWith(byte* pBytes, byte* pBin, int length)
+        {
+            for (var i = 0; i < length; i++)
+            {
+                if (*(pBytes + i) != *(pBin + i))
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
         /// <summary>

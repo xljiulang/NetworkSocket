@@ -180,9 +180,9 @@ namespace NetworkSocket
         /// 从Position位置开始查找第一个匹配的值
         /// 返回相对于Position的偏移量
         /// </summary>
-        /// <param name="binary">要匹配的数据</param>
+        /// <param name="bin">要匹配的数据</param>
         /// <returns></returns>
-        int IndexOf(byte[] binary);
+        int IndexOf(byte[] bin);
 
 
         /// <summary>
@@ -191,5 +191,14 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="b">要匹配的数据</param>
         int IndexOf(byte b);
+
+
+        /// <summary>
+        /// 从Position位置开始
+        /// 是否开始包含bin
+        /// </summary>
+        /// <param name="bin">要匹配的数据</param>
+        /// <returns></returns>
+        bool StartWith(byte[] bin);
     }
 }
