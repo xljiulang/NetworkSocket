@@ -6,7 +6,6 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Net;
 using System.Text;
-using System.Text.RegularExpressions;
 
 namespace NetworkSocket.Http
 {
@@ -159,28 +158,20 @@ namespace NetworkSocket.Http
         /// <returns></returns>
         public bool IsRawJsonRequest(out Encoding charset)
         {
+            charset = null;
             if (this.HttpMethod == HttpMethod.GET)
             {
-                charset = null;
                 return false;
             }
 
             var contentType = new ContentType(this);
             if (contentType.IsMatch("application/json") == false)
             {
-                charset = null;
                 return false;
             }
 
-            string encoding;
-            if (contentType.TryGetExtend("chartset", out encoding))
-            {
-                charset = Encoding.GetEncoding(encoding);
-            }
-            else
-            {
-                charset = Encoding.UTF8;
-            }
+            var encoding = contentType.TryGetExtend("chartset", "utf-8");
+            charset = Encoding.GetEncoding(encoding);
             return true;
         }
 
@@ -191,16 +182,15 @@ namespace NetworkSocket.Http
         /// <returns></returns>
         public bool IsMultipartFormRequest(out string boundary)
         {
+            boundary = null;
             if (this.HttpMethod == HttpMethod.GET)
             {
-                boundary = null;
                 return false;
             }
 
             var contentType = new ContentType(this);
             if (contentType.IsMatch("multipart/form-data") == false)
             {
-                boundary = null;
                 return false;
             }
             return contentType.TryGetExtend("boundary", out boundary);

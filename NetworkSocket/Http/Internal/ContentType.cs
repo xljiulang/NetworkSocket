@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace NetworkSocket.Http
@@ -35,9 +34,15 @@ namespace NetworkSocket.Http
             {
                 if (string.IsNullOrEmpty(this.content))
                 {
-                    return this.content;
+                    return string.Empty;
                 }
-                return Regex.Match(this.content, @"^.+?(?=;|$)").Value.Trim();
+
+                var length = this.content.IndexOf(';');
+                if (length < 0)
+                {
+                    return content;
+                }
+                return content.Substring(0, length);
             }
         }
 
@@ -49,13 +54,14 @@ namespace NetworkSocket.Http
         /// <returns></returns>
         public bool IsMatch(string value, bool ignoreCase = true)
         {
-            if (this.content == null)
+            if (ignoreCase == true)
             {
-                return false;
+                return string.Equals(this.Value, value, StringComparison.OrdinalIgnoreCase);
             }
-
-            var option = ignoreCase ? RegexOptions.IgnoreCase : RegexOptions.None;
-            return Regex.IsMatch(this.content, string.Format(@"^{0}(?=;|$)", value), option);
+            else
+            {
+                return this.Value == null;
+            }
         }
 
         /// <summary>
@@ -63,12 +69,57 @@ namespace NetworkSocket.Http
         /// </summary>
         /// <param name="key">键</param>
         /// <param name="value">值</param>
+        /// <exception cref="ArgumentNullException"></exception>
         /// <returns></returns>
         public bool TryGetExtend(string key, out string value)
         {
-            var match = Regex.Match(this.content, string.Format(@"(?<={0}=).+?(?=;|$)", key), RegexOptions.IgnoreCase);
-            value = match.Value;
-            return match.Success;
+            if (string.IsNullOrEmpty(key))
+            {
+                throw new ArgumentNullException();
+            }
+
+            value = null;
+            key = key + "=";
+            var keyIndex = this.content.IndexOf(key, StringComparison.OrdinalIgnoreCase);
+            if (keyIndex < 0)
+            {
+                return false;
+            }
+
+            var valueIndex = keyIndex + key.Length;
+            if (valueIndex >= this.content.Length)
+            {
+                return false;
+            }
+
+            var length = this.content.IndexOf(';', valueIndex) - valueIndex;
+            if (length < 0)
+            {
+                length = this.content.Length - valueIndex;
+            }
+            value = this.content.Substring(valueIndex, length);
+            return true;
+        }
+
+        /// <summary>
+        /// 获取额外内容
+        /// 如果获取失败则返回默认值 
+        /// </summary>
+        /// <param name="key">键</param>
+        /// <param name="defaultValue">默认值 </param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <returns></returns>
+        public string TryGetExtend(string key, string defaultValue)
+        {
+            string value = null;
+            if (this.TryGetExtend(key, out value))
+            {
+                return value;
+            }
+            else
+            {
+                return defaultValue;
+            }
         }
     }
 }

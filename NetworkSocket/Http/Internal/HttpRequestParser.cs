@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 
 namespace NetworkSocket.Http
 {
@@ -261,7 +260,7 @@ namespace NetworkSocket.Http
         /// <summary>
         /// 生成一般表单的Form
         /// </summary>
-        /// <param name="request"></param>
+        /// <param name="request">请求对象</param>
         private static void GenerateApplicationForm(HttpRequest request)
         {
             var body = Encoding.UTF8.GetString(request.Body);
@@ -286,8 +285,8 @@ namespace NetworkSocket.Http
             streamReader.Position = streamReader.Position + boundaryBytes.Length;
             while (streamReader.Position < maxPosition)
             {
-                var headLength = streamReader.IndexOf(HttpRequestParser.DoubleCRLF) + HttpRequestParser.DoubleCRLF.Length;
-                if (headLength < HttpRequestParser.DoubleCRLF.Length)
+                var headLength = streamReader.IndexOf(DoubleCRLF) + DoubleCRLF.Length;
+                if (headLength < DoubleCRLF.Length)
                 {
                     break;
                 }
@@ -299,11 +298,13 @@ namespace NetworkSocket.Http
                     break;
                 }
 
+                string fileName = null;
                 var mHead = new MultipartHead(head);
-                if (mHead.IsFile == true)
+
+                if (mHead.TryGetFileName(out fileName) == true)
                 {
                     var bytes = streamReader.ReadArray(bodyLength);
-                    var file = new HttpFile(mHead, bytes);
+                    var file = new HttpFile(mHead.Name, fileName, bytes);
                     files.Add(file);
                 }
                 else

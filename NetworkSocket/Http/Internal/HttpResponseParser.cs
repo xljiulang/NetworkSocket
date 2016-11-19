@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace NetworkSocket.Http
@@ -25,7 +24,7 @@ namespace NetworkSocket.Http
         /// <summary>
         /// 获取双换行
         /// </summary>
-        private static readonly byte[] DoubleCrlf = Encoding.ASCII.GetBytes("\r\n\r\n");
+        private static readonly byte[] DoubleCRLF = Encoding.ASCII.GetBytes("\r\n\r\n");
 
         /// <summary>
         /// 请求头键值分隔
@@ -35,7 +34,7 @@ namespace NetworkSocket.Http
         /// <summary>
         /// http11
         /// </summary>
-        private static readonly byte[] Http11 = Encoding.ASCII.GetBytes("HTTP/1.1");
+        private static readonly byte[] HttpVersion11 = Encoding.ASCII.GetBytes("HTTP/1.1");
 
         /// <summary>
         /// 解析回复头信息        
@@ -47,28 +46,36 @@ namespace NetworkSocket.Http
             var result = new HttpResponseParseResult();
             streamReader.Position = 0;
 
-            if (streamReader.IndexOf(Http11) != 0)
+            if (streamReader.StartWith(HttpVersion11) == false)
             {
                 return result;
             }
 
-            var index = streamReader.IndexOf(DoubleCrlf);
-            if (index < 0)
+            var endIndex = streamReader.IndexOf(DoubleCRLF);
+            if (endIndex < 0)
             {
                 return result;
             }
 
-            streamReader.Position += streamReader.IndexOf(Space) + 1;
+            streamReader.Position += HttpVersion11.Length + 1;
             var statusLength = streamReader.IndexOf(Space);
+            if (statusLength < 0)
+            {
+                return result;
+            }
             var status = streamReader.ReadString(Encoding.ASCII, statusLength);
 
             streamReader.Position += 1;
             var descriptionLenth = streamReader.IndexOf(CRLF);
+            if (descriptionLenth < 0)
+            {
+                return result;
+            }
             var description = streamReader.ReadString(Encoding.ASCII, descriptionLenth);
 
             streamReader.Position += CRLF.Length;
             var httpHeader = new HttpHeader();
-            var headerLength = index + DoubleCrlf.Length;
+            var headerLength = endIndex + DoubleCRLF.Length;
             while (streamReader.Position < headerLength)
             {
                 var keyLength = streamReader.IndexOf(KvSpliter);
@@ -76,16 +83,20 @@ namespace NetworkSocket.Http
                 {
                     break;
                 }
+                var key = streamReader.ReadString(Encoding.ASCII, keyLength);
 
-                var lineLength = streamReader.IndexOf(CRLF) + CRLF.Length;
-                if (lineLength < CRLF.Length)
+                streamReader.Position += KvSpliter.Length;
+                var valueLength = streamReader.IndexOf(CRLF);
+                if (valueLength < 0)
                 {
                     break;
                 }
+                var value = streamReader.ReadString(Encoding.ASCII, valueLength);
 
-                var key = streamReader.ReadString(Encoding.ASCII, keyLength);
-                streamReader.Position += KvSpliter.Length;
-                var value = streamReader.ReadString(Encoding.ASCII, lineLength - keyLength - KvSpliter.Length - CRLF.Length);
+                if (streamReader.StartWith(CRLF) == false)
+                {
+                    break;
+                }
                 streamReader.Position += CRLF.Length;
                 httpHeader.Add(key, value);
             }

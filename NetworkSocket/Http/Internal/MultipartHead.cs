@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 
 namespace NetworkSocket.Http
 {
@@ -12,29 +11,9 @@ namespace NetworkSocket.Http
     internal class MultipartHead
     {
         /// <summary>
-        /// 头数据
+        /// 头数据内容
         /// </summary>
-        private string head;
-
-        /// <summary>
-        /// 表单头
-        /// </summary>
-        /// <param name="head"></param>
-        public MultipartHead(string head)
-        {
-            this.head = head;
-        }
-
-        /// <summary>
-        /// 获取值
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        private string GetValue(string key)
-        {
-            var pattern = string.Format("(?<={0}=\").+?(?=\")", key);
-            return Regex.Match(head, pattern, RegexOptions.IgnoreCase).Value;
-        }
+        private readonly string content;
 
         /// <summary>
         /// 获取名称
@@ -43,30 +22,62 @@ namespace NetworkSocket.Http
         {
             get
             {
-                return this.GetValue("name");
-            }
-        }
-        /// <summary>
-        /// 获取文件名
-        /// </summary>
-        public string FileName
-        {
-            get
-            {
-                return this.GetValue("filename");
+                string value = null;
+                this.TryGet("name", out value);
+                return value;
             }
         }
 
         /// <summary>
-        /// 获取是否为文件
+        /// 表单头
         /// </summary>
-        public bool IsFile
+        /// <param name="content">内容</param>
+        public MultipartHead(string content)
         {
-            get
-            {
-                return Regex.IsMatch(head, "Content-Type", RegexOptions.IgnoreCase);
-            }
+            this.content = content;
         }
+
+        /// <summary>
+        /// 尝试获取文件名
+        /// </summary>
+        /// <param name="fileName">文件名称</param>
+        /// <returns></returns>
+        public bool TryGetFileName(out string fileName)
+        {
+            return this.TryGet("filename", out fileName);
+        }
+
+        /// <summary>
+        /// 获取额外内容
+        /// </summary>
+        /// <param name="key">键</param>
+        /// <param name="value">值</param>
+        /// <returns></returns>
+        private bool TryGet(string key, out string value)
+        {
+            value = null;
+            key = key + "=\"";
+            var keyIndex = this.content.IndexOf(key, StringComparison.OrdinalIgnoreCase);
+            if (keyIndex < 0)
+            {
+                return false;
+            }
+
+            var valueIndex = keyIndex + key.Length;
+            if (valueIndex >= this.content.Length)
+            {
+                return false;
+            }
+
+            var length = this.content.IndexOf('"', valueIndex) - valueIndex;
+            if (length < 0)
+            {
+                length = this.content.Length - valueIndex;
+            }
+            value = this.content.Substring(valueIndex, length);
+            return true;
+        }
+
 
         /// <summary>
         /// 转换为字符串

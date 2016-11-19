@@ -12,17 +12,6 @@ namespace NetworkSocket.Http
     public sealed class HttpFile
     {
         /// <summary>
-        /// http文件
-        /// </summary>
-        /// <param name="head">头内容</param>
-        /// <param name="stream">数据流</param>
-        internal HttpFile(MultipartHead head, byte[] stream)
-        {
-            this.Name = head.Name ;
-            this.FileName = head.FileName ;
-            this.Stream = stream;
-        }
-        /// <summary>
         /// 获取名称
         /// </summary>
         public string Name { get; private set; }
@@ -36,6 +25,19 @@ namespace NetworkSocket.Http
         /// 获取文件数据
         /// </summary>
         public byte[] Stream { get; private set; }
+
+        /// <summary>
+        /// http文件
+        /// </summary>
+        /// <param name="name">名称</param>
+        /// <param name="fileName">文件路径</param>
+        /// <param name="stream">数据流</param>
+        internal HttpFile(string name, string fileName, byte[] stream)
+        {
+            this.Name = name;
+            this.FileName = fileName;
+            this.Stream = stream;
+        }
 
         /// <summary>
         /// 保存到本地文件
