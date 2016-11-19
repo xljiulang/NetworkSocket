@@ -38,7 +38,7 @@ namespace NetworkSocket
         /// </summary>  
         public IocpTcpSession()
         {
-            this.recvArg.Completed += this.RecvCompleted;
+            this.recvArg.Completed += this.EndReceive;
             BufferPool.SetBuffer(this.recvArg);
         }
 
@@ -57,13 +57,13 @@ namespace NetworkSocket
         /// </summary>
         public override void LoopReceive()
         {
-            this.ReceiveAsync();
+            this.BeginReceive();
         }
 
         /// <summary>
         /// 尝试开始接收数据
         /// </summary>
-        private void ReceiveAsync()
+        private void BeginReceive()
         {
             if (this.IsConnected == false)
             {
@@ -74,7 +74,7 @@ namespace NetworkSocket
             {
                 if (this.Socket.ReceiveAsync(this.recvArg) == false)
                 {
-                    this.RecvCompleted(this.Socket, this.recvArg);
+                    this.EndReceive(this.Socket, this.recvArg);
                 }
             }
             catch (Exception)
@@ -88,7 +88,7 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="sender">事件源</param>
         /// <param name="arg">参数</param>
-        private async void RecvCompleted(object sender, SocketAsyncEventArgs arg)
+        private async void EndReceive(object sender, SocketAsyncEventArgs arg)
         {
             if (arg.BytesTransferred == 0 || arg.SocketError != SocketError.Success)
             {
@@ -104,7 +104,7 @@ namespace NetworkSocket
             }
 
             await this.ReceiveAsyncHandler(this);
-            this.ReceiveAsync();
+            this.BeginReceive();
         }
 
         /// <summary>

@@ -109,7 +109,7 @@ namespace NetworkSocket
         {
             if (await this.AuthenticateAsync() == true)
             {
-                this.ReceiveAsync();
+                this.BeginReceive();
             }
         }
 
@@ -138,18 +138,34 @@ namespace NetworkSocket
             }
         }
 
-
         /// <summary>
-        /// 尝试开始接收数据
+        /// 开始接收数据
         /// </summary>
-        private async void ReceiveAsync()
+        private void BeginReceive()
         {
             if (this.IsConnected == false)
             {
                 return;
             }
 
-            var read = await this.ReadAsync().ConfigureAwait(false);
+            try
+            {
+                this.sslStream.BeginRead(this.bufferRange.Array, this.bufferRange.Offset, this.bufferRange.Count, this.EndReceive, null);
+            }
+            catch (Exception)
+            {
+                this.DisconnectHandler(this);
+            }
+        }
+
+
+        /// <summary>
+        /// 接收数据完成后
+        /// </summary>
+        /// <param name="asyncResult">异步结果</param>
+        private async void EndReceive(IAsyncResult asyncResult)
+        {
+            var read = this.GetReceivedLength(asyncResult);
             if (read <= 0)
             {
                 this.DisconnectHandler(this);
@@ -163,26 +179,29 @@ namespace NetworkSocket
                 this.StreamReader.Stream.Seek(0, SeekOrigin.Begin);
             }
 
+            // 重新进行一次接收
             await this.ReceiveAsyncHandler(this);
-            this.ReceiveAsync();
+            this.BeginReceive();
         }
 
+
         /// <summary>
-        /// 返回读取到的数据长度   
-        /// 异常则返回0
+        /// 返回接收到的数据长度
         /// </summary>
+        /// <param name="asyncResult"></param>
         /// <returns></returns>
-        private async Task<int> ReadAsync()
+        private int GetReceivedLength(IAsyncResult asyncResult)
         {
             try
             {
-                return await this.sslStream.ReadAsync(this.bufferRange.Array, this.bufferRange.Offset, this.bufferRange.Count);
+                return this.sslStream.EndRead(asyncResult);
             }
             catch (Exception)
             {
                 return 0;
             }
         }
+
 
         /// <summary>
         /// 同步发送数据
