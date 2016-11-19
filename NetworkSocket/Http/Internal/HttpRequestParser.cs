@@ -73,7 +73,7 @@ namespace NetworkSocket.Http
             var request = default(HttpRequest);
             var result = new HttpRequestParseResult();
 
-            result.IsHttp = HttpRequestParser.GetRequest(context, out request, out headerLength, out contentLength);
+            result.IsHttp = HttpRequestParser.TryGetRequest(context, out request, out headerLength, out contentLength);
             if (result.IsHttp == false)
             {
                 return result;
@@ -107,15 +107,15 @@ namespace NetworkSocket.Http
 
 
         /// <summary>
-        /// 解析http头
-        /// 生成请求对象
+        /// 尝试当作http头解析，生成请求对象
+        /// 如果不是http头则返回false
         /// </summary>
         /// <param name="context">上下文</param>
         /// <param name="request">请求对象</param>
         /// <param name="headerLength">请求头长度</param>
         /// <param name="contentLength">请求内容长度</param>       
         /// <returns></returns>
-        public static bool GetRequest(IContenxt context, out HttpRequest request, out int headerLength, out int contentLength)
+        private static bool TryGetRequest(IContenxt context, out HttpRequest request, out int headerLength, out int contentLength)
         {
             request = null;
             headerLength = 0;
