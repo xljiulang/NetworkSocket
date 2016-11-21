@@ -139,7 +139,26 @@ namespace NetworkSocket
         /// <param name="remoteEndPoint">远程ip和端口</param> 
         /// <exception cref="AuthenticationException"></exception>
         /// <returns></returns>
-        public virtual Task<SocketError> ConnectAsync(EndPoint remoteEndPoint)
+        public virtual async Task<SocketError> ConnectAsync(EndPoint remoteEndPoint)
+        {
+            var error = await this.ConnectInternalAsync(remoteEndPoint);
+            this.OnConnected(error);
+
+            if (error == SocketError.Success)
+            {
+                this.session.SSLAuthenticate();
+                session.StartLoopReceive();
+            }
+            return error;
+        }
+
+        /// <summary>
+        /// 连接到远程终端 
+        /// </summary>
+        /// <param name="remoteEndPoint">远程ip和端口</param> 
+        /// <exception cref="AuthenticationException"></exception>
+        /// <returns></returns>
+        private Task<SocketError> ConnectInternalAsync(EndPoint remoteEndPoint)
         {
             if (remoteEndPoint == null)
             {
@@ -148,7 +167,7 @@ namespace NetworkSocket
 
             if (this.IsConnected == true)
             {
-                return Task.FromResult(SocketError.Success);
+                return Task.FromResult(SocketError.IsConnected);
             }
 
 
@@ -183,9 +202,8 @@ namespace NetworkSocket
 
             if (e.SocketError == SocketError.Success)
             {
-                this.session.Bind(socket);
-                this.session.TrySetKeepAlive(this.KeepAlivePeriod);
-                this.session.LoopReceive();
+                this.session.BindSocket(socket);
+                this.session.SetKeepAlive(this.KeepAlivePeriod);
             }
             else
             {
@@ -196,7 +214,6 @@ namespace NetworkSocket
             e.Dispose();
 
             taskSource.TrySetResult(e.SocketError);
-            this.OnConnected(e.SocketError);
         }
 
 
@@ -232,6 +249,25 @@ namespace NetworkSocket
         /// <returns></returns>
         public virtual SocketError Connect(EndPoint remoteEndPoint)
         {
+            var error = this.ConnectInternal(remoteEndPoint);
+            this.OnConnected(error);
+
+            if (error == SocketError.Success)
+            {
+                this.session.SSLAuthenticate();
+                session.StartLoopReceive();
+            }
+            return error;
+        }
+
+        /// <summary>
+        /// 连接到远程端
+        /// </summary>
+        /// <param name="remoteEndPoint">远程端</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <returns></returns>
+        private SocketError ConnectInternal(EndPoint remoteEndPoint)
+        {
             if (remoteEndPoint == null)
             {
                 throw new ArgumentNullException();
@@ -239,7 +275,7 @@ namespace NetworkSocket
 
             if (this.IsConnected == true)
             {
-                return SocketError.Success;
+                return SocketError.IsConnected;
             }
 
             var addressFamily = AddressFamily.InterNetwork;
@@ -253,16 +289,13 @@ namespace NetworkSocket
                 var socket = new Socket(addressFamily, SocketType.Stream, ProtocolType.Tcp);
                 socket.Connect(remoteEndPoint);
 
-                this.session.Bind(socket);
-                this.session.TrySetKeepAlive(this.KeepAlivePeriod);
-                this.session.LoopReceive();
+                this.session.BindSocket(socket);
+                this.session.SetKeepAlive(this.KeepAlivePeriod);
 
-                this.OnConnected(SocketError.Success);
                 return SocketError.Success;
             }
             catch (SocketException ex)
             {
-                this.OnConnected(ex.SocketErrorCode);
                 return ex.SocketErrorCode;
             }
         }

@@ -19,7 +19,7 @@ namespace NetworkSocket
     /// <summary>
     /// 表示SSL的Tcp会话对象  
     /// </summary>        
-    internal sealed class SslTcpSession : TcpSessionBase
+    internal class SslTcpSession : TcpSessionBase
     {
         /// <summary>
         /// 目标主机
@@ -94,48 +94,36 @@ namespace NetworkSocket
         /// 绑定一个Socket对象
         /// </summary>
         /// <param name="socket">套接字</param>
-        public override void Bind(Socket socket)
+        public override void BindSocket(Socket socket)
         {
             var nsStream = new NetworkStream(socket, false);
             this.sslStream = new SslStream(nsStream, false, this.certificateValidationCallback);
-            base.Bind(socket);
-        }
-
-        /// <summary>
-        /// 开始循环接收数据
-        /// </summary>
-        /// <exception cref="AuthenticationException"></exception>
-        public override async void LoopReceive()
-        {
-            if (await this.AuthenticateAsync() == true)
-            {
-                this.BeginReceive();
-            }
+            base.BindSocket(socket);
         }
 
         /// <summary>
         /// SSL验证
         /// </summary>
-        /// <returns></returns>
-        private async Task<bool> AuthenticateAsync()
+        /// <exception cref="System.Security.Authentication.AuthenticationException"></exception>
+        public override void SSLAuthenticate()
         {
             // SSL客户端
             if (this.certificate == null)
             {
                 this.sslStream.AuthenticateAsClient(this.targetHost);
-                return true;
             }
+            else
+            {
+                this.sslStream.AuthenticateAsServer(this.certificate);
+            }
+        } 
 
-            try
-            {
-                await this.sslStream.AuthenticateAsServerAsync(this.certificate);
-                return true;
-            }
-            catch (Exception)
-            {
-                ((ISession)this).Close();
-                return false;
-            }
+        /// <summary>
+        /// 开始循环接收数据
+        /// </summary>
+        public override void StartLoopReceive()
+        {
+            this.BeginReceive();
         }
 
         /// <summary>
@@ -247,6 +235,19 @@ namespace NetworkSocket
             return buffer.Length;
         }
 
+        /// <summary>
+        /// 关闭会话的发送与接收
+        /// </summary>
+        /// <returns></returns>
+        public override bool Shutdown()
+        {
+            var state = base.Shutdown();
+            if (state == true)
+            {
+                this.sslStream.Dispose();
+            }
+            return state;
+        }
 
         /// <summary>
         /// 释放资源

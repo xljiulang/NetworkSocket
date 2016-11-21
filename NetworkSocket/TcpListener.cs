@@ -207,8 +207,8 @@ namespace NetworkSocket
             this.listenSocket.Listen(backlog);
 
             this.acceptArg = new SocketAsyncEventArgs();
-            this.acceptArg.Completed += (sender, e) => this.AcceptSocketCompleted(e);
-            this.AcceptSocketAsync(this.acceptArg);
+            this.acceptArg.Completed += (sender, e) => this.EndAccept(e);
+            this.BeginAccept(this.acceptArg);
 
             this.LocalEndPoint = localEndPoint;
             this.IsListening = true;
@@ -218,14 +218,14 @@ namespace NetworkSocket
         /// 开始一次接受连接请求操作
         /// </summary>
         /// <param name="arg">接受参数</param>     
-        private void AcceptSocketAsync(SocketAsyncEventArgs arg)
+        private void BeginAccept(SocketAsyncEventArgs arg)
         {
             if (this.listenSocket != null)
             {
                 arg.AcceptSocket = null;
                 if (this.listenSocket.AcceptAsync(arg) == false)
                 {
-                    this.AcceptSocketCompleted(arg);
+                    this.EndAccept(arg);
                 }
             }
         }
@@ -234,20 +234,21 @@ namespace NetworkSocket
         /// 连接请求IO完成
         /// </summary>
         /// <param name="arg">连接参数</param>
-        private void AcceptSocketCompleted(SocketAsyncEventArgs arg)
+        private void EndAccept(SocketAsyncEventArgs arg)
         {
             var socket = arg.AcceptSocket;
             var error = arg.SocketError;
-            this.OnAccept(socket, error);
-            this.AcceptSocketAsync(arg);
+
+            this.ProcessAccept(socket, error);
+            this.BeginAccept(arg);
         }
 
         /// <summary>
-        /// 当接收到Socket连接时
+        /// 处理Socket连接
         /// </summary>
         /// <param name="socket">socket</param>
         /// <param name="socketError">状态</param>
-        private void OnAccept(Socket socket, SocketError socketError)
+        private void ProcessAccept(Socket socket, SocketError socketError)
         {
             if (socketError == SocketError.Success)
             {
@@ -257,6 +258,45 @@ namespace NetworkSocket
             {
                 var exception = new SocketException((int)socketError);
                 this.plugs.ForEach(p => p.OnException(this, exception));
+            }
+        }
+
+        /// <summary>
+        /// 生成一个会话对象
+        /// </summary>
+        /// <param name="socket">要绑定的socket</param>
+        private void BuildSession(Socket socket)
+        {
+            // 创建会话，绑定处理委托
+            var session = this.CreateSession();
+            session.ReceiveAsyncHandler = this.InvokeSessionAsync;
+            session.DisconnectHandler = this.ReuseSession;
+            session.CloseHandler = this.ReuseSession;
+
+            session.BindSocket(socket);
+            session.SetKeepAlive(this.KeepAlivePeriod);
+            this.workSessions.Add(session);
+
+            // 通知插件会话已连接
+            var context = this.CreateContext(session);
+            this.plugs.ForEach(p => p.OnConnected(this, context));
+
+            if (session.IsSecurity == false)
+            {
+                session.StartLoopReceive();
+                return;
+            }
+
+            try
+            {
+                session.SSLAuthenticate();
+                this.plugs.ForEach(p => p.OnSSLAuthenticated(this, context, null));
+                session.StartLoopReceive();
+            }
+            catch (Exception ex)
+            {
+                this.plugs.ForEach(p => p.OnSSLAuthenticated(this, context, ex));
+                this.ReuseSession(session);
             }
         }
 
@@ -297,29 +337,6 @@ namespace NetworkSocket
             };
         }
 
-        /// <summary>
-        /// 生成一个会话对象
-        /// </summary>
-        /// <param name="socket">要绑定的socket</param>
-        private void BuildSession(Socket socket)
-        {
-            // 创建会话，绑定处理委托
-            var session = this.CreateSession();
-            session.ReceiveAsyncHandler = this.InvokeSessionAsync;
-            session.DisconnectHandler = this.ReuseSession;
-            session.CloseHandler = this.ReuseSession;
-
-            session.Bind(socket);
-            session.TrySetKeepAlive(this.KeepAlivePeriod);
-            this.workSessions.Add(session);
-
-            // 开始接收数据
-            session.LoopReceive();
-
-            // 通知已连接
-            var context = this.CreateContext(session);
-            this.plugs.ForEach(p => p.OnConnected(this, context));
-        }
 
         /// <summary>
         /// 执行会话请求处理
@@ -353,6 +370,7 @@ namespace NetworkSocket
                 this.freeSessions.Enqueue(session);
             }
         }
+
 
         #region IDisposable
         /// <summary>

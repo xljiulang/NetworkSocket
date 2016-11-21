@@ -117,7 +117,7 @@ namespace NetworkSocket
         /// 绑定一个Socket对象
         /// </summary>
         /// <param name="socket">套接字</param>
-        public virtual void Bind(Socket socket)
+        public virtual void BindSocket(Socket socket)
         {
             this.Socket = socket;
             this.socketClosed = false;
@@ -132,9 +132,14 @@ namespace NetworkSocket
         }
 
         /// <summary>
+        /// SSL验证        
+        /// </summary>
+        public abstract void SSLAuthenticate();
+
+        /// <summary>
         /// 开始循环接收数据 
         /// </summary>
-        public abstract void LoopReceive();
+        public abstract void StartLoopReceive();
 
         /// <summary>
         /// 同步发送数据
@@ -183,7 +188,7 @@ namespace NetworkSocket
         /// 关闭会话的发送与接收  
         /// </summary>
         /// <returns></returns>
-        public bool Shutdown()
+        public virtual bool Shutdown()
         {
             lock (this.socketRoot)
             {
@@ -236,7 +241,7 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="keepAlivePeriod">时间间隔</param>
         /// <returns></returns>
-        public bool TrySetKeepAlive(TimeSpan keepAlivePeriod)
+        public bool SetKeepAlive(TimeSpan keepAlivePeriod)
         {
             if (keepAlivePeriod == TimeSpan.Zero)
             {

@@ -9,13 +9,15 @@ using System.Threading;
 using System.Diagnostics;
 using System.Collections.Concurrent;
 using NetworkSocket.Util;
+using System.Threading.Tasks;
+using NetworkSocket.Tasks;
 
 namespace NetworkSocket
 {
     /// <summary>
     /// 表示IOCP的Tcp会话对象  
     /// </summary>        
-    internal sealed class IocpTcpSession : TcpSessionBase
+    internal class IocpTcpSession : TcpSessionBase
     {
         /// <summary>
         /// 用于接收的SocketAsyncEventArgs
@@ -46,16 +48,23 @@ namespace NetworkSocket
         /// 绑定一个Socket对象
         /// </summary>
         /// <param name="socket">套接字</param>
-        public override void Bind(Socket socket)
+        public override void BindSocket(Socket socket)
         {
             this.recvArg.SocketError = SocketError.Success;
-            base.Bind(socket);
+            base.BindSocket(socket);
+        }
+
+        /// <summary>
+        /// SSL验证
+        /// </summary>
+        public override void SSLAuthenticate()
+        {
         }
 
         /// <summary>
         /// 开始循环接收数据 
         /// </summary>
-        public override void LoopReceive()
+        public override void StartLoopReceive()
         {
             this.BeginReceive();
         }

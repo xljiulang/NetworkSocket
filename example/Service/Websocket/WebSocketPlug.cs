@@ -17,11 +17,16 @@ namespace Service.Websocket
         {
         }
 
+        public void OnSSLAuthenticated(object sender, IContenxt context, Exception exception)
+        {
+        }
+
         /// <summary>
         /// 会话断开后事件
         /// </summary>
         public void OnDisconnected(object sender, IContenxt context)
         {
+            Console.WriteLine(context.Session .GetHashCode() + " OnDisconnected");
             this.ProcessOfflineNotify(context);
         }
 
