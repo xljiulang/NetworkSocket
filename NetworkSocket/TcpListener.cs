@@ -27,16 +27,10 @@ namespace NetworkSocket
         private SocketAsyncEventArgs acceptArg = new SocketAsyncEventArgs();
 
 
-
         /// <summary>
-        /// 已回收的会话对象
-        /// </summary>        
-        private TcpSessionQueue freeSessions = new TcpSessionQueue();
-
-        /// <summary>
-        /// 所有工作中的会话对象
+        /// 会话管理器
         /// </summary>
-        private TcpSessionCollection workSessions = new TcpSessionCollection();
+        private TcpSessionManager sessionManager = new TcpSessionManager();
 
         /// <summary>
         /// 所有插件
@@ -81,7 +75,7 @@ namespace NetworkSocket
         public TcpListener()
         {
             this.middlewares.AddLast(new DefaultMiddlerware());
-            this.SessionManager = this.workSessions;
+            this.SessionManager = this.sessionManager;
         }
 
         /// <summary>
@@ -268,14 +262,14 @@ namespace NetworkSocket
         private void BuildSession(Socket socket)
         {
             // 创建会话，绑定处理委托
-            var session = this.CreateSession();
+            var session = this.sessionManager.AllocSession(this.Certificate);
             session.ReceiveAsyncHandler = this.InvokeSessionAsync;
             session.DisconnectHandler = this.ReuseSession;
             session.CloseHandler = this.ReuseSession;
 
             session.BindSocket(socket);
             session.SetKeepAlive(this.KeepAlivePeriod);
-            this.workSessions.Add(session);
+            this.sessionManager.UseSession(session);
 
             // 通知插件会话已连接
             var context = this.CreateContext(session);
@@ -297,28 +291,6 @@ namespace NetworkSocket
             {
                 this.plugs.ForEach(p => p.OnSSLAuthenticated(this, context, ex));
                 this.ReuseSession(session);
-            }
-        }
-
-        /// <summary>
-        /// 创建会话对象
-        /// </summary>
-        /// <returns></returns>
-        private TcpSessionBase CreateSession()
-        {
-            var session = this.freeSessions.Dequeue();
-            if (session != null)
-            {
-                return session;
-            }
-
-            if (this.Certificate == null)
-            {
-                return new IocpTcpSession();
-            }
-            else
-            {
-                return new SslTcpSession(this.Certificate);
             }
         }
 
@@ -363,14 +335,12 @@ namespace NetworkSocket
         /// <param name="session">会话对象</param>
         private void ReuseSession(TcpSessionBase session)
         {
-            if (this.workSessions.Remove(session) == true)
+            if (this.sessionManager.FreeSession(session) == true)
             {
                 var context = this.CreateContext(session);
-                this.plugs.ForEach(p => p.OnDisconnected(this, context));
-                this.freeSessions.Enqueue(session);
+                this.plugs.ForEach(p => p.OnDisconnected(this, context));               
             }
         }
-
 
         #region IDisposable
         /// <summary>
@@ -411,8 +381,7 @@ namespace NetworkSocket
             }
 
             this.acceptArg.Dispose();
-            this.workSessions.Dispose();
-            this.freeSessions.Dispose();
+            this.sessionManager.Dispose();
             this.middlewares.Clear();
             this.plugs.Clear();
 
@@ -422,8 +391,7 @@ namespace NetworkSocket
                 this.acceptArg = null;
                 this.middlewares = null;
                 this.plugs = null;
-                this.workSessions = null;
-                this.freeSessions = null;
+                this.sessionManager = null;
 
                 this.LocalEndPoint = null;
                 this.IsListening = false;

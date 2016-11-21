@@ -4,23 +4,29 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
 namespace NetworkSocket
 {
     /// <summary>
-    /// 表示Tcp会话对象集合 
+    /// 表示Tcp会话对象管理器
     /// 线程安全类型
     /// </summary>   
     [DebuggerDisplay("Count = {Count}")]
     [DebuggerTypeProxy(typeof(SessionCollectionDebugView))]
-    internal class TcpSessionCollection : ISessionManager, IEnumerable<TcpSessionBase>, IDisposable
+    internal class TcpSessionManager : ISessionManager, IEnumerable<TcpSessionBase>, IDisposable
     {
         /// <summary>
-        /// 线程安全字典
+        /// 已释放的会话
         /// </summary>
-        private readonly ConcurrentDictionary<Guid, TcpSessionBase> sessions = new ConcurrentDictionary<Guid, TcpSessionBase>();
+        private readonly ConcurrentQueue<TcpSessionBase> freeSessions = new ConcurrentQueue<TcpSessionBase>();
 
+        /// <summary>
+        /// 工作中的会话
+        /// </summary>
+        private readonly ConcurrentDictionary<Guid, TcpSessionBase> workSessions = new ConcurrentDictionary<Guid, TcpSessionBase>();
+        
         /// <summary>
         /// 获取元素数量 
         /// </summary>
@@ -28,36 +34,62 @@ namespace NetworkSocket
         {
             get
             {
-                return this.sessions.Count;
+                return this.workSessions.Count;
             }
         }
 
         /// <summary>
-        /// 添加 
-        /// 如果已包含此元素则不会增加记录
+        /// 申请一个会话
         /// </summary>
-        /// <param name="session">会话</param>
+        /// <param name="cer">服务器证书</param>
         /// <returns></returns>
-        public void Add(TcpSessionBase session)
+        public TcpSessionBase AllocSession(X509Certificate cer)
         {
-            if (session != null)
+            TcpSessionBase session;
+            if (this.freeSessions.TryDequeue(out session) == true)
             {
-                this.sessions.TryAdd(session.ID, session);
+                return session;
+            }
+
+            if (cer == null)
+            {
+                return new IocpTcpSession();
+            }
+            else
+            {
+                return new SslTcpSession(cer);
             }
         }
 
         /// <summary>
-        /// 移除    
+        /// 使用一个会话
         /// </summary>
         /// <param name="session">会话对象</param>
         /// <returns></returns>
-        public bool Remove(TcpSessionBase session)
+        public bool UseSession(TcpSessionBase session)
+        {
+            return this.workSessions.TryAdd(session.ID, session);
+        }
+
+        /// <summary>
+        /// 释放一个会话    
+        /// </summary>
+        /// <param name="session">会话对象</param>
+        /// <returns></returns>
+        public bool FreeSession(TcpSessionBase session)
         {
             if (session == null)
             {
                 return false;
             }
-            return this.sessions.TryRemove(session.ID, out session);
+
+            if (this.workSessions.TryRemove(session.ID, out session) == true)
+            {
+                session.Shutdown();
+                this.freeSessions.Enqueue(session);
+                return true;
+            }
+            return false;
         }
 
         /// <summary>
@@ -86,7 +118,7 @@ namespace NetworkSocket
         /// <returns></returns>
         public IEnumerator<TcpSessionBase> GetEnumerator()
         {
-            return this.sessions.Values.GetEnumerator();
+            return this.workSessions.Values.GetEnumerator();
         }
 
         /// <summary>
@@ -95,8 +127,9 @@ namespace NetworkSocket
         /// <returns></returns>
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return this.GetEnumerator();
+            return this.workSessions.Values.GetEnumerator();
         }
+
 
         /// <summary>
         /// 释放资源
@@ -107,7 +140,13 @@ namespace NetworkSocket
             {
                 item.Dispose();
             }
-            this.sessions.Clear();
+            this.workSessions.Clear();
+
+            TcpSessionBase session;
+            while (this.freeSessions.TryDequeue(out session))
+            {
+                session.Dispose();
+            }
         }
 
 
@@ -119,13 +158,13 @@ namespace NetworkSocket
             /// <summary>
             /// 查看的对象
             /// </summary>
-            private TcpSessionCollection view;
+            private TcpSessionManager view;
 
             /// <summary>
             /// 调试视图
             /// </summary>
             /// <param name="view">查看的对象</param>
-            public SessionCollectionDebugView(TcpSessionCollection view)
+            public SessionCollectionDebugView(TcpSessionManager view)
             {
                 this.view = view;
             }

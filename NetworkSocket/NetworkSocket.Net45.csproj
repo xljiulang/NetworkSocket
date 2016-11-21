@@ -173,8 +173,7 @@
     <Compile Include="Tasks\TaskSetterTable.cs" />
     <Compile Include="Tasks\TaskExtend.cs" />
     <Compile Include="Networking\TcpSessionBase.cs" />
-    <Compile Include="Networking\TcpSessionCollection.cs" />
-    <Compile Include="Networking\TcpSessionQueue.cs" />
+    <Compile Include="Networking\TcpSessionManager.cs" />
     <Compile Include="Networking\SslTcpSession.cs" />
     <Compile Include="ISessionStreamReader.cs" />
     <Compile Include="ISession.cs" />
