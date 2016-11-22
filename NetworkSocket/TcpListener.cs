@@ -26,21 +26,20 @@ namespace NetworkSocket
         /// </summary>
         private SocketAsyncEventArgs acceptArg = new SocketAsyncEventArgs();
 
-
         /// <summary>
         /// 会话管理器
         /// </summary>
         private TcpSessionManager sessionManager = new TcpSessionManager();
 
         /// <summary>
-        /// 所有插件
+        /// 插件管理器
         /// </summary>
-        private List<IPlug> plugs = new List<IPlug>();
+        private PlugManager plugManager = new PlugManager();
 
         /// <summary>
-        /// 所有中间件
+        /// 协议中间件管理器
         /// </summary>
-        private LinkedList<IMiddleware> middlewares = new LinkedList<IMiddleware>();
+        private MiddlewareManager middlewareManager = new MiddlewareManager();
 
 
         /// <summary>
@@ -65,18 +64,12 @@ namespace NetworkSocket
         public X509Certificate Certificate { get; private set; }
 
         /// <summary>
-        /// 获取会话提供者
-        /// </summary>
-        public ISessionManager SessionManager { get; private set; }
-
-        /// <summary>
         /// Tcp监听服务
         /// </summary>
         public TcpListener()
         {
-            this.middlewares.AddLast(new DefaultMiddlerware());
-            this.SessionManager = this.sessionManager;
         }
+
 
         /// <summary>
         /// 使用SSL安全传输
@@ -106,7 +99,7 @@ namespace NetworkSocket
         public TMiddleware Use<TMiddleware>() where TMiddleware : IMiddleware
         {
             var middleware = Activator.CreateInstance<TMiddleware>();
-            this.Use(middleware);
+            this.middlewareManager.Use(middleware);
             return middleware;
         }
 
@@ -117,18 +110,7 @@ namespace NetworkSocket
         /// <exception cref="ArgumentNullException"></exception>
         public void Use(IMiddleware middleware)
         {
-            if (middleware == null)
-            {
-                throw new ArgumentNullException();
-            }
-
-            this.middlewares.AddBefore(this.middlewares.Last, middleware);
-            var node = this.middlewares.First;
-            while (node.Next != null)
-            {
-                node.Value.Next = node.Next.Value;
-                node = node.Next;
-            }
+            this.middlewareManager.Use(middleware);
         }
 
 
@@ -140,7 +122,7 @@ namespace NetworkSocket
         public TPlug UsePlug<TPlug>() where TPlug : IPlug
         {
             var plug = Activator.CreateInstance<TPlug>();
-            this.plugs.Add(plug);
+            this.plugManager.Use(plug);
             return plug;
         }
 
@@ -151,11 +133,7 @@ namespace NetworkSocket
         /// <exception cref="ArgumentNullException"></exception>
         public void UsePlug(IPlug plug)
         {
-            if (plug == null)
-            {
-                throw new ArgumentNullException();
-            }
-            this.plugs.Add(plug);
+            this.plugManager.Use(plug);
         }
 
         /// <summary>
@@ -246,12 +224,13 @@ namespace NetworkSocket
         {
             if (socketError == SocketError.Success)
             {
-                this.BuildSession(socket);
+                var session = this.GenerateSession(socket);
+                this.StartLoopReceive(session);
             }
             else
             {
                 var exception = new SocketException((int)socketError);
-                this.plugs.ForEach(p => p.OnException(this, exception));
+                this.plugManager.RaiseException(this, exception);
             }
         }
 
@@ -259,7 +238,8 @@ namespace NetworkSocket
         /// 生成一个会话对象
         /// </summary>
         /// <param name="socket">要绑定的socket</param>
-        private void BuildSession(Socket socket)
+        /// <returns></returns>
+        private TcpSessionBase GenerateSession(Socket socket)
         {
             // 创建会话，绑定处理委托
             var session = this.sessionManager.Alloc(this.Certificate);
@@ -270,10 +250,22 @@ namespace NetworkSocket
             session.BindSocket(socket);
             session.SetKeepAlive(this.KeepAlivePeriod);
             this.sessionManager.Add(session);
+            return session;
+        }
 
+
+        /// <summary>
+        /// 启动会话循环接收
+        /// </summary>
+        /// <param name="session">会话</param>
+        private void StartLoopReceive(TcpSessionBase session)
+        {
             // 通知插件会话已连接
             var context = this.CreateContext(session);
-            this.plugs.ForEach(p => p.OnConnected(this, context));
+            if (this.plugManager.RaiseConnected(this, context) == false)
+            {
+                return;
+            }
 
             if (session.IsSecurity == false)
             {
@@ -284,13 +276,50 @@ namespace NetworkSocket
             try
             {
                 session.SSLAuthenticate();
-                this.plugs.ForEach(p => p.OnSSLAuthenticated(this, context, null));
-                session.StartLoopReceive();
+                if (this.plugManager.RaiseSSLAuthenticated(this, context, null))
+                {
+                    session.StartLoopReceive();
+                }
             }
             catch (Exception ex)
             {
-                this.plugs.ForEach(p => p.OnSSLAuthenticated(this, context, ex));
+                this.plugManager.RaiseSSLAuthenticated(this, context, ex);
                 this.ReuseSession(session);
+            }
+        }
+
+        /// <summary>
+        /// 收到请求数据
+        /// </summary>
+        /// <param name="session">会话对象</param>
+        /// <returns></returns>
+        private async Task OnRequestAsync(TcpSessionBase session)
+        {
+            try
+            {
+                var context = this.CreateContext(session);
+                if (this.plugManager.RaiseRequested(this, context))
+                {
+                    await this.middlewareManager.Invoke(context);
+                }
+            }
+            catch (Exception ex)
+            {
+                this.plugManager.RaiseException(this, ex);
+            }
+        }
+
+        /// <summary>
+        /// 回收复用会话对象
+        /// 关闭会话并通知连接断开
+        /// </summary>
+        /// <param name="session">会话对象</param>
+        private void ReuseSession(TcpSessionBase session)
+        {
+            if (this.sessionManager.Remove(session) == true)
+            {
+                var context = this.CreateContext(session);
+                this.plugManager.RaiseDisconnected(this, context);
             }
         }
 
@@ -305,45 +334,8 @@ namespace NetworkSocket
             {
                 Session = session,
                 StreamReader = session.StreamReader,
-                AllSessions = this.SessionManager
+                AllSessions = this.sessionManager
             };
-        }
-
-
-        /// <summary>
-        /// 收到请求数据
-        /// </summary>
-        /// <param name="session">会话对象</param>
-        /// <returns></returns>
-        private async Task OnRequestAsync(TcpSessionBase session)
-        {
-            try
-            {
-                var context = this.CreateContext(session);
-                this.plugs.ForEach(p => p.OnRequested(this, context));
-                if (context.StreamReader.Length > 0)
-                {
-                    await this.middlewares.First.Value.Invoke(context);
-                }
-            }
-            catch (Exception ex)
-            {
-                this.plugs.ForEach(p => p.OnException(this, ex));
-            }
-        }
-
-        /// <summary>
-        /// 回收复用会话对象
-        /// 关闭会话并通知连接断开
-        /// </summary>
-        /// <param name="session">会话对象</param>
-        private void ReuseSession(TcpSessionBase session)
-        {
-            if (this.sessionManager.Remove(session) == true)
-            {
-                var context = this.CreateContext(session);
-                this.plugs.ForEach(p => p.OnDisconnected(this, context));
-            }
         }
 
         #region IDisposable
@@ -386,15 +378,15 @@ namespace NetworkSocket
 
             this.acceptArg.Dispose();
             this.sessionManager.Dispose();
-            this.middlewares.Clear();
-            this.plugs.Clear();
+            this.plugManager.Clear();
+            this.middlewareManager.Clear();
 
             if (disposing == true)
             {
                 this.listenSocket = null;
                 this.acceptArg = null;
-                this.middlewares = null;
-                this.plugs = null;
+                this.plugManager = null;
+                this.middlewareManager = null;
                 this.sessionManager = null;
 
                 this.LocalEndPoint = null;

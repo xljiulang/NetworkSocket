@@ -10,7 +10,7 @@ namespace NetworkSocket.Plugs
     /// <summary>
     /// 表示空闲会话检测与关闭插件
     /// </summary>
-    public class IdleSessionPlug : PlugBase
+    public class SessionIdlePlug : PlugBase
     {
         /// <summary>
         /// 空闲时间超时检测timer
@@ -27,7 +27,7 @@ namespace NetworkSocket.Plugs
         /// 空闲会话检测与处理插件       
         /// </summary>
         /// <param name="maxIdleTime">最大空闲时间</param>
-        public IdleSessionPlug(TimeSpan maxIdleTime)
+        public SessionIdlePlug(TimeSpan maxIdleTime)
         {
             this.MaxIdleTime = maxIdleTime;
         }

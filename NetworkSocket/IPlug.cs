@@ -43,7 +43,7 @@ namespace NetworkSocket
         void OnDisconnected(object sender, IContenxt context);
 
         /// <summary>
-        /// 服务异常事件
+        /// 服务异常后触发
         /// </summary>
         /// <param name="sender">发生者</param>
         /// <param name="exception">异常</param>
