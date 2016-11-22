@@ -1,4 +1,5 @@
 ﻿using NetworkSocket;
+using NetworkSocket.Plugs;
 using NetworkSocket.WebSocket;
 using System;
 using System.Collections.Generic;
@@ -8,35 +9,15 @@ using System.Threading.Tasks;
 
 namespace Service.Websocket
 {
-    class WebSocketPlug : IPlug
+    class WebSocketPlug : PlugBase
     {
-        /// <summary>
-        /// 会话连接后事件
-        /// </summary>
-        public void OnConnected(object sender, IContenxt context)
-        {
-        }
-
-        public void OnSSLAuthenticated(object sender, IContenxt context, Exception exception)
-        {
-        }
-
         /// <summary>
         /// 会话断开后事件
         /// </summary>
-        public void OnDisconnected(object sender, IContenxt context)
+        protected override void OnDisconnected(object sender, IContenxt context)
         {
-            Console.WriteLine(context.Session .GetHashCode() + " OnDisconnected");
             this.ProcessOfflineNotify(context);
         }
-
-        /// <summary>
-        /// 服务异常事件
-        /// </summary>
-        public void OnException(object sender, Exception exception)
-        {
-        }
-
 
         /// <summary>
         /// 处理离线通知

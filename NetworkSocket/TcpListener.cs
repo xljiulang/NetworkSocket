@@ -262,14 +262,14 @@ namespace NetworkSocket
         private void BuildSession(Socket socket)
         {
             // 创建会话，绑定处理委托
-            var session = this.sessionManager.AllocSession(this.Certificate);
-            session.ReceiveAsyncHandler = this.InvokeSessionAsync;
+            var session = this.sessionManager.Alloc(this.Certificate);
+            session.ReceiveAsyncHandler = this.OnRequestAsync;
             session.DisconnectHandler = this.ReuseSession;
             session.CloseHandler = this.ReuseSession;
 
             session.BindSocket(socket);
             session.SetKeepAlive(this.KeepAlivePeriod);
-            this.sessionManager.UseSession(session);
+            this.sessionManager.Add(session);
 
             // 通知插件会话已连接
             var context = this.CreateContext(session);
@@ -311,16 +311,20 @@ namespace NetworkSocket
 
 
         /// <summary>
-        /// 执行会话请求处理
+        /// 收到请求数据
         /// </summary>
         /// <param name="session">会话对象</param>
         /// <returns></returns>
-        private async Task InvokeSessionAsync(TcpSessionBase session)
+        private async Task OnRequestAsync(TcpSessionBase session)
         {
             try
             {
                 var context = this.CreateContext(session);
-                await this.middlewares.First.Value.Invoke(context);
+                this.plugs.ForEach(p => p.OnRequested(this, context));
+                if (context.StreamReader.Length > 0)
+                {
+                    await this.middlewares.First.Value.Invoke(context);
+                }
             }
             catch (Exception ex)
             {
@@ -335,10 +339,10 @@ namespace NetworkSocket
         /// <param name="session">会话对象</param>
         private void ReuseSession(TcpSessionBase session)
         {
-            if (this.sessionManager.FreeSession(session) == true)
+            if (this.sessionManager.Remove(session) == true)
             {
                 var context = this.CreateContext(session);
-                this.plugs.ForEach(p => p.OnDisconnected(this, context));               
+                this.plugs.ForEach(p => p.OnDisconnected(this, context));
             }
         }
 

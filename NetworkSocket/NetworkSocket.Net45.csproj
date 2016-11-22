@@ -85,6 +85,8 @@
     <Compile Include="Http\RouteData.cs" />
     <Compile Include="Http\RouteDataCollection.cs" />
     <Compile Include="IPlug.cs" />
+    <Compile Include="Plugs\IdleSessionPlug.cs" />
+    <Compile Include="Plugs\PlugBase.cs" />
     <Compile Include="Streams\SessionStream.cs" />
     <Compile Include="Tasks\Dispatcher.cs" />
     <Compile Include="Core\Internal\DefaultDependencyResolver.cs" />

@@ -43,7 +43,7 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="cer">服务器证书</param>
         /// <returns></returns>
-        public TcpSessionBase AllocSession(X509Certificate cer)
+        public TcpSessionBase Alloc(X509Certificate cer)
         {
             TcpSessionBase session;
             if (this.freeSessions.TryDequeue(out session) == true)
@@ -62,21 +62,21 @@ namespace NetworkSocket
         }
 
         /// <summary>
-        /// 使用一个会话
+        /// 添加一个会话
         /// </summary>
         /// <param name="session">会话对象</param>
         /// <returns></returns>
-        public bool UseSession(TcpSessionBase session)
+        public bool Add(TcpSessionBase session)
         {
             return this.workSessions.TryAdd(session.ID, session);
         }
 
         /// <summary>
-        /// 释放一个会话    
+        /// 移除一个会话    
         /// </summary>
         /// <param name="session">会话对象</param>
         /// <returns></returns>
-        public bool FreeSession(TcpSessionBase session)
+        public bool Remove(TcpSessionBase session)
         {
             if (session == null)
             {

@@ -1,0 +1,115 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace NetworkSocket.Plugs
+{
+    /// <summary>
+    /// 表示空闲会话检测与关闭插件
+    /// </summary>
+    public class IdleSessionPlug : PlugBase
+    {
+        /// <summary>
+        /// 空闲时间超时检测timer
+        /// </summary>
+        private static readonly string IdleTimer = "IdleTimer";
+
+        /// <summary>
+        /// 获取最大空闲时间
+        /// </summary>
+        protected TimeSpan MaxIdleTime { get; private set; }
+
+
+        /// <summary>
+        /// 空闲会话检测与处理插件       
+        /// </summary>
+        /// <param name="maxIdleTime">最大空闲时间</param>
+        public IdleSessionPlug(TimeSpan maxIdleTime)
+        {
+            this.MaxIdleTime = maxIdleTime;
+        }
+
+        /// <summary>
+        /// 会话连接成功后触发
+        /// </summary>
+        /// <param name="sender">发生者</param>
+        /// <param name="context">上下文</param>
+        protected sealed override void OnConnected(object sender, IContenxt context)
+        {
+            this.ApplyContextIdle(context);
+        }
+
+        /// <summary>
+        /// SSL验证后触发
+        /// 启用了SSL才生效
+        /// </summary>
+        /// <param name="sender">发生者</param>
+        /// <param name="context">上下文</param>
+        /// <param name="exception">验证的异常，如果没有异常则为null</param>
+        protected sealed override void OnSSLAuthenticated(object sender, IContenxt context, Exception exception)
+        {
+            this.ApplyContextIdle(context);
+        }
+
+        /// <summary>
+        /// 收到请求后触发
+        /// 此方法在先于协议中间件的Invoke方法调用
+        /// </summary>
+        /// <param name="sender">发生者</param>
+        /// <param name="context">上下文</param>
+        protected sealed override void OnRequested(object sender, IContenxt context)
+        {
+            this.ApplyContextIdle(context);
+        }
+
+        /// <summary>
+        /// 过滤上下文
+        /// 返回true的上下文将被idle计时检测
+        /// </summary>
+        /// <param name="context">上下文</param>
+        /// <returns></returns>
+        protected virtual bool FilterContext(IContenxt context)
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// idle计时
+        /// </summary>
+        /// <param name="context">上下文</param>
+        private void ApplyContextIdle(IContenxt context)
+        {
+            if (this.FilterContext(context) == false)
+            {
+                return;
+            }
+
+            var session = context.Session;
+            var timer = session.Tag.Get(IdleTimer).Value as Timer;
+            if (timer == null)
+            {
+                timer = new Timer(this.OnIdleTimeout, context, this.MaxIdleTime, Timeout.InfiniteTimeSpan);
+                session.Tag.Set(IdleTimer, timer);
+            }
+            else
+            {
+                timer.Change(this.MaxIdleTime, Timeout.InfiniteTimeSpan);
+            }
+        }
+
+        /// <summary>
+        /// 会话空闲超时后
+        /// </summary>
+        /// <param name="contextState">上下文</param>
+        private void OnIdleTimeout(object contextState)
+        {
+            var context = contextState as IContenxt;
+            context.Session.Tag.Get(IdleTimer).As<Timer>().Dispose();
+            context.Session.Close();
+            context.StreamReader.Clear();
+        }
+    }
+}
