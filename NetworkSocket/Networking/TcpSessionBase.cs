@@ -134,7 +134,9 @@ namespace NetworkSocket
         /// <summary>
         /// SSL验证        
         /// </summary>
-        public abstract void SSLAuthenticate();
+        public virtual void SSLAuthenticate()
+        {
+        }
 
         /// <summary>
         /// 开始循环接收数据 

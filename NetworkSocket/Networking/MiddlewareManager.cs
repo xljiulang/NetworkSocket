@@ -53,13 +53,12 @@ namespace NetworkSocket
             this.middlewares.Clear();
         }
 
-
         /// <summary>
-        /// 执行中间件
+        /// 触发执行中间件
         /// </summary>
         /// <param name="context">上下文</param>
         /// <returns></returns>
-        public Task Invoke(IContenxt context)
+        public Task RaiseInvoke(IContenxt context)
         {
             return this.middlewares.First.Value.Invoke(context);
         }

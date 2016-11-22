@@ -15,13 +15,12 @@ namespace NetworkSocket.Plugs
         /// <summary>
         /// 空闲时间超时检测timer
         /// </summary>
-        private static readonly string IdleTimer = "IdleTimer";
+        private static readonly string IdleTimer = "NetworkSocket.IdleTimer";
 
         /// <summary>
         /// 获取最大空闲时间
         /// </summary>
         protected TimeSpan MaxIdleTime { get; private set; }
-
 
         /// <summary>
         /// 空闲会话检测与处理插件       
@@ -43,13 +42,11 @@ namespace NetworkSocket.Plugs
         }
 
         /// <summary>
-        /// SSL验证后触发
-        /// 启用了SSL才生效
+        /// SSL验证完成后触发
         /// </summary>
         /// <param name="sender">发生者</param>
         /// <param name="context">上下文</param>
-        /// <param name="exception">验证的异常，如果没有异常则为null</param>
-        protected sealed override void OnSSLAuthenticated(object sender, IContenxt context, Exception exception)
+        protected sealed override void OnSSLAuthenticated(object sender, IContenxt context)
         {
             this.ApplyContextIdle(context);
         }

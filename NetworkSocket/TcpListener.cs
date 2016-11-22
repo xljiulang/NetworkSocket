@@ -64,6 +64,17 @@ namespace NetworkSocket
         public X509Certificate Certificate { get; private set; }
 
         /// <summary>
+        /// 获取会话提供者
+        /// </summary>
+        public ISessionManager SessionManager
+        {
+            get
+            {
+                return this.sessionManager;
+            }
+        }
+
+        /// <summary>
         /// Tcp监听服务
         /// </summary>
         public TcpListener()
@@ -267,23 +278,17 @@ namespace NetworkSocket
                 return;
             }
 
-            if (session.IsSecurity == false)
-            {
-                session.StartLoopReceive();
-                return;
-            }
-
             try
             {
                 session.SSLAuthenticate();
-                if (this.plugManager.RaiseSSLAuthenticated(this, context, null))
+                if (this.plugManager.RaiseAuthenticated(this, context))
                 {
                     session.StartLoopReceive();
                 }
             }
             catch (Exception ex)
             {
-                this.plugManager.RaiseSSLAuthenticated(this, context, ex);
+                this.plugManager.RaiseException(this, ex);
                 this.ReuseSession(session);
             }
         }
@@ -300,7 +305,7 @@ namespace NetworkSocket
                 var context = this.CreateContext(session);
                 if (this.plugManager.RaiseRequested(this, context))
                 {
-                    await this.middlewareManager.Invoke(context);
+                    await this.middlewareManager.RaiseInvoke(context);
                 }
             }
             catch (Exception ex)

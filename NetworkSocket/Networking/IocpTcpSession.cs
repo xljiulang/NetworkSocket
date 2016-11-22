@@ -55,13 +55,6 @@ namespace NetworkSocket
         }
 
         /// <summary>
-        /// SSL验证
-        /// </summary>
-        public override void SSLAuthenticate()
-        {
-        }
-
-        /// <summary>
         /// 开始循环接收数据 
         /// </summary>
         public override void StartLoopReceive()

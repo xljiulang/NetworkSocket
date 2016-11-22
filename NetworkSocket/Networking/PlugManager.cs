@@ -59,13 +59,11 @@ namespace NetworkSocket
 
         /// <summary>
         /// SSL验证后触发
-        /// 启用了SSL才生效
         /// </summary>
         /// <param name="sender">发生者</param>
         /// <param name="context">上下文</param>
-        /// <param name="exception">验证的异常，如果没有异常则为null</param>
         /// <returns></returns>
-        public bool RaiseSSLAuthenticated(object sender, IContenxt context, Exception exception)
+        public bool RaiseAuthenticated(object sender, IContenxt context)
         {
             foreach (var item in this.plugs)
             {
@@ -73,7 +71,7 @@ namespace NetworkSocket
                 {
                     return false;
                 }
-                item.OnSSLAuthenticated(sender, context, exception);
+                item.OnAuthenticated(sender, context);
             }
             return true;
         }

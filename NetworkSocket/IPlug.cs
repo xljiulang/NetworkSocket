@@ -19,13 +19,12 @@ namespace NetworkSocket
         void OnConnected(object sender, IContenxt context);
 
         /// <summary>
-        /// SSL验证后触发
-        /// 启用了SSL才生效
+        /// SSL验证完成后触发
+        /// 如果起用了SSL，验证通过后才可以往客户端发送数据
         /// </summary>
         /// <param name="sender">发生者</param>
         /// <param name="context">上下文</param>
-        /// <param name="exception">验证的异常，如果没有异常则为null</param>
-        void OnSSLAuthenticated(object sender, IContenxt context, Exception exception);
+        void OnAuthenticated(object sender, IContenxt context);
 
         /// <summary>
         /// 收到请求后触发
