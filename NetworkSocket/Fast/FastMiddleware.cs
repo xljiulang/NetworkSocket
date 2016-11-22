@@ -136,6 +136,8 @@ namespace NetworkSocket.Fast
             // 数据未完整
             if (fastPacket == null)
             {
+                var wrapper = new FastSession(context.Session, this);
+                context.Session.SetProtocolWrapper(Protocol.Fast, wrapper);
                 return TaskExtend.CompletedTask;
             }
 

@@ -13,6 +13,12 @@ namespace NetworkSocket
     internal class DefaultMiddlerware : IMiddleware
     {
         /// <summary>
+        /// 数据包长度超过这个值 且还无法解析出协议的连接
+        /// 将要被关闭
+        /// </summary>
+        private readonly static int MaxProtocolLength = 4096;
+
+        /// <summary>
         /// 下一个中间件
         /// </summary>
         public IMiddleware Next { set; private get; }
@@ -24,8 +30,14 @@ namespace NetworkSocket
         /// <returns></returns>
         public Task Invoke(IContenxt context)
         {
-            context.StreamReader.Clear();
-            context.Session.Close();
+            if (context.Session.Protocol == Protocol.None)
+            {
+                if (context.StreamReader.Length > MaxProtocolLength)
+                {
+                    context.StreamReader.Clear();
+                    context.Session.Close();
+                }
+            }
             return TaskExtend.CompletedTask;
         }
     }

@@ -173,32 +173,24 @@ namespace NetworkSocket.Fast
         /// <returns></returns>
         public static bool Parse(ISessionStreamReader streamReader, out FastPacket packet)
         {
-            if (streamReader.Length < 1 || streamReader[0] != FastPacket.Mark)
+            packet = null;
+            const int packetMinSize = 16;
+
+            if (streamReader.Length < packetMinSize || streamReader[0] != FastPacket.Mark)
             {
-                packet = null;
                 return false;
             }
 
-            if (streamReader.Length < 5)
-            {
-                packet = null;
-                return true;
-            }
-
             streamReader.Position = 1;
-            const int packetMinSize = 16;
             var totalBytes = streamReader.ReadInt32();
-
             if (totalBytes < packetMinSize)
             {
-                packet = null;
                 return false;
             }
 
             // 数据包未接收完整
             if (streamReader.Length < totalBytes)
             {
-                packet = null;
                 return true;
             }
 
@@ -206,7 +198,6 @@ namespace NetworkSocket.Fast
             var apiNameLength = streamReader.ReadByte();
             if (totalBytes < apiNameLength + packetMinSize)
             {
-                packet = null;
                 return false;
             }
 

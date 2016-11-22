@@ -76,6 +76,7 @@ namespace NetworkSocket.Http
             // 数据未完整
             if (result.Request == null)
             {
+                context.Session.SetProtocolWrapper(Protocol.Http, null);
                 return TaskExtend.CompletedTask;
             }
 
@@ -85,11 +86,9 @@ namespace NetworkSocket.Http
                 return this.Next.Invoke(context);
             }
 
+            context.StreamReader.Position = 0;
             context.StreamReader.Clear(result.PackageLength);
-            if (context.Session.Protocol == Protocol.None)
-            {
-                context.Session.SetProtocolWrapper(Protocol.Http, null);
-            }
+            context.Session.SetProtocolWrapper(Protocol.Http, null);
 
             var response = new HttpResponse(context.Session);
             var requestContext = new RequestContext(result.Request, response);
