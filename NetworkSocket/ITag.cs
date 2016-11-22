@@ -30,6 +30,16 @@ namespace NetworkSocket
         TagItem Get(string key);
 
         /// <summary>
+        /// 获取值
+        /// 如果指定的键存在则返回键的值
+        /// 如果指定的键不存在，则将添加并返回valueFactory的值
+        /// </summary>
+        /// <param name="key">键</param>
+        /// <param name="valueFactory">值</param>
+        /// <returns></returns>
+        TagItem Get(string key, Func<object> valueFactory);
+
+        /// <summary>
         /// 删除键
         /// </summary>
         /// <param name="key">键</param>

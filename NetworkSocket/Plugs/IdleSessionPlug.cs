@@ -87,18 +87,12 @@ namespace NetworkSocket.Plugs
                 return;
             }
 
-            var session = context.Session;
-            var timer = session.Tag.Get(IdleTimer).Value as Timer;
-            if (timer == null)
-            {
-                timer = new Timer(this.OnIdleTimeout, context, this.MaxIdleTime, Timeout.InfiniteTimeSpan);
-                session.Tag.Set(IdleTimer, timer);
-            }
-            else
-            {
-                timer.Change(this.MaxIdleTime, Timeout.InfiniteTimeSpan);
-            }
+            context.Session.Tag
+                .Get(IdleTimer, () => new Timer(this.OnIdleTimeout, context, Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan))
+                .As<Timer>()
+                .Change(this.MaxIdleTime, Timeout.InfiniteTimeSpan);
         }
+
 
         /// <summary>
         /// 会话空闲超时后
