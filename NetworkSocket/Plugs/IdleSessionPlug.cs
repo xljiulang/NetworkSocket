@@ -66,6 +66,24 @@ namespace NetworkSocket.Plugs
         }
 
         /// <summary>
+        /// 会话断开后触发
+        /// </summary>
+        /// <param name="sender">发生者</param>
+        /// <param name="context">上下文</param>
+        protected sealed override void OnDisconnected(object sender, IContenxt context)
+        {
+        }
+
+        /// <summary>
+        /// 服务异常事件
+        /// </summary>
+        /// <param name="sender">发生者</param>
+        /// <param name="exception">异常</param>
+        protected sealed override void OnException(object sender, Exception exception)
+        {
+        }
+
+        /// <summary>
         /// 过滤上下文
         /// 返回true的上下文将被idle计时检测
         /// </summary>
@@ -76,23 +94,21 @@ namespace NetworkSocket.Plugs
             return true;
         }
 
+
         /// <summary>
         /// idle计时
         /// </summary>
         /// <param name="context">上下文</param>
         private void ApplyContextIdle(IContenxt context)
         {
-            if (this.FilterContext(context) == false)
+            if (this.FilterContext(context) == true)
             {
-                return;
+                context.Session.Tag
+                    .Get(IdleTimer, () => new Timer(this.OnIdleTimeout, context, Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan))
+                    .As<Timer>()
+                    .Change(this.MaxIdleTime, Timeout.InfiniteTimeSpan);
             }
-
-            context.Session.Tag
-                .Get(IdleTimer, () => new Timer(this.OnIdleTimeout, context, Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan))
-                .As<Timer>()
-                .Change(this.MaxIdleTime, Timeout.InfiniteTimeSpan);
         }
-
 
         /// <summary>
         /// 会话空闲超时后
