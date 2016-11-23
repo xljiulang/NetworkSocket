@@ -1,4 +1,5 @@
 ﻿using NetworkSocket.Streams;
+using NetworkSocket.Tasks;
 using NetworkSocket.Util;
 using System;
 using System.Collections;
@@ -134,8 +135,18 @@ namespace NetworkSocket
         /// <summary>
         /// SSL验证        
         /// </summary>
-        public virtual void SSLAuthenticate()
+        public virtual void Authenticate()
         {
+        }
+
+
+        /// <summary>
+        /// 异步SSL验证    
+        /// </summary>
+        /// <returns></returns>
+        public virtual Task AuthenticateAsync()
+        {
+            return TaskExtend.CompletedTask;
         }
 
         /// <summary>

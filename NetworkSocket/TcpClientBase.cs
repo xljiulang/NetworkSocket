@@ -115,7 +115,7 @@ namespace NetworkSocket
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        /// <exception cref="SocketException"></exception>
+        /// <exception cref="AuthenticationException"></exception>
         /// <returns></returns>
         public Task<SocketError> ConnectAsync(string host, int port)
         {
@@ -127,6 +127,7 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="ip">远程ip</param>
         /// <param name="port">远程端口</param>
+        /// <exception cref="AuthenticationException"></exception>
         /// <returns></returns>
         public Task<SocketError> ConnectAsync(IPAddress ip, int port)
         {
@@ -142,13 +143,13 @@ namespace NetworkSocket
         public virtual async Task<SocketError> ConnectAsync(EndPoint remoteEndPoint)
         {
             var error = await this.ConnectInternalAsync(remoteEndPoint);
-            this.OnConnected(error);
-
             if (error == SocketError.Success)
             {
-                this.session.SSLAuthenticate();
+                await this.session.AuthenticateAsync();
                 session.StartLoopReceive();
             }
+
+            this.OnConnected(error);
             return error;
         }
 
@@ -156,7 +157,6 @@ namespace NetworkSocket
         /// 连接到远程终端 
         /// </summary>
         /// <param name="remoteEndPoint">远程ip和端口</param> 
-        /// <exception cref="AuthenticationException"></exception>
         /// <returns></returns>
         private Task<SocketError> ConnectInternalAsync(EndPoint remoteEndPoint)
         {
@@ -223,6 +223,7 @@ namespace NetworkSocket
         /// <param name="host">域名或ip地址</param>
         /// <param name="port">远程端口</param>
         /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="AuthenticationException"></exception>
         /// <returns></returns>
         public SocketError Connect(string host, int port)
         {
@@ -235,6 +236,7 @@ namespace NetworkSocket
         /// <param name="ip">远程ip</param>
         /// <param name="port">远程端口</param>
         /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="AuthenticationException"></exception>
         /// <returns></returns>
         public SocketError Connect(IPAddress ip, int port)
         {
@@ -246,6 +248,7 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="remoteEndPoint">远程端</param>
         /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="AuthenticationException"></exception>
         /// <returns></returns>
         public virtual SocketError Connect(EndPoint remoteEndPoint)
         {
@@ -254,7 +257,7 @@ namespace NetworkSocket
 
             if (error == SocketError.Success)
             {
-                this.session.SSLAuthenticate();
+                this.session.Authenticate();
                 session.StartLoopReceive();
             }
             return error;
@@ -394,6 +397,8 @@ namespace NetworkSocket
             this.session.Dispose();
         }
 
+
+
         /// <summary>
         /// 循环尝试间隔地重连
         /// </summary>
@@ -404,14 +409,31 @@ namespace NetworkSocket
                 return;
             }
 
-            var state = await this.ConnectAsync(this.RemoteEndPoint);
-            if (state == SocketError.Success)
+            var state = await this.TryReConnectAsync().ConfigureAwait(false);
+            if (state == true)
             {
                 return;
             }
 
-            await Task.Delay(this.ReconnectPeriod);
+            await Task.Delay(this.ReconnectPeriod).ConfigureAwait(false);
             this.ReconnectLoopAsync();
+        }
+
+        /// <summary>
+        /// 尝试重连
+        /// </summary>
+        /// <returns></returns>
+        private async Task<bool> TryReConnectAsync()
+        {
+            try
+            {
+                var state = await this.ConnectAsync(this.RemoteEndPoint);
+                return state == SocketError.Success;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
     }
 }

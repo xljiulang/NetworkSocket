@@ -105,7 +105,7 @@ namespace NetworkSocket
         /// SSL验证
         /// </summary>
         /// <exception cref="System.Security.Authentication.AuthenticationException"></exception>
-        public override void SSLAuthenticate()
+        public override void Authenticate()
         {
             // SSL客户端
             if (this.certificate == null)
@@ -116,7 +116,24 @@ namespace NetworkSocket
             {
                 this.sslStream.AuthenticateAsServer(this.certificate);
             }
-        } 
+        }
+
+        /// <summary>
+        /// 异步SSL验证    
+        /// </summary>
+        /// <returns></returns>
+        public override Task AuthenticateAsync()
+        {
+            // SSL客户端
+            if (this.certificate == null)
+            {
+                return this.sslStream.AuthenticateAsClientAsync(this.targetHost);
+            }
+            else
+            {
+                return this.sslStream.AuthenticateAsServerAsync(this.certificate);
+            }
+        }
 
         /// <summary>
         /// 开始循环接收数据

@@ -269,7 +269,7 @@ namespace NetworkSocket
         /// 启动会话循环接收
         /// </summary>
         /// <param name="session">会话</param>
-        private void StartLoopReceive(TcpSessionBase session)
+        private async void StartLoopReceive(TcpSessionBase session)
         {
             // 通知插件会话已连接
             var context = this.CreateContext(session);
@@ -280,7 +280,7 @@ namespace NetworkSocket
 
             try
             {
-                session.SSLAuthenticate();
+                await session.AuthenticateAsync().ConfigureAwait(false);
                 if (this.plugManager.RaiseAuthenticated(this, context))
                 {
                     session.StartLoopReceive();
