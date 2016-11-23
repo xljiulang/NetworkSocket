@@ -253,13 +253,13 @@ namespace NetworkSocket
         public virtual SocketError Connect(EndPoint remoteEndPoint)
         {
             var error = this.ConnectInternal(remoteEndPoint);
-            this.OnConnected(error);
-
             if (error == SocketError.Success)
             {
                 this.session.Authenticate();
                 session.StartLoopReceive();
             }
+
+            this.OnConnected(error);
             return error;
         }
 
