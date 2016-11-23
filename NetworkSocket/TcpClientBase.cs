@@ -158,7 +158,7 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="remoteEndPoint">远程ip和端口</param> 
         /// <returns></returns>
-        private Task<SocketError> ConnectInternalAsync(EndPoint remoteEndPoint)
+        private async Task<SocketError> ConnectInternalAsync(EndPoint remoteEndPoint)
         {
             if (remoteEndPoint == null)
             {
@@ -167,53 +167,28 @@ namespace NetworkSocket
 
             if (this.IsConnected == true)
             {
-                return Task.FromResult(SocketError.IsConnected);
+                return SocketError.IsConnected;
             }
-
 
             var addressFamily = AddressFamily.InterNetwork;
             if (remoteEndPoint.AddressFamily != AddressFamily.Unspecified)
             {
                 addressFamily = remoteEndPoint.AddressFamily;
             }
-
-            var taskSource = new TaskCompletionSource<SocketError>();
             var socket = new Socket(addressFamily, SocketType.Stream, ProtocolType.Tcp);
-            var connectArg = new SocketAsyncEventArgs { RemoteEndPoint = remoteEndPoint, UserToken = taskSource };
-            connectArg.Completed += this.ConnectCompleted;
 
-            if (socket.ConnectAsync(connectArg) == false)
+            try
             {
-                this.ConnectCompleted(socket, connectArg);
-            }
-            return taskSource.Task;
-        }
-
-
-        /// <summary>
-        /// 连接完成事件
-        /// </summary>
-        /// <param name="sender">连接者</param>
-        /// <param name="e">事件参数</param>
-        private void ConnectCompleted(object sender, SocketAsyncEventArgs e)
-        {
-            var socket = sender as Socket;
-            var taskSource = e.UserToken as TaskCompletionSource<SocketError>;
-
-            if (e.SocketError == SocketError.Success)
-            {
+                await Task.Factory.FromAsync(socket.BeginConnect, socket.EndConnect, remoteEndPoint, null);
                 this.session.BindSocket(socket);
                 this.session.SetKeepAlive(this.KeepAlivePeriod);
+                return SocketError.Success;
             }
-            else
+            catch (SocketException ex)
             {
                 socket.Dispose();
+                return ex.SocketErrorCode;
             }
-
-            e.Completed -= this.ConnectCompleted;
-            e.Dispose();
-
-            taskSource.TrySetResult(e.SocketError);
         }
 
 
@@ -286,19 +261,18 @@ namespace NetworkSocket
             {
                 addressFamily = remoteEndPoint.AddressFamily;
             }
+            var socket = new Socket(addressFamily, SocketType.Stream, ProtocolType.Tcp);
 
             try
             {
-                var socket = new Socket(addressFamily, SocketType.Stream, ProtocolType.Tcp);
                 socket.Connect(remoteEndPoint);
-
                 this.session.BindSocket(socket);
                 this.session.SetKeepAlive(this.KeepAlivePeriod);
-
                 return SocketError.Success;
             }
             catch (SocketException ex)
             {
+                socket.Dispose();
                 return ex.SocketErrorCode;
             }
         }
@@ -320,7 +294,7 @@ namespace NetworkSocket
         {
             session.Shutdown();
             this.OnDisconnected();
-            this.ReconnectLoopAsync();
+            this.LoopReconnectAsync();
         }
 
 
@@ -402,28 +376,28 @@ namespace NetworkSocket
         /// <summary>
         /// 循环尝试间隔地重连
         /// </summary>
-        private async void ReconnectLoopAsync()
+        private async void LoopReconnectAsync()
         {
             if (this.ReconnectPeriod <= TimeSpan.Zero)
             {
                 return;
             }
 
-            var state = await this.TryReConnectAsync().ConfigureAwait(false);
+            var state = await this.ReConnectAsync().ConfigureAwait(false);
             if (state == true)
             {
                 return;
             }
 
             await Task.Delay(this.ReconnectPeriod).ConfigureAwait(false);
-            this.ReconnectLoopAsync();
+            this.LoopReconnectAsync();
         }
 
         /// <summary>
         /// 尝试重连
         /// </summary>
         /// <returns></returns>
-        private async Task<bool> TryReConnectAsync()
+        private async Task<bool> ReConnectAsync()
         {
             try
             {
