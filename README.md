@@ -77,7 +77,7 @@ var users = await client.InvokeApi<UserInfo[]>("GetUsers", "admin");
 var about = await client.InvokeApi<string>("About"); // about == "Fast"
 
 // websocket js请求
-var ws = new jsonWebSocket('ws://127.0.0.1:1212/);
+var ws = new jsonWebSocket('ws://127.0.0.1:1212/');
 ws.invokeApi("GetUsers", ['admin'], function (data) {
     alert(data.length == 0)
 });
@@ -86,8 +86,9 @@ ws.invokeApi("About", [], function (data) {
 });
 
 // websocketClient请求
-var client = new JsonWebSocketClient();
-await client.ConnectAsync(IPAddress.Loopback, 1212);
+var address= new Uri("ws://127.0.0.1:1212/)";
+var client = new JsonWebSocketClient(address);
+await client.ConnectAsync();
 var users = await client.InvokeApi<UserInfo[]>("GetUsers", "admin");
 var about = await client.InvokeApi<string>("About"); // about == "WebSocket"
 ```
