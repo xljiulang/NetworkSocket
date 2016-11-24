@@ -91,7 +91,7 @@ namespace NetworkSocket.Http
             {
                 return methodAttribute.Method;
             }
-            return HttpMethod.ALL;
+            return HttpMethod.GET | HttpMethod.POST | HttpMethod.PUT | HttpMethod.DELETE;
         }
 
         /// <summary>

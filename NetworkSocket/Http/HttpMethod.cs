@@ -6,8 +6,7 @@ using System.Text;
 namespace NetworkSocket.Http
 {
     /// <summary>
-    /// 表示请求方式
-    /// 当前只支持Get和Post两种
+    /// 表示请求方式   
     /// </summary>
     [Flags]
     public enum HttpMethod
@@ -31,10 +30,5 @@ namespace NetworkSocket.Http
         /// DELETE
         /// </summary>
         DELETE = 0x8,
-
-        /// <summary>
-        /// 所有方法
-        /// </summary>
-        ALL = GET | POST | PUT | DELETE
     }
 }
