@@ -28,12 +28,15 @@ namespace NetworkSocket.Util.Converts
         /// <returns></returns>
         public object Convert(object value, Type targetType)
         {
-            if (targetType.IsGenericType && targetType.GetGenericTypeDefinition() == typeof(Nullable<>))
+            var underlyingType = Nullable.GetUnderlyingType(targetType);
+            if (underlyingType == null)
             {
-                var genericArgument = targetType.GetGenericArguments().First();
-                return this.Converter.Convert(value, genericArgument);
+                return this.NextConvert.Convert(value, targetType);
             }
-            return this.NextConvert.Convert(value, targetType);
+            else
+            {
+                return this.Converter.Convert(value, underlyingType);
+            }
         }
     }
 }

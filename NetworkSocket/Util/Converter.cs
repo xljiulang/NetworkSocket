@@ -65,6 +65,7 @@ namespace NetworkSocket.Util
                 .AddLast<NullableConvert>()
                 .AddLast<DictionaryConvert>()
                 .AddLast<ArrayConvert>()
+                .AddLast<ListConvert>()
                 .AddLast<DynamicObjectConvert>();
         }
 
