@@ -86,7 +86,7 @@ ws.invokeApi("About", [], function (data) {
 });
 
 // websocketClient请求
-var address= new Uri("ws://127.0.0.1:1212/)";
+var address= new Uri("ws://127.0.0.1:1212/");
 var client = new JsonWebSocketClient(address);
 await client.ConnectAsync();
 var users = await client.InvokeApi<UserInfo[]>("GetUsers", "admin");
