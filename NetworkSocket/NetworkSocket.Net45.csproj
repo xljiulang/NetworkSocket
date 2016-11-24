@@ -89,6 +89,7 @@
     <Compile Include="Networking\PlugManager.cs" />
     <Compile Include="Plugs\SessionIdlePlug.cs" />
     <Compile Include="Plugs\PlugBase.cs" />
+    <Compile Include="Reflection\TypeExtend.cs" />
     <Compile Include="Streams\SessionStream.cs" />
     <Compile Include="Tasks\Dispatcher.cs" />
     <Compile Include="Core\Internal\DefaultDependencyResolver.cs" />

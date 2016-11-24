@@ -154,14 +154,14 @@ namespace NetworkSocket.Http
             var name = parameter.Name;
             var targetType = parameter.Type;
 
-            if (targetType.IsClass == true && targetType.IsArray == false && targetType != typeof(string))
+            if (targetType.IsComplexClass() == true)
             {
-                return this.QueryFormToClass(request, parameter);
+                return this.QueryFormToComplex(request, parameter);
             }
 
             // 转换为数组
             var values = request.GetValues(name);
-            if (targetType.IsArray == true)
+            if (targetType.IsArrayOrList() == true)
             {
                 return Converter.Cast(values, targetType);
             }
@@ -176,14 +176,14 @@ namespace NetworkSocket.Http
         }
 
         /// <summary>
-        /// 表单转换为类
+        /// 表单转换为复杂对象
         /// </summary>
         /// <param name="request">请求数据</param>
         /// <param name="parameter">参数</param>       
         /// <returns></returns>
-        private object QueryFormToClass(HttpRequest request, ApiParameter parameter)
+        private object QueryFormToComplex(HttpRequest request, ApiParameter parameter)
         {
-            var targetType = parameter.Type; 
+            var targetType = parameter.Type;
             var instance = Activator.CreateInstance(targetType);
             var setters = ModelProperty.GetSetProperties(targetType);
             foreach (var setter in setters)
@@ -226,38 +226,9 @@ namespace NetworkSocket.Http
             private static ModelProperty[] GetSetPropertiesNoCached(Type type)
             {
                 return type.GetProperties()
-                    .Where(p => p.CanWrite && ModelProperty.IsSimpleType(p.PropertyType))
+                    .Where(p => p.CanWrite && p.PropertyType.IsSimple())
                     .Select(p => new ModelProperty(p))
                     .ToArray();
-            }
-
-
-            /// <summary>
-            /// 类型是否为所支持的简单类型
-            /// </summary>
-            /// <param name="type">类型</param>
-            /// <returns></returns>
-            private static bool IsSimpleType(Type type)
-            {
-                if (typeof(IConvertible).IsAssignableFrom(type) == true)
-                {
-                    return true;
-                }
-
-                if (typeof(Guid) == type)
-                {
-                    return true;
-                }
-
-                if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
-                {
-                    var argTypes = type.GetGenericArguments();
-                    if (argTypes.Length == 1)
-                    {
-                        return ModelProperty.IsSimpleType(argTypes.First());
-                    }
-                }
-                return false;
             }
 
             /// <summary>
