@@ -199,8 +199,9 @@ namespace NetworkSocket.Http
         /// <summary>
         /// 获取是否为Websocket请求
         /// </summary>
+        /// <param name="version">版本</param>
         /// <returns></returns>
-        public bool IsWebsocketRequest()
+        public bool IsWebsocketRequest(int version = 13)
         {
             if (this.HttpMethod != Http.HttpMethod.GET)
             {
@@ -214,7 +215,7 @@ namespace NetworkSocket.Http
             {
                 return false;
             }
-            if (StringEquals(this.Headers.TryGet<string>("Sec-WebSocket-Version"), "13") == false)
+            if (StringEquals(this.Headers.TryGet<string>("Sec-WebSocket-Version"), version.ToString()) == false)
             {
                 return false;
             }
@@ -246,7 +247,7 @@ namespace NetworkSocket.Http
         public bool IsKeepAlive()
         {
             var connection = this.Headers["Connection"];
-            return StringEquals(connection, "keep-alive");
+            return !StringEquals(connection, "close");
         }
 
         /// <summary>
