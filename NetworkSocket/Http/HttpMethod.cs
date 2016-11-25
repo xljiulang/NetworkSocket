@@ -30,11 +30,6 @@ namespace NetworkSocket.Http
         /// <summary>
         /// DELETE
         /// </summary>
-        DELETE = 0x8,
-
-        /// <summary>
-        /// 所有方法
-        /// </summary>
-        ALL = GET | POST | PUT | DELETE
+        DELETE = 0x8,  
     }
 }
