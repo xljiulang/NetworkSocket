@@ -164,8 +164,8 @@ namespace NetworkSocket.WebSocket
             {
                 var session = (JsonWebSocketSession)context.Session.Wrapper;
                 var requestContenxt = new RequestContext(session, null, context.AllSessions);
-                this.SendRemoteException(requestContenxt, ex);
                 this.OnException(requestContenxt, ex);
+                session.Close(StatusCodes.InvalidFramePayloadData);
                 return null;
             }
         }
@@ -340,9 +340,8 @@ namespace NetworkSocket.WebSocket
                 var packet = context.Packet;
                 packet.state = false;
                 packet.body = exception.Message;
-
-                var packetJson = this.JsonSerializer.Serialize(packet);
-                context.Session.UnWrap().SendText(packetJson);
+                var exceptionJson = this.JsonSerializer.Serialize(packet);
+                context.Session.UnWrap().SendText(exceptionJson);
                 return true;
             }
             catch (Exception)
