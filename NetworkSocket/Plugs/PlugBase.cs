@@ -66,6 +66,7 @@ namespace NetworkSocket.Plugs
         /// 如果关闭了会话，将停止传递给下个插件的OnConnected
         /// </summary>
         /// <param name="sender">发生者</param>
+        /// <param name="context">上下文</param>
         void IPlug.OnConnected(object sender, IContenxt context)
         {
             this.OnConnected(sender, context);
@@ -88,10 +89,7 @@ namespace NetworkSocket.Plugs
         /// <summary>
         /// 收到请求后触发
         /// 如果关闭了会话，将停止传递给下个插件的OnRequested
-        /// </summary>
-        /// <param name="sender">发生者</param>
-        /// <param name="context">上下文</param>
-        /// </summary>
+        /// </summary> 
         /// <param name="sender">发生者</param>
         /// <param name="context">上下文</param>
         void IPlug.OnRequested(object sender, IContenxt context)
