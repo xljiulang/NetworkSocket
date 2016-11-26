@@ -184,7 +184,7 @@ namespace NetworkSocket.Http
         /// <returns></returns>
         private byte[] GenerateResponseHeader(int contentLength, bool gzip)
         {
-            var header = HeaderBuilder.NewResonse(this.Status, this.StatusDescription);
+            var header = HttpHeaderBuilder.Resonse(this.Status, this.StatusDescription);
             if (this.Charset == null)
             {
                 header.Add("Content-Type", this.ContentType);

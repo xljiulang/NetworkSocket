@@ -87,7 +87,7 @@ namespace NetworkSocket.Http
             }
 
             context.StreamReader.Position = 0;
-            context.StreamReader.Clear(result.PackageLength);
+            context.StreamReader.Clear(result.RequestLength);
             context.Session.SetProtocolWrapper(Protocol.Http, null);
 
             var response = new HttpResponse(context.Session);

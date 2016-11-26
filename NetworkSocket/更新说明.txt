@@ -18,7 +18,11 @@
 17、修复http和websocket回复头CRLF的问题，http静态文件路径问题；
 18、删除httpMiddleware处理了websocket握手的耦合；
 
-
-重写SSLSession; 
-增加IPlug接口，删除Events对象;
-新增ApiResult<T>，兼容原有返回值的Task<T>
+1.6.9
+1、增加IPlug接口，删除Events对象，通过插件扩展Listener的功能；
+2、新增ApiResult<T>对象，兼容原有InvokeApi<T>返回值的Task<T>类型，同时可以设置单个请求的超时时间；
+3、网络层Networking与TcpListener做了大量重构，增加MiddlewareManager、PlugManager与SessionManager三个管理器；
+4、客户端TcpClientBase、WebSocketClient、JsonWebSocketClient完善修改；
+5、http解析不再使用正则表达式，增加HeaderBuilder、HttpResponseParser等公开对象；
+6、ITag增加Get方法重载，达到GetOrAdd的效果；
+7、增加ListConvert类型转换单元；

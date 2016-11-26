@@ -164,7 +164,7 @@ namespace NetworkSocket.WebSocket
             var keyBytes = SHA1.Create().ComputeHash(Guid.NewGuid().ToByteArray());
             secKey = Convert.ToBase64String(keyBytes);
 
-            var header = HeaderBuilder.NewRequest(HttpMethod.GET, path);
+            var header = HttpHeaderBuilder.Request(HttpMethod.GET, path);
             header.Add("Host", host);
             header.Add("Connection", "Upgrade");
             header.Add("Upgrade", "websocket");

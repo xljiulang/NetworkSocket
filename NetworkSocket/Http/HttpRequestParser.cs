@@ -8,9 +8,9 @@ using System.Text;
 namespace NetworkSocket.Http
 {
     /// <summary>
-    /// 请求解析器
+    /// 提供Http请求解析
     /// </summary>
-    internal static class HttpRequestParser
+    public static class HttpRequestParser
     {
         /// <summary>
         /// 空格
@@ -50,7 +50,7 @@ namespace NetworkSocket.Http
 
 
         /// <summary>
-        /// 解析连接请求信息        
+        /// 解析Http请求信息        
         /// </summary>
         /// <param name="context">上下文</param>   
         /// <returns></returns>
@@ -101,7 +101,7 @@ namespace NetworkSocket.Http
             }
 
             result.Request = request;
-            result.PackageLength = headerLength + contentLength;
+            result.RequestLength = headerLength + contentLength;
             return result;
         }
 
@@ -299,19 +299,19 @@ namespace NetworkSocket.Http
                 }
 
                 string fileName = null;
-                var mHead = new MultipartHead(head);
+                var partItem = new MultipartItem(head);
 
-                if (mHead.TryGetFileName(out fileName) == true)
+                if (partItem.TryGetFileName(out fileName) == true)
                 {
                     var bytes = streamReader.ReadArray(bodyLength);
-                    var file = new HttpFile(mHead.Name, fileName, bytes);
+                    var file = new HttpFile(partItem.Name, fileName, bytes);
                     files.Add(file);
                 }
                 else
                 {
                     var byes = streamReader.ReadArray(bodyLength);
                     var value = HttpUtility.UrlDecode(byes, Encoding.UTF8);
-                    form.Add(mHead.Name, value);
+                    form.Add(partItem.Name, value);
                 }
                 streamReader.Position = streamReader.Position + boundaryBytes.Length;
             }

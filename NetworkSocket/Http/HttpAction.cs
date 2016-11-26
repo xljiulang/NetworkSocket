@@ -17,6 +17,11 @@ namespace NetworkSocket.Http
     public sealed class HttpAction : ApiAction, ICloneable<HttpAction>
     {
         /// <summary>
+        /// 表示所支持的所有Http方法
+        /// </summary>
+        private static readonly HttpMethod HttpMethod_ALL = (HttpMethod)Enum.GetValues(typeof(HttpMethod)).Cast<int>().Sum();
+
+        /// <summary>
         /// 获取路由映射
         /// </summary>
         public RouteBaseAttribute Route { get; private set; }
@@ -91,7 +96,10 @@ namespace NetworkSocket.Http
             {
                 return methodAttribute.Method;
             }
-            return HttpMethod.GET | HttpMethod.POST | HttpMethod.PUT | HttpMethod.DELETE;
+            else
+            {
+                return HttpMethod_ALL;
+            }
         }
 
         /// <summary>

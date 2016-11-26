@@ -6,9 +6,9 @@ using System.Text;
 namespace NetworkSocket.Http
 {
     /// <summary>
-    /// 表单头
+    /// 表示Multipart表单项
     /// </summary>
-    internal class MultipartHead
+    internal class MultipartItem
     {
         /// <summary>
         /// 头数据内容
@@ -32,7 +32,7 @@ namespace NetworkSocket.Http
         /// 表单头
         /// </summary>
         /// <param name="content">内容</param>
-        public MultipartHead(string content)
+        public MultipartItem(string content)
         {
             this.content = content;
         }

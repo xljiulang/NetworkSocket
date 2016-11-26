@@ -44,7 +44,7 @@ namespace NetworkSocket.WebSocket
         /// <returns></returns>
         public override ArraySegment<byte> ToArraySegment(bool mask)
         {
-            var builder = HeaderBuilder.NewResonse(101, "Switching Protocols");
+            var builder = HttpHeaderBuilder.Resonse(101, "Switching Protocols");
             builder.Add("Upgrade", "websocket");
             builder.Add("Connection", "Upgrade");
             builder.Add("Sec-WebSocket-Accept", this.CreateResponseKey());

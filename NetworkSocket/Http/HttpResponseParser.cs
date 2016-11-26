@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 namespace NetworkSocket.Http
 {
     /// <summary>
-    /// 表示回复解析器
+    /// 提供Http回复头解析
     /// </summary>
-    internal static class HttpResponseParser
+    public static class HttpResponseParser
     {
         /// <summary>
         /// 空格
@@ -37,7 +37,7 @@ namespace NetworkSocket.Http
         private static readonly byte[] HttpVersion11 = Encoding.ASCII.GetBytes("HTTP/1.1");
 
         /// <summary>
-        /// 解析回复头信息        
+        /// 解析http回复的头信息        
         /// </summary>
         /// <param name="streamReader">数据读取器</param>   
         /// <returns></returns>

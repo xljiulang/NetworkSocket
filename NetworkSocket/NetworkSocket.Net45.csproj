@@ -77,9 +77,9 @@
     <Compile Include="Core\ParameterFilterAttribute.cs" />
     <Compile Include="Http\BodyAttribute.cs" />
     <Compile Include="Http\Internal\ContentType.cs" />
-    <Compile Include="Http\Internal\HttpRequestParser.cs" />
-    <Compile Include="Http\Internal\HttpResponseParseResult.cs" />
-    <Compile Include="Http\Internal\HttpResponseParser.cs" />
+    <Compile Include="Http\HttpRequestParser.cs" />
+    <Compile Include="Http\HttpResponseParseResult.cs" />
+    <Compile Include="Http\HttpResponseParser.cs" />
     <Compile Include="Http\QueryAttribute.cs" />
     <Compile Include="Http\RouteBaseAttribute.cs" />
     <Compile Include="Http\RouteData.cs" />
@@ -122,7 +122,7 @@
     <Compile Include="Http\Context\ActionContext.cs" />
     <Compile Include="Http\Context\ExceptionContext.cs" />
     <Compile Include="Http\Context\RequestContext.cs" />
-    <Compile Include="Http\Internal\HeaderBuilder.cs" />
+    <Compile Include="Http\HttpHeaderBuilder.cs" />
     <Compile Include="ISubscriber.cs" />
     <Compile Include="TagItem.cs" />
     <Compile Include="Tasks\TaskSetter.cs" />
@@ -152,8 +152,8 @@
     <Compile Include="Http\Internal\DefaultModelBinder.cs" />
     <Compile Include="Http\Internal\HttpGlobalFilters.cs" />
     <Compile Include="Http\Internal\HttpActionTable.cs" />
-    <Compile Include="Http\Internal\MultipartHead.cs" />
-    <Compile Include="Http\Internal\HttpRequestParseResult.cs" />
+    <Compile Include="Http\Internal\MultipartItem.cs" />
+    <Compile Include="Http\HttpRequestParseResult.cs" />
     <Compile Include="Http\NoneActionAttribute.cs" />
     <Compile Include="Http\Result\ActionResult.cs" />
     <Compile Include="Http\Result\ContentResult.cs" />
