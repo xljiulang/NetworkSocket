@@ -28,7 +28,7 @@ namespace NetworkSocket.Plugs
         /// </summary>
         /// <param name="sender">发生者</param>
         /// <param name="context">上下文</param>
-        protected virtual void OnSSLAuthenticated(object sender, IContenxt context)
+        protected virtual void OnAuthenticated(object sender, IContenxt context)
         {
         }
 
@@ -82,7 +82,7 @@ namespace NetworkSocket.Plugs
         /// <param name="context">上下文</param>
         void IPlug.OnAuthenticated(object sender, IContenxt context)
         {
-            this.OnSSLAuthenticated(sender, context);
+            this.OnAuthenticated(sender, context);
         }
 
 

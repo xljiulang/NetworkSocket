@@ -46,7 +46,7 @@ namespace NetworkSocket.Plugs
         /// </summary>
         /// <param name="sender">发生者</param>
         /// <param name="context">上下文</param>
-        protected sealed override void OnSSLAuthenticated(object sender, IContenxt context)
+        protected sealed override void OnAuthenticated(object sender, IContenxt context)
         {
             this.ApplyContextIdle(context);
         }
