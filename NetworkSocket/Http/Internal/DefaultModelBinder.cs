@@ -22,75 +22,33 @@ namespace NetworkSocket.Http
         public void BindAllParameterValue(ActionContext context)
         {
             Encoding chartset;
-            if (context.Request.IsRawJsonRequest(out chartset))
-            {
-                this.BindParametersFromRawJson(context, chartset);
-            }
-            else
-            {
-                this.BindParametersFromForm(context);
-            }
-        }
+            var isRawJson = context.Request.IsRawJsonRequest(out chartset);
 
-        /// <summary>
-        /// 生成和绑定所有参数的值
-        /// Raw Json
-        /// </summary>
-        /// <param name="context">上下文</param>
-        /// <param name="chartset">字符编码</param>
-        private void BindParametersFromRawJson(ActionContext context, Encoding chartset)
-        {
-            if (context.Action.Parameters.Length == 0)
-            {
-                return;
-            }
-
-            var json = chartset.GetString(context.Request.Body);
-            var body = new DefaultDynamicJsonSerializer().Deserialize(json, typeof(object));
-            var bodyLazy = new Lazy<IDictionary<string, object>>(() =>
-            {
-                var dic = body as IDictionary<string, object>;
-                if (dic != null) dic = dic.ToDictionary(kv => kv.Key, kv => kv.Value, StringComparer.OrdinalIgnoreCase);
-                return dic;
-            });
-            this.BindParametersFromRawJson(context, body, bodyLazy);
-        }
-
-
-        /// <summary>
-        /// 生成和绑定所有参数的值     
-        /// </summary>
-        /// <param name="context">上下文</param>
-        /// <param name="body">body</param>
-        /// <param name="bodyLazy">body字典</param>
-        private void BindParametersFromRawJson(ActionContext context, object body, Lazy<IDictionary<string, object>> bodyLazy)
-        {
             foreach (var parameter in context.Action.Parameters)
             {
-                if (parameter.IsDefined<BodyAttribute>() == true)
+                if (isRawJson && parameter.IsDefined<BodyAttribute>() == true)
                 {
-                    parameter.Value = this.GetModelFromBody(body, parameter);
-                }
-                else if (parameter.IsDefined<QueryAttribute>() == true)
-                {
-                    parameter.Value = this.GetValueFromQueryForm(context.Request, parameter);
+                    parameter.Value = this.GenerateModelFromBody(context.Request, parameter, chartset);
                 }
                 else
                 {
-                    parameter.Value = this.GetValueFromBody(bodyLazy.Value, parameter);
+                    parameter.Value = this.GenerateModelFromQueryForm(context.Request, parameter);
                 }
             }
         }
 
-
         /// <summary>
-        /// 将body转换为模型
+        /// 将请求的body转换为参数模型
         /// </summary>
-        /// <param name="body">原始数据</param>
+        /// <param name="request">请求</param>
         /// <param name="parameter">参数</param>
+        /// <param name="chartset">编码</param>
         /// <returns></returns>
-        private object GetModelFromBody(object body, ApiParameter parameter)
+        private object GenerateModelFromBody(HttpRequest request, ApiParameter parameter, Encoding chartset)
         {
+            var json = chartset.GetString(request.Body);
+            var body = new DefaultDynamicJsonSerializer().Deserialize(json, typeof(object));
+
             if (body != null)
             {
                 return Converter.Cast(body, parameter.Type);
@@ -104,52 +62,13 @@ namespace NetworkSocket.Http
             return defaultValue;
         }
 
-
         /// <summary>
-        /// 从body数据获取参数值
-        /// </summary>
-        /// <param name="body">原始数据</param>
-        /// <param name="parameter">参数</param>       
-        /// <returns></returns>
-        private object GetValueFromBody(IDictionary<string, object> body, ApiParameter parameter)
-        {
-            if (body != null)
-            {
-                object value = null;
-                if (body.TryGetValue(parameter.Name, out value))
-                {
-                    return Converter.Cast(value, parameter.Type);
-                }
-            }
-
-            var defaultValue = parameter.Info.DefaultValue;
-            if (defaultValue == DBNull.Value)
-            {
-                defaultValue = null;
-            }
-            return defaultValue;
-        }
-
-        /// <summary>
-        /// 生成和绑定所有参数的值
-        /// form/query
-        /// </summary>
-        /// <param name="context">上下文</param>
-        private void BindParametersFromForm(ActionContext context)
-        {
-            foreach (var parameter in context.Action.Parameters)
-            {
-                parameter.Value = this.GetValueFromQueryForm(context.Request, parameter);
-            }
-        }
-
-        /// <summary>
-        /// 从Form或Query获取参数值
+        /// 将请求Form或Query转换为参数模型
         /// </summary>
         /// <param name="request">请求数据</param>
         /// <param name="parameter">参数</param>       
         /// <returns></returns>
-        private object GetValueFromQueryForm(HttpRequest request, ApiParameter parameter)
+        private object GenerateModelFromQueryForm(HttpRequest request, ApiParameter parameter)
         {
             var name = parameter.Name;
             var targetType = parameter.Type;

@@ -80,7 +80,6 @@
     <Compile Include="Http\HttpRequestParser.cs" />
     <Compile Include="Http\HttpResponseParseResult.cs" />
     <Compile Include="Http\HttpResponseParser.cs" />
-    <Compile Include="Http\QueryAttribute.cs" />
     <Compile Include="Http\RouteBaseAttribute.cs" />
     <Compile Include="Http\RouteData.cs" />
     <Compile Include="Http\RouteDataCollection.cs" />
