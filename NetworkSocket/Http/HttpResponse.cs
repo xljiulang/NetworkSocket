@@ -18,7 +18,12 @@ namespace NetworkSocket.Http
         /// <summary>
         /// 会话对象
         /// </summary>
-        private ISession session;
+        private readonly ISession session;
+
+        /// <summary>
+        /// chunked
+        /// </summary>
+        private HttpChunkedWirter httpChunked;
 
         /// <summary>
         /// 获取是否已连接到远程端
@@ -108,6 +113,19 @@ namespace NetworkSocket.Http
 
             this.Headers = new HttpHeader();
             this.ContentType = "text/html";
+        }
+
+        /// <summary>
+        /// 获取HttpChunkedWirter的包装实例
+        /// </summary>
+        /// <returns></returns>
+        public HttpChunkedWirter GetChunkedWirter()
+        {
+            if (this.httpChunked == null)
+            {
+                this.httpChunked = new HttpChunkedWirter(this);
+            }
+            return this.httpChunked;
         }
 
         /// <summary>

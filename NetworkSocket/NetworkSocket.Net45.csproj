@@ -76,6 +76,7 @@
     <Compile Include="Core\NotNullAttribute.cs" />
     <Compile Include="Core\ParameterFilterAttribute.cs" />
     <Compile Include="Http\BodyAttribute.cs" />
+    <Compile Include="Http\HttpChunkedWirter.cs" />
     <Compile Include="Http\Internal\ContentType.cs" />
     <Compile Include="Http\HttpRequestParser.cs" />
     <Compile Include="Http\HttpResponseParseResult.cs" />
