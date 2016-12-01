@@ -23,7 +23,7 @@ namespace NetworkSocket.Http
         /// <summary>
         /// chunked
         /// </summary>
-        private HttpChunkedWirter httpChunked;
+        private HttpChunkedWriter httpChunked;
 
         /// <summary>
         /// 获取是否已连接到远程端
@@ -116,14 +116,14 @@ namespace NetworkSocket.Http
         }
 
         /// <summary>
-        /// 获取HttpChunkedWirter的包装实例
+        /// 获取HttpChunkedWriter的包装实例
         /// </summary>
         /// <returns></returns>
-        public HttpChunkedWirter GetChunkedWirter()
+        public HttpChunkedWriter GetChunkedWriter()
         {
             if (this.httpChunked == null)
             {
-                this.httpChunked = new HttpChunkedWirter(this);
+                this.httpChunked = new HttpChunkedWriter(this);
             }
             return this.httpChunked;
         }

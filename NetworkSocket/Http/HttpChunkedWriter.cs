@@ -10,7 +10,7 @@ namespace NetworkSocket.Http
     /// <summary>
     /// 表示http分块回复
     /// </summary>
-    public class HttpChunkedWirter : IDisposable
+    public class HttpChunkedWriter : IDisposable
     {
         /// <summary>
         /// 是否已经输出http头
@@ -36,7 +36,7 @@ namespace NetworkSocket.Http
         /// http分块回复
         /// </summary>
         /// <param name="response">回复对象</param>
-        internal HttpChunkedWirter(HttpResponse response)
+        internal HttpChunkedWriter(HttpResponse response)
         {
             this.response = response;
         }
