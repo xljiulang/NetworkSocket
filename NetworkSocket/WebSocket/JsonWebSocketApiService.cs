@@ -86,7 +86,6 @@ namespace NetworkSocket.WebSocket
 
             if (actionContext.Result != null)
             {
-                var exceptionContext = new ExceptionContext(actionContext, actionContext.Result);
                 this.Middleware.SendRemoteException(actionContext, actionContext.Result);
             }
             else

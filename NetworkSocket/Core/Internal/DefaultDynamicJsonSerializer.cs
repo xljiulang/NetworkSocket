@@ -85,7 +85,8 @@ namespace NetworkSocket.Core
             {
                 var serializer = new JavaScriptSerializer();
                 serializer.MaxJsonLength = int.MaxValue;
-                return serializer.Deserialize(json, type);
+                var model = serializer.DeserializeObject(json);
+                return serializer.ConvertToType(model, type);
             }
             catch (Exception ex)
             {
@@ -376,7 +377,7 @@ namespace NetworkSocket.Core
                 var serializer = new JavaScriptSerializer();
                 serializer.MaxJsonLength = int.MaxValue;
                 serializer.RegisterConverters(new JavaScriptConverter[] { new DynamicJsonConverter() });
-                return serializer.Deserialize(json, typeof(object));
+                return serializer.Deserialize<object>(json);
             }
 
             /// <summary>

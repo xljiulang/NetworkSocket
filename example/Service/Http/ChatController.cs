@@ -19,7 +19,7 @@ namespace Service.Http
         private ActionResult View()
         {
             var aciton = this.CurrentContext.Action;
-            var file = string.Format("View\\{0}\\{1}.cshtml", aciton.ControllerName, aciton.Method.Name);
+            var file = string.Format("./View/{0}/{1}.cshtml", aciton.ControllerName, aciton.Method.Name);
             var html = System.IO.File.ReadAllText(file, Encoding.Default);
             return Content(html);
         }

@@ -217,7 +217,7 @@ namespace NetworkSocket
         /// <returns></returns>
         public override int Send(ArraySegment<byte> byteRange)
         {
-            if (byteRange == null)
+            if (byteRange.Array == null)
             {
                 throw new ArgumentNullException();
             }

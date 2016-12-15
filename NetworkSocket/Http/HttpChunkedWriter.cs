@@ -66,16 +66,10 @@ namespace NetworkSocket.Http
         /// 输出内容块
         /// </summary>
         /// <param name="chucked">内容</param>
-        /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <returns></returns>
         public bool Wirte(ArraySegment<byte> chucked)
-        {
-            if (chucked == null)
-            {
-                throw new ArgumentNullException();
-            }
-
+        { 
             if (chucked.Count == 0)
             {
                 throw new ArgumentOutOfRangeException();
