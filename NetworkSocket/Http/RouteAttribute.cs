@@ -61,7 +61,7 @@ namespace NetworkSocket.Http
                 this.keys.Add(key);
                 return string.Format(@"(?<{0}>\w+)", key);
             });
-            this.ruleRegex = new Regex("^" + pattern + "$", RegexOptions.IgnoreCase);
+            this.ruleRegex = new Regex("^" + pattern + "/?$", RegexOptions.IgnoreCase);
         }
 
         /// <summary>
