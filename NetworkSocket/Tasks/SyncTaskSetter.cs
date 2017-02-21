@@ -22,7 +22,7 @@ namespace NetworkSocket.Tasks
         /// <summary>
         /// 通知事件
         /// </summary>
-        private readonly AutoResetEvent resetEvent = new AutoResetEvent(true);
+        private readonly AutoResetEvent resetEvent = new AutoResetEvent(false);
 
         /// <summary>
         /// 获取值的类型
