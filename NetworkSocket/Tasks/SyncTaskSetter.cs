@@ -15,11 +15,6 @@ namespace NetworkSocket.Tasks
     public class SyncTaskSetter<TResult> : ITaskSetter<TResult>, IDisposable
     {
         /// <summary>
-        /// 是否已设置结果
-        /// </summary>
-        private int setValue = 0;
-
-        /// <summary>
         /// 结果值
         /// </summary>
         private TResult result;
@@ -40,21 +35,6 @@ namespace NetworkSocket.Tasks
             }
         }
 
-        /// <summary>
-        /// 设置结果
-        /// </summary>
-        /// <param name="action"></param>
-        /// <returns></returns>
-        private bool Set(Action action)
-        {
-            var first = Interlocked.CompareExchange(ref this.setValue, 1, 0) == 0;
-            if (first == true)
-            {
-                action.Invoke();
-                this.resetEvent.Set();
-            }
-            return first;
-        }
 
         /// <summary>
         /// 设置结果
@@ -63,13 +43,8 @@ namespace NetworkSocket.Tasks
         /// <returns></returns>
         public bool SetResult(TResult value)
         {
-            var first = Interlocked.CompareExchange(ref this.setValue, 1, 0) == 0;
-            if (first == true)
-            {
-                this.result = value;
-                this.resetEvent.Set();
-            }
-            return first;
+            this.result = value;
+            return this.resetEvent.Set();
         }
 
         /// <summary>
