@@ -30,7 +30,7 @@ namespace NetworkSocket.WebSocket
         /// <summary>
         /// 任务行为
         /// </summary>
-        private TaskSetter<SocketError> taskSetter;
+        private ITaskSetter<SocketError> taskSetter;
 
 
         /// <summary>
@@ -65,17 +65,6 @@ namespace NetworkSocket.WebSocket
         }
 
         /// <summary>
-        /// 执行握手请求
-        /// </summary>
-        /// <param name="client">客户端</param>
-        /// <param name="path">请求路径</param>
-        /// <returns></returns>
-        public SocketError Execute(WebSocketClient client, string path)
-        {
-            return this.ExecuteAsync(client, path).ConfigureAwait(false).GetAwaiter().GetResult();
-        }
-
-        /// <summary>
         /// 异步执行握手请求
         /// </summary>     
         /// <param name="client">客户端</param>
@@ -98,7 +87,33 @@ namespace NetworkSocket.WebSocket
             {
                 this.TrySetResult(SocketError.SocketError);
             }
-            return this.taskSetter.Task;
+            return ((TaskSetter<SocketError>)this.taskSetter).Task;
+        }
+
+        /// <summary>
+        /// 执行握手请求
+        /// </summary>     
+        /// <param name="client">客户端</param>
+        /// <param name="path">请求路径</param>
+        /// <returns></returns>
+        public SocketError Execute(WebSocketClient client, string path)
+        {
+            try
+            {
+                this.IsWaitting = true;
+                this.taskSetter = new SyncTaskSetter<SocketError>();
+                var handshakeBuffer = this.GenerateHandshakeBuffer(client, path, out this.secKey);
+                client.Send(handshakeBuffer);
+            }
+            catch (SocketException ex)
+            {
+                this.TrySetResult(ex.SocketErrorCode);
+            }
+            catch (Exception)
+            {
+                this.TrySetResult(SocketError.SocketError);
+            }
+            return ((SyncTaskSetter<SocketError>)this.taskSetter).GetResult(this.timeout);
         }
 
         /// <summary>
@@ -106,7 +121,7 @@ namespace NetworkSocket.WebSocket
         /// </summary>
         /// <param name="result">结果值</param>
         /// <returns></returns>
-        public bool TrySetResult(SocketError result)
+        private bool TrySetResult(SocketError result)
         {
             this.IsWaitting = false;
             return this.taskSetter.SetResult(result);

@@ -138,7 +138,7 @@ namespace NetworkSocket.Streams
         /// </summary>      
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <returns></returns>
-        public uint ReadUInt16()
+        public ushort ReadUInt16()
         {
             return this.ReadUInt16(Endians.Big);
         }
@@ -149,7 +149,7 @@ namespace NetworkSocket.Streams
         /// </summary>      
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <returns></returns>
-        public uint ReadUInt16(Endians endian)
+        public ushort ReadUInt16(Endians endian)
         {
             var range = this.ReadArraySegment(sizeof(ushort));
             return ByteConverter.ToUInt16(range.Array, range.Offset, endian);

@@ -64,7 +64,7 @@ namespace NetworkSocket
         /// 返回其UInt16的Endians.Big表示类型
         /// </summary>
         /// <returns></returns>
-        uint ReadUInt16();
+        ushort ReadUInt16();
 
         /// <summary>
         /// 从流中读取2个字节，并将流内的位置向前推进2个字节，
@@ -72,7 +72,7 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="endian">字节序</param>
         /// <returns></returns>
-        uint ReadUInt16(Endians endian);
+        ushort ReadUInt16(Endians endian);
 
         /// <summary>
         /// 从流中读取4个字节，并将流内的位置向前推进4个字节，

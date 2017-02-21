@@ -32,6 +32,19 @@ namespace NetworkSocket.Tasks
         }
 
         /// <summary>
+        /// 创建带id的同步任务并添加到列表中
+        /// </summary>
+        /// <typeparam name="TResult">任务结果类型</typeparam>
+        /// <param name="id">任务id</param>
+        /// <returns></returns>
+        public SyncTaskSetter<TResult> SyncCreate<TResult>(T id)
+        {
+            var taskSetter = new SyncTaskSetter<TResult>();
+            this.table.TryAdd(id, taskSetter);
+            return taskSetter;
+        }
+
+        /// <summary>
         /// 创建带id的任务并添加到列表中
         /// </summary>
         /// <typeparam name="TResult">任务结果类型</typeparam>

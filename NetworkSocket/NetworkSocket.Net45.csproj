@@ -125,6 +125,7 @@
     <Compile Include="Http\Internal\HeaderBuilder.cs" />
     <Compile Include="ISubscriber.cs" />
     <Compile Include="TagItem.cs" />
+    <Compile Include="Tasks\SyncTaskSetter.cs" />
     <Compile Include="Tasks\TaskSetter.cs" />
     <Compile Include="Util\Compression.cs" />
     <Compile Include="Http\HttpAction.cs" />
