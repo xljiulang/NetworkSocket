@@ -136,77 +136,38 @@ namespace NetworkSocket
         }
 
         /// <summary>
-        /// 开始循环接收数据
+        /// 异步接收数据
+        /// 将接收结果写入StreamReader
+        /// 如果返回false表示接收异常
         /// </summary>
-        public override void StartLoopReceive()
-        {
-            this.BeginReceive();
-        }
-
-        /// <summary>
-        /// 开始接收数据
-        /// </summary>
-        private void BeginReceive()
-        {
-            if (this.IsConnected == false)
-            {
-                return;
-            }
-
-            try
-            {
-                this.sslStream.BeginRead(this.bufferRange.Array, this.bufferRange.Offset, this.bufferRange.Count, this.EndReceive, null);
-            }
-            catch (Exception)
-            {
-                this.DisconnectHandler(this);
-            }
-        }
-
-
-        /// <summary>
-        /// 接收数据完成后
-        /// </summary>
-        /// <param name="asyncResult">异步结果</param>
-        private async void EndReceive(IAsyncResult asyncResult)
-        {
-            var read = this.GetReceivedLength(asyncResult);
-            if (read <= 0)
-            {
-                this.DisconnectHandler(this);
-                return;
-            }
-
-            lock (this.StreamReader.SyncRoot)
-            {
-                this.StreamReader.Stream.Seek(0, SeekOrigin.End);
-                this.StreamReader.Stream.Write(this.bufferRange.Array, this.bufferRange.Offset, read);
-                this.StreamReader.Stream.Seek(0, SeekOrigin.Begin);
-            }
-
-            // 重新进行一次接收
-            await this.ReceiveAsyncHandler(this);
-            this.BeginReceive();
-        }
-
-
-        /// <summary>
-        /// 返回接收到的数据长度
-        /// </summary>
-        /// <param name="asyncResult"></param>
         /// <returns></returns>
-        private int GetReceivedLength(IAsyncResult asyncResult)
+        protected override async Task<bool> ReceiveTaskAsync()
         {
             try
             {
-                return this.sslStream.EndRead(asyncResult);
+                var read = await this.sslStream.ReadAsync(this.bufferRange.Array, this.bufferRange.Offset, this.bufferRange.Count);
+                if (read <= 0)
+                {
+                    this.DisconnectHandler(this);
+                    return false;
+                }
+
+                lock (this.StreamReader.SyncRoot)
+                {
+                    this.StreamReader.Stream.Seek(0, SeekOrigin.End);
+                    this.StreamReader.Stream.Write(this.bufferRange.Array, this.bufferRange.Offset, read);
+                    this.StreamReader.Stream.Seek(0, SeekOrigin.Begin);
+                }
+
+                await this.ReceiveAsyncHandler(this);
+                return true;
             }
             catch (Exception)
             {
-                return 0;
+                this.DisconnectHandler(this);
+                return false;
             }
         }
-
 
         /// <summary>
         /// 同步发送数据

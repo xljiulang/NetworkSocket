@@ -150,9 +150,26 @@ namespace NetworkSocket
         }
 
         /// <summary>
-        /// 开始循环接收数据 
+        /// 开始异步循环接收数据 
         /// </summary>
-        public abstract void StartLoopReceive();
+        public async void StartLoopReceive()
+        {
+            while (this.IsConnected == true)
+            {
+                if (await this.ReceiveTaskAsync() == false)
+                {
+                    break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 异步接收数据
+        /// 将接收结果写入StreamReader
+        /// 如果返回false表示接收异常
+        /// </summary>
+        /// <returns></returns>
+        protected abstract Task<bool> ReceiveTaskAsync();
 
         /// <summary>
         /// 同步发送数据

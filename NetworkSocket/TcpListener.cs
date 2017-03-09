@@ -190,49 +190,67 @@ namespace NetworkSocket
             this.listenSocket.Listen(backlog);
 
             this.acceptArg = new SocketAsyncEventArgs();
-            this.acceptArg.Completed += (sender, e) => this.EndAccept(e);
-            this.BeginAccept(this.acceptArg);
+            this.acceptArg.Completed += this.OnAcceptAsynCompleted;
+            this.StartLoopAccept(this.acceptArg);
 
             this.LocalEndPoint = localEndPoint;
             this.IsListening = true;
         }
 
         /// <summary>
-        /// 开始一次接受连接请求操作
+        /// 开始异步循环接收连接
         /// </summary>
-        /// <param name="arg">接受参数</param>     
-        private void BeginAccept(SocketAsyncEventArgs arg)
+        /// <param name="arg"></param>
+        private async void StartLoopAccept(SocketAsyncEventArgs arg)
         {
-            if (this.listenSocket != null)
+            while (this.listenSocket != null)
             {
-                arg.AcceptSocket = null;
-                if (this.listenSocket.AcceptAsync(arg) == false)
-                {
-                    this.EndAccept(arg);
-                }
+                await this.AcceptTaskAsync(arg);
             }
         }
 
         /// <summary>
-        /// 连接请求IO完成
+        /// 异步接收连接
         /// </summary>
-        /// <param name="arg">连接参数</param>
-        private void EndAccept(SocketAsyncEventArgs arg)
+        /// <param name="arg"></param>
+        /// <returns></returns>
+        private async Task AcceptTaskAsync(SocketAsyncEventArgs arg)
         {
-            var socket = arg.AcceptSocket;
-            var error = arg.SocketError;
+            var taskSource = new TaskCompletionSource<bool>();
+            arg.AcceptSocket = null;
+            arg.UserToken = taskSource;
 
-            this.ProcessAccept(socket, error);
-            this.BeginAccept(arg);
+            if (this.listenSocket.AcceptAsync(arg))
+            {
+                await taskSource.Task;
+            }
+            else
+            {
+                this.OnAcceptCompleted(arg);
+            }
         }
 
         /// <summary>
-        /// 处理Socket连接
+        /// 异步接收到连接客户端
         /// </summary>
-        /// <param name="socket">socket</param>
-        /// <param name="socketError">状态</param>
-        private void ProcessAccept(Socket socket, SocketError socketError)
+        /// <param name="sender">事件源</param>
+        /// <param name="arg">参数</param>
+        private void OnAcceptAsynCompleted(object sender, SocketAsyncEventArgs arg)
         {
+            var taskSource = arg.UserToken as TaskCompletionSource<bool>;
+            this.OnAcceptCompleted(arg);
+            taskSource.TrySetResult(true);
+        }
+
+        /// <summary>
+        /// 同步接收到连接客户端
+        /// </summary>
+        /// <param name="arg">参数</param>
+        private void OnAcceptCompleted(SocketAsyncEventArgs arg)
+        {
+            var socket = arg.AcceptSocket;
+            var socketError = arg.SocketError;
+
             if (socketError == SocketError.Success)
             {
                 var session = this.GenerateSession(socket);

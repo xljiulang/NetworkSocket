@@ -40,9 +40,10 @@ namespace NetworkSocket
         /// </summary>  
         public IocpTcpSession()
         {
-            this.recvArg.Completed += this.EndReceive;
+            this.recvArg.Completed += OnReceiveAsynCompleted;
             BufferPool.SetBuffer(this.recvArg);
         }
+
 
         /// <summary>
         /// 绑定一个Socket对象
@@ -55,47 +56,60 @@ namespace NetworkSocket
         }
 
         /// <summary>
-        /// 开始循环接收数据 
+        /// 异步接收数据
+        /// 将接收结果写入StreamReader
+        /// 如果返回false表示接收异常
         /// </summary>
-        public override void StartLoopReceive()
+        /// <returns></returns>
+        protected override async Task<bool> ReceiveTaskAsync()
         {
-            this.BeginReceive();
-        }
-
-        /// <summary>
-        /// 尝试开始接收数据
-        /// </summary>
-        private void BeginReceive()
-        {
-            if (this.IsConnected == false)
-            {
-                return;
-            }
-
             try
             {
-                if (this.Socket.ReceiveAsync(this.recvArg) == false)
+                var taskSource = new TaskCompletionSource<bool>();
+                this.recvArg.UserToken = taskSource;
+
+                if (this.Socket.ReceiveAsync(this.recvArg))
                 {
-                    this.EndReceive(this.Socket, this.recvArg);
+                    await taskSource.Task;
                 }
+                else
+                {
+                    await this.OnReceiveCompleted(this.recvArg);
+                }
+                return true;
             }
             catch (Exception)
             {
                 this.DisconnectHandler(this);
+                return false;
             }
         }
 
         /// <summary>
-        /// 接收到数据事件
+        /// 异步接收到数据
         /// </summary>
         /// <param name="sender">事件源</param>
         /// <param name="arg">参数</param>
-        private async void EndReceive(object sender, SocketAsyncEventArgs arg)
+        /// <returns></returns>
+        private async void OnReceiveAsynCompleted(object sender, SocketAsyncEventArgs arg)
+        {
+            var taskSource = arg.UserToken as TaskCompletionSource<bool>;
+            var result = await this.OnReceiveCompleted(arg);
+            taskSource.TrySetResult(result);
+        }
+
+
+        /// <summary>
+        /// 同步接收到数据
+        /// </summary>
+        /// <param name="arg">参数</param>
+        /// <returns></returns>
+        private async Task<bool> OnReceiveCompleted(SocketAsyncEventArgs arg)
         {
             if (arg.BytesTransferred == 0 || arg.SocketError != SocketError.Success)
             {
                 this.DisconnectHandler(this);
-                return;
+                return false;
             }
 
             lock (this.StreamReader.SyncRoot)
@@ -106,7 +120,7 @@ namespace NetworkSocket
             }
 
             await this.ReceiveAsyncHandler(this);
-            this.BeginReceive();
+            return true;
         }
 
         /// <summary>
