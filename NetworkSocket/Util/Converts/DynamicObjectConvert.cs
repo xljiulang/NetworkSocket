@@ -53,7 +53,7 @@ namespace NetworkSocket.Util.Converts
                 }
 
                 var valueCast = this.Converter.Convert(targetValue, setter.Info.PropertyType);
-                setter.SetValue(instance, targetValue);
+                setter.SetValue(instance, valueCast);
             }
             return instance;
         }
