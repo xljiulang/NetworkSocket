@@ -43,10 +43,36 @@ namespace NetworkSocket.Tasks
     public interface ITaskSetter<TResult> : ITaskSetter
     {
         /// <summary>
-        /// 设置任务的行为结果
-        /// </summary>     
-        /// <param name="value">数据值</param>   
+        /// 同步获取任务结果
+        /// </summary>
         /// <returns></returns>
-        bool SetResult(TResult value);
+        TResult GetResult();
+
+        /// <summary>
+        /// 获取任务
+        /// </summary>
+        /// <returns></returns>
+        Task<TResult> GetTask();
+
+        /// <summary>
+        /// 设置超时时间
+        /// </summary>
+        /// <param name="timeout">超时时间</param>
+        /// <returns></returns>
+        ITaskSetter<TResult> TimeoutAfter(TimeSpan timeout);
+
+        /// <summary>
+        /// 注册超时后的委托
+        /// </summary>
+        /// <param name="action">委托</param>
+        /// <returns></returns>
+        ITaskSetter<TResult> AfterTimeout(Action action);
+
+        /// <summary>
+        /// 注册超时后的委托
+        /// </summary>
+        /// <param name="action">委托</param>
+        /// <returns></returns>
+        ITaskSetter<TResult> AfterTimeout(Action<ITaskSetter<TResult>> action);
     }
 }

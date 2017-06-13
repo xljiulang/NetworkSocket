@@ -23,7 +23,6 @@ namespace NetworkSocket.Tasks
         /// </summary>
         private readonly CancellationTokenSource cancellationTokenSource;
 
-
         /// <summary>
         /// 获取任务的返回值类型
         /// </summary>
@@ -35,27 +34,6 @@ namespace NetworkSocket.Tasks
             }
         }
 
-        /// <summary>
-        /// 获取所创建的任务
-        /// </summary>
-        public Task<TResult> Task
-        {
-            get
-            {
-                return this.taskSource.Task;
-            }
-        }
-
-        /// <summary>
-        /// 获取是否已超时
-        /// </summary>
-        public bool IsTimeout
-        {
-            get
-            {
-                return this.cancellationTokenSource.IsCancellationRequested;
-            }
-        }
 
         /// <summary>
         /// 任务行为
@@ -67,54 +45,14 @@ namespace NetworkSocket.Tasks
         }
 
         /// <summary>
-        /// 任务行为
-        /// 超时后回调timeoutCallback
-        /// </summary>
-        /// <param name="timeoutCallback">超时回调</param>
-        /// <exception cref="ArgumentNullException"></exception>
-        public TaskSetter(Action<ITaskSetter> timeoutCallback)
-        {
-            if (timeoutCallback == null)
-            {
-                throw new ArgumentNullException("timeoutCallback");
-            }
-            this.taskSource = new TaskCompletionSource<TResult>();
-            this.cancellationTokenSource = new CancellationTokenSource();
-            this.cancellationTokenSource.Token.Register((state) => timeoutCallback(state as ITaskSetter), this);
-        }
-
-        /// <summary>
-        /// 在timeout触发超时
-        /// 从此刻算起计算超时
-        /// </summary>
-        /// <param name="timeout">超时时间</param>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        /// <returns></returns>
-        public TaskSetter<TResult> TimeoutAfter(TimeSpan timeout)
-        {
-            this.cancellationTokenSource.CancelAfter(timeout);
-            return this;
-        }
-
-        /// <summary>
         /// 设置任务的行为结果
         /// </summary>     
         /// <param name="value">数据值</param>   
         /// <returns></returns>
-        bool ITaskSetter.SetResult(object value)
-        {
-            return this.SetResult((TResult)value);
-        }
-
-        /// <summary>
-        /// 设置任务的行为结果
-        /// </summary>     
-        /// <param name="value">数据值</param>   
-        /// <returns></returns>
-        public bool SetResult(TResult value)
+        public bool SetResult(object value)
         {
             this.cancellationTokenSource.Dispose();
-            return this.taskSource.TrySetResult(value);
+            return this.taskSource.TrySetResult((TResult)value);
         }
 
         /// <summary>
@@ -126,6 +64,65 @@ namespace NetworkSocket.Tasks
         {
             this.cancellationTokenSource.Dispose();
             return this.taskSource.TrySetException(ex);
+        }
+
+        /// <summary>
+        /// 获取同步结果
+        /// </summary>
+        /// <returns></returns>
+        public TResult GetResult()
+        {
+            try
+            {
+                return this.GetTask().Result;
+            }
+            catch (AggregateException ex)
+            {
+                throw ex.InnerException;
+            }
+        }
+
+        /// <summary>
+        /// 获取任务
+        /// </summary>
+        /// <returns></returns>
+        public Task<TResult> GetTask()
+        {
+            return this.taskSource.Task;
+        }
+
+        /// <summary>
+        /// 设置超时时间
+        /// </summary>
+        /// <param name="timeout">超时时间</param>
+        /// <returns></returns>
+        public ITaskSetter<TResult> TimeoutAfter(TimeSpan timeout)
+        {
+            this.cancellationTokenSource.CancelAfter(timeout);
+            return this;
+        }
+
+
+        /// <summary>
+        /// 注册超时后的委托
+        /// </summary>
+        /// <param name="action">委托</param>
+        /// <returns></returns>
+        public ITaskSetter<TResult> AfterTimeout(Action action)
+        {
+            this.cancellationTokenSource.Token.Register(action);
+            return this;
+        }
+
+        /// <summary>
+        /// 注册超时后的委托
+        /// </summary>
+        /// <param name="action">委托</param>
+        /// <returns></returns>
+        public ITaskSetter<TResult> AfterTimeout(Action<ITaskSetter<TResult>> action)
+        {
+            this.cancellationTokenSource.Token.Register(() => action(this));
+            return this;
         }
 
         /// <summary>

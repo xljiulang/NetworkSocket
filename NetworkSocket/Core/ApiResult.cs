@@ -17,14 +17,14 @@ namespace NetworkSocket.Core
         /// <summary>
         /// taskSetter
         /// </summary>
-        private readonly TaskSetter<TResult> taskSetter;
+        private readonly ITaskSetter<TResult> taskSetter;
 
         /// <summary>
         /// Api结果
         /// </summary>
         /// <param name="taskSetter">taskSetter</param>
         /// <exception cref="ArgumentNullException"></exception>
-        public ApiResult(TaskSetter<TResult> taskSetter)
+        public ApiResult(ITaskSetter<TResult> taskSetter)
         {
             if (taskSetter == null)
             {
@@ -52,7 +52,16 @@ namespace NetworkSocket.Core
         /// <returns></returns>
         public TaskAwaiter<TResult> GetAwaiter()
         {
-            return this.taskSetter.Task.GetAwaiter();
+            return this.taskSetter.GetTask().GetAwaiter();
+        }
+
+        /// <summary>
+        /// 同步获取结果
+        /// </summary>
+        /// <returns></returns>
+        public TResult GetResult()
+        {
+            return this.taskSetter.GetResult();
         }
 
         /// <summary>
@@ -62,18 +71,18 @@ namespace NetworkSocket.Core
         /// <returns></returns>
         public static implicit operator Task<TResult>(ApiResult<TResult> apiResult)
         {
-            return apiResult.taskSetter.Task;
+            return apiResult.taskSetter.GetTask();
         }
 
         #region IApiResult
         Task IApiResult.GetTask()
         {
-            return this.taskSetter.Task;
+            return this.taskSetter.GetTask();
         }
 
         Task<TResult> IApiResult<TResult>.GetTask()
         {
-            return this.taskSetter.Task;
+            return this.taskSetter.GetTask();
         }
         #endregion
     }

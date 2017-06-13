@@ -75,7 +75,10 @@ namespace NetworkSocket.WebSocket
             try
             {
                 this.IsWaitting = true;
-                this.taskSetter = new TaskSetter<SocketError>((s) => this.TrySetResult(SocketError.TimedOut)).TimeoutAfter(this.timeout);
+                this.taskSetter = new TaskSetter<SocketError>()
+                    .TimeoutAfter(this.timeout)
+                    .AfterTimeout((self) => self.SetResult(SocketError.TimedOut));
+
                 var handshakeBuffer = this.GenerateHandshakeBuffer(client, path, out this.secKey);
                 client.Send(handshakeBuffer);
             }
@@ -87,7 +90,7 @@ namespace NetworkSocket.WebSocket
             {
                 this.TrySetResult(SocketError.SocketError);
             }
-            return ((TaskSetter<SocketError>)this.taskSetter).Task;
+            return this.taskSetter.GetTask();
         }
 
         /// <summary>
@@ -101,7 +104,10 @@ namespace NetworkSocket.WebSocket
             try
             {
                 this.IsWaitting = true;
-                this.taskSetter = new SyncTaskSetter<SocketError>();
+                this.taskSetter = new TaskSetter<SocketError>()
+                    .TimeoutAfter(this.timeout)
+                    .AfterTimeout((self) => self.SetException(new TimeoutException()));
+
                 var handshakeBuffer = this.GenerateHandshakeBuffer(client, path, out this.secKey);
                 client.Send(handshakeBuffer);
             }
@@ -113,7 +119,7 @@ namespace NetworkSocket.WebSocket
             {
                 this.TrySetResult(SocketError.SocketError);
             }
-            return ((SyncTaskSetter<SocketError>)this.taskSetter).GetResult(this.timeout);
+            return this.taskSetter.GetResult();
         }
 
         /// <summary>
