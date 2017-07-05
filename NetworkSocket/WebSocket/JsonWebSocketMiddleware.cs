@@ -197,7 +197,7 @@ namespace NetworkSocket.WebSocket
         /// <param name="requestContext">请求上下文</param>     
         private void ProcessRemoteException(RequestContext requestContext)
         {
-            var taskSetter = this.TaskSetterTable.Take(requestContext.Packet.id);
+            var taskSetter = this.TaskSetterTable.Remove(requestContext.Packet.id);
             if (taskSetter == null)
             {
                 return;
@@ -259,7 +259,7 @@ namespace NetworkSocket.WebSocket
         /// <returns></returns>
         private bool SetApiActionTaskResult(RequestContext requestContext)
         {
-            var taskSetter = this.TaskSetterTable.Take(requestContext.Packet.id);
+            var taskSetter = this.TaskSetterTable.Remove(requestContext.Packet.id);
             if (taskSetter == null)
             {
                 return true;

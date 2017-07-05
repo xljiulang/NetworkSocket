@@ -140,7 +140,7 @@ namespace NetworkSocket.WebSocket
             };
 
             // 登记taskSetter             
-            var taskSetter = this.taskSetterTable.Create<T>(packet.id).TimeoutAfter(this.TimeOut);
+            var taskSetter = this.taskSetterTable.Create<T>(packet.id, this.TimeOut);
             var packetJson = this.JsonSerializer.Serialize(packet);
             this.SendText(packetJson);
             return new ApiResult<T>(taskSetter);
@@ -176,7 +176,7 @@ namespace NetworkSocket.WebSocket
         /// <param name="package">数据包</param>     
         private void ProcessRemoteException(JsonPacket package)
         {
-            var taskSetter = this.taskSetterTable.Take(package.id);
+            var taskSetter = this.taskSetterTable.Remove(package.id);
             if (taskSetter == null)
             {
                 return;
@@ -308,7 +308,7 @@ namespace NetworkSocket.WebSocket
         /// <returns></returns>
         private bool SetApiActionTaskResult(JsonPacket package)
         {
-            var taskSetter = this.taskSetterTable.Take(package.id);
+            var taskSetter = this.taskSetterTable.Remove(package.id);
             if (taskSetter == null)
             {
                 return true;

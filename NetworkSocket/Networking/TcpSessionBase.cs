@@ -16,6 +16,25 @@ using System.Threading.Tasks;
 namespace NetworkSocket
 {
     /// <summary>
+    /// 接收完成委托
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <returns></returns>
+    internal delegate Task ReceiveCompletedHandler(TcpSessionBase sender);
+
+    /// <summary>
+    /// 断开委托
+    /// </summary>
+    /// <param name="sender"></param>
+    internal delegate void DisconnectHandler(TcpSessionBase sender);
+
+    /// <summary>
+    /// 关闭时委托
+    /// </summary>
+    /// <param name="sender"></param>
+    internal delegate void CloseHandler(TcpSessionBase sender);
+
+    /// <summary>
     /// Tcp会话抽象类
     /// </summary>
     internal abstract class TcpSessionBase : ISession, IDisposable
@@ -30,7 +49,6 @@ namespace NetworkSocket
         /// </summary>
         private object socketRoot = new object();
 
-
         /// <summary>
         /// 获取绑定的Socket对象
         /// </summary>        
@@ -40,17 +58,17 @@ namespace NetworkSocket
         /// <summary>
         /// 处理和分析收到的数据的委托
         /// </summary>
-        public Func<TcpSessionBase, Task> ReceiveAsyncHandler;
+        public ReceiveCompletedHandler ReceiveCompletedHandler;
 
         /// <summary>
         /// 连接断开委托   
         /// </summary>
-        public Action<TcpSessionBase> DisconnectHandler;
+        public DisconnectHandler DisconnectHandler;
 
         /// <summary>
         /// 关闭时的委托
         /// </summary>
-        public Action<TcpSessionBase> CloseHandler;
+        public CloseHandler CloseHandler;
 
 
         /// <summary>
@@ -115,11 +133,16 @@ namespace NetworkSocket
         }
 
         /// <summary>
-        /// 绑定一个Socket对象
+        /// 设置关联一个Socket实例 
         /// </summary>
         /// <param name="socket">套接字</param>
-        public virtual void BindSocket(Socket socket)
+        /// <exception cref="ArgumentNullException"></exception>
+        public virtual void SetSocket(Socket socket)
         {
+            if (socket == null)
+            {
+                throw new ArgumentNullException();
+            }
             this.Socket = socket;
             this.socketClosed = false;
 
@@ -152,11 +175,11 @@ namespace NetworkSocket
         /// <summary>
         /// 开始异步循环接收数据 
         /// </summary>
-        public async void StartLoopReceive()
+        public async void LoopReceiveAsync()
         {
-            while (this.IsConnected == true)
+            while (this.IsConnected)
             {
-                if (await this.ReceiveTaskAsync() == false)
+                if (await this.ReceiveAsync() == false)
                 {
                     break;
                 }
@@ -169,7 +192,7 @@ namespace NetworkSocket
         /// 如果返回false表示接收异常
         /// </summary>
         /// <returns></returns>
-        protected abstract Task<bool> ReceiveTaskAsync();
+        protected abstract Task<bool> ReceiveAsync();
 
         /// <summary>
         /// 同步发送数据
@@ -473,7 +496,7 @@ namespace NetworkSocket
                 this.StreamReader = null;
                 this.CloseHandler = null;
                 this.DisconnectHandler = null;
-                this.ReceiveAsyncHandler = null;
+                this.ReceiveCompletedHandler = null;
             }
         }
         #endregion

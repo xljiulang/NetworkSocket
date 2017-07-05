@@ -94,11 +94,11 @@ namespace NetworkSocket
         /// 绑定一个Socket对象
         /// </summary>
         /// <param name="socket">套接字</param>
-        public override void BindSocket(Socket socket)
+        public override void SetSocket(Socket socket)
         {
             var nsStream = new NetworkStream(socket, false);
             this.sslStream = new SslStream(nsStream, false, this.certificateValidationCallback);
-            base.BindSocket(socket);
+            base.SetSocket(socket);
         }
 
         /// <summary>
@@ -141,7 +141,7 @@ namespace NetworkSocket
         /// 如果返回false表示接收异常
         /// </summary>
         /// <returns></returns>
-        protected override async Task<bool> ReceiveTaskAsync()
+        protected override async Task<bool> ReceiveAsync()
         {
             try
             {
@@ -159,7 +159,7 @@ namespace NetworkSocket
                     this.StreamReader.Stream.Seek(0, SeekOrigin.Begin);
                 }
 
-                await this.ReceiveAsyncHandler(this);
+                await this.ReceiveCompletedHandler(this);
                 return true;
             }
             catch (Exception)

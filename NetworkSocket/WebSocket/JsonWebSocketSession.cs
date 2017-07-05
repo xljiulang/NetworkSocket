@@ -153,7 +153,7 @@ namespace NetworkSocket.WebSocket
             };
 
             // 登记taskSetter             
-            var taskSetter = this.middleware.TaskSetterTable.Create<T>(packet.id).TimeoutAfter(this.middleware.TimeOut);
+            var taskSetter = this.middleware.TaskSetterTable.Create<T>(packet.id, this.middleware.TimeOut);
             var packetJson = this.middleware.JsonSerializer.Serialize(packet);
             this.session.SendText(packetJson);
             return new ApiResult<T>(taskSetter);

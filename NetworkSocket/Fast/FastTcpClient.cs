@@ -270,7 +270,7 @@ namespace NetworkSocket.Fast
         /// </summary>
         protected override void OnDisconnected()
         {
-            var taskSetActions = this.taskSetterTable.TakeAll();
+            var taskSetActions = this.taskSetterTable.RemoveAll();
             foreach (var taskSetAction in taskSetActions)
             {
                 var exception = new SocketException(SocketError.Shutdown.GetHashCode());

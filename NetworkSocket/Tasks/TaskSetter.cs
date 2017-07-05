@@ -21,7 +21,7 @@ namespace NetworkSocket.Tasks
         /// <summary>
         /// 取消源
         /// </summary>
-        private readonly CancellationTokenSource cancellationTokenSource;
+        private readonly Lazy<CancellationTokenSource> tokenSourceLazy;
 
         /// <summary>
         /// 获取任务的返回值类型
@@ -41,7 +41,7 @@ namespace NetworkSocket.Tasks
         public TaskSetter()
         {
             this.taskSource = new TaskCompletionSource<TResult>();
-            this.cancellationTokenSource = new CancellationTokenSource();
+            this.tokenSourceLazy = new Lazy<CancellationTokenSource>();
         }
 
         /// <summary>
@@ -49,10 +49,20 @@ namespace NetworkSocket.Tasks
         /// </summary>     
         /// <param name="value">数据值</param>   
         /// <returns></returns>
-        public bool SetResult(object value)
+        bool ITaskSetter.SetResult(object value)
         {
-            this.cancellationTokenSource.Dispose();
-            return this.taskSource.TrySetResult((TResult)value);
+            return this.SetResult((TResult)value);
+        }
+
+        /// <summary>
+        /// 设置任务的行为结果
+        /// </summary>     
+        /// <param name="value">数据值</param>   
+        /// <returns></returns>
+        public bool SetResult(TResult value)
+        {
+            this.tokenSourceLazy.Value.Dispose();
+            return this.taskSource.TrySetResult(value);
         }
 
         /// <summary>
@@ -62,7 +72,7 @@ namespace NetworkSocket.Tasks
         /// <returns></returns>
         public bool SetException(Exception ex)
         {
-            this.cancellationTokenSource.Dispose();
+            this.tokenSourceLazy.Value.Dispose();
             return this.taskSource.TrySetException(ex);
         }
 
@@ -93,35 +103,30 @@ namespace NetworkSocket.Tasks
 
         /// <summary>
         /// 设置超时时间
+        /// 超时后任务产生TimeoutException
         /// </summary>
         /// <param name="timeout">超时时间</param>
         /// <returns></returns>
         public ITaskSetter<TResult> TimeoutAfter(TimeSpan timeout)
         {
-            this.cancellationTokenSource.CancelAfter(timeout);
-            return this;
-        }
-
-
-        /// <summary>
-        /// 注册超时后的委托
-        /// </summary>
-        /// <param name="action">委托</param>
-        /// <returns></returns>
-        public ITaskSetter<TResult> AfterTimeout(Action action)
-        {
-            this.cancellationTokenSource.Token.Register(action);
-            return this;
+            return this.TimeoutAfter(timeout, (t) => t.SetException(new TimeoutException()));
         }
 
         /// <summary>
-        /// 注册超时后的委托
+        /// 设置超时时间
         /// </summary>
-        /// <param name="action">委托</param>
+        /// <param name="timeout">超时时间</param>
+        /// <param name="timeoutAction">超时回调</param>
+        /// <exception cref="ArgumentNullException"></exception>
         /// <returns></returns>
-        public ITaskSetter<TResult> AfterTimeout(Action<ITaskSetter<TResult>> action)
+        public ITaskSetter<TResult> TimeoutAfter(TimeSpan timeout, Action<ITaskSetter<TResult>> timeoutAction)
         {
-            this.cancellationTokenSource.Token.Register(() => action(this));
+            if (timeoutAction == null)
+            {
+                throw new ArgumentNullException("timeoutAction");
+            }
+            this.tokenSourceLazy.Value.Token.Register(() => timeoutAction(this));
+            this.tokenSourceLazy.Value.CancelAfter(timeout);
             return this;
         }
 
@@ -130,7 +135,10 @@ namespace NetworkSocket.Tasks
         /// </summary>
         public void Dispose()
         {
-            this.cancellationTokenSource.Dispose();
+            if (this.tokenSourceLazy.IsValueCreated)
+            {
+                this.tokenSourceLazy.Value.Dispose();
+            }
         }
     }
 }

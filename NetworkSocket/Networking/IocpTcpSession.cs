@@ -22,7 +22,7 @@ namespace NetworkSocket
         /// <summary>
         /// 用于接收的SocketAsyncEventArgs
         /// </summary>
-        private SocketAsyncEventArgs recvArg = new SocketAsyncEventArgs();
+        private readonly SocketAsyncEventArgs recvArg = new SocketAsyncEventArgs();
 
         /// <summary>
         /// 获取会话是否提供SSL/TLS安全
@@ -49,10 +49,10 @@ namespace NetworkSocket
         /// 绑定一个Socket对象
         /// </summary>
         /// <param name="socket">套接字</param>
-        public override void BindSocket(Socket socket)
+        public override void SetSocket(Socket socket)
         {
             this.recvArg.SocketError = SocketError.Success;
-            base.BindSocket(socket);
+            base.SetSocket(socket);
         }
 
         /// <summary>
@@ -61,7 +61,7 @@ namespace NetworkSocket
         /// 如果返回false表示接收异常
         /// </summary>
         /// <returns></returns>
-        protected override async Task<bool> ReceiveTaskAsync()
+        protected override async Task<bool> ReceiveAsync()
         {
             try
             {
@@ -70,13 +70,12 @@ namespace NetworkSocket
 
                 if (this.Socket.ReceiveAsync(this.recvArg))
                 {
-                    await taskSource.Task;
+                    return await taskSource.Task;
                 }
                 else
                 {
-                    await this.OnReceiveCompleted(this.recvArg);
+                    return await this.ProcessReceiveAsync(this.recvArg);
                 }
-                return true;
             }
             catch (Exception)
             {
@@ -94,17 +93,17 @@ namespace NetworkSocket
         private async void OnReceiveAsynCompleted(object sender, SocketAsyncEventArgs arg)
         {
             var taskSource = arg.UserToken as TaskCompletionSource<bool>;
-            var result = await this.OnReceiveCompleted(arg);
+            var result = await this.ProcessReceiveAsync(arg);
             taskSource.TrySetResult(result);
         }
 
 
         /// <summary>
-        /// 同步接收到数据
+        /// 异步处理接收到数据
         /// </summary>
         /// <param name="arg">参数</param>
         /// <returns></returns>
-        private async Task<bool> OnReceiveCompleted(SocketAsyncEventArgs arg)
+        private async Task<bool> ProcessReceiveAsync(SocketAsyncEventArgs arg)
         {
             if (arg.BytesTransferred == 0 || arg.SocketError != SocketError.Success)
             {
@@ -119,7 +118,7 @@ namespace NetworkSocket
                 this.StreamReader.Stream.Seek(0, SeekOrigin.Begin);
             }
 
-            await this.ReceiveAsyncHandler(this);
+            await this.ReceiveCompletedHandler(this);
             return true;
         }
 
@@ -131,11 +130,6 @@ namespace NetworkSocket
         {
             base.Dispose(disposing);
             this.recvArg.Dispose();
-
-            if (disposing == true)
-            {
-                this.recvArg = null;
-            }
         }
     }
 }

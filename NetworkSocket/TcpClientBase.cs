@@ -103,7 +103,7 @@ namespace NetworkSocket
         /// <param name="session">会话</param>
         private void BindHandler(TcpSessionBase session)
         {
-            session.ReceiveAsyncHandler = this.ReceiveHandler;
+            session.ReceiveCompletedHandler = this.ReceiveHandler;
             session.DisconnectHandler = this.DisconnectHandler;
         }
 
@@ -146,7 +146,7 @@ namespace NetworkSocket
             if (error == SocketError.Success)
             {
                 await this.session.AuthenticateAsync();
-                session.StartLoopReceive();
+                session.LoopReceiveAsync();
             }
 
             this.OnConnected(error);
@@ -180,7 +180,7 @@ namespace NetworkSocket
             try
             {
                 await Task.Factory.FromAsync(socket.BeginConnect, socket.EndConnect, remoteEndPoint, null);
-                this.session.BindSocket(socket);
+                this.session.SetSocket(socket);
                 this.session.SetKeepAlive(this.KeepAlivePeriod);
                 return SocketError.Success;
             }
@@ -231,7 +231,7 @@ namespace NetworkSocket
             if (error == SocketError.Success)
             {
                 this.session.Authenticate();
-                session.StartLoopReceive();
+                session.LoopReceiveAsync();
             }
 
             this.OnConnected(error);
@@ -266,7 +266,7 @@ namespace NetworkSocket
             try
             {
                 socket.Connect(remoteEndPoint);
-                this.session.BindSocket(socket);
+                this.session.SetSocket(socket);
                 this.session.SetKeepAlive(this.KeepAlivePeriod);
                 return SocketError.Success;
             }

@@ -98,7 +98,7 @@ namespace NetworkSocket.WebSocket
                 return;
             }
 
-            var setter = this.pingTable.Take(id);
+            var setter = this.pingTable.Remove(id);
             if (setter != null)
             {
                 setter.SetResult(true);
@@ -189,7 +189,7 @@ namespace NetworkSocket.WebSocket
         public async Task<bool> PingAsync(TimeSpan waitTime)
         {
             var id = Guid.NewGuid();
-            var task = this.pingTable.Create<bool>(id).TimeoutAfter(waitTime).GetTask();
+            var task = this.pingTable.Create<bool>(id, waitTime).GetTask();
 
             try
             {

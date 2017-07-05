@@ -39,7 +39,7 @@ namespace NetworkSocket.Fast
         /// <returns></returns>
         public static bool SetApiActionTaskResult(RequestContext requestContext, TaskSetterTable<long> taskSetActionTable, ISerializer serializer)
         {
-            var taskSetAction = taskSetActionTable.Take(requestContext.Packet.Id);
+            var taskSetAction = taskSetActionTable.Remove(requestContext.Packet.Id);
             if (taskSetAction == null)
             {
                 return true;
@@ -70,7 +70,7 @@ namespace NetworkSocket.Fast
         /// <returns></returns>
         public static bool SetApiActionTaskException(TaskSetterTable<long> taskSetActionTable, RequestContext requestContext)
         {
-            var taskSetAction = taskSetActionTable.Take(requestContext.Packet.Id);
+            var taskSetAction = taskSetActionTable.Remove(requestContext.Packet.Id);
             if (taskSetAction == null)
             {
                 return true;
@@ -118,7 +118,7 @@ namespace NetworkSocket.Fast
         /// <returns></returns>
         public static ApiResult<T> InvokeApi<T>(ISession session, TaskSetterTable<long> taskSetActionTable, ISerializer serializer, FastPacket packet, TimeSpan timeout)
         {
-            var taskSetter = taskSetActionTable.Create<T>(packet.Id).TimeoutAfter(timeout);
+            var taskSetter = taskSetActionTable.Create<T>(packet.Id, timeout);
             session.Send(packet.ToArraySegment());
             return new ApiResult<T>(taskSetter);
         }

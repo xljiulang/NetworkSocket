@@ -191,7 +191,7 @@ namespace NetworkSocket
 
             this.acceptArg = new SocketAsyncEventArgs();
             this.acceptArg.Completed += this.OnAcceptAsynCompleted;
-            this.StartLoopAccept(this.acceptArg);
+            this.LoopAcceptAsync(this.acceptArg);
 
             this.LocalEndPoint = localEndPoint;
             this.IsListening = true;
@@ -201,11 +201,11 @@ namespace NetworkSocket
         /// 开始异步循环接收连接
         /// </summary>
         /// <param name="arg"></param>
-        private async void StartLoopAccept(SocketAsyncEventArgs arg)
+        private async void LoopAcceptAsync(SocketAsyncEventArgs arg)
         {
             while (this.listenSocket != null)
             {
-                await this.AcceptTaskAsync(arg);
+                await this.AcceptAsync(arg);
             }
         }
 
@@ -214,9 +214,9 @@ namespace NetworkSocket
         /// </summary>
         /// <param name="arg"></param>
         /// <returns></returns>
-        private async Task AcceptTaskAsync(SocketAsyncEventArgs arg)
+        private async Task AcceptAsync(SocketAsyncEventArgs arg)
         {
-            var taskSource = new TaskCompletionSource<bool>();
+            var taskSource = new TaskCompletionSource<object>();
             arg.AcceptSocket = null;
             arg.UserToken = taskSource;
 
@@ -226,7 +226,7 @@ namespace NetworkSocket
             }
             else
             {
-                this.OnAcceptCompleted(arg);
+                this.ProcessAccept(arg);
             }
         }
 
@@ -237,16 +237,16 @@ namespace NetworkSocket
         /// <param name="arg">参数</param>
         private void OnAcceptAsynCompleted(object sender, SocketAsyncEventArgs arg)
         {
-            var taskSource = arg.UserToken as TaskCompletionSource<bool>;
-            this.OnAcceptCompleted(arg);
-            taskSource.TrySetResult(true);
+            var taskSource = arg.UserToken as TaskCompletionSource<object>;
+            this.ProcessAccept(arg);
+            taskSource.TrySetResult(null);
         }
 
         /// <summary>
         /// 同步接收到连接客户端
         /// </summary>
         /// <param name="arg">参数</param>
-        private void OnAcceptCompleted(SocketAsyncEventArgs arg)
+        private void ProcessAccept(SocketAsyncEventArgs arg)
         {
             var socket = arg.AcceptSocket;
             var socketError = arg.SocketError;
@@ -254,7 +254,7 @@ namespace NetworkSocket
             if (socketError == SocketError.Success)
             {
                 var session = this.GenerateSession(socket);
-                this.StartLoopReceive(session);
+                this.LoopReceiveAsync(session);
             }
             else
             {
@@ -272,11 +272,11 @@ namespace NetworkSocket
         {
             // 创建会话，绑定处理委托
             var session = this.sessionManager.Alloc(this.Certificate);
-            session.ReceiveAsyncHandler = this.OnRequestAsync;
+            session.ReceiveCompletedHandler = this.OnRequestAsync;
             session.DisconnectHandler = this.ReuseSession;
             session.CloseHandler = this.ReuseSession;
 
-            session.BindSocket(socket);
+            session.SetSocket(socket);
             session.SetKeepAlive(this.KeepAlivePeriod);
             this.sessionManager.Add(session);
             return session;
@@ -287,7 +287,7 @@ namespace NetworkSocket
         /// 启动会话循环接收
         /// </summary>
         /// <param name="session">会话</param>
-        private async void StartLoopReceive(TcpSessionBase session)
+        private async void LoopReceiveAsync(TcpSessionBase session)
         {
             // 通知插件会话已连接
             var context = this.CreateContext(session);
@@ -301,7 +301,7 @@ namespace NetworkSocket
                 await session.AuthenticateAsync().ConfigureAwait(false);
                 if (this.plugManager.RaiseAuthenticated(this, context))
                 {
-                    session.StartLoopReceive();
+                    session.LoopReceiveAsync();
                 }
             }
             catch (Exception ex)

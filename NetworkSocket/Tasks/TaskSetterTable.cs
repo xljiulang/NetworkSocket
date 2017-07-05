@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace NetworkSocket.Tasks
 {
     /// <summary>
-    /// 表示任务管理表
+    /// 表示超时任务管理表
     /// 线程安全类型
     /// </summary>
     /// <typeparam name="T">任务ID类型</typeparam>
@@ -31,17 +31,17 @@ namespace NetworkSocket.Tasks
             this.table = new ConcurrentDictionary<T, ITaskSetter>();
         }
 
-
         /// <summary>
-        /// 创建带id的任务并添加到列表中
+        /// 创建带id的任务并添加到列表中        
         /// </summary>
         /// <typeparam name="TResult">任务结果类型</typeparam>
         /// <param name="id">任务id</param>
+        /// <param name="timeout">超时时间</param>
         /// <returns></returns>
-        public ITaskSetter<TResult> Create<TResult>(T id)
+        public ITaskSetter<TResult> Create<TResult>(T id, TimeSpan timeout)
         {
             var taskSetter = new TaskSetter<TResult>()
-                .AfterTimeout(() => this.Take(id).SetException(new TimeoutException()));
+                .TimeoutAfter(timeout, (t) => this.Remove(id).SetException(new TimeoutException()));
 
             this.table.TryAdd(id, taskSetter);
             return taskSetter;
@@ -53,7 +53,7 @@ namespace NetworkSocket.Tasks
         /// </summary>
         /// <param name="id">任务id</param>
         /// <returns></returns>
-        public ITaskSetter Take(T id)
+        public ITaskSetter Remove(T id)
         {
             ITaskSetter taskSetter;
             this.table.TryRemove(id, out taskSetter);
@@ -64,7 +64,7 @@ namespace NetworkSocket.Tasks
         /// 取出并移除全部的任务
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<ITaskSetter> TakeAll()
+        public IEnumerable<ITaskSetter> RemoveAll()
         {
             var values = this.table.Values.ToArray();
             this.table.Clear();
