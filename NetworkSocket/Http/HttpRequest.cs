@@ -193,7 +193,12 @@ namespace NetworkSocket.Http
             {
                 return false;
             }
-            return contentType.TryGetExtend("boundary", out boundary);
+            var state= contentType.TryGetExtend("boundary", out boundary);
+            if (state && boundary.StartsWith("\"") && boundary.EndsWith("\""))
+            {
+                boundary = boundary.Substring(1, boundary.Length - 2);
+            }
+            return state;
         }
 
         /// <summary>
