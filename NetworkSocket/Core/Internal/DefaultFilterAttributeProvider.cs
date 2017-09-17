@@ -67,6 +67,7 @@ namespace NetworkSocket.Core
         /// </summary>
         /// <param name="apiAction">Api行为</param>
         /// <returns></returns>
+        [Obsolete("GetActionFiltersNoCached", true)]
         private IFilter[] GetActionFiltersNoCachedOld(ApiAction apiAction)
         {
             var paramtersFilters = apiAction.GetParametersFilterAttributes();
