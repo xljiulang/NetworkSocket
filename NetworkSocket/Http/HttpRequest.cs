@@ -193,7 +193,7 @@ namespace NetworkSocket.Http
             {
                 return false;
             }
-            var state= contentType.TryGetExtend("boundary", out boundary);
+            var state = contentType.TryGetExtend("boundary", out boundary);
             if (state && boundary.StartsWith("\"") && boundary.EndsWith("\""))
             {
                 boundary = boundary.Substring(1, boundary.Length - 2);
@@ -251,7 +251,7 @@ namespace NetworkSocket.Http
         public bool IsKeepAlive()
         {
             var connection = this.Headers["Connection"];
-            return StringEquals(connection, "keep-alive");
+            return StringEquals(connection, "close") == false;
         }
 
         /// <summary>

@@ -82,14 +82,7 @@ namespace NetworkSocket.Tasks
         /// <returns></returns>
         public TResult GetResult()
         {
-            try
-            {
-                return this.GetTask().Result;
-            }
-            catch (AggregateException ex)
-            {
-                throw ex.InnerException;
-            }
+            return this.GetTask().GetAwaiter().GetResult();
         }
 
         /// <summary>

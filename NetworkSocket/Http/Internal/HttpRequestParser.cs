@@ -170,7 +170,7 @@ namespace NetworkSocket.Http
             headerLength = reader.Position + endIndex + DoubleCRLF.Length;
 
 
-            while (reader.Position < headerLength)
+            while (reader.Position < headerLength - CRLF.Length)
             {
                 var keyLength = reader.IndexOf(KvSpliter);
                 if (keyLength <= 0)

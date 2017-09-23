@@ -161,7 +161,11 @@ namespace NetworkSocket.Core
             if (this.IsTaskReturn == true)
             {
                 var task = this.Execute(service, parameters) as Task;
-                return task == null ? Task.FromResult<object>(null) : task.ToTask<object>(this.Method.Info.ReturnType);
+                if (task == null)
+                {
+                    return Task.FromResult<object>(null);
+                }
+                return task.Cast<object>(this.Method.Info.ReturnType);
             }
             else
             {
