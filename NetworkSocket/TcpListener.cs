@@ -206,7 +206,14 @@ namespace NetworkSocket
         {
             while (this.listenSocket != null)
             {
-                await this.AcceptAsync(arg);
+                try
+                {
+                    await this.AcceptAsync(arg);
+                }
+                catch (ObjectDisposedException)
+                {
+                    break;
+                }
             }
         }
 

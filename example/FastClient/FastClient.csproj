@@ -57,7 +57,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Client.cs" />
+    <Compile Include="SslFastClient.cs" />
     <Compile Include="FormMain.cs">
       <SubType>Form</SubType>
     </Compile>

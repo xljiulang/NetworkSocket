@@ -74,16 +74,22 @@ namespace NetworkSocket.Core
             return apiResult.taskSetter.GetTask();
         }
 
-        #region IApiResult
+        /// <summary>
+        /// 返回Task对象
+        /// </summary>
+        /// <returns></returns>
         Task IApiResult.GetTask()
         {
             return this.taskSetter.GetTask();
         }
 
-        Task<TResult> IApiResult<TResult>.GetTask()
+        /// <summary>
+        /// 返回Task对象
+        /// </summary>
+        /// <returns></returns>
+        public Task<TResult> GetTask()
         {
             return this.taskSetter.GetTask();
         }
-        #endregion
     }
 }

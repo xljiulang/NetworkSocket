@@ -64,7 +64,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Websocket\WebSocketPlug.cs" />
     <None Include="app.manifest" />
-    <None Include="tools\makecert.bat" />
+    <None Include="cert\openssl.cer" />
+    <None Include="cert\openssl.key" />
+    <None Include="cert\openssl.pfx" />
+    <None Include="cert\pfx.bat" />
     <None Include="View\Home\CusMiddleware.cshtml" />
   </ItemGroup>
   <ItemGroup>
@@ -78,7 +81,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="tools\makecert.exe" />
+    <Content Include="cert\libeay32.dll" />
+    <Content Include="cert\openssl.exe" />
+    <Content Include="cert\ssleay32.dll" />
     <None Include="View\Chat\Index.cshtml" />
     <Content Include="js\chatUI.js" />
     <Content Include="js\bootstrap\css\bootstrap-ie6.min.css" />

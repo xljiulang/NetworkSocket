@@ -16,17 +16,17 @@ namespace FastClient
     /// 客户端
     /// 长连接单例模式
     /// </summary>
-    public class Client : FastTcpClient
+    public class SslFastClient : FastTcpClient
     {
         /// <summary>
         /// 唯一实例
         /// </summary>
-        private static readonly Lazy<Client> instance = new Lazy<Client>(() => new Client());
+        private static readonly Lazy<SslFastClient> instance = new Lazy<SslFastClient>(() => new SslFastClient(targetHost: "localhost"));
 
         /// <summary>
         /// 获取唯一实例
         /// </summary>
-        public static Client Instance
+        public static SslFastClient Instance
         {
             get
             {
@@ -34,11 +34,21 @@ namespace FastClient
             }
         }
 
+
+        /// <summary>
+        /// fast客户端
+        /// </summary>
+        /// <param name="targetHost"></param>
+        public SslFastClient(string targetHost)
+            : base(targetHost)
+        {
+        }
+
         /// <summary>
         /// 获取服务组件版本号
         /// </summary>       
         /// <returns></returns>      
-        public Task<string> GetVersion()
+        public ApiResult<string> GetVersionAsync()
         {
             return this.InvokeApi<string>("GetVersion");
         }
@@ -49,7 +59,7 @@ namespace FastClient
         /// <param name="user">用户信息</param>
         /// <param name="ifAdmin">是否为管理员</param>
         /// <returns></returns>
-        public Task<LoginResult> Login(UserInfo user, Boolean ifAdmin)
+        public ApiResult<LoginResult> LoginAsync(UserInfo user, Boolean ifAdmin)
         {
             return this.InvokeApi<LoginResult>("Login", user, ifAdmin).TimeoutAfter(TimeSpan.FromSeconds(1));
         }
@@ -61,7 +71,7 @@ namespace FastClient
         /// <param name="y"></param>
         /// <param name="z"></param>
         /// <returns></returns>
-        public Task<Int32> GetSum(Int32 x, Int32 y, Int32 z)
+        public ApiResult<Int32> GetSumAsync(Int32 x, Int32 y, Int32 z)
         {
             return this.InvokeApi<Int32>("GetSum", x, y, z);
         }

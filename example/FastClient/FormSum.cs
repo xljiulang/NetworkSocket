@@ -36,7 +36,7 @@ namespace FastClient
 
             try
             {
-                var sum = await Client.Instance.GetSum(x, y, z);
+                var sum = await SslFastClient.Instance.GetSumAsync(x, y, z);
                 MessageBox.Show(string.Format("{0} + {1} + {2} = {3}", x, y, z, sum), "计算结果");
             }
             catch (Exception ex)

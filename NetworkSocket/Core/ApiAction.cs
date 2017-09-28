@@ -169,7 +169,8 @@ namespace NetworkSocket.Core
             }
             else
             {
-                return Task.Run<object>(() => this.Execute(service, parameters));
+                var result = this.Execute(service, parameters);
+                return Task.FromResult(result);
             }
         }
 

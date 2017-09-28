@@ -107,7 +107,11 @@ namespace NetworkSocket
         {
             if (arg.BytesTransferred == 0 || arg.SocketError != SocketError.Success)
             {
-                this.DisconnectHandler(this);
+                var handler = this.DisconnectHandler;
+                if (handler != null)
+                {
+                    handler(this);
+                }
                 return false;
             }
 
@@ -118,8 +122,13 @@ namespace NetworkSocket
                 this.StreamReader.Stream.Seek(0, SeekOrigin.Begin);
             }
 
-            await this.ReceiveCompletedHandler(this);
-            return true;
+            var recvedHandler = this.ReceiveCompletedHandler;
+            if (recvedHandler != null)
+            {
+                await recvedHandler(this);
+                return true;
+            }
+            return false;
         }
 
         /// <summary>

@@ -34,11 +34,12 @@ namespace FastClient
         private async void MainForm_Load(object sender, EventArgs e)
         {
             // 断开自动重连间隔一秒
-            Client.Instance.ReconnectPeriod = TimeSpan.FromSeconds(1);
+            SslFastClient.Instance.ReconnectPeriod = TimeSpan.FromSeconds(1);
 
-            var connected = Client.Instance.Connect("localhost", 1212) == SocketError.Success;
-            var version = connected ? await Client.Instance.GetVersion() : null;
+            var state = await SslFastClient.Instance.ConnectAsync("localhost", 443);
+            var connected = state == SocketError.Success;
 
+            var version = connected ? await SslFastClient.Instance.GetVersionAsync() : null;
             this.Text = connected ? ("通讯库版本：" + version) : "连接服务器失败 ..";
             this.btn_Login.Enabled = this.btn_Pass.Enabled = connected;
         }
@@ -54,7 +55,7 @@ namespace FastClient
             try
             {
                 var user = new UserInfo { Account = this.textBox_Account.Text, Password = this.textBox_Password.Text };
-                var result = await Client.Instance.Login(user, false);
+                var result = await SslFastClient.Instance.LoginAsync(user, false);
 
                 if (result.State == false)
                 {
@@ -62,7 +63,8 @@ namespace FastClient
                 }
                 else
                 {
-                    this.SwitchSumForm();
+                    this.Hide();
+                    new FormSum().Show();
                 }
             }
             catch (Exception ex)
@@ -79,18 +81,9 @@ namespace FastClient
         /// <param name="e"></param>
         private void btn_Pass_Click(object sender, EventArgs e)
         {
-            this.SwitchSumForm();
-        }
-
-        /// <summary>
-        /// 转换到SumForm
-        /// </summary>
-        private void SwitchSumForm()
-        {
             this.Hide();
-            var sumForm = new FormSum();
-            sumForm.ShowDialog();
-            this.Close();
+            new FormSum().Show();
         }
     }
+
 }

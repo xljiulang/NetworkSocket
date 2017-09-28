@@ -148,7 +148,11 @@ namespace NetworkSocket
                 var read = await this.sslStream.ReadAsync(this.bufferRange.Array, this.bufferRange.Offset, this.bufferRange.Count);
                 if (read <= 0)
                 {
-                    this.DisconnectHandler(this);
+                    var handler = this.DisconnectHandler;
+                    if (handler != null)
+                    {
+                        handler(this);
+                    }
                     return false;
                 }
 
@@ -159,12 +163,21 @@ namespace NetworkSocket
                     this.StreamReader.Stream.Seek(0, SeekOrigin.Begin);
                 }
 
-                await this.ReceiveCompletedHandler(this);
-                return true;
+                var recvedHandler = this.ReceiveCompletedHandler;
+                if (recvedHandler != null)
+                {
+                    await recvedHandler(this);
+                    return true;
+                }
+                return false;
             }
             catch (Exception)
             {
-                this.DisconnectHandler(this);
+                var handler = this.DisconnectHandler;
+                if (handler != null)
+                {
+                    handler(this);
+                }
                 return false;
             }
         }
