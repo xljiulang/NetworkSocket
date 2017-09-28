@@ -33,19 +33,29 @@ namespace Service
                .Required(item => item.Password, "密码不能为空")
                .Length(item => item.Password, 12, 6, "密码为{0}到{1}个字符");
 
-            // 需要先将openssl.pfx安装为信任，否则浏览器和客户端不信任
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine("请将cert\\openssl.pfx安装为信任，否则浏览器和客户端不信任");
+            Console.ForegroundColor = ConsoleColor.Gray;
             var cert = new X509Certificate2("cert\\openssl.pfx", "123456");
 
             var listener = new TcpListener();
-            listener.Use<HttpMiddleware>().GlobalFilters.Add(new HttpGlobalFilter());
-            listener.Use<JsonWebSocketMiddleware>().GlobalFilters.Add(new WebSockeGlobalFilter());
-            listener.Use<FastMiddleware>().GlobalFilters.Add(new FastGlobalFilter());
-            listener.Use<FlexPolicyMiddleware>();
 
+            Console.WriteLine("Use<HttpMiddleware>");
+            listener.Use<HttpMiddleware>().GlobalFilters.Add(new HttpGlobalFilter());
+
+            Console.WriteLine("Use<JsonWebSocketMiddleware>");
+            listener.Use<JsonWebSocketMiddleware>().GlobalFilters.Add(new WebSockeGlobalFilter());
+
+            Console.WriteLine("Use<FastMiddleware>");
+            listener.Use<FastMiddleware>().GlobalFilters.Add(new FastGlobalFilter());
+
+            Console.WriteLine("UsePlug<WebSocketPlug>");
             listener.UsePlug<WebSocketPlug>();
 
+            Console.WriteLine("UseSSL<cert\\openssl.pfx>");
             listener.UseSSL(cert);
 
+            Console.WriteLine("Listening port 443");
             listener.Start(443);
             Process.Start("https://localhost:443");
 
