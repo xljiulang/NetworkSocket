@@ -42,10 +42,11 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>_Sn.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -250,9 +251,6 @@
     <Compile Include="WebSocket\WebSocketMiddlewareBase.cs" />
     <Compile Include="WebSocket\WebsocketResponse.cs" />
     <Compile Include="WebSocket\WebSocketSession.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="_Sn.snk" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="jsonWebSocket.js">

@@ -186,6 +186,7 @@ namespace NetworkSocket
                 return;
             }
             this.listenSocket = new Socket(localEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            this.listenSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
             this.listenSocket.Bind(localEndPoint);
             this.listenSocket.Listen(backlog);
 
@@ -396,6 +397,7 @@ namespace NetworkSocket
         {
             if (this.IsListening == true)
             {
+                this.listenSocket.Close();
                 this.listenSocket.Dispose();
             }
 
