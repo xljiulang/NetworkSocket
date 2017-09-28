@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("https://github.com/xljiulang/NetworkSocket")]
 [assembly: AssemblyProduct("NetworkSocket")]
-[assembly: AssemblyCopyright("Copyright © Chen Guowei 2013-2016")]
+[assembly: AssemblyCopyright("Copyright © laojiu 2013-2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 [assembly: InternalsVisibleTo("UnitTest.NetworkSocket,PublicKey=0024000004800000940000000602000000240000525341310004000001000100a1876d6d847bfe6491a9bf93262a5dc197e8c46ab9fec73eb87f2d25e2b8b88f260302c0ce561eb7117cdd6ac0c7095027bfef2911e397a42475d17332c925f0635280451923d87d57a09f149b4544a115bc8679432f2db2ee1fea3672be1a77908fd1efbf2ba408239d92850360c1abea9dbf2724d5b66bc907ccba893d36a2")]
