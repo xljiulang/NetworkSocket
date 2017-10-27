@@ -1,10 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27004.2005
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetworkSocket.Net45", "NetworkSocket\NetworkSocket.Net45.csproj", "{80D0FA44-523B-4E68-BDC2-B12901D5855B}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "example", "example", "{8A38CC1F-CB87-4838-90AF-8ECF79AEDB15}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Models", "example\Models\Models.csproj", "{F9B37780-6345-4E6F-8523-687F56895625}"
@@ -18,6 +16,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		NetworkSocket.1.7.0.nupkg = NetworkSocket.1.7.0.nupkg
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetworkSocket.NetStandard", "NetworkSocket\NetworkSocket.NetStandard.csproj", "{F91EAC0A-5986-440B-B78E-B2CCE3664FCE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -28,16 +28,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{80D0FA44-523B-4E68-BDC2-B12901D5855B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{80D0FA44-523B-4E68-BDC2-B12901D5855B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{80D0FA44-523B-4E68-BDC2-B12901D5855B}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{80D0FA44-523B-4E68-BDC2-B12901D5855B}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{80D0FA44-523B-4E68-BDC2-B12901D5855B}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{80D0FA44-523B-4E68-BDC2-B12901D5855B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{80D0FA44-523B-4E68-BDC2-B12901D5855B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{80D0FA44-523B-4E68-BDC2-B12901D5855B}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{80D0FA44-523B-4E68-BDC2-B12901D5855B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{80D0FA44-523B-4E68-BDC2-B12901D5855B}.Release|x86.ActiveCfg = Release|Any CPU
 		{F9B37780-6345-4E6F-8523-687F56895625}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F9B37780-6345-4E6F-8523-687F56895625}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F9B37780-6345-4E6F-8523-687F56895625}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -68,6 +58,18 @@ Global
 		{30386CFD-B297-4F51-9E68-BACEB7C60D39}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{30386CFD-B297-4F51-9E68-BACEB7C60D39}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{30386CFD-B297-4F51-9E68-BACEB7C60D39}.Release|x86.ActiveCfg = Release|Any CPU
+		{F91EAC0A-5986-440B-B78E-B2CCE3664FCE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F91EAC0A-5986-440B-B78E-B2CCE3664FCE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F91EAC0A-5986-440B-B78E-B2CCE3664FCE}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{F91EAC0A-5986-440B-B78E-B2CCE3664FCE}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{F91EAC0A-5986-440B-B78E-B2CCE3664FCE}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F91EAC0A-5986-440B-B78E-B2CCE3664FCE}.Debug|x86.Build.0 = Debug|Any CPU
+		{F91EAC0A-5986-440B-B78E-B2CCE3664FCE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F91EAC0A-5986-440B-B78E-B2CCE3664FCE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F91EAC0A-5986-440B-B78E-B2CCE3664FCE}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{F91EAC0A-5986-440B-B78E-B2CCE3664FCE}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{F91EAC0A-5986-440B-B78E-B2CCE3664FCE}.Release|x86.ActiveCfg = Release|Any CPU
+		{F91EAC0A-5986-440B-B78E-B2CCE3664FCE}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -76,6 +78,9 @@ Global
 		{F9B37780-6345-4E6F-8523-687F56895625} = {8A38CC1F-CB87-4838-90AF-8ECF79AEDB15}
 		{2A042153-5699-4B9B-A011-1EDCA65E662D} = {8A38CC1F-CB87-4838-90AF-8ECF79AEDB15}
 		{30386CFD-B297-4F51-9E68-BACEB7C60D39} = {8A38CC1F-CB87-4838-90AF-8ECF79AEDB15}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0DBEBD43-A05F-4ECB-93FB-76FD8194B17D}
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = Demo\Server\Server.csproj
