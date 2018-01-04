@@ -211,7 +211,7 @@ namespace NetworkSocket.Http
             {
                 return false;
             }
-            if (StringEquals(this.Headers.TryGet<string>("Connection"), "Upgrade") == false)
+            if (StringContains(this.Headers.TryGet<string>("Connection"), "Upgrade") == false)
             {
                 return false;
             }
@@ -264,6 +264,22 @@ namespace NetworkSocket.Http
         private static bool StringEquals(string value1, string value2)
         {
             return string.Equals(value1, value2, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// 获取是是否包含
+        /// 不区分大小写
+        /// </summary>
+        /// <param name="value1"></param>
+        /// <param name="value2"></param>
+        /// <returns></returns>
+        private static bool StringContains(string value1, string value2)
+        {
+            if (string.IsNullOrEmpty(value1) || string.IsNullOrEmpty(value2))
+            {
+                return false;
+            }
+            return value1.IndexOf(value2, StringComparison.OrdinalIgnoreCase) > -1;
         }
     }
 }
