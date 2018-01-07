@@ -9,7 +9,14 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+
+#if NETSTANDARD2_0
+
+using Newtonsoft.Json;
+
+#else
 using System.Web.Script.Serialization;
+#endif
 
 namespace NetworkSocket.Core
 {
@@ -52,7 +59,7 @@ namespace NetworkSocket.Core
         /// 反序列化json为动态类型
         /// 异常时抛出SerializerException
         /// </summary>
-        /// <param name="json">json数据</param>      
+        /// <param name="json">json数据</param>
         /// <exception cref="SerializerException"></exception>
         /// <returns></returns>
         public dynamic Deserialize(string json)
@@ -83,9 +90,15 @@ namespace NetworkSocket.Core
 
             try
             {
+#if NETSTANDARD2_0
+
+                return JsonConvert.DeserializeObject(json, type);
+#else
+
                 var serializer = new JavaScriptSerializer();
                 serializer.MaxJsonLength = int.MaxValue;
                 return serializer.Deserialize(json, type);
+#endif
             }
             catch (Exception ex)
             {
@@ -96,9 +109,9 @@ namespace NetworkSocket.Core
         /// <summary>
         /// 将值转换为目标类型
         /// 这些值有可能是反序列化得到的动态类型的值
-        /// </summary>       
+        /// </summary>
         /// <param name="value">要转换的值，可能</param>
-        /// <param name="targetType">转换的目标类型</param>   
+        /// <param name="targetType">转换的目标类型</param>
         /// <returns>转换结果</returns>
         public object Convert(object value, Type targetType)
         {
@@ -109,6 +122,7 @@ namespace NetworkSocket.Core
         }
 
         #region Json
+
         /// <summary>
         /// 提供Json序列化
         /// </summary>
@@ -126,7 +140,14 @@ namespace NetworkSocket.Core
                 {
                     return null;
                 }
-
+#if NETSTANDARD2_0
+                return JsonConvert.SerializeObject(model, new JsonSerializerSettings
+                {
+                    NullValueHandling = NullValueHandling.Ignore,
+                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                    DateFormatString = datetimeFomat
+                });
+#else
                 var serializer = new JavaScriptSerializer();
                 var dateTimeConverter = new DateTimeConverter(datetimeFomat);
                 serializer.MaxJsonLength = int.MaxValue;
@@ -134,8 +155,11 @@ namespace NetworkSocket.Core
 
                 var json = serializer.Serialize(model);
                 return dateTimeConverter.Decode(json);
+#endif
             }
 
+#if NETSTANDARD2_0
+#else
             /// <summary>
             /// 时间转换器
             /// </summary>
@@ -143,7 +167,7 @@ namespace NetworkSocket.Core
             {
                 /// <summary>
                 /// 获取转换器是否已使用过
-                /// </summary>              
+                /// </summary>
                 private bool isUsed = false;
 
                 /// <summary>
@@ -214,7 +238,7 @@ namespace NetworkSocket.Core
                 }
 
                 /// <summary>
-                /// 表示将值进行Uri转义              
+                /// 表示将值进行Uri转义
                 /// </summary>
                 private class UriEscapeValue : Uri, IDictionary<string, object>
                 {
@@ -229,7 +253,7 @@ namespace NetworkSocket.Core
                     private static readonly string Pattern = Mask + ".+?(?=\")";
 
                     /// <summary>
-                    /// 将值进行Uri转义  
+                    /// 将值进行Uri转义
                     /// </summary>
                     /// <param name="value">值</param>
                     public UriEscapeValue(string value)
@@ -251,7 +275,8 @@ namespace NetworkSocket.Core
                         });
                     }
 
-                    #region IDictionary<string, object>
+            #region IDictionary<string, object>
+
                     void IDictionary<string, object>.Add(string key, object value)
                     {
                         throw new NotImplementedException();
@@ -350,16 +375,21 @@ namespace NetworkSocket.Core
                     {
                         throw new NotImplementedException();
                     }
-                    #endregion
+
+            #endregion IDictionary<string, object>
                 }
             }
+
+#endif
         }
-        #endregion
+
+        #endregion Json
 
         #region JObject
+
         /// <summary>
         /// 表示动态Json对象
-        /// </summary>   
+        /// </summary>
         [DebuggerTypeProxy(typeof(DebugView))]
         private class JObject : DynamicObject
         {
@@ -373,10 +403,15 @@ namespace NetworkSocket.Core
             /// <returns></returns>
             public static dynamic Parse(string json)
             {
+#if NETSTANDARD2_0
+                return JsonConvert.DeserializeObject(json);
+#else
+
                 var serializer = new JavaScriptSerializer();
                 serializer.MaxJsonLength = int.MaxValue;
                 serializer.RegisterConverters(new JavaScriptConverter[] { new DynamicJsonConverter() });
                 return serializer.Deserialize(json, typeof(object));
+#endif
             }
 
             /// <summary>
@@ -467,7 +502,11 @@ namespace NetworkSocket.Core
                 return result;
             }
 
+#if NETSTANDARD2_0
+#else
+
             #region DynamicJsonConverter
+
             /// <summary>
             /// Json转换器
             /// </summary>
@@ -507,9 +546,13 @@ namespace NetworkSocket.Core
                     return new JObject(dictionary);
                 }
             }
-            #endregion
+
+            #endregion DynamicJsonConverter
+
+#endif
 
             #region DebugView
+
             /// <summary>
             /// 调试视图
             /// </summary>
@@ -542,8 +585,9 @@ namespace NetworkSocket.Core
                 }
             }
 
-            #endregion
+            #endregion DebugView
         }
-        #endregion
+
+        #endregion JObject
     }
 }
