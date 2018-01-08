@@ -1,22 +1,17 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2010
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetworkSocket.Net45", "NetworkSocket\NetworkSocket.Net45.csproj", "{80D0FA44-523B-4E68-BDC2-B12901D5855B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetworkSocket", "NetworkSocket\NetworkSocket.csproj", "{80D0FA44-523B-4E68-BDC2-B12901D5855B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "example", "example", "{8A38CC1F-CB87-4838-90AF-8ECF79AEDB15}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Models", "example\Models\Models.csproj", "{F9B37780-6345-4E6F-8523-687F56895625}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Service", "example\Service\Service.csproj", "{2A042153-5699-4B9B-A011-1EDCA65E662D}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FastClient", "example\FastClient\FastClient.csproj", "{30386CFD-B297-4F51-9E68-BACEB7C60D39}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{AA559C86-83FF-4DC4-A78D-306E982D9709}"
-	ProjectSection(SolutionItems) = preProject
-		NetworkSocket.1.7.0.nupkg = NetworkSocket.1.7.0.nupkg
-	EndProjectSection
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Service", "example\Service\Service.csproj", "{29A12D39-F285-40AA-9B70-9F119B05C86A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -48,16 +43,6 @@ Global
 		{F9B37780-6345-4E6F-8523-687F56895625}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{F9B37780-6345-4E6F-8523-687F56895625}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{F9B37780-6345-4E6F-8523-687F56895625}.Release|x86.ActiveCfg = Release|Any CPU
-		{2A042153-5699-4B9B-A011-1EDCA65E662D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2A042153-5699-4B9B-A011-1EDCA65E662D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2A042153-5699-4B9B-A011-1EDCA65E662D}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{2A042153-5699-4B9B-A011-1EDCA65E662D}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{2A042153-5699-4B9B-A011-1EDCA65E662D}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{2A042153-5699-4B9B-A011-1EDCA65E662D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2A042153-5699-4B9B-A011-1EDCA65E662D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2A042153-5699-4B9B-A011-1EDCA65E662D}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{2A042153-5699-4B9B-A011-1EDCA65E662D}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{2A042153-5699-4B9B-A011-1EDCA65E662D}.Release|x86.ActiveCfg = Release|Any CPU
 		{30386CFD-B297-4F51-9E68-BACEB7C60D39}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{30386CFD-B297-4F51-9E68-BACEB7C60D39}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{30386CFD-B297-4F51-9E68-BACEB7C60D39}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -68,14 +53,29 @@ Global
 		{30386CFD-B297-4F51-9E68-BACEB7C60D39}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{30386CFD-B297-4F51-9E68-BACEB7C60D39}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{30386CFD-B297-4F51-9E68-BACEB7C60D39}.Release|x86.ActiveCfg = Release|Any CPU
+		{29A12D39-F285-40AA-9B70-9F119B05C86A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{29A12D39-F285-40AA-9B70-9F119B05C86A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{29A12D39-F285-40AA-9B70-9F119B05C86A}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{29A12D39-F285-40AA-9B70-9F119B05C86A}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{29A12D39-F285-40AA-9B70-9F119B05C86A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{29A12D39-F285-40AA-9B70-9F119B05C86A}.Debug|x86.Build.0 = Debug|Any CPU
+		{29A12D39-F285-40AA-9B70-9F119B05C86A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{29A12D39-F285-40AA-9B70-9F119B05C86A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{29A12D39-F285-40AA-9B70-9F119B05C86A}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{29A12D39-F285-40AA-9B70-9F119B05C86A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{29A12D39-F285-40AA-9B70-9F119B05C86A}.Release|x86.ActiveCfg = Release|Any CPU
+		{29A12D39-F285-40AA-9B70-9F119B05C86A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{F9B37780-6345-4E6F-8523-687F56895625} = {8A38CC1F-CB87-4838-90AF-8ECF79AEDB15}
-		{2A042153-5699-4B9B-A011-1EDCA65E662D} = {8A38CC1F-CB87-4838-90AF-8ECF79AEDB15}
 		{30386CFD-B297-4F51-9E68-BACEB7C60D39} = {8A38CC1F-CB87-4838-90AF-8ECF79AEDB15}
+		{29A12D39-F285-40AA-9B70-9F119B05C86A} = {8A38CC1F-CB87-4838-90AF-8ECF79AEDB15}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BD8D2F5E-D6D6-47A7-9F66-6A38FACDC58F}
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = Demo\Server\Server.csproj

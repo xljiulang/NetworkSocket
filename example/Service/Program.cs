@@ -22,9 +22,9 @@ namespace Service
         static void Main(string[] args)
         {
             Console.Title = "通讯服务器";
-            if (Directory.Exists("js") == false)
+            while (Directory.Exists("js") == false)
             {
-                Directory.SetCurrentDirectory("../../");
+                Directory.SetCurrentDirectory("../");
             }
 
             Model.Fluent<UserInfo>()
@@ -34,9 +34,9 @@ namespace Service
                .Length(item => item.Password, 12, 6, "密码为{0}到{1}个字符");
 
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("请将cert\\openssl.pfx安装为信任，否则浏览器和客户端不信任");
+            Console.WriteLine("请将项目下的cert\\openssl.pfx安装为信任，否则浏览器和客户端不信任");
             Console.ForegroundColor = ConsoleColor.Gray;
-            var cert = new X509Certificate2("cert\\openssl.pfx", "123456");
+
 
             var listener = new TcpListener();
 
@@ -53,12 +53,13 @@ namespace Service
             listener.UsePlug<WebSocketPlug>();
 
             Console.WriteLine("UseSSL<cert\\openssl.pfx>");
+            var cert = new X509Certificate2("cert\\openssl.pfx", "123456");
             listener.UseSSL(cert);
 
             Console.WriteLine("Listening port 443");
             listener.Start(443);
-            Process.Start("https://localhost:443");
 
+            Console.WriteLine("请在浏览器访问 https://localhost");
             Console.Read();
             listener.Dispose();
         }

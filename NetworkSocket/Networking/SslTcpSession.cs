@@ -191,11 +191,6 @@ namespace NetworkSocket
         /// <returns></returns>
         public override int Send(ArraySegment<byte> byteRange)
         {
-            if (byteRange == null)
-            {
-                throw new ArgumentNullException();
-            }
-
             if (this.IsConnected == false)
             {
                 throw new SocketException((int)SocketError.NotConnected);

@@ -9,7 +9,15 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+
+#if NET45
 using System.Web.Script.Serialization;
+#endif
+
+#if NETCOREAPP2_0
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+#endif
 
 namespace NetworkSocket.Core
 {
@@ -40,7 +48,13 @@ namespace NetworkSocket.Core
         {
             try
             {
+#if NET45
                 return JSON.Parse(model, datetimeFomat);
+#endif
+#if NETCOREAPP2_0
+                var setting = new JsonSerializerSettings { DateFormatString = datetimeFomat };
+                return JsonConvert.SerializeObject(model, setting);
+#endif
             }
             catch (Exception ex)
             {
@@ -59,7 +73,12 @@ namespace NetworkSocket.Core
         {
             try
             {
+#if NET45
                 return JObject.Parse(json);
+#endif
+#if NETCOREAPP2_0
+                return JsonConvert.DeserializeObject<dynamic>(json);
+#endif
             }
             catch (Exception ex)
             {
@@ -83,9 +102,14 @@ namespace NetworkSocket.Core
 
             try
             {
+#if NET45
                 var serializer = new JavaScriptSerializer();
                 serializer.MaxJsonLength = int.MaxValue;
                 return serializer.Deserialize(json, type);
+#endif
+#if NETCOREAPP2_0
+                return JsonConvert.DeserializeObject(json, type);
+#endif
             }
             catch (Exception ex)
             {
@@ -105,9 +129,19 @@ namespace NetworkSocket.Core
             // JObject解析JSON得到动态类型是DynamicObject
             // 默认的Converter实例能转换
             // 如果要加入其它转换单元，请使用new Converter(params IConvert[] customConverts)
+
+#if NETCOREAPP2_0
+            var jToken = value as JToken;
+            if (jToken != null)
+            {
+                return jToken.ToObject(targetType);
+            }
+#endif
+
             return Converter.Cast(value, targetType);
         }
 
+#if NET45
         #region Json
         /// <summary>
         /// 提供Json序列化
@@ -251,7 +285,7 @@ namespace NetworkSocket.Core
                         });
                     }
 
-                    #region IDictionary<string, object>
+        #region IDictionary<string, object>
                     void IDictionary<string, object>.Add(string key, object value)
                     {
                         throw new NotImplementedException();
@@ -350,11 +384,12 @@ namespace NetworkSocket.Core
                     {
                         throw new NotImplementedException();
                     }
-                    #endregion
+        #endregion
                 }
             }
         }
         #endregion
+
 
         #region JObject
         /// <summary>
@@ -467,7 +502,7 @@ namespace NetworkSocket.Core
                 return result;
             }
 
-            #region DynamicJsonConverter
+        #region DynamicJsonConverter
             /// <summary>
             /// Json转换器
             /// </summary>
@@ -507,9 +542,9 @@ namespace NetworkSocket.Core
                     return new JObject(dictionary);
                 }
             }
-            #endregion
+        #endregion
 
-            #region DebugView
+        #region DebugView
             /// <summary>
             /// 调试视图
             /// </summary>
@@ -542,8 +577,9 @@ namespace NetworkSocket.Core
                 }
             }
 
-            #endregion
+        #endregion
         }
         #endregion
+#endif
     }
 }
