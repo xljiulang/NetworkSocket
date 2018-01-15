@@ -4,7 +4,7 @@
 
 
 ##### 服务端代码
-```
+```c#
 public class HomeController : HttpController
 {
     [HttpGet]
@@ -61,7 +61,7 @@ listener.Start(1212);
 ```
 
 ##### 客户端代码
-```
+```c#
 // http js请求
 $.getJSON("/Home/GetUsers",{name:"admin"},function(data){
     alert(data.length == 0)
