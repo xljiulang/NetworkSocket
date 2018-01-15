@@ -66,6 +66,7 @@ namespace NetworkSocket.Util
                 .AddLast<DictionaryConvert>()
                 .AddLast<ArrayConvert>()
                 .AddLast<ListConvert>()
+                .AddLast<JTokenConvert>()
                 .AddLast<DynamicObjectConvert>();
         }
 

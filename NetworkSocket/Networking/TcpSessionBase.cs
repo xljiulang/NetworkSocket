@@ -198,21 +198,14 @@ namespace NetworkSocket
         /// 同步发送数据
         /// </summary>
         /// <param name="byteRange">数据范围</param>
-        /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="SocketException"></exception>
         /// <returns></returns>
         public virtual int Send(ArraySegment<byte> byteRange)
         {
-            if (byteRange.Array == null)
-            {
-                throw new ArgumentNullException();
-            }
-
             if (this.IsConnected == false)
             {
                 throw new SocketException((int)SocketError.NotConnected);
             }
-
             return this.Socket.Send(byteRange.Array, byteRange.Offset, byteRange.Count, SocketFlags.None);
         }
 

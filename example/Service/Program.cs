@@ -59,7 +59,14 @@ namespace Service
             Console.WriteLine("Listening port 443");
             listener.Start(443);
 
-            Console.WriteLine("请在浏览器访问 https://localhost");
+            try
+            {
+                Process.Start("https://localhost");
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("请在浏览器访问 https://localhost");
+            }
             Console.Read();
             listener.Dispose();
         }

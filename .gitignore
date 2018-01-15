@@ -156,3 +156,4 @@ $RECYCLE.BIN/
 .DS_Store
 /packages
 /.vs/NetworkSocket/v15/Server/sqlite3
+/.vs/config

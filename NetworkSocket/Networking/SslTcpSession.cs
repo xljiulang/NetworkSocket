@@ -186,7 +186,6 @@ namespace NetworkSocket
         /// 同步发送数据
         /// </summary>
         /// <param name="byteRange">数据范围</param>  
-        /// <exception cref="ArgumentNullException"></exception>        
         /// <exception cref="SocketException"></exception>
         /// <returns></returns>
         public override int Send(ArraySegment<byte> byteRange)
