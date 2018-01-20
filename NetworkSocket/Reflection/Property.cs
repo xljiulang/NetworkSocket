@@ -14,12 +14,12 @@ namespace NetworkSocket.Reflection
         /// <summary>
         /// 获取器
         /// </summary>
-        private readonly Method geter;
+        private readonly PropertyGetter geter;
 
         /// <summary>
         /// 设置器
         /// </summary>
-        private readonly Method seter;
+        private readonly PropertySetter seter;
 
         /// <summary>
         /// 获取属性名称
@@ -40,20 +40,15 @@ namespace NetworkSocket.Reflection
             this.Name = property.Name;
             this.Info = property;
 
-            var getMethod = property.GetGetMethod();
-            if (getMethod != null)
+            if (property.CanRead == true)
             {
-                this.geter = new Method(getMethod);
+                this.geter = new PropertyGetter(property);
             }
-
-            var setMethod = property.GetSetMethod();
-            if (setMethod != null)
+            if (property.CanWrite == true)
             {
-                this.seter = new Method(setMethod);
+                this.seter = new PropertySetter(property);
             }
         }
-
-
 
         /// <summary>
         /// 获取属性的值
@@ -67,7 +62,7 @@ namespace NetworkSocket.Reflection
             {
                 throw new NotSupportedException();
             }
-            return this.geter.Invoke(instance, null);
+            return this.geter.Invoke(instance);
         }
 
         /// <summary>
@@ -84,7 +79,6 @@ namespace NetworkSocket.Reflection
             }
             this.seter.Invoke(instance, value);
         }
-
 
         /// <summary>
         /// 类型属性的Setter缓存

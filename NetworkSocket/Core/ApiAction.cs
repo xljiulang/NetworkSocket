@@ -158,20 +158,18 @@ namespace NetworkSocket.Core
         /// <returns></returns>
         public Task<object> ExecuteAsync(object service, params object[] parameters)
         {
-            if (this.IsTaskReturn == true)
-            {
-                var task = this.Execute(service, parameters) as Task;
-                if (task == null)
-                {
-                    return Task.FromResult<object>(null);
-                }
-                return task.Cast<object>(this.Method.Info.ReturnType);
-            }
-            else
+            if (this.IsTaskReturn == false)
             {
                 var result = this.Execute(service, parameters);
                 return Task.FromResult(result);
             }
+
+            var task = this.Execute(service, parameters) as Task;
+            if (task == null)
+            {
+                return Task.FromResult<object>(null);
+            }
+            return task.Cast<object>(this.Method.Info.ReturnType);
         }
 
         /// <summary>
