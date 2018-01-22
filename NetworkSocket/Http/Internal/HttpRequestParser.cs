@@ -310,7 +310,7 @@ namespace NetworkSocket.Http
                 else
                 {
                     var byes = streamReader.ReadArray(bodyLength);
-                    var value = HttpUtility.UrlDecode(byes, Encoding.UTF8);
+                    var value = byes.Length == 0 ? null : HttpUtility.UrlDecode(byes, Encoding.UTF8);
                     form.Add(mHead.Name, value);
                 }
                 streamReader.Position = streamReader.Position + boundaryBytes.Length;
