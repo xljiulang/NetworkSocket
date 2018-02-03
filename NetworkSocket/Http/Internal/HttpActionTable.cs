@@ -1,16 +1,13 @@
 ﻿using NetworkSocket.Core;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NetworkSocket.Http
 {
     /// <summary>
     /// 表示http行为表
     /// </summary>
-    internal class HttpActionTable
+    class HttpActionTable
     {
         /// <summary>
         /// http行为

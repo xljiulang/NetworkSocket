@@ -1,16 +1,12 @@
-﻿using System;
+﻿using NetworkSocket.Tasks;
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
+using System.Net.Security;
 using System.Net.Sockets;
-using System.Security.Cryptography;
+using System.Security.Authentication;
 using System.Text;
 using System.Threading.Tasks;
-using System.Security.Authentication;
-using NetworkSocket.Http;
-using NetworkSocket.Util;
-using NetworkSocket.Tasks;
-using System.Net.Security;
 
 namespace NetworkSocket.WebSocket
 {
@@ -261,9 +257,8 @@ namespace NetworkSocket.WebSocket
                 return;
             }
 
-            Guid id;
             var value = Encoding.UTF8.GetString(pong);
-            if (Guid.TryParse(value, out id) == false)
+            if (Guid.TryParse(value, out Guid id) == false)
             {
                 return;
             }

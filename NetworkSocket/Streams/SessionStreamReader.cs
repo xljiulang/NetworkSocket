@@ -1,11 +1,7 @@
 ﻿using NetworkSocket.Util;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace NetworkSocket.Streams
 {
@@ -81,11 +77,7 @@ namespace NetworkSocket.Streams
         /// <exception cref="ArgumentNullException"></exception>
         public SessionStreamReader(SessionStream stream)
         {
-            if (stream == null)
-            {
-                throw new ArgumentNullException();
-            }
-            this.Stream = stream;
+            this.Stream = stream ?? throw new ArgumentNullException();
             this.SyncRoot = new object();
         }
 

@@ -183,7 +183,7 @@ namespace NetworkSocket.WebSocket
             }
 
             var body = package.body;
-            var message = body == null ? null : body.ToString();
+            var message = body?.ToString();
             var exception = new RemoteException(message);
             taskSetter.SetException(exception);
         }

@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace NetworkSocket.Util.Converts
 {
@@ -43,8 +40,7 @@ namespace NetworkSocket.Util.Converts
             }
 
             var length = 0;
-            var list = items as IList;
-            if (list != null)
+            if (items is IList list)
             {
                 length = list.Count;
             }

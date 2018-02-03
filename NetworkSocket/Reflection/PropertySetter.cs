@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NetworkSocket.Reflection
 {
@@ -25,6 +21,10 @@ namespace NetworkSocket.Reflection
         /// <exception cref="ArgumentNullException"></exception>
         public PropertySetter(PropertyInfo property)
         {
+            if (property == null)
+            {
+                throw new ArgumentNullException(nameof(property));
+            }
             this.setFunc = CreateSetterDelegate(property);
         }
 

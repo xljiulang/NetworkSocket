@@ -1,8 +1,6 @@
 ﻿using NetworkSocket.Http;
 using NetworkSocket.Tasks;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Security.Cryptography;
@@ -173,8 +171,7 @@ namespace NetworkSocket.WebSocket
         private byte[] GenerateHandshakeBuffer(WebSocketClient client, string path, out string secKey)
         {
             var host = client.RemoteEndPoint.ToString();
-            var dnsEndpoint = client.RemoteEndPoint as DnsEndPoint;
-            if (dnsEndpoint != null)
+            if (client.RemoteEndPoint is DnsEndPoint dnsEndpoint)
             {
                 host = string.Format("{0}:{1}", dnsEndpoint.Host, dnsEndpoint.Port);
             }

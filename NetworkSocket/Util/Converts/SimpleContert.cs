@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace NetworkSocket.Util.Converts
 {
@@ -45,8 +42,7 @@ namespace NetworkSocket.Util.Converts
                 return Guid.Parse(valueString);
             }
 
-            var convertible = value as IConvertible;
-            if (convertible != null && typeof(IConvertible).IsAssignableFrom(targetType) == true)
+            if (value is IConvertible convertible && typeof(IConvertible).IsAssignableFrom(targetType) == true)
             {
                 return convertible.ToType(targetType, null);
             }

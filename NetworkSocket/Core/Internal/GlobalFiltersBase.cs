@@ -2,14 +2,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace NetworkSocket.Core
 {
     /// <summary>
     /// 全局过滤器管理者的基础类
     /// </summary>
-    internal class GlobalFiltersBase : IGlobalFilters
+    class GlobalFiltersBase : IGlobalFilters
     {
         /// <summary>
         /// 获取过过滤器过滤器

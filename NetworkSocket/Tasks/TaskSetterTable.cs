@@ -1,12 +1,8 @@
-﻿using NetworkSocket.Core;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace NetworkSocket.Tasks
 {
@@ -55,8 +51,7 @@ namespace NetworkSocket.Tasks
         /// <returns></returns>
         public ITaskSetter Remove(T id)
         {
-            ITaskSetter taskSetter;
-            this.table.TryRemove(id, out taskSetter);
+            this.table.TryRemove(id, out ITaskSetter taskSetter);
             return taskSetter;
         }
 

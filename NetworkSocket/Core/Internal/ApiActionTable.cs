@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace NetworkSocket.Core
 {
     /// <summary>
     /// 表示Api行为表
     /// </summary>
-    internal class ApiActionTable
+    class ApiActionTable
     {
         /// <summary>
         /// Api行为字典
@@ -79,8 +76,7 @@ namespace NetworkSocket.Core
         /// <returns></returns>
         public ApiAction TryGetAndClone(string name)
         {
-            ApiAction apiAction;
-            if (this.dictionary.TryGetValue(name, out apiAction))
+            if (this.dictionary.TryGetValue(name, out ApiAction apiAction))
             {
                 return ((ICloneable<ApiAction>)apiAction).CloneConstructor();
             }

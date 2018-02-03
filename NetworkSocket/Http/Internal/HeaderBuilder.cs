@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace NetworkSocket.Http
 {
     /// <summary>
     /// 表示http头生成器
     /// </summary>
-    internal class HeaderBuilder
+    class HeaderBuilder
     {
         /// <summary>
         /// 换行

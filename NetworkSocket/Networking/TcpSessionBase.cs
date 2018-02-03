@@ -3,14 +3,9 @@ using NetworkSocket.Tasks;
 using NetworkSocket.Util;
 using System;
 using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace NetworkSocket
@@ -139,11 +134,7 @@ namespace NetworkSocket
         /// <exception cref="ArgumentNullException"></exception>
         public virtual void SetSocket(Socket socket)
         {
-            if (socket == null)
-            {
-                throw new ArgumentNullException();
-            }
-            this.Socket = socket;
+            this.Socket = socket ?? throw new ArgumentNullException();
             this.socketClosed = false;
 
             this.StreamReader.Clear();
@@ -389,11 +380,7 @@ namespace NetworkSocket
             {
                 throw new ArgumentNullException("channel");
             }
-            if (handler == null)
-            {
-                throw new ArgumentNullException("handler");
-            }
-            this.subscribeTable[channel] = handler;
+            this.subscribeTable[channel] = handler ?? throw new ArgumentNullException("handler");
         }
 
         /// <summary>
@@ -433,8 +420,7 @@ namespace NetworkSocket
                 throw new ArgumentNullException("channel");
             }
 
-            Action<object> action;
-            if (this.subscribeTable.TryGetValue(channel, out action))
+            if (this.subscribeTable.TryGetValue(channel, out Action<object> action))
             {
                 action(data);
                 return true;

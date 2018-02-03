@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace NetworkSocket.Validation
+﻿namespace NetworkSocket.Validation
 {
     /// <summary>
     /// 定义属性的验证规则行为的接口

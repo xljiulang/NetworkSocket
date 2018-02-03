@@ -1,12 +1,7 @@
-﻿using NetworkSocket.Exceptions;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace NetworkSocket
@@ -90,17 +85,12 @@ namespace NetworkSocket
         /// <exception cref="ArgumentNullException"></exception>
         public void UseSSL(X509Certificate cer)
         {
-            if (cer == null)
-            {
-                throw new ArgumentNullException();
-            }
             if (this.IsListening == true)
             {
                 throw new InvalidOperationException("实例已经IsListening，不能UseSSL");
             }
-            this.Certificate = cer;
+            this.Certificate = cer ?? throw new ArgumentNullException();
         }
-
 
         /// <summary>
         /// 使用协议中间件

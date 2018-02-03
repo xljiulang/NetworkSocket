@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace NetworkSocket.Http
+﻿namespace NetworkSocket.Http
 {
     /// <summary>
     /// http请求解析结果
     /// </summary>
-    internal class HttpRequestParseResult
+    class HttpRequestParseResult
     {
         /// <summary>
         /// 是否为http请求

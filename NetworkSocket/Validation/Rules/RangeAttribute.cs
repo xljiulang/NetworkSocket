@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace NetworkSocket.Validation.Rules
 {
@@ -60,8 +57,7 @@ namespace NetworkSocket.Validation.Rules
                 return true;
             }
 
-            double number = 0d;
-            if (double.TryParse(value, out number))
+            if (double.TryParse(value, out double number))
             {
                 return number >= this.MinValue && number <= this.MaxValue;
             }

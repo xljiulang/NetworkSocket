@@ -1,9 +1,6 @@
 ﻿using NetworkSocket.Reflection;
 using System;
-using System.Collections.Generic;
 using System.Dynamic;
-using System.Linq;
-using System.Text;
 
 namespace NetworkSocket.Util.Converts
 {
@@ -46,8 +43,7 @@ namespace NetworkSocket.Util.Converts
                     continue;
                 }
 
-                object targetValue;
-                if (dynamicObject.TryGetMember(new MemberBinder(setter.Name, ignoreCase: true), out targetValue) == false)
+                if (dynamicObject.TryGetMember(new MemberBinder(setter.Name, ignoreCase: true), out object targetValue) == false)
                 {
                     continue;
                 }

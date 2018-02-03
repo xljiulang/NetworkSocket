@@ -2,14 +2,13 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace NetworkSocket.Core
 {
     /// <summary>
     /// 默认提供的Api行为特性过滤器提供者
     /// </summary>
-    internal class DefaultFilterAttributeProvider : IFilterAttributeProvider
+    class DefaultFilterAttributeProvider : IFilterAttributeProvider
     {
         /// <summary>
         /// ApiAction的过滤器缓存

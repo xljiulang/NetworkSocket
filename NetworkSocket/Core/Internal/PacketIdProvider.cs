@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
+﻿using System.Threading;
 
 namespace NetworkSocket.Core
 {
     /// <summary>
     /// 表示数据包id提供者
     /// </summary>
-    internal class PacketIdProvider
+    class PacketIdProvider
     {
         /// <summary>
         /// 基准值

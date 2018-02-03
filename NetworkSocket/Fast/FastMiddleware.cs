@@ -2,15 +2,9 @@
 using NetworkSocket.Exceptions;
 using NetworkSocket.Tasks;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Net;
-using System.Net.Sockets;
 using System.Reflection;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace NetworkSocket.Fast
@@ -127,8 +121,7 @@ namespace NetworkSocket.Fast
         /// <returns></returns>
         private Task OnFastRequestAsync(IContenxt context)
         {
-            var fastPacket = default(FastPacket);
-            if (FastPacket.Parse(context.StreamReader, out fastPacket) == false)
+            if (FastPacket.Parse(context.StreamReader, out FastPacket fastPacket) == false)
             {
                 return this.Next.Invoke(context);
             }
@@ -169,8 +162,7 @@ namespace NetworkSocket.Fast
             var list = new List<FastPacket> { fastPacket };
             while (true)
             {
-                var packet = default(FastPacket);
-                if (FastPacket.Parse(context.StreamReader, out packet) == false)
+                if (FastPacket.Parse(context.StreamReader, out FastPacket packet) == false)
                 {
                     return list;
                 }

@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -76,8 +75,7 @@ namespace NetworkSocket.Core
         /// <returns></returns>
         private string GetApiName(MethodInfo method)
         {
-            var api = Attribute.GetCustomAttribute(method, typeof(ApiAttribute)) as ApiAttribute;
-            if (api != null && string.IsNullOrWhiteSpace(api.Name) == false)
+            if (Attribute.GetCustomAttribute(method, typeof(ApiAttribute)) is ApiAttribute api && string.IsNullOrWhiteSpace(api.Name) == false)
             {
                 return api.Name;
             }

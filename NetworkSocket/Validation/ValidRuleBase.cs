@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
 
 namespace NetworkSocket.Validation
 {
@@ -47,7 +44,7 @@ namespace NetworkSocket.Validation
         /// <returns></returns>
         bool IValidRule.IsValid(object value, ValidContext validContext)
         {
-            var stringValue = value == null ? null : value.ToString();
+            var stringValue = value?.ToString();
             if (string.IsNullOrWhiteSpace(stringValue) == true)
             {
                 return true;

@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NetworkSocket.Reflection
 {
@@ -24,7 +20,7 @@ namespace NetworkSocket.Reflection
         /// <param name="property">属性</param>
         /// <exception cref="ArgumentNullException"></exception>
         public PropertyGetter(PropertyInfo property)
-           : this(property.DeclaringType, property.Name)
+           : this(property?.DeclaringType, property?.Name)
         {
         }
 

@@ -1,16 +1,8 @@
-﻿using NetworkSocket.Util;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System;
 using System.IO;
-using System.Linq;
-using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
-using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -19,7 +11,7 @@ namespace NetworkSocket
     /// <summary>
     /// 表示SSL的Tcp会话对象  
     /// </summary>        
-    internal class SslTcpSession : TcpSessionBase
+    class SslTcpSession : TcpSessionBase
     {
         /// <summary>
         /// 目标主机
@@ -66,11 +58,7 @@ namespace NetworkSocket
         ///  <exception cref="ArgumentNullException"></exception>
         public SslTcpSession(X509Certificate certificate)
         {
-            if (certificate == null)
-            {
-                throw new ArgumentNullException();
-            }
-            this.certificate = certificate;
+            this.certificate = certificate ?? throw new ArgumentNullException();
             this.certificateValidationCallback = (a, b, c, d) => true;
         }
 
@@ -141,45 +129,71 @@ namespace NetworkSocket
         /// 如果返回false表示接收异常
         /// </summary>
         /// <returns></returns>
-        protected override async Task<bool> ReceiveAsync()
+        protected async override Task<bool> ReceiveAsync()
         {
             try
             {
-                var read = await this.sslStream.ReadAsync(this.bufferRange.Array, this.bufferRange.Offset, this.bufferRange.Count);
-                if (read <= 0)
-                {
-                    var handler = this.DisconnectHandler;
-                    if (handler != null)
-                    {
-                        handler(this);
-                    }
-                    return false;
-                }
+                var taskSource = new TaskCompletionSource<bool>();
+                this.sslStream.BeginRead(
+                    this.bufferRange.Array,
+                    this.bufferRange.Offset,
+                    this.bufferRange.Count,
+                    this.OnReceiveAsynCompleted,
+                    taskSource);
 
-                lock (this.StreamReader.SyncRoot)
-                {
-                    this.StreamReader.Stream.Seek(0, SeekOrigin.End);
-                    this.StreamReader.Stream.Write(this.bufferRange.Array, this.bufferRange.Offset, read);
-                    this.StreamReader.Stream.Seek(0, SeekOrigin.Begin);
-                }
-
-                var recvedHandler = this.ReceiveCompletedHandler;
-                if (recvedHandler != null)
-                {
-                    await recvedHandler(this);
-                    return true;
-                }
-                return false;
+                return await taskSource.Task;
             }
             catch (Exception)
             {
                 var handler = this.DisconnectHandler;
-                if (handler != null)
-                {
-                    handler(this);
-                }
+                handler?.Invoke(this);
                 return false;
             }
+        }
+
+        /// <summary>
+        /// 异步接收到数据
+        /// </summary>
+        /// <param name="asyncResult">异步结果</param>
+        /// <returns></returns>
+        private void OnReceiveAsynCompleted(IAsyncResult asyncResult)
+        {
+            // 切换到工作线程处理业务逻辑
+            ThreadPool.QueueUserWorkItem(async state =>
+            {
+                var taskSource = asyncResult.AsyncState as TaskCompletionSource<bool>;
+                try
+                {
+                    var read = this.sslStream.EndRead(asyncResult);
+                    if (read <= 0)
+                    {
+                        var handler = this.DisconnectHandler;
+                        handler?.Invoke(this);
+                        taskSource.TrySetResult(false);
+                    }
+
+                    lock (this.StreamReader.SyncRoot)
+                    {
+                        this.StreamReader.Stream.Seek(0, SeekOrigin.End);
+                        this.StreamReader.Stream.Write(this.bufferRange.Array, this.bufferRange.Offset, read);
+                        this.StreamReader.Stream.Seek(0, SeekOrigin.Begin);
+                    }
+
+                    var recvedHandler = this.ReceiveCompletedHandler;
+                    if (recvedHandler != null)
+                    {
+                        await recvedHandler(this);
+                        taskSource.TrySetResult(true);
+                    }
+                    taskSource.TrySetResult(false);
+                }
+                catch (Exception)
+                {
+                    var handler = this.DisconnectHandler;
+                    handler?.Invoke(this);
+                    taskSource.TrySetResult(false);
+                }
+            }, null);
         }
 
         /// <summary>

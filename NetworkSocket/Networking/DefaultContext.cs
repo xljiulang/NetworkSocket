@@ -4,7 +4,7 @@ namespace NetworkSocket
     /// <summary>
     /// 表示上下文对象
     /// </summary>
-    internal class DefaultContext : IContenxt
+    class DefaultContext : IContenxt
     {   
         /// <summary>
         /// 获取或设置当前会话对象

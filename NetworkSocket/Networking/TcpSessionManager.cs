@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 
 namespace NetworkSocket
 {
@@ -15,7 +14,7 @@ namespace NetworkSocket
     /// </summary>   
     [DebuggerDisplay("Count = {Count}")]
     [DebuggerTypeProxy(typeof(SessionCollectionDebugView))]
-    internal class TcpSessionManager : ISessionManager, IEnumerable<TcpSessionBase>, IDisposable
+    class TcpSessionManager : ISessionManager, IEnumerable<TcpSessionBase>, IDisposable
     {
         /// <summary>
         /// 已释放的会话
@@ -45,8 +44,7 @@ namespace NetworkSocket
         /// <returns></returns>
         public TcpSessionBase Alloc(X509Certificate cer)
         {
-            TcpSessionBase session;
-            if (this.freeSessions.TryDequeue(out session) == true)
+            if (this.freeSessions.TryDequeue(out TcpSessionBase session) == true)
             {
                 return session;
             }
@@ -142,8 +140,7 @@ namespace NetworkSocket
             }
             this.workSessions.Clear();
 
-            TcpSessionBase session;
-            while (this.freeSessions.TryDequeue(out session))
+            while (this.freeSessions.TryDequeue(out TcpSessionBase session))
             {
                 session.Dispose();
             }

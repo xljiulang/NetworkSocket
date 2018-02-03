@@ -2,13 +2,9 @@
 using NetworkSocket.Exceptions;
 using NetworkSocket.Tasks;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Security;
 using System.Net.Sockets;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace NetworkSocket.Fast
@@ -115,8 +111,7 @@ namespace NetworkSocket.Fast
             var list = new List<FastPacket>();
             while (true)
             {
-                var packet = default(FastPacket);
-                if (FastPacket.Parse(streamReader, out packet) == false)
+                if (FastPacket.Parse(streamReader, out FastPacket packet) == false)
                 {
                     return list;
                 }

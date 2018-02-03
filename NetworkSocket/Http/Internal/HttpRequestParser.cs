@@ -1,5 +1,4 @@
-﻿using NetworkSocket.Exceptions;
-using NetworkSocket.Util;
+﻿using NetworkSocket.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -68,12 +67,11 @@ namespace NetworkSocket.Http
         /// <returns></returns>
         private static HttpRequestParseResult ParseInternal(IContenxt context)
         {
-            var headerLength = 0;
-            var contentLength = 0;
-            var request = default(HttpRequest);
-            var result = new HttpRequestParseResult();
+            var result = new HttpRequestParseResult
+            {
+                IsHttp = HttpRequestParser.TryGetRequest(context, out HttpRequest request, out int headerLength, out int contentLength)
+            };
 
-            result.IsHttp = HttpRequestParser.TryGetRequest(context, out request, out headerLength, out contentLength);
             if (result.IsHttp == false)
             {
                 return result;
@@ -298,10 +296,8 @@ namespace NetworkSocket.Http
                     break;
                 }
 
-                string fileName = null;
                 var mHead = new MultipartHead(head);
-
-                if (mHead.TryGetFileName(out fileName) == true)
+                if (mHead.TryGetFileName(out string fileName) == true)
                 {
                     var bytes = streamReader.ReadArray(bodyLength);
                     var file = new HttpFile(mHead.Name, fileName, bytes);

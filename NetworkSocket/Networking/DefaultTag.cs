@@ -1,16 +1,12 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
 
 namespace NetworkSocket
 {
     /// <summary>
     /// 表示用户附加数据
     /// </summary>   
-    internal class DefaultTag : ConcurrentDictionary<string, object>, ITag
+    class DefaultTag : ConcurrentDictionary<string, object>, ITag
     {
         /// <summary>
         /// 获取或设置唯一标识符
@@ -42,8 +38,7 @@ namespace NetworkSocket
         /// <returns></returns>
         TagItem ITag.Get(string key)
         {
-            object value;
-            base.TryGetValue(key, out value);
+            base.TryGetValue(key, out object value);
             return new TagItem(value);
         }
 
@@ -68,8 +63,7 @@ namespace NetworkSocket
         /// <returns></returns>
         bool ITag.Remove(string key)
         {
-            object value;
-            return base.TryRemove(key, out value);
+            return base.TryRemove(key, out object value);
         }
     }
 }

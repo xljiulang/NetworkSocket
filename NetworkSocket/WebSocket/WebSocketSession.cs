@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Net.Sockets;
+﻿using NetworkSocket.Tasks;
+using System;
 using System.Net;
-using NetworkSocket.Util;
-using NetworkSocket.Tasks;
+using System.Net.Sockets;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace NetworkSocket.WebSocket
@@ -91,9 +88,8 @@ namespace NetworkSocket.WebSocket
                 return;
             }
 
-            Guid id;
             var valueString = Encoding.UTF8.GetString(value);
-            if (Guid.TryParse(valueString, out id) == false)
+            if (Guid.TryParse(valueString, out Guid id) == false)
             {
                 return;
             }

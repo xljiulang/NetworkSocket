@@ -1,11 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace NetworkSocket.Tasks
 {
@@ -22,7 +17,7 @@ namespace NetworkSocket.Tasks
             get
             {
                 var context = SynchronizationContext.Current as AsyncSynchronizationContext;
-                return context == null ? null : context.Dispatcher;
+                return context?.Dispatcher;
             }
         }
 
@@ -166,8 +161,7 @@ namespace NetworkSocket.Tasks
             /// </summary>
             private void InvokePendingCallback()
             {
-                SyncCallback callback;
-                while (this.quque.TryDequeue(out callback))
+                while (this.quque.TryDequeue(out SyncCallback callback))
                 {
                     callback.Invoke();
                 }

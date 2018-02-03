@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace NetworkSocket.Util.Converts
 {
@@ -49,8 +48,7 @@ namespace NetworkSocket.Util.Converts
                     continue;
                 }
 
-                object targetValue;
-                if (dic.TryGetValue(setter.Name, out targetValue) == false)
+                if (dic.TryGetValue(setter.Name, out object targetValue) == false)
                 {
                     continue;
                 }

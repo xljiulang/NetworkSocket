@@ -1,11 +1,4 @@
-﻿using NetworkSocket.Core;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-
-namespace NetworkSocket.Http
+﻿namespace NetworkSocket.Http
 {
     /// <summary>
     /// 表示Http请求上下文

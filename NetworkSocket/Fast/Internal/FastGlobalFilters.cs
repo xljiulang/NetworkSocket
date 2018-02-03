@@ -1,15 +1,12 @@
 ﻿using NetworkSocket.Core;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace NetworkSocket.Fast
 {
     /// <summary>
     /// Fast协议的全局过滤器提供者
     /// </summary>
-    internal class FastGlobalFilters : GlobalFiltersBase
+    class FastGlobalFilters : GlobalFiltersBase
     {
         /// <summary>
         /// 添加过滤器

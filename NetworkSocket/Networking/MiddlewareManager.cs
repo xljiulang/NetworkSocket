@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace NetworkSocket
@@ -9,7 +7,7 @@ namespace NetworkSocket
     /// <summary>
     /// 表示中间件管理器
     /// </summary>
-    internal class MiddlewareManager
+    class MiddlewareManager
     {
         /// <summary>
         /// 所有中间件

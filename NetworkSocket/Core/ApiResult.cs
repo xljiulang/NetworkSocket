@@ -1,9 +1,6 @@
 ﻿using NetworkSocket.Tasks;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace NetworkSocket.Core
@@ -26,11 +23,7 @@ namespace NetworkSocket.Core
         /// <exception cref="ArgumentNullException"></exception>
         public ApiResult(ITaskSetter<TResult> taskSetter)
         {
-            if (taskSetter == null)
-            {
-                throw new ArgumentNullException();
-            }
-            this.taskSetter = taskSetter;
+            this.taskSetter = taskSetter ?? throw new ArgumentNullException();
         }
 
         /// <summary>

@@ -4,7 +4,6 @@ using NetworkSocket.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Sockets;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -204,7 +203,7 @@ namespace NetworkSocket.WebSocket
             }
 
             var body = requestContext.Packet.body;
-            var message = body == null ? null : body.ToString();
+            var message = body?.ToString();
             var exception = new RemoteException(message);
             taskSetter.SetException(exception);
         }

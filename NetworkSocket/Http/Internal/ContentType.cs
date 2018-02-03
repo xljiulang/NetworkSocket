@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NetworkSocket.Http
 {
     /// <summary>
     /// 表示请求的ContentType
     /// </summary>
-    internal class ContentType
+    class ContentType
     {
         /// <summary>
         /// 内容
@@ -111,8 +107,7 @@ namespace NetworkSocket.Http
         /// <returns></returns>
         public string TryGetExtend(string key, string defaultValue)
         {
-            string value = null;
-            if (this.TryGetExtend(key, out value))
+            if (this.TryGetExtend(key, out string value))
             {
                 return value;
             }

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace NetworkSocket.Core
+﻿namespace NetworkSocket.Core
 {
     /// <summary>
     /// 定义支持依赖注入功能的接口

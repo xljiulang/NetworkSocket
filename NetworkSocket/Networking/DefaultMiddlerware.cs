@@ -1,8 +1,4 @@
 ﻿using NetworkSocket.Tasks;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace NetworkSocket
@@ -10,7 +6,7 @@ namespace NetworkSocket
     /// <summary>
     /// 表示默认的最后一个中间件
     /// </summary>
-    internal class DefaultMiddlerware : IMiddleware
+    class DefaultMiddlerware : IMiddleware
     {
         /// <summary>
         /// 数据包长度超过这个值 且还无法解析出协议的连接

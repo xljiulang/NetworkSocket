@@ -13,7 +13,7 @@ namespace NetworkSocket.Http
     /// <summary>
     /// 默认的模型生成器
     /// </summary>
-    internal class DefaultModelBinder : IModelBinder
+    class DefaultModelBinder : IModelBinder
     {
         /// <summary>
         /// 生成和绑定所有参数的值
@@ -21,8 +21,7 @@ namespace NetworkSocket.Http
         /// <param name="context">上下文</param>
         public void BindAllParameterValue(ActionContext context)
         {
-            Encoding chartset;
-            if (context.Request.IsRawJsonRequest(out chartset))
+            if (context.Request.IsRawJsonRequest(out Encoding chartset))
             {
                 this.BindParametersFromRawJson(context, chartset);
             }
@@ -115,8 +114,7 @@ namespace NetworkSocket.Http
         {
             if (body != null)
             {
-                object value = null;
-                if (body.TryGetValue(parameter.Name, out value))
+                if (body.TryGetValue(parameter.Name, out object value))
                 {
                     return Converter.Cast(value, parameter.Type);
                 }

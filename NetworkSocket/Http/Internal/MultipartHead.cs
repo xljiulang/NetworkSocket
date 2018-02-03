@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace NetworkSocket.Http
 {
     /// <summary>
     /// 表单头
     /// </summary>
-    internal class MultipartHead
+    class MultipartHead
     {
         /// <summary>
         /// 头数据内容
@@ -22,8 +19,7 @@ namespace NetworkSocket.Http
         {
             get
             {
-                string value = null;
-                this.TryGet("name", out value);
+                this.TryGet("name", out string value);
                 return value;
             }
         }

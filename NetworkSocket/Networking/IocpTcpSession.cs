@@ -1,23 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Sockets;
-using System.Text;
 using System.IO;
+using System.Net.Sockets;
 using System.Threading;
-using System.Diagnostics;
-using System.Collections.Concurrent;
-using NetworkSocket.Util;
 using System.Threading.Tasks;
-using NetworkSocket.Tasks;
 
 namespace NetworkSocket
 {
     /// <summary>
     /// 表示IOCP的Tcp会话对象  
     /// </summary>        
-    internal class IocpTcpSession : TcpSessionBase
+    class IocpTcpSession : TcpSessionBase
     {
         /// <summary>
         /// 用于接收的SocketAsyncEventArgs
@@ -90,13 +82,16 @@ namespace NetworkSocket
         /// <param name="sender">事件源</param>
         /// <param name="arg">参数</param>
         /// <returns></returns>
-        private async void OnReceiveAsynCompleted(object sender, SocketAsyncEventArgs arg)
+        private void OnReceiveAsynCompleted(object sender, SocketAsyncEventArgs arg)
         {
-            var taskSource = arg.UserToken as TaskCompletionSource<bool>;
-            var result = await this.ProcessReceiveAsync(arg);
-            taskSource.TrySetResult(result);
+            // 切换到工作线程处理业务逻辑
+            ThreadPool.QueueUserWorkItem(async state =>
+            {
+                var taskSource = arg.UserToken as TaskCompletionSource<bool>;
+                var result = await this.ProcessReceiveAsync(arg);
+                taskSource.TrySetResult(result);
+            }, null);
         }
-
 
         /// <summary>
         /// 异步处理接收到数据
@@ -108,10 +103,7 @@ namespace NetworkSocket
             if (arg.BytesTransferred == 0 || arg.SocketError != SocketError.Success)
             {
                 var handler = this.DisconnectHandler;
-                if (handler != null)
-                {
-                    handler(this);
-                }
+                handler?.Invoke(this);
                 return false;
             }
 

@@ -2,14 +2,13 @@
 using NetworkSocket.Util;
 using Newtonsoft.Json;
 using System;
-using System.Globalization;
 
 namespace NetworkSocket.Core
 {
     /// <summary>
     /// 默认提供的动态Json序列化工具
     /// </summary>
-    internal class DefaultDynamicJsonSerializer : IDynamicJsonSerializer
+    class DefaultDynamicJsonSerializer : IDynamicJsonSerializer
     {
         /// <summary>
         /// 序列化为Json

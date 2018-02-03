@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace NetworkSocket.Util.Converts
 {
     /// <summary>
     /// 表示最后一个转换单元
     /// </summary>
-    internal class NotSupportedConvert : IConvert
+    class NotSupportedConvert : IConvert
     {
         /// <summary>
         /// 转换器实例
